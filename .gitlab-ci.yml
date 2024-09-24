@@ -1,23 +1,8 @@
-# This file is a template, and might need editing before it works on your project.
-# To contribute improvements to CI/CD templates, please follow the Development guide at:
-# https://docs.gitlab.com/ee/development/cicd/templates.html
-# This specific template is located at:
-# https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Getting-Started.gitlab-ci.yml
-
-# This is a sample GitLab CI/CD configuration file that should run without any modifications.
-# It demonstrates a basic 3 stage CI/CD pipeline. Instead of real tests or scripts,
-# it uses echo commands to simulate the pipeline execution.
-#
-# A pipeline is composed of independent jobs that run scripts, grouped into stages.
-# Stages run in sequential order, but jobs within stages run in parallel.
-#
-# For more information, see: https://docs.gitlab.com/ee/ci/yaml/index.html#stages
-
 variables:
-  TAG_LATEST: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_NAME:latest
-  TAG_COMMIT: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_NAME:$CI_COMMIT_SHORT_SHA
+  TAG_LATEST: $CI_REGISTRY_IMAGE/spring-app:latest
+  TAG_COMMIT: $CI_REGISTRY_IMAGE/spring-app:$CI_COMMIT_SHORT_SHA
 
-stages:          # List of stages for jobs, and their order of execution
+stages:
   - test
   - publish
   - deploy
@@ -31,10 +16,12 @@ publish:
   services:
     - docker:dind
   script:
-    - docker compose build -t $TAG_COMMIT -t $TAG_LATEST .
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker compose push $TAG_COMMIT
-    - docker compose push $TAG_LATEST
+    - docker compose build spring-app          # Costruisci solo il servizio 'spring-app'
+    - docker tag registry.gitlab.com/greedys_api/spring-app $TAG_COMMIT
+    - docker tag registry.gitlab.com/greedys_api/spring-app $TAG_LATEST
+    - docker push $TAG_COMMIT
+    - docker push $TAG_LATEST
   only:
     - main
 
@@ -47,8 +34,8 @@ deploy:
     - chmod og= $ID_RSA
     - apk update && apk add openssh-client
     - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY"
-    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker compose pull $TAG_COMMIT"
-    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker compose up -d --name greedys_api $TAG_COMMIT"
+    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker compose pull spring-app"  # Scarica solo il nuovo container spring-app
+    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker compose up -d spring-app"  # Riavvia solo il container spring-app
   only:
     - main
 
