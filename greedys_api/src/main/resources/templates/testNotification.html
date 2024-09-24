@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ristorante</title>
+    <style>
+        .sentMessage {
+            text-align: right;
+        }
+
+        .receivedMessage {
+            text-align: left;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+</head>
+
+<body>
+    <h1>Ristorante</h1>
+    <div>
+        <h2>Messaggi Ricevuti</h2>
+        <ul id="receivedMessages"></ul>
+    </div>
+    <div>
+        <h2>Invia Messaggio</h2>
+        <form action="/send-notifica" method="post">
+            <label for="to">A:</label><br>
+            <input type="text" id="to" name="to"><br>
+            <input type="hidden" id="from" name="from" th:value="${username}">
+            <label for="id">ID:</label><br>
+            <input type="text" id="id" name="id"><br>
+            <label for="type">Tipo:</label><br>
+            <select id="type" name="type">
+                <option value="CREATION">Creazione</option>
+                <option value="MODIFICATION">Modifica</option>
+                <option value="REVIEW">Recensione</option>
+                <option value="REVIEW_MODIFY">Modifica Recensione</option>
+            </select><br>
+            <label for="text">Testo:</label><br>
+            <input type="text" id="text" name="text"><br>
+            <input type="submit" value="Invia">
+        </form>
+    </div>
+    <div>
+        <h2>Messaggi Inviati</h2>
+        <ul id="sentMessages"></ul>
+    </div>
+
+    <script>
+        var socket = new SockJS('/secured/user/queue/notifications');
+        var stompClient = Stomp.over(socket);
+        stompClient.connect({}, function (frame) {
+            stompClient.subscribe('/secured/user/queue/notifications', function (messageOutput) {
+                var message = JSON.parse(messageOutput.body);
+                var li = document.createElement("li");
+                li.classList.add("receivedMessage");
+                li.textContent = message.text;
+                document.querySelector("ul").appendChild(li);
+            });
+        });
+        function sendMessageToServer() {
+            var message = $('#messageInput').val();
+            $('#sentMessages').append('<li class="sentMessage">' + message + '</li>');
+            $('#messageInput').val('');
+
+            // Invia il messaggio al server tramite HTTP POST
+            $.ajax({
+                url: '/send-notifica',
+                type: 'POST',
+                data: { message: message },
+                success: function (response) {
+                    console.log('Messaggio inviato al server');
+                },
+                error: function (error) {
+                    console.log('Errore nell\'invio del messaggio al server', error);
+                }
+            })
+        }
+        // Aggiungi un gestore di eventi per l'invio del form
+        $('form').on('submit', function (e) {
+            e.preventDefault(); // Impedisci l'azione predefinita del form
+            sendMessageToServer(); // Invia il messaggio
+        });
+    </script>
+</body>
+
+</html>

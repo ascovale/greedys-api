@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendario</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+</head>
+
+<body>
+    <div th:fragment="service-day-setting">
+
+        <div class="service-container">
+
+            <div class="weekday">
+                <span id="weekday2">Giorno</span>
+            </div>
+
+            <table class="service-table" id="service-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Open time</th>
+                        <th>Close time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+
+        </div>
+
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,56 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8"></meta>
+<meta name="viewport"
+	content="width=device-width, initial-scale=1, shrink-to-fit=no"></meta>
+<script src="/jquery-3.1.1.slim.min.js"></script>
+<script src="/tether.min.js"></script>
+<script src="/bootstrap.min.js"></script>
+<style>
+div.gallery {
+	margin: 15px;
+	float: left;
+	width: 250px;
+}
+
+div.gallery img {
+	width: 100%;
+	height: 25%;
+}
+</style>
+<link href="/bootstrap.min.css" rel="stylesheet"></link>
+<link href="/navbar-top-fixed.css" rel="stylesheet"></link>
+<link rel="stylesheet"
+	href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css"></link>
+</head>
+<body>
+	
+	<!--Navbar -->
+	<div th:replace="fragments/page-navbar :: header" > </div>
+	<div class="container">
+
+
+
+		<form class="form-inline mt-2 mt-md-0" method="GET" action="/search">
+			<input class="form-control mr-sm-2" type="text" name="name"
+				placeholder="Search"></input>
+			<button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+		</form>
+
+		<tr th:each="user : ${user}">
+			<h1 align="center">
+				<td th:text="${user} + '\'s photos'">Onions</td>
+			</h1>
+		</tr>
+
+
+		<div th:each="file : ${files}">
+			<div class="gallery">
+				<a target="_blank" th:href="${file}"> <img th:src="${file}" />
+				</a>
+			</div>
+		</div>
+	</div>
+
+</body>
+</html>

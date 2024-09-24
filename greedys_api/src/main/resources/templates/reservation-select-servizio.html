@@ -1,0 +1,55 @@
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org">
+<head>
+<link rel="stylesheet"
+	href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css"></link>
+<title th:text="#{label.pages.home.title}">home</title>
+
+<style type="text/css">
+.bg {
+	background-color: #cccccc !important;
+}
+td:hover {
+    background-color: red;
+}
+</style>
+</head>
+<body>
+	<div th:replace="fragments/page-navbar :: header"></div>
+
+	<div class="container">
+		<table class="table table-bordered table-condensed">
+			<thead>
+				<tr>
+					<th>Col 1</th>
+					<th>Col 2</th>
+					<th>Col 3</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td><strong>Data 1</strong></td>
+					<td>Data 2</td>
+					<td>Data 3</td>
+				</tr>
+				<tr>
+					<td><strong>Data 1</strong></td>
+					<td>Data 2</td>
+					<td>Data 3</td>
+				</tr>
+				<tr>
+					<td><strong>Data 1</strong></td>
+					<td>Data 2</td>
+					<td>Data 3</td>
+				</tr>
+			</tbody>
+		</table>
+
+	</div>
+
+
+
+</body>
+</html>

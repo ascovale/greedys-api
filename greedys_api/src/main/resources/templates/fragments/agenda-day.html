@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendario</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+
+</head>
+
+<body>
+    <div th:fragment="agenda-day">
+
+        <div class="day-container">
+
+            <div class="agenda-day">
+				<span class="prev-day">&lt;</span>  
+                <span id="agenda-day-2" >Giorno</span>
+                <span class="next-day">&gt</span>
+            </div>
+            <div class="agenda-service">Nome del servizio</div>
+            <table class="agenda-table">
+                <tr>
+                    <th>Orario</th>
+                    <th>Numero di persone</th>
+                    <th>Numero di bambini</th>
+                    <!-- Altri campi -->
+                </tr>
+                <!-- Inserire qui le righe della tabella -->
+            </table>
+
+        </div>
+
+    </div>
+</body>
+
+</html>

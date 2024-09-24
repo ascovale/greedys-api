@@ -1,0 +1,33 @@
+<html>
+
+<head>
+<link rel="stylesheet"
+	href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css" />
+<title th:text="#{label.pages.home.title}">Title</title>
+<style type="text/css">
+.wrapper {
+	width: 500px;
+	margin-left: auto;
+	margin-right: auto
+}
+
+label {
+	padding-left: 0 !important
+}
+</style>
+</head>
+<body>
+	<div class="container">
+		<div class="row wrapper">
+			<h1 th:text="#{label.form.Title}">Agency</h1>
+			<br />
+			<br /> <br />
+			<br /> <a class="btn btn-default" th:href="/Reservation"
+				th:text="#{label.form.loginSignUp}">Add Reservation</a> <a
+				class="btn btn-default" th:href="/modifyReservation"
+				th:text="#{label.form.loginSignUpCaptcha}">Reservation Manager</a>
+		</div>
+	</div>
+</body>
+
+</html>

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EFFETTUARE LOGIN</title>
+<link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<style>
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f4f4f4;
+}
+
+.container {
+    border-radius: 10px;
+    background-color: white;
+    padding: 20px;
+    max-width: 300px;
+    margin: 0 auto;
+    position: relative; /* Aggiunto */
+}
+
+.table-header {
+    text-align: center;
+    margin-bottom: 20px;
+    padding-top: 30px; /* Aggiungi spazio sopra alle icone */
+}
+
+.icons {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    position: absolute; /* Aggiunto */
+    top: 0;
+    left: 50%; /* Aggiunto */
+    transform: translateX(-50%); /* Aggiunto */
+}
+
+.icon {
+    margin: 0 10px;
+}
+
+.form-container {
+    margin-top: 10px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.form-group input[type="text"],
+.form-group input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.form-footer {
+    margin-top: 20px;
+}
+
+.link-container {
+    text-align: center;
+}
+
+.link-container a {
+    text-decoration: none;
+    color: #007bff;
+    margin-right: 10px;
+}
+
+.link-container a:last-child {
+    margin-right: 0;
+}
+
+
+.table-header {
+    text-align: center;
+    margin-bottom: 20px;
+    padding-top: 30px;
+    position: relative;
+}
+
+.select-text {
+    font-size: 20px;
+    font-weight: bold;
+    color: black;
+    text-transform: uppercase;
+    margin-top: 16px;
+}
+
+/* Stili aggiunti per il bottone */
+.footer-button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    text-align: center;
+    background-color: #92e7c8;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    cursor: pointer;
+    margin-top: 20px;
+    
+    box-sizing: border-box; /* Include il padding e il bordo nella larghezza totale */
+}
+.form-group input[type="text"],
+.form-group input[type="password"],
+.footer-button {
+    width: 100%; /* Larghezza al 100% */
+    box-sizing: border-box; /* Include il padding e il bordo nella larghezza totale */
+}
+
+/* Stili aggiunti per il colore al passaggio del mouse */
+.footer-button:hover {
+    background-color: #f78da7; /* Colore più scuro al passaggio del mouse */
+}
+.link-container {
+    text-align: center;
+    margin-top: 30px; /* Margine superiore aggiunto per spostare i link più in basso */
+}
+
+.link-container a {
+    text-decoration: none;
+    color: #007bff;
+    margin-right: 10px;
+}
+
+.link-container a:last-child {
+    margin-right: 0;
+}
+</style>
+</head>
+<body>
+    <div class="container">
+        <div class="table-header">
+            <div class="icons">
+                <i class="fas fa-calendar icon" style="color: #92e7c8;"></i> <span
+                    class="arrow">&gt;</span> <i class="fas fa-clock icon"
+                    style="color: #92e7c8;"></i> <span class="arrow">&gt;</span> <i
+                    class="fas fa-users icon" style="color: #92e7c8;"></i>
+
+            </div>
+            <div class="table-container">
+                <div class="select-text">SELECT</div>
+            </div>
+        </div>
+        <div class="table"></div>
+        <div class="form-container">
+            <form name='f' id="login-form" action="login" method='POST' onsubmit="return validate();">
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <div class="form-footer">
+                    <button type="submit" class="footer-button" id="login-button">LOGIN</button>
+                </div>
+            </form>
+        </div>
+        <div class="link-container">
+            <a href="#" id="forgot-password-link">Reset Password</a>
+            <a href="#" id="signup-link">Sign up</a>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+    function validate() {
+		if (document.f.username.value == "" && document.f.password.value == "") {
+			alert(/*[[#{message.username} + #{message.password}]]*/);
+			document.f.username.focus();
+			return false;
+		}
+		if (document.f.username.value == "") {
+			alert(/*[[#{message.username}]]*/);
+			document.f.username.focus();
+			return false;
+		}
+		if (document.f.password.value == "") {
+			alert(/*[[#{message.password}]]*/);
+			document.f.password.focus();
+			return false;
+		}
+	}
+    </script>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <!-- jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- Popper JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+
+    <!-- SockJS -->
+    <script src="https://cdn.jsdelivr.net/sockjs/1/sockjs.min.js"></script>
+
+    <!-- STOMP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+
+    <!-- Your custom script -->
+    <link th:href="@{/css/services.css}" rel="stylesheet" />
+    <link th:href="@{/css/calendar.css}" rel="stylesheet" />
+
+</head>
+
+<body>
+    <!--Navbar -->
+    <div th:replace="fragments/page-navbar :: header"></div>
+
+    <div class="container">
+
+        Username: <a th:text="${username}">Username</a>
+    </div>
+    <div th:replace="fragments/new-reservation :: new-reservation"> </div>
+
+    <button type="button" class="btn btn-secondary"
+    style="background-color:  #92e7c8; border-color: lightgray; color: black; margin-bottom: 10px; width: 100%;"
+    onclick="window.location.href='/services.html'">Service Setting</button>
+    
+    <div id="restaurant-data" th:data-restaurant-id="${idRestaurant}"></div>
+    <button type="button" class="btn btn-secondary"
+    style="background-color:  #92e7c8; border-color: lightgray; color: black; margin-bottom: 10px; width: 100%;"
+    onclick="openPopup()">Add Reservation</button>
+
+    <script th:src="@{/js/navbar.js}"></script>
+    <!-- jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.1/js/bootstrap.min.js"></script>
+
+</body>
+
+</html>

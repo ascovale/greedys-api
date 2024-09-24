@@ -1,0 +1,84 @@
+body {
+	font-family: Arial, sans-serif;
+	margin: 0;
+	padding: 20px;
+	background-color: #f4f4f4;
+}
+
+.day-container {
+	border-radius: 10px;
+	background-color: white;
+	padding: 20px;
+    width: 900px; /* Aumenta la larghezza */
+	margin: 0 auto;
+	position: relative;
+
+    display: flex; /* Aggiunto */
+    justify-content: center; /* Aggiunto */
+    align-items: center; /* Aggiunto */
+    flex-direction: column; /* Aggiunto */
+	/* Aggiunto */
+}
+
+.day-services-container {
+	border-radius: 10px;
+	background-color: white;
+	padding: 20px;
+	max-width: 300px;
+	margin: 0 auto;
+	position: relative;
+	/* Aggiunto */
+}
+
+.container {
+	display: flex;
+}
+
+.left {
+	flex: 3;
+}
+
+.right {
+	flex: 1;
+}
+
+.table {
+	width: 100%;
+}
+
+.agenda-header {
+	text-align: center;
+	margin-bottom: 20px;
+	padding-top: 30px;
+}
+
+.arrow {
+	color: grey;
+}
+.prev-day {
+	cursor: pointer;
+}
+
+.next-day {
+	cursor: pointer;
+}
+.services {
+    text-align: center;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+.agenda-day{
+	text-align: center;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+.prev-day, .agenda-day-2, .next-day {
+    margin-right: 10px;
+    margin-left: 10px;
+}
+#agenda-day-2 {
+    font-size: 200%;
+}
+th {
+	padding: 10px;
+}

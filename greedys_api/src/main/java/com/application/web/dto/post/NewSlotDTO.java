@@ -1,0 +1,46 @@
+package com.application.web.dto.post;
+
+import java.time.LocalTime;
+
+import com.application.mapper.Mapper.Weekday;
+
+public class NewSlotDTO {
+
+    LocalTime start;
+	LocalTime end;
+    Weekday weekday;
+    Long serviceId;
+
+    public LocalTime getStart() {
+        return start;
+    }
+
+    public void setStart(LocalTime start) {
+        this.start = start;
+    }
+
+    public LocalTime getEnd() {
+        return end;
+    }
+
+    public void setEnd(LocalTime end) {
+        this.end = end;
+    }
+
+    public Weekday getWeekday() {
+        return weekday;
+    }
+
+    public void setWeekday(Weekday weekday) {
+        this.weekday = weekday;
+    }
+
+    public Long getServiceId() {
+        return serviceId;
+    }
+
+    public void setServiceId(Long serviceId) {
+        this.serviceId = serviceId;
+    }
+    
+}

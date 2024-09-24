@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<!-- Include Bootstrap CSS -->
+<link rel="stylesheet"
+	href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+
+<link rel="stylesheet"
+	href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+<!-- jQuery library -->
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+<!-- Popper JS -->
+<script
+	src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+
+<!-- SockJS -->
+<script src="https://cdn.jsdelivr.net/sockjs/1/sockjs.min.js"></script>
+<!-- STOMP -->
+<script
+	src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+</head>
+<body>
+    <div>
+        <h1 style="text-align: center;">
+            <a th:href="@{/previousDay}">&lt;&lt;</a>
+            <span th:text="${day}" style="font-size: 24px;"></span>
+            <a th:href="@{/nextDay}">&gt;&gt;</a>
+            
+        </h1>
+    </div>
+    
+    <table border="1" style="margin: auto;">
+        <thead>
+            <tr>
+           		<th>DAY</th>
+                <th>Time</th>
+                <th>Pax</th>
+                <th>Kids</th>
+                <th>Alter</th>
+                <th>Cancel</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Iterating through each booking -->
+            <tr th:each="reservation : ${reservations}">
+            	<td th:text="${reservation.date}"></td>
+                <td th:text="${reservation.ora}"></td>
+                <td th:text="${reservation.pax}"></td>
+                <td th:text="${reservation.kids}"></td>
+                <td><a th:href="@{/modifyReservation/{id}(id=${reservation.id})}">Alter</a></td>
+                <td><button th:attr="data-reservation-id=${reservation.id}" onclick="confirmDelete(this.getAttribute('data-reservation-id'))">Cancel</button></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <script>
+    function confirmDelete(reservationId) {
+        if (confirm("Sei sicuro di voler cancellare questa prenotazione?")) {
+            window.location.href = "/deleteReservation/" + reservationId; // Qui vai alla pagina di conferma cancellazione
+        }
+    }</script>
+
+
+    <!-- jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <!-- Popper JS -->
+	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+	<script
+		src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+	
+</body>
+</html>

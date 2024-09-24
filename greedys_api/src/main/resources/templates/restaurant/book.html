@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Nuova Prenotazione</title>
+</head>
+<body>
+    <h1>Nuova Prenotazione</h1>
+    <form action="/submit-reservation" method="post">
+        <label for="pax">Numero di Persone:</label><br>
+        <input type="number" id="pax" name="pax" min="1" required><br>
+        <label for="date">Data:</label><br>
+        <input type="date" id="date" name="date" required><br>
+        <label for="time">Ora:</label><br>
+        <input type="time" id="time" name="time" required><br>
+        <label for="kids">Numero di Bambini:</label><br>
+        <input type="number" id="kids" name="kids" min="0" required><br>
+        <label for="notes">Note:</label><br>
+        <textarea id="notes" name="notes"></textarea><br>
+        <label for="clientUser">ID Cliente:</label><br>
+        <input type="number" id="clientUser" name="clientUser" min="1" required><br>
+        <input type="submit" value="Crea Prenotazione">
+    </form>
+</body>
+</html>
