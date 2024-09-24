@@ -32,7 +32,7 @@ build-job:
     - echo "Compiling the code..."
     - docker-compose build app
     - echo "Compile complete."
-come   artifacts:
+  artifacts:
     paths:
       - target/gitlab-ci-demo.jar
 
