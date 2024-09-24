@@ -20,8 +20,7 @@ publish:
     - docker compose build spring-app          # Costruisci solo il servizio 'spring-app'
     - docker tag registry.gitlab.com/greedys_api/spring-app $TAG_COMMIT
     - docker tag registry.gitlab.com/greedys_api/spring-app $TAG_LATEST
-    - docker push $TAG_COMMIT
-    - docker push $TAG_LATEST
+    - docker compose push
   only:
     - main
 
