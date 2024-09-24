@@ -6,9 +6,6 @@ stages:
   - publish
   - deploy
 
-include:
-  - template: Security/Dependency-Scanning.gitlab-ci.yml
-
 publish:
   image: docker:latest
   stage: publish
