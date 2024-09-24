@@ -3,7 +3,6 @@ variables:
   TAG_COMMIT: $CI_REGISTRY_IMAGE/spring-app:$CI_COMMIT_SHORT_SHA
 
 stages:
-  - test
   - publish
   - deploy
 
@@ -20,7 +19,7 @@ publish:
     - docker compose build spring-app          # Costruisci solo il servizio 'spring-app'
     - docker tag registry.gitlab.com/greedys_api/spring-app $TAG_COMMIT
     - docker tag registry.gitlab.com/greedys_api/spring-app $TAG_LATEST
-    - docker compose push
+    - docker compose push spring-app
   only:
     - main
 
