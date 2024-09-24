@@ -1,6 +1,6 @@
 services:
   spring-app:
-    image: registry.gitlab.com/greedys_api/spring-app:latest
+    image: registry.gitlab.com/psychoorange/greedys_api/spring-app
     build:
       context: .
       dockerfile: Dockerfile
