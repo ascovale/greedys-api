@@ -35,7 +35,7 @@ public class NotificationService {
 
 	public NotificationDto createNoShowNotification(User user,Reservation reservation) {
 		Notification notification = new Notification();
-		notification.setClientUser(user);
+		notification.setClientUser(user); 
 		notification.setReservation(reservation);
 		notification.setType(Type.NO_SHOW);
 		notificationDAO.save(notification);
@@ -131,7 +131,6 @@ public class NotificationService {
 	public long countNotification(User currentUser) {
 		User user = userDAO.findById(currentUser.getId()).get();	
 		return user.getToReadNotification();
-		
 	}
 	 
 	public void deleteNotification(long idNotification) {

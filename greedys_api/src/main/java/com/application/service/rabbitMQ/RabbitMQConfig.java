@@ -21,6 +21,16 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public Queue userEmailQueue() {
+        return new Queue("userEmailQueue", false);
+    }
+
+    @Bean
+    public Queue reservationEmailQueue() {
+        return new Queue("reservationEmailQueue", false);
+    }
+
+    @Bean
     TopicExchange exchange() {
         return new TopicExchange("ExchangeName");
     }
@@ -33,6 +43,16 @@ public class RabbitMQConfig {
     @Bean
     Binding clientBinding(Queue clientQueue, TopicExchange exchange) {
         return BindingBuilder.bind(clientQueue).to(exchange).with("ClientRoutingKey");
+    }
+
+    @Bean
+    Binding userEmailBinding(Queue userEmailQueue, TopicExchange exchange) {
+        return BindingBuilder.bind(userEmailQueue).to(exchange).with("userEmailRoutingKey");
+    }
+
+    @Bean
+    Binding reservationEmailBinding(Queue reservationEmailQueue, TopicExchange exchange) {
+        return BindingBuilder.bind(reservationEmailQueue).to(exchange).with("reservationEmailRoutingKey");
     }
 }
 
