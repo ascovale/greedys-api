@@ -3,6 +3,7 @@ package com.application.registration.listener;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.MessageSource;
 import org.springframework.core.env.Environment;
@@ -23,6 +24,7 @@ public class UserRegistrationListener implements ApplicationListener<UserOnRegis
 	private MessageSource messages;
 
 	@Autowired
+	@Qualifier("getUserMailSender")
 	private JavaMailSender mailSender;
 
 	@Autowired
@@ -42,8 +44,6 @@ public class UserRegistrationListener implements ApplicationListener<UserOnRegis
 		final SimpleMailMessage email = constructEmailMessage(event, user, token);
 		mailSender.send(email);
 	}
-
-
 
 	private final SimpleMailMessage constructEmailMessage(final UserOnRegistrationCompleteEvent event, final User user,
 			final String token) {
