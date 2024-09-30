@@ -27,13 +27,14 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+
 import com.application.persistence.model.user.Privilege;
 import com.application.persistence.model.user.User;
 import com.application.persistence.model.user.VerificationToken;
+import com.application.registration.UserOnRegistrationCompleteEvent;
 import com.application.service.UserService;
 import com.application.web.dto.post.NewUserDTO;
 import com.application.web.util.GenericResponse;
-import com.application.service.event.OnRegistrationCompleteEvent;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -83,7 +84,7 @@ public class RegistrationUserController {
     public ResponseEntity<String> registerUserAccount(@Valid @RequestBody NewUserDTO accountDto, HttpServletRequest request) {
         try {
             User user = userService.registerNewUserAccount(accountDto);
-            eventPublisher.publishEvent(new OnRegistrationCompleteEvent(user, Locale.ITALIAN, getAppUrl(request)));
+            eventPublisher.publishEvent(new UserOnRegistrationCompleteEvent(user, Locale.ITALIAN, getAppUrl(request)));
             return ResponseEntity.ok("User registered successfully");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
