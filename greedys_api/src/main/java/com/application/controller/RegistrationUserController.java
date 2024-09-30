@@ -5,10 +5,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,17 +21,18 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.application.service.UserService;
 import com.application.persistence.model.user.Privilege;
 import com.application.persistence.model.user.User;
 import com.application.persistence.model.user.VerificationToken;
+import com.application.registration.UserOnRegistrationCompleteEvent;
+import com.application.service.UserService;
 import com.application.web.dto.post.NewUserDTO;
 import com.application.web.util.GenericResponse;
 
@@ -44,6 +41,9 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/register/user")
@@ -66,6 +66,10 @@ public class RegistrationUserController {
         super();
     }
 
+    private String getAppUrl(HttpServletRequest request) {
+        return request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + request.getContextPath();
+    }
+
     // Registration
     @Operation(summary = "Registra un nuovo utente")
     @ApiResponses(value = {
@@ -77,9 +81,10 @@ public class RegistrationUserController {
         @ApiResponse(responseCode = "500", description = "Errore interno del server",
                      content = @Content) })
     @PostMapping("/")
-    public ResponseEntity<String> registerUserAccount(@Valid @RequestBody NewUserDTO accountDto) {
+    public ResponseEntity<String> registerUserAccount(@Valid @RequestBody NewUserDTO accountDto, HttpServletRequest request) {
         try {
-            userService.registerNewUserAccount(accountDto);
+            User user = userService.registerNewUserAccount(accountDto);
+            eventPublisher.publishEvent(new UserOnRegistrationCompleteEvent(user, Locale.ITALIAN, getAppUrl(request)));
             return ResponseEntity.ok("User registered successfully");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
