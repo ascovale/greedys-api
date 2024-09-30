@@ -50,7 +50,7 @@ public class UserRegistrationListener implements ApplicationListener<UserOnRegis
 		System.out.println("Prova inviare");
 		final String recipientAddress = user.getEmail();
 		final String subject = "Registration Confirmation";
-		final String confirmationUrl = event.getAppUrl() + "/registrationConfirm.html?token=" + token;
+		final String confirmationUrl = event.getAppUrl() + "/register/user/confirm?token=" + token;
 		final String message = messages.getMessage("message.regSucc", null, event.getLocale());
 		final SimpleMailMessage email = new SimpleMailMessage();
 		email.setTo(recipientAddress);
