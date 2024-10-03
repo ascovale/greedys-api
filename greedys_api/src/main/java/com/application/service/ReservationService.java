@@ -119,4 +119,14 @@ public class ReservationService {
 						.map(res -> new ReservationDTO(res)).collect(Collectors.toList());
     }
 
+	public Collection<ReservationDTO> getAcceptedReservations(Long restaurant_id, LocalDate start, LocalDate end) {
+		return reservationDAO.findByRestaurantAndDateBetweenAndAccepted(restaurant_id, start, end, true).stream()
+				.map(res -> new ReservationDTO(res)).collect(Collectors.toList());
+	}
+
+	public Collection<ReservationDTO> getPendingReservations(Long restaurant_id, LocalDate start, LocalDate end) {
+		return reservationDAO.findByRestaurantAndDateBetweenAndPending(restaurant_id, start, end, false).stream()
+				.map(res -> new ReservationDTO(res)).collect(Collectors.toList());
+	}
+
 }
