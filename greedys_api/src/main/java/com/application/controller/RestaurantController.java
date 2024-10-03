@@ -140,6 +140,40 @@ public class RestaurantController {
 		return reservations;
 	}
 
+	@Operation(summary = "Get all accepted reservations of a restaurant", description = "Ottieni tutte le prenotazioni accettate di un ristorante")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Operazione riuscita", 
+					 content = @Content(mediaType = "application/json",
+					 				array = @ArraySchema(
+										schema = @Schema(implementation = ReservationDTO.class)))),
+		@ApiResponse(responseCode = "404", description = "Ristorante non trovato")
+	})
+	@GetMapping(value = "{id}/reservation/accepted")
+	public Collection<ReservationDTO> getAcceptedReservations(
+				@PathVariable Long id,
+				@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate start,
+				@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate end){
+		Collection<ReservationDTO> reservations = reservationService.getAcceptedReservations(id, start, end);
+		return reservations;
+	}
+
+	@Operation(summary = "Get all pending reservations of a restaurant", description = "Ottieni tutte le prenotazioni in attesa di un ristorante")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Operazione riuscita", 
+					 content = @Content(mediaType = "application/json",
+					 				array = @ArraySchema(
+										schema = @Schema(implementation = ReservationDTO.class)))),
+		@ApiResponse(responseCode = "404", description = "Ristorante non trovato")
+	})
+	@GetMapping(value = "{id}/reservation/pending")
+	public Collection<ReservationDTO> getPendingReservations(
+				@PathVariable Long id,
+				@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate start,
+				@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate end){
+		Collection<ReservationDTO> reservations = reservationService.getPendingReservations(id, start, end);
+		return reservations;
+	}
+
 	@Operation(summary = "Get all users of a restaurant", description = "Ottieni tutti gli utenti di un ristorante")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Operazione riuscita", 

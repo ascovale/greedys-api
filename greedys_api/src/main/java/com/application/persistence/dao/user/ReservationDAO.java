@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -105,4 +106,23 @@ public interface ReservationDAO extends JpaRepository<Reservation, Long> {
 				AND r.date = :date
 			""")
 	Collection<Reservation> findByRestaurantAndDate(Long restaurant_id, LocalDate date);
+
+	@Query(value = """
+			SELECT r FROM Reservation r
+			WHERE r.restaurant.id = :restaurant_id
+				AND r.date BETWEEN :start AND :end
+				AND r.accepted = True
+			""")
+    Collection<Reservation> findByRestaurantAndDateBetweenAndPending(Long restaurant_id, LocalDate start, LocalDate end,
+            boolean b);
+
+
+	@Query(value = """
+			SELECT r FROM Reservation r
+			WHERE r.restaurant.id = :restaurant_id
+				AND r.date BETWEEN :start AND :end
+				AND r.accepted = False
+			""")
+    Collection<Reservation> findByRestaurantAndDateBetweenAndAccepted(Long restaurant_id, LocalDate start, LocalDate end,
+            boolean b);
 }
