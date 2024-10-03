@@ -113,8 +113,7 @@ public interface ReservationDAO extends JpaRepository<Reservation, Long> {
 				AND r.date BETWEEN :start AND :end
 				AND r.accepted = True
 			""")
-    Collection<Reservation> findByRestaurantAndDateBetweenAndPending(Long restaurant_id, LocalDate start, LocalDate end,
-            boolean b);
+    Collection<Reservation> findByRestaurantAndDateBetweenAndPending(Long restaurant_id, LocalDate start, LocalDate end);
 
 
 	@Query(value = """
@@ -123,6 +122,5 @@ public interface ReservationDAO extends JpaRepository<Reservation, Long> {
 				AND r.date BETWEEN :start AND :end
 				AND r.accepted = False
 			""")
-    Collection<Reservation> findByRestaurantAndDateBetweenAndAccepted(Long restaurant_id, LocalDate start, LocalDate end,
-            boolean b);
+    Collection<Reservation> findByRestaurantAndDateBetweenAndAccepted(Long restaurant_id, LocalDate start, LocalDate end);
 }
