@@ -25,6 +25,7 @@ import com.application.web.dto.get.RestaurantUserDTO;
 import com.application.web.dto.get.ServiceDTO;
 import com.application.web.dto.get.SlotDTO;
 import com.application.web.util.GenericResponse;
+import com.google.common.base.Optional;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -169,9 +170,16 @@ public class RestaurantController {
 	public Collection<ReservationDTO> getPendingReservations(
 				@PathVariable Long id,
 				@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate start,
-				@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate end){
-		Collection<ReservationDTO> reservations = reservationService.getPendingReservations(id, start, end);
-		return reservations;
+				@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Optional<LocalDate> end) {
+
+				Collection<ReservationDTO> reservations;
+				if(end.isPresent()){
+					reservations = reservationService.getPendingReservations(id, start, end.get());
+				}
+				else{
+					reservations = reservationService.getPendingReservations(id, start);
+				}
+				return reservations;
 	}
 
 	@Operation(summary = "Get all users of a restaurant", description = "Ottieni tutti gli utenti di un ristorante")
