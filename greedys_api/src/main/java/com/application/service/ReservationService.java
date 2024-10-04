@@ -1,8 +1,5 @@
 package com.application.service;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -87,6 +84,7 @@ public class ReservationService {
 		}
 		else {
 			//set User id
+			
 		}
 		// QUA PRESUME CHE IL CLIENTE SIA QUELLO DELLA EMAIL
 		// ClientUser user = clientUserDAO.findByEmail(userEmail);
@@ -121,6 +119,11 @@ public class ReservationService {
 
 	public Collection<ReservationDTO> getAcceptedReservations(Long restaurant_id, LocalDate start, LocalDate end) {
 		return reservationDAO.findByRestaurantAndDateBetweenAndAccepted(restaurant_id, start, end).stream()
+				.map(res -> new ReservationDTO(res)).collect(Collectors.toList());
+	}
+
+	public Collection<ReservationDTO> getPendingReservations(Long restaurant_id, LocalDate start) {
+		return reservationDAO.findByRestaurantAndDateAndPending(restaurant_id, start).stream()
 				.map(res -> new ReservationDTO(res)).collect(Collectors.toList());
 	}
 
