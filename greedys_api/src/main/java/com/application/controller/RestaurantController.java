@@ -170,7 +170,7 @@ public class RestaurantController {
 	public Collection<ReservationDTO> getPendingReservations(
 				@PathVariable Long id,
 				@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate start,
-				@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Optional<LocalDate> end) {
+				@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Optional<LocalDate> end) {
 
 				Collection<ReservationDTO> reservations;
 				if(end.isPresent()){
