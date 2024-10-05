@@ -1,9 +1,11 @@
 package com.application.web.dto;
 
 import java.time.LocalTime;
+import java.util.stream.Collectors;
 
 import com.application.mapper.Mapper.Weekday;
 import com.application.persistence.model.reservation.Service;
+import com.application.persistence.model.reservation.ServiceType;
 
 public class ServiceDto {
 	LocalTime open;
@@ -14,7 +16,9 @@ public class ServiceDto {
 	
 	public ServiceDto(Service service) {
 		this.name = service.getName();
-		this.serviceType = service.getServiceType().getName(); // Aggiungi questa linea
+		this.serviceType = service.getServiceType().stream()
+			.map(ServiceType::getName)
+			.collect(Collectors.joining(", "));  // Aggiungi questa linea
 
 	}
 
