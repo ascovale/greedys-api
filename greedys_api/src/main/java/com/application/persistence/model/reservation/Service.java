@@ -2,6 +2,7 @@ package com.application.persistence.model.reservation;
 
 import java.time.LocalTime;
 import java.util.Set;
+import java.util.HashSet;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -10,6 +11,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
@@ -33,8 +35,12 @@ public class Service {
 
 
 	@ManyToMany(fetch = FetchType.EAGER)
-    @JoinColumn(name = "type_id")
-	ServiceType serviceType;
+    @JoinTable(
+        name = "service_service_type",
+        joinColumns = @JoinColumn(name = "service_id"),
+        inverseJoinColumns = @JoinColumn(name = "type_id")
+    )
+    Set<ServiceType> serviceTypes = new HashSet<>();
 
 	@OneToMany(mappedBy = "service", fetch = FetchType.EAGER)
 	Set<Slot> slots;
@@ -42,12 +48,12 @@ public class Service {
 	@Column(name = "info")
 	String info;
 	
-	public ServiceType getServiceType() {
-		return serviceType;
+	public Set<ServiceType> getServiceType() {
+		return serviceTypes;
 	}
 
-	public void setServiceType(ServiceType serviceType) {
-		this.serviceType = serviceType;
+	public void setServiceTypes(Set<ServiceType> serviceType) {
+		this.serviceTypes = serviceType;
 	}
 
 	public String getName() {
