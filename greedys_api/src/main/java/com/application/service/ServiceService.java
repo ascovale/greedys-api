@@ -114,11 +114,13 @@ public class ServiceService {
 		Service service = new Service();
 		service.setName(newServiceDTO.getName());
 		service.setRestaurant(rService.findById(newServiceDTO.getRestaurant()));
-		if (newServiceDTO.getServiceType() != null)
-		service.setServiceType(entityManager.
-			getReference(ServiceType.class, newServiceDTO.getServiceType()));
-		else
+
+		if (newServiceDTO.getServiceType() != null) {
+			service.setServiceType(entityManager.getReference(ServiceType.class, newServiceDTO.getServiceType()));
+		} else {
 			service.setServiceType(null);
+		}
+		
 		serviceDAO.save(service);
 	}
 		
