@@ -4,11 +4,15 @@ import java.time.LocalTime;
 
 import com.application.mapper.Mapper.Weekday;
 import com.application.persistence.model.reservation.Slot;
+import com.application.web.dto.post.LocalTimeDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 public class SlotDTO {
 		
 	Long id;
+    @JsonDeserialize(using = LocalTimeDeserializer.class)
 	LocalTime start;
+    @JsonDeserialize(using = LocalTimeDeserializer.class)
 	LocalTime end;
     Weekday weekday;
     ServiceDTO service;
