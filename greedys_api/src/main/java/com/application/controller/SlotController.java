@@ -42,14 +42,14 @@ public class SlotController {
                                     schema = @Schema(implementation = NewSlotDTO.class))),
                     
             })
-    @PostMapping("/")
-    public ResponseEntity<?> newSlot(@RequestBody NewSlotDTO slotDto) {
+    @PostMapping
+    public ResponseEntity<String> newSlot(@RequestBody NewSlotDTO slotDto) {
         slotService.addSlot(slotDto);
         return ResponseEntity.ok().body("success");
     }
 
     @Operation(summary = "Get all slots")
-    @GetMapping("/")
+    @GetMapping
     public Collection<Slot> getAllSlots (@RequestParam String param) {
         return slotService.findAll();
     }
