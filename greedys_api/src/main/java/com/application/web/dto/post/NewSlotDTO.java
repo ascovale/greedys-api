@@ -3,16 +3,17 @@ package com.application.web.dto.post;
 import java.time.LocalTime;
 
 import com.application.mapper.Mapper.Weekday;
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 public class NewSlotDTO {
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm:ss")
+
+    @JsonDeserialize(using = LocalTimeDeserializer.class)
     LocalTime start;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm:ss")
+    @JsonDeserialize(using = LocalTimeDeserializer.class)
     LocalTime end;
-    
+
     Weekday weekday;
     Long serviceId;
 
