@@ -22,3 +22,4 @@ public class LocalTimeDeserializer extends JsonDeserializer<LocalTime> {
         return LocalTime.of(hour, minute, second, nano);
     }
 }
+
