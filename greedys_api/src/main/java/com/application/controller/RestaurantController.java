@@ -23,7 +23,6 @@ import com.application.web.dto.get.RestaurantUserDTO;
 import com.application.web.dto.get.ServiceDTO;
 import com.application.web.dto.get.SlotDTO;
 import com.application.web.util.GenericResponse;
-import java.util.Optional;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -168,11 +167,11 @@ public class RestaurantController {
 	public Collection<ReservationDTO> getPendingReservations(
 				@PathVariable Long id,
 				@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate start,
-				@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Optional<LocalDate> end) {
+				@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate end) {
 
 				Collection<ReservationDTO> reservations;
-				if(end.isPresent()){
-					reservations = reservationService.getPendingReservations(id, start, end.get());
+				if(end != null){
+					reservations = reservationService.getPendingReservations(id, start, end);
 				}
 				else{
 					reservations = reservationService.getPendingReservations(id, start);
