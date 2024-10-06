@@ -35,10 +35,13 @@ public class SlotController {
     @Autowired
     private SlotService slotService;
 
-    @Operation(summary = "Create a new slot")
-    @ApiResponse(responseCode = "200", description = "Slot created successfully")
-    @ApiResponse(responseCode = "400", description = "Invalid input data")
-    @ApiResponse(responseCode = "500", description = "Internal server error")
+    @Operation(summary = "Create a new slot", description = "This method creates a new slot.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Slot created",
+                                    content = @Content(mediaType = "application/json", 
+                                    schema = @Schema(implementation = NewSlotDTO.class))),
+                    
+            })
     @PostMapping("/")
     public ResponseEntity<?> newSlot(@RequestBody NewSlotDTO slotDto) {
         slotService.addSlot(slotDto);
