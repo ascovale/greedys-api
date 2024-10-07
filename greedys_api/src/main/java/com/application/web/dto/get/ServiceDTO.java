@@ -34,11 +34,11 @@ public class ServiceDTO {
         return active;
     }
 
-    public Date getValidiFrom() {
+    public Date getValidFrom() {
         return validFrom;
     }
 
-    public Date getValidiTo() {
+    public Date getValidTo() {
         return validTo;
     }
 
