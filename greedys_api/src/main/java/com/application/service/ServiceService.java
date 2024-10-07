@@ -119,6 +119,10 @@ public class ServiceService {
 		} else {
 			service.setServiceTypes(null);
 		}
+
+		service.setValidFrom(newServiceDTO.getValidFrom());
+		service.setValidTo(newServiceDTO.getValidTo());
+		service.setActive(false);
 		
 		serviceDAO.save(service);
 	}
