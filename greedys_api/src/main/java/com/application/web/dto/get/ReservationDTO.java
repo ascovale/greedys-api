@@ -3,12 +3,10 @@ package com.application.web.dto.get;
 import java.util.Date;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import com.application.controller.Validators.PasswordMatches;
 import com.application.controller.Validators.ValidEmail;
 import com.application.persistence.model.reservation.ClientInfo;
 import com.application.persistence.model.reservation.Reservation;
 
-@PasswordMatches()
 public class ReservationDTO {
 
 	private SlotDTO slot;

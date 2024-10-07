@@ -62,6 +62,17 @@ public class Reservation {
 	@JoinColumn(name = "idrestaurant_user")
  	private User restaurantUser;
 
+	@ManyToOne(fetch = FetchType.LAZY)
+	private com.application.persistence.model.restaurant.Table table;
+
+	public com.application.persistence.model.restaurant.Table getTable() {
+		return table;
+	}
+
+	public void setTable(com.application.persistence.model.restaurant.Table table) {
+		this.table = table;
+	}
+
 
 	public ClientInfo get_user_info() {
 		return user_info;
@@ -178,7 +189,5 @@ public class Reservation {
 	public Restaurant getRestaurant() {
 		return restaurant;
 	}
-
-
 
 }

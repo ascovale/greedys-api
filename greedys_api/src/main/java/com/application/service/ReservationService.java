@@ -93,6 +93,37 @@ public class ReservationService {
 		return reservationDAO.save(reservation);
 	}
 
+	@Transactional
+	public Reservation askForReservation(NewReservationDTO reservationDto)
+			throws NoSuchElementException {
+
+		Reservation reservation = new Reservation();
+		reservation.setRestaurant(entityManager.getReference(Restaurant.class, reservationDto.getRestaurant_id()));
+		reservation.setPax(reservationDto.getPax());
+		reservation.setKids(reservationDto.getKids());
+		reservation.setNotes(reservationDto.getNotes());
+		reservation.setKids(reservationDto.getKids());
+		reservation.setDate(reservationDto.getReservationDay());
+		reservation.setSlot(entityManager.getReference(Slot.class, reservationDto.getIdSlot()));
+		reservation.setRejected(false);
+		reservation.setAccepted(false);
+		reservation.setNoShow(false);
+		reservation.setCreationDate(new Date());
+		if (reservationDto.isAnonymous()) {
+			//set anonymous user
+			reservation.set_user_info(reservationDto.getClientUser());
+		}
+		else {
+			//set User id
+			
+		}
+		// QUA PRESUME CHE IL CLIENTE SIA QUELLO DELLA EMAIL
+		// ClientUser user = clientUserDAO.findByEmail(userEmail);
+		// reservation.setClientUser(user);
+		// Notification rn = notificationService.createNotification();
+		return reservationDAO.save(reservation);
+	}
+
 	 
 	public List<Date> findNotAvailableDays(Long idRestaurant) {
 		List<Date> days = serviceDAO.findClosedOrFullDays(idRestaurant);
