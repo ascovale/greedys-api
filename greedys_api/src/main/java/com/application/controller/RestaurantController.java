@@ -28,11 +28,14 @@ import com.application.web.dto.get.RoomDTO;
 import com.application.web.dto.get.ServiceDTO;
 import com.application.web.dto.get.SlotDTO;
 import com.application.web.dto.get.TableDTO;
+import com.application.web.dto.post.NewRoomDTO;
+import com.application.web.dto.post.NewTableDTO;
 import com.application.web.util.GenericResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -300,5 +303,33 @@ public class RestaurantController {
 	public ResponseEntity<Collection<TableDTO>> getTables(@PathVariable Long id, @PathVariable Long roomId){
 		Collection<TableDTO> tables = tableService.findByRoom(roomId);
 		return new ResponseEntity<>(tables, HttpStatus.OK);
+	}
+
+	@PostMapping(value = "/room")
+	@Operation(summary = "Add a room to a restaurant", description = "Aggiungi una sala a un ristorante")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Operazione riuscita",
+						content = @Content(mediaType = "application/json",
+									schema = @Schema(implementation = GenericResponse.class))),
+		@ApiResponse(responseCode = "404", description = "Ristorante non trovato"),
+		@ApiResponse(responseCode = "400", description = "Richiesta non valida")
+	})
+	public GenericResponse addRoom(@RequestBody NewRoomDTO roomDto){
+		roomService.createRoom(roomDto);
+		return new GenericResponse("success");
+	}
+
+	@PostMapping(value = "/table")
+	@Operation(summary = "Add a table to a room", description = "Aggiungi un tavolo a una sala")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Operazione riuscita",
+						content = @Content(mediaType = "application/json",
+									schema = @Schema(implementation = GenericResponse.class))),
+		@ApiResponse(responseCode = "404", description = "Ristorante o sala non trovato"),
+		@ApiResponse(responseCode = "400", description = "Richiesta non valida")
+	})
+	public GenericResponse addTable(@RequestParam NewTableDTO tableDto){
+		tableService.createTable(tableDto);
+		return new GenericResponse("success");
 	}
 }
