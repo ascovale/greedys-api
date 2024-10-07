@@ -78,6 +78,22 @@ public class ReservationController {
 	}
 
 	@Operation(
+	summary = "Ask for a reservation",
+	description = "Endpoint to ask for a reservation"
+	)
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Reservation requested successfully"),
+		@ApiResponse(responseCode = "400", description = "Invalid input", content = @Content),
+		@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
+	})
+	@PostMapping("/ask")
+	public ResponseEntity<?> askReservation(
+		@RequestBody NewReservationDTO DTO) {
+		reservationService.askForReservation(DTO);
+		return ResponseEntity.ok().build();
+	}
+
+	@Operation(
     summary = "Accept a reservation",
     description = "Endpoint to accept a reservation by its ID"
 	)
