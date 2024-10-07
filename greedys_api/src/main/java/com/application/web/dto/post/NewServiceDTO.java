@@ -15,8 +15,12 @@ public class NewServiceDTO {
 		return validFrom;
 	}
 
-	public void setDateValidFrom(Date validFrom) {
+	public void setValidFrom(Date validFrom) {
 		this.validFrom = validFrom;
+	}
+
+	public void setValidTo(Date validTo) {
+		this.validTo = validTo;
 	}
 
 	public Date getValidTo() {
