@@ -2,6 +2,8 @@ package com.application.controller;
 
 import java.time.LocalDate;
 import java.util.Collection;
+
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -17,11 +19,15 @@ import org.springframework.web.bind.annotation.RestController;
 import com.application.service.ReservationService;
 import com.application.service.RestaurantService;
 import com.application.service.RestaurantUserService;
+import com.application.service.RoomService;
+import com.application.service.TableService;
 import com.application.web.dto.get.ReservationDTO;
 import com.application.web.dto.get.RestaurantDTO;
 import com.application.web.dto.get.RestaurantUserDTO;
+import com.application.web.dto.get.RoomDTO;
 import com.application.web.dto.get.ServiceDTO;
 import com.application.web.dto.get.SlotDTO;
+import com.application.web.dto.get.TableDTO;
 import com.application.web.util.GenericResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -48,6 +54,13 @@ public class RestaurantController {
 
 	@Autowired
 	private RestaurantUserService restaurantUserService;
+
+	@Autowired 
+	private RoomService roomService;
+
+	@Autowired
+	private TableService tableService;
+
 
 	/*
 	@Autowired
@@ -253,5 +266,39 @@ public class RestaurantController {
 	public ResponseEntity<Collection<ServiceDTO>> getServices(@PathVariable Long id){
 		Collection<ServiceDTO> services = restaurantService.getServices(id);
 		return new ResponseEntity<>(services, HttpStatus.OK);
+	}
+
+
+
+	/* -- === *** ROOMS AND TABLES *** === --- */
+
+	@GetMapping(value = "/{id}/rooms")
+	@Operation(summary = "Get rooms of a restaurant", description = "Ottieni le sale di un ristorante")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Operazione riuscita",
+						content = @Content(mediaType = "application/json",
+									array = @ArraySchema(
+											schema = @Schema(implementation = RoomDTO.class)))),
+		@ApiResponse(responseCode = "404", description = "Ristorante non trovato"),
+		@ApiResponse(responseCode = "400", description = "Richiesta non valida")
+	})
+	public ResponseEntity<Collection<RoomDTO>> getRooms(@PathVariable Long id){
+		Collection<RoomDTO> rooms = roomService.findByRestaurant(id);
+		return new ResponseEntity<>(rooms, HttpStatus.OK);
+	}
+
+	@GetMapping(value = "/{id}/room/{roomId}/tables")
+	@Operation(summary = "Get tables of a room", description = "Ottieni i tavoli di una sala")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Operazione riuscita",
+						content = @Content(mediaType = "application/json",
+									array = @ArraySchema(
+											schema = @Schema(implementation = TableDTO.class)))),
+		@ApiResponse(responseCode = "404", description = "Ristorante o sala non trovato"),
+		@ApiResponse(responseCode = "400", description = "Richiesta non valida")
+	})
+	public ResponseEntity<Collection<TableDTO>> getTables(@PathVariable Long id, @PathVariable Long roomId){
+		Collection<TableDTO> tables = tableService.findByRoom(roomId);
+		return new ResponseEntity<>(tables, HttpStatus.OK);
 	}
 }

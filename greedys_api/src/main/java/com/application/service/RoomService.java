@@ -6,10 +6,15 @@ import org.springframework.stereotype.Service;
 import com.application.persistence.dao.Restaurant.RoomDAO;
 import com.application.persistence.model.restaurant.Restaurant;
 import com.application.persistence.model.restaurant.Room;
+import com.application.web.dto.get.RoomDTO;
 import com.application.web.dto.post.NewRoomDTO;
 
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
+
+import java.util.stream.Collectors;
+
+import java.util.Collection;
 
 @Service
 @Transactional
@@ -39,7 +44,7 @@ public class RoomService {
         return roomDAO.findById(id).get();
     }
 
-    public Iterable<Room> findByRestaurant(Long idRestaurant) {
-        return roomDAO.findByRestaurant_Id(idRestaurant);
+    public Collection<RoomDTO> findByRestaurant(Long idRestaurant) {
+        return roomDAO.findByRestaurant_Id(idRestaurant).stream().map(room -> new RoomDTO(room) ).collect(Collectors.toList());
     }
 }

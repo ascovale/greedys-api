@@ -1,7 +1,5 @@
 package com.application.web.dto.post;
 
-import com.mysql.cj.x.protobuf.MysqlxDatatypes.Scalar.String;
-
 public class NewTableDTO {
 
     private String name;

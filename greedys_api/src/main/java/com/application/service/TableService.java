@@ -5,7 +5,11 @@ import org.springframework.stereotype.Service;
 
 import com.application.persistence.dao.Restaurant.TableDAO;
 import com.application.persistence.model.restaurant.Table;
+import com.application.web.dto.get.TableDTO;
 import com.application.web.dto.post.NewTableDTO;
+
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 import jakarta.transaction.Transactional;
 
@@ -34,8 +38,8 @@ public class TableService {
         return tableDAO.findById(id).get();
     }
 
-    public Iterable<Table> findByRoom(Long idRoom) {
-        return tableDAO.findByRoom_Id(idRoom);
+    public Collection<TableDTO> findByRoom(Long idRoom) {
+        return tableDAO.findByRoom_Id(idRoom).stream().map(table -> new TableDTO(table) ).collect(Collectors.toList());
     }
 
 }
