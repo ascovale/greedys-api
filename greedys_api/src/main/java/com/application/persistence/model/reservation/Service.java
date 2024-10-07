@@ -1,8 +1,8 @@
 package com.application.persistence.model.reservation;
 
-import java.time.LocalTime;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.Date;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -19,34 +19,64 @@ import jakarta.persistence.Table;
 
 import com.application.persistence.model.restaurant.Restaurant;
 
+
+
 @Entity
 @Table(name = "service")
 public class Service {
-	public static enum Type {NORMAL,SPECIAL};
-		
+	
 	@Id		
 	@GeneratedValue(strategy=GenerationType.AUTO)
-	Long id;
-	String name;
+	private Long id;
+	private String name;
 
 	@ManyToOne(fetch = FetchType.EAGER) // qui potrebbe essere utile condividere il servizio tra più ristoranti in alcuni casi
-    @JoinColumn(name = "restaurant_id")
-	Restaurant restaurant;
-
+	@JoinColumn(name = "restaurant_id")
+	private Restaurant restaurant;
 
 	@ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-        name = "service_service_type",
-        joinColumns = @JoinColumn(name = "service_id"),
-        inverseJoinColumns = @JoinColumn(name = "type_id")
-    )
-    Set<ServiceType> serviceTypes = new HashSet<>();
+	@JoinTable(
+		name = "service_service_type",
+		joinColumns = @JoinColumn(name = "service_id"),
+		inverseJoinColumns = @JoinColumn(name = "type_id")
+	)
+	private Set<ServiceType> serviceTypes = new HashSet<>();
 
 	@OneToMany(mappedBy = "service", fetch = FetchType.EAGER)
-	Set<Slot> slots;
+	private Set<Slot> slots;
 
 	@Column(name = "info")
-	String info;
+	private String info;
+
+	private Date validFrom;
+	private Date validTo;
+
+	private boolean active = true;
+
+	public boolean isActive() {
+		return active;
+	}
+
+	public void setActive(boolean active) {
+		this.active = active;
+	}
+
+
+	public Date getValidFrom() {
+		return validFrom;
+	}
+
+	public void setValidFrom(Date validFrom) {
+		this.validFrom = validFrom;
+	}
+
+	public Date getValidTo() {
+		return validTo;
+	}
+
+	public void setValidTo(Date validTo) {
+		this.validTo = validTo;
+	}
 	
 	public Set<ServiceType> getServiceType() {
 		return serviceTypes;

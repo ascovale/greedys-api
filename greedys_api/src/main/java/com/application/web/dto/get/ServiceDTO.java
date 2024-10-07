@@ -1,15 +1,22 @@
 package com.application.web.dto.get;
 
+
+import java.util.Date;
+
 import com.application.persistence.model.reservation.Service;
 import com.application.web.dto.ServiceTypeDto;
 import java.util.Collection;
 
 public class ServiceDTO {
-    long id;
-    String name;
-    long restaurantId;
-    Collection<ServiceTypeDto> serviceType;
-    String info;
+    private long id;
+    private String name;
+    private long restaurantId;
+    private Collection<ServiceTypeDto> serviceType;
+    private String info;
+    private Date validFrom;
+    private Date validTo;
+    private boolean active;
+
 
     public ServiceDTO(Service service){
         this.id = service.getId();
@@ -17,6 +24,22 @@ public class ServiceDTO {
         this.restaurantId = service.getRestaurant().getId();
         this.serviceType = service.getServiceType().stream().map(ServiceTypeDto::new).toList();
         this.info = service.getInfo();
+        this.validFrom = service.getValidFrom();
+        this.validTo = service.getValidTo();
+        this.active = service.isActive();
+        
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public Date getValidiFrom() {
+        return validFrom;
+    }
+
+    public Date getValidiTo() {
+        return validTo;
     }
 
     public long getId() {
