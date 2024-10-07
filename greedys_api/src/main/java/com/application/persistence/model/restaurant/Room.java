@@ -8,6 +8,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 
 
@@ -23,6 +24,17 @@ public class Room {
 
     @OneToMany(mappedBy = "room")
     private List<Table> tables;
+
+    @ManyToOne(targetEntity = Restaurant.class)
+    private Restaurant restaurant;
+
+    public void setRestaurant(Restaurant restaurant) {
+        this.restaurant = restaurant;
+    }
+
+    public Restaurant getRestaurant() {
+        return restaurant;
+    }
 
 
     public void setName(String name) {
