@@ -2,6 +2,8 @@ package com.application.controller;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalTime;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.core.io.Resource;
@@ -54,7 +56,8 @@ public class ReservationController {
 	 */
 	@InitBinder
 	public void initBinder(WebDataBinder binder) {
-		binder.registerCustomEditor(LocalDate.class, new CustomDateEditor(new SimpleDateFormat("yyyy-MM-dd"), true, 10));
+		binder.registerCustomEditor(LocalDate.class, new CustomDateEditor(new SimpleDateFormat("dd-MM-yyyy"),true, 10));
+		binder.registerCustomEditor(LocalTime.class, new CustomDateEditor(new SimpleDateFormat("HH:mm"),true, 5));
 	}
 
 	@Operation(
