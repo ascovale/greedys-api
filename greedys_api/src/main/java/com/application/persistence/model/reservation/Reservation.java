@@ -1,6 +1,7 @@
 package com.application.persistence.model.reservation;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -57,7 +58,7 @@ public class Reservation {
 	// si potrebbe fare una tabella a parte per i log
 	@DateTimeFormat(pattern = "yyyy/MM/dd/HH:mm")
 	@Temporal(TemporalType.DATE)
-	private LocalDate lastModificationTime;
+	private LocalDateTime lastModificationTime;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idrestaurant_user")
  	private User restaurantUser;
@@ -165,11 +166,11 @@ public class Reservation {
 		this.noShow = noShow;
 	}
 
-	public LocalDate getLastModificationTime() {
+	public LocalDateTime getLastModificationTime() {
 		return lastModificationTime;
 	}
 
-	public void setLastModificationTime(LocalDate lastModificationTime) {
+	public void setLastModificationTime(LocalDateTime lastModificationTime) {
 		this.lastModificationTime = lastModificationTime;
 	}
 
