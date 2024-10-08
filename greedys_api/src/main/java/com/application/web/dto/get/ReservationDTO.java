@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import com.application.controller.Validators.ValidEmail;
 import com.application.persistence.model.reservation.ClientInfo;
 import com.application.persistence.model.reservation.Reservation;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 public class ReservationDTO {
 
@@ -17,6 +18,7 @@ public class ReservationDTO {
 	@ValidEmail
 	private String email;
 	private String notes;
+	@JsonSerialize(using = LocalDateSerializer.class)
 	private LocalDate reservationDay; 
 	private Long restaurant;
 
