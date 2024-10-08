@@ -1,20 +1,13 @@
 package com.application.controller;
 
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalTime;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -48,17 +41,6 @@ public class ReservationController {
 
 	@Autowired
     private ResourceLoader resourceLoader;
-
-	/**
-	 * Initializes the WebDataBinder to handle custom data binding for LocalDate objects.
-	 * 
-	 * @param binder The WebDataBinder object.
-	 */
-	@InitBinder
-	public void initBinder(WebDataBinder binder) {
-		binder.registerCustomEditor(LocalDate.class, new CustomDateEditor(new SimpleDateFormat("dd-MM-yyyy"),true, 10));
-		binder.registerCustomEditor(LocalTime.class, new CustomDateEditor(new SimpleDateFormat("HH:mm"),true, 5));
-	}
 
 	@Operation(
     summary = "Create a new reservation",

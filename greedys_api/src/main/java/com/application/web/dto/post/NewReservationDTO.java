@@ -13,7 +13,7 @@ public class NewReservationDTO {
 	private Integer pax;
 	private Integer kids=0;
 	private String notes;
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    @DateTimeFormat(pattern = "dd-MM-yyyy")
 	private LocalDate reservationDay; 
     private Long restaurant_id;
 	private Long user_id;

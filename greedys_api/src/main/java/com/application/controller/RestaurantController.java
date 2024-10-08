@@ -94,8 +94,8 @@ public class RestaurantController {
 	})
 	public ResponseEntity<Collection<String>> getOpenDays(
 				@PathVariable Long id,
-				@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
-				@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end){
+				@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
+				@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end){
 		Collection<String> openDays = restaurantService.getOpenDays(id, start, end);
 		return new ResponseEntity<>(openDays, HttpStatus.OK);
 	}
@@ -113,8 +113,8 @@ public class RestaurantController {
 	})
 	public ResponseEntity<Collection<LocalDate>> getClosedDays(
 				@PathVariable Long id,
-				@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
-				@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end){
+				@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
+				@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end){
 		Collection<LocalDate> openDays = restaurantService.getClosedDays(id, start, end);
 		return new ResponseEntity<>(openDays, HttpStatus.OK);
 	}
@@ -131,7 +131,7 @@ public class RestaurantController {
 	})
 	public ResponseEntity<Collection<SlotDTO>> getDaySlots(
 				@PathVariable Long id,
-				@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date){
+				@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate date){
 		Collection<SlotDTO> slots = restaurantService.getDaySlots(id, date);
 		return new ResponseEntity<>(slots, HttpStatus.OK);
 	}
@@ -147,8 +147,8 @@ public class RestaurantController {
     @GetMapping(value = "{id}/reservation")
 	public Collection<ReservationDTO> getReservations(
 				@PathVariable Long id,
-				@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
-				@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end){
+				@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
+				@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end){
 		Collection<ReservationDTO> reservations = reservationService.getReservations(id, start, end);
 		return reservations;
 	}
@@ -164,8 +164,8 @@ public class RestaurantController {
 	@GetMapping(value = "{id}/reservation/accepted")
 	public Collection<ReservationDTO> getAcceptedReservations(
 				@PathVariable Long id,
-				@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
-				@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end){
+				@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
+				@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end){
 		Collection<ReservationDTO> reservations = reservationService.getAcceptedReservations(id, start, end);
 		return reservations;
 	}
@@ -181,7 +181,7 @@ public class RestaurantController {
 	@GetMapping(value = "{id}/reservation/pending")
 	public Collection<ReservationDTO> getPendingReservations(
 				@PathVariable Long id,
-				@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+				@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 				@RequestParam(required = false) LocalDate end) {
 
 				Collection<ReservationDTO> reservations;
