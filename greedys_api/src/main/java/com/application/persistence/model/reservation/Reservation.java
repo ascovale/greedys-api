@@ -57,7 +57,6 @@ public class Reservation {
 
 	// si potrebbe fare una tabella a parte per i log
 	@DateTimeFormat(pattern = "yyyy/MM/dd/HH:mm")
-	@Temporal(TemporalType.DATE)
 	private LocalDateTime lastModificationTime;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idrestaurant_user")
