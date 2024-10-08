@@ -2,8 +2,6 @@ package com.application.web.dto.get;
 
 import java.time.LocalDate;
 
-import org.springframework.format.annotation.DateTimeFormat;
-
 import com.application.controller.Validators.ValidEmail;
 import com.application.persistence.model.reservation.ClientInfo;
 import com.application.persistence.model.reservation.Reservation;
@@ -19,7 +17,6 @@ public class ReservationDTO {
 	@ValidEmail
 	private String email;
 	private String notes;
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
 	private LocalDate reservationDay; 
 	private Long restaurant;
 
