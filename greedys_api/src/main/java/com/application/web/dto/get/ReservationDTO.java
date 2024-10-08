@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 public class ReservationDTO {
 
+	private Long id;
 	private SlotDTO slot;
 	private Integer pax;
 	private Integer kids=0;
@@ -28,7 +29,7 @@ public class ReservationDTO {
 	public ReservationDTO(Reservation reservation) {
 		
 		this.slot = new SlotDTO(reservation.getSlot());
-
+		this.id = reservation.getId();
 		this.pax = reservation.getPax();
 		this.kids = reservation.getKids();
 
@@ -41,6 +42,11 @@ public class ReservationDTO {
 		this.restaurant = reservation.getSlot().getService().getRestaurant().getId();
 	}
 
+	public Long getId() {
+		return id;
+	}
+
+	
 	public Long getRestaurant() {
 		return restaurant;
 	}
@@ -55,7 +61,7 @@ public class ReservationDTO {
 	public SlotDTO getSlot() {
 		return slot;
 	}
-	public void setIdSlot(SlotDTO slot) {
+	public void setSlot(SlotDTO slot) {
 		this.slot = slot;
 	}
 	public Integer getPax() {
