@@ -1,6 +1,6 @@
 package com.application.persistence.dao.user;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.stream.Stream;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,11 +18,11 @@ public interface PasswordResetTokenDAO extends JpaRepository<PasswordResetToken,
 
     PasswordResetToken findByUser(User user);
 
-    Stream<PasswordResetToken> findAllByExpiryDateLessThan(Date now);
+    Stream<PasswordResetToken> findAllByExpiryDateLessThan(LocalDate now);
 
-    void deleteByExpiryDateLessThan(Date now);
+    void deleteByExpiryDateLessThan(LocalDate now);
 
     @Modifying
     @Query("delete from PasswordResetToken t where t.expiryDate <= ?1")
-    void deleteAllExpiredSince(Date now);
+    void deleteAllExpiredSince(LocalDate now);
 }

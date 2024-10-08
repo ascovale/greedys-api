@@ -1,7 +1,7 @@
 package com.application.persistence.model.user;
 
-import java.util.Calendar;
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -26,7 +26,7 @@ public class VerificationToken {
     @JoinColumn(nullable = false, name = "user_id", referencedColumnName = "id",
     foreignKey =@ForeignKey(name="FK_VERIFY_USER"))
     private User user;
-    private Date expiryDate;
+    private LocalDate expiryDate;
 
     public VerificationToken() {
         super();
@@ -75,19 +75,17 @@ public class VerificationToken {
         this.token = token;
     }
 
-    public Date getExpiryDate() {
+    public LocalDate getExpiryDate() {
         return expiryDate;
     }
 
-    public void setExpiryDate(final Date expiryDate) {
+    public void setExpiryDate(final LocalDate expiryDate) {
         this.expiryDate = expiryDate;
     }
-
-    private Date calculateExpiryDate(final int expiryTimeInMinutes) {
-        final Calendar cal = Calendar.getInstance();
-        cal.setTimeInMillis(new Date().getTime());
-        cal.add(Calendar.MINUTE, expiryTimeInMinutes);
-        return new Date(cal.getTime().getTime());
+    private LocalDate calculateExpiryDate(final int expiryTimeInMinutes) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime expiryDateTime = now.plusMinutes(expiryTimeInMinutes);
+        return expiryDateTime.toLocalDate();
     }
 
     public void updateToken(final String token) {

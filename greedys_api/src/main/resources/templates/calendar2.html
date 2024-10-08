@@ -146,8 +146,8 @@
         $('#insert-service').on('submit', function (e) {
           e.preventDefault();
           var name = $('#name').val();
-          var openTime = new Date('1970-01-01T' + $('#open-time').val() + 'Z');
-          var closeTime = new Date('1970-01-01T' + $('#close-time').val() + 'Z');
+          var openTime = new LocalDate('1970-01-01T' + $('#open-time').val() + 'Z');
+          var closeTime = new LocalDate('1970-01-01T' + $('#close-time').val() + 'Z');
           var serviceType = $('#service-type').val();
 
           var days = $('input[name="days"]:checked').map(function () {

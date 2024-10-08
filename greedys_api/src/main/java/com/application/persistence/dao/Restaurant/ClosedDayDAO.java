@@ -1,6 +1,6 @@
 package com.application.persistence.dao.Restaurant;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,5 +15,5 @@ import com.application.persistence.model.restaurant.ClosedDay;
 public interface ClosedDayDAO extends JpaRepository<ClosedDay, Long> {
 
     @Query(value = "SELECT day FROM ClosedDay cd WHERE cd.day >= CURDATE()", nativeQuery = true)
-    List<Date> findUpcomingClosedDay();
+    List<LocalDate> findUpcomingClosedDay();
 }

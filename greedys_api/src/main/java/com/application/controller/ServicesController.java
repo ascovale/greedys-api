@@ -1,8 +1,6 @@
 package com.application.controller;
 
 import java.util.Collection;
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -17,10 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.application.service.ServiceService;
 import com.application.service.SlotService;
-import com.application.persistence.model.reservation.Service;
-import com.application.persistence.model.reservation.Slot;
 import com.application.web.dto.ServiceTypeDto;
-import com.application.web.dto.ServicesDto;
 import com.application.web.dto.get.ServiceDTO;
 import com.application.web.dto.get.SlotDTO;
 import com.application.web.dto.post.NewServiceDTO;

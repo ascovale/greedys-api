@@ -1,7 +1,5 @@
 package com.application.persistence.model.restaurant;
 
-import com.application.persistence.model.restaurant.Table ;
-
 import java.util.List;
 
 import jakarta.persistence.Entity;

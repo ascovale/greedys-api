@@ -1,9 +1,7 @@
 package com.application.controller;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import jakarta.validation.Valid;
-
+import java.time.LocalDate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.core.io.Resource;
@@ -21,8 +19,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.application.service.ReservationService;
 import com.application.persistence.model.reservation.Reservation;
 import com.application.web.dto.post.NewReservationDTO;
-import com.rabbitmq.client.RpcClient.Response;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -52,13 +48,13 @@ public class ReservationController {
     private ResourceLoader resourceLoader;
 
 	/**
-	 * Initializes the WebDataBinder to handle custom data binding for Date objects.
+	 * Initializes the WebDataBinder to handle custom data binding for LocalDate objects.
 	 * 
 	 * @param binder The WebDataBinder object.
 	 */
 	@InitBinder
 	public void initBinder(WebDataBinder binder) {
-		binder.registerCustomEditor(Date.class, new CustomDateEditor(new SimpleDateFormat("yyyy-MM-dd"), true, 10));
+		binder.registerCustomEditor(LocalDate.class, new CustomDateEditor(new SimpleDateFormat("yyyy-MM-dd"), true, 10));
 	}
 
 	@Operation(

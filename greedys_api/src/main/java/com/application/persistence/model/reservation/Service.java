@@ -2,7 +2,7 @@ package com.application.persistence.model.reservation;
 
 import java.util.Set;
 import java.util.HashSet;
-import java.util.Date;
+import java.time.LocalDate;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -48,8 +48,8 @@ public class Service {
 	@Column(name = "info")
 	private String info;
 
-	private Date validFrom;
-	private Date validTo;
+	private LocalDate validFrom;
+	private LocalDate validTo;
 
 	private boolean active = true;
 
@@ -62,19 +62,19 @@ public class Service {
 	}
 
 
-	public Date getValidFrom() {
+	public LocalDate getValidFrom() {
 		return validFrom;
 	}
 
-	public void setValidFrom(Date validFrom) {
+	public void setValidFrom(LocalDate validFrom) {
 		this.validFrom = validFrom;
 	}
 
-	public Date getValidTo() {
+	public LocalDate getValidTo() {
 		return validTo;
 	}
 
-	public void setValidTo(Date validTo) {
+	public void setValidTo(LocalDate validTo) {
 		this.validTo = validTo;
 	}
 	

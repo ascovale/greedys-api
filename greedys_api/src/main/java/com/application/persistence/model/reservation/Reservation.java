@@ -1,6 +1,6 @@
 package com.application.persistence.model.reservation;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -33,9 +33,9 @@ public class Reservation {
 	@DateTimeFormat(pattern = "yyyy/MM/dd")
 	@Temporal(TemporalType.DATE)
 	@Column(name = "r_date")
-	private Date date;
+	private LocalDate date;
 	@Column(name = "creation_date")
-	private Date creationDate;
+	private LocalDate creationDate;
 	
 
 	private ClientInfo user_info;
@@ -57,7 +57,7 @@ public class Reservation {
 	// si potrebbe fare una tabella a parte per i log
 	@DateTimeFormat(pattern = "yyyy/MM/dd/HH:mm")
 	@Temporal(TemporalType.DATE)
-	private Date lastModificationTime;
+	private LocalDate lastModificationTime;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idrestaurant_user")
  	private User restaurantUser;
@@ -89,11 +89,11 @@ public class Reservation {
 		return user.getId();
 	}
 
-	public Date getCreationDate() {
+	public LocalDate getCreationDate() {
 		return creationDate;
 	}
 
-	public void setCreationDate(Date creationDate) {
+	public void setCreationDate(LocalDate creationDate) {
 		this.creationDate = creationDate;
 	}
 
@@ -109,11 +109,11 @@ public class Reservation {
 		this.pax = pax;
 	}
 
-	public Date getDate() {
+	public LocalDate getDate() {
 		return date;
 	}
 
-	public void setDate(Date date) {
+	public void setDate(LocalDate date) {
 		this.date = date;
 	}
 
@@ -165,11 +165,11 @@ public class Reservation {
 		this.noShow = noShow;
 	}
 
-	public Date getLastModificationTime() {
+	public LocalDate getLastModificationTime() {
 		return lastModificationTime;
 	}
 
-	public void setLastModificationTime(Date lastModificationTime) {
+	public void setLastModificationTime(LocalDate lastModificationTime) {
 		this.lastModificationTime = lastModificationTime;
 	}
 

@@ -1,7 +1,7 @@
 package com.application.web.dto.get;
 
 
-import java.util.Date;
+import java.time.LocalDate;
 
 import com.application.persistence.model.reservation.Service;
 import com.application.web.dto.ServiceTypeDto;
@@ -13,8 +13,8 @@ public class ServiceDTO {
     private long restaurantId;
     private Collection<ServiceTypeDto> serviceType;
     private String info;
-    private Date validFrom;
-    private Date validTo;
+    private LocalDate validFrom;
+    private LocalDate validTo;
     private boolean active;
 
 
@@ -34,11 +34,11 @@ public class ServiceDTO {
         return active;
     }
 
-    public Date getValidFrom() {
+    public LocalDate getValidFrom() {
         return validFrom;
     }
 
-    public Date getValidTo() {
+    public LocalDate getValidTo() {
         return validTo;
     }
 

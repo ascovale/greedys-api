@@ -1,5 +1,5 @@
 package com.application.persistence.dao.user;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.stream.Stream;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,12 +16,12 @@ public interface VerificationTokenDAO extends JpaRepository<VerificationToken, L
 
     VerificationToken findByUser(User user);
 
-    Stream<VerificationToken> findAllByExpiryDateLessThan(Date now);
+    Stream<VerificationToken> findAllByExpiryDateLessThan(LocalDate now);
 
-    void deleteByExpiryDateLessThan(Date now);
+    void deleteByExpiryDateLessThan(LocalDate now);
 
     @Modifying
     @Query("delete from VerificationToken t where t.expiryDate <= ?1")
-    void deleteAllExpiredSince(Date now);
+    void deleteAllExpiredSince(LocalDate now);
 }
 	

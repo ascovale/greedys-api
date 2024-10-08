@@ -1,22 +1,22 @@
 
 var notAvailableDays = /*[[${notAvailableDays}]]*/ null;
-let currentMonth = new Date().getMonth();
-let currentYear = new Date().getFullYear();
+let currentMonth = LocalDate.now().getMonth();
+let currentYear = LocalDate.now().getFullYear();
 let selectedDay = null;
 
 function createCalendar() {
 	const daysOfWeek = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-	const today = new Date();
+	const today = LocalDate.now();
 	const year = currentYear;
 	const month = currentMonth;
-	const daysInMonth = new Date(year, month + 1, 0).getDate();
-	const firstDayOfMonth = new Date(year, month, 1).getDay();
+	const daysInMonth = new LocalDate(year, month + 1, 0).getDate();
+	const firstDayOfMonth = new LocalDate(year, month, 1).getDay();
 
 	const calendar = document.querySelector('.calendar');
 	calendar.innerHTML = '';
 
 	// Set current month and year
-	document.getElementById('current-month-year').textContent = new Date(year, month).toLocaleString('default', { month: 'long', year: 'numeric' });
+	document.getElementById('current-month-year').textContent = new LocalDate(year, month).toLocaleString('default', { month: 'long', year: 'numeric' });
 
 	// Create days of the week
 	// Create days of the week
@@ -38,7 +38,7 @@ function createCalendar() {
 			const dayElement = document.createElement('div');
 			dayElement.classList.add('day');
 			dayElement.textContent = i;
-			if (new Date(year, month, i) < today || notAvailableDays.includes(currentDate)) {
+			if (new LocalDate(year, month, i) < today || notAvailableDays.includes(currentDate)) {
 				dayElement.classList.add('disabled');
 				dayElement.classList.add('disabled');
 			} else {
@@ -58,7 +58,7 @@ function createCalendar() {
 			const dayElement = document.createElement('div');
 			dayElement.classList.add('day');
 			dayElement.textContent = i;
-			if (new Date(year, month, i) < today) {
+			if (new LocalDate(year, month, i) < today) {
 				dayElement.classList.add('disabled');
 				dayElement.classList.add('disabled');
 			} else {
@@ -106,7 +106,7 @@ document.querySelector('.next-month').addEventListener('click', () => {
 
 document.getElementById('select-day-button').addEventListener('click', () => {
 	if (selectedDay) {
-		const selectedDate = new Date(currentYear, currentMonth, parseInt(selectedDay.textContent));
+		const selectedDate = new LocalDate(currentYear, currentMonth, parseInt(selectedDay.textContent));
 
 		// Creazione di un oggetto FormData per inviare i dati tramite POST
 		const formData = new FormData();

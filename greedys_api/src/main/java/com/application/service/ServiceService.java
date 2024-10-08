@@ -1,7 +1,7 @@
 package com.application.service;
 
 import java.util.ArrayList;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -42,7 +42,7 @@ public class ServiceService {
 	RestaurantService rService;
 
 	 
-	public List<ServiceDto> getServices(Long idRestaurant, Date selectedDate) {
+	public List<ServiceDto> getServices(Long idRestaurant, LocalDate selectedDate) {
 		List<Service> services = serviceDAO.findServicesByRestaurant(idRestaurant);
 		List<ServiceDto> servicesDto = new ArrayList<ServiceDto>();
 		for (Service service : services) {
@@ -74,7 +74,7 @@ public class ServiceService {
 	 * ATTENZIONE!!
 	 * La classe Calendar è obsoleta e non dovrebbe essere usata.
 	 
-	public List<ServiceDto> getDayServices(Restaurant restaurant, Date date) {
+	public List<ServiceDto> getDayServices(Restaurant restaurant, LocalDate date) {
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(date);
 		int weekday = calendar.get(Calendar.DAY_OF_WEEK);
@@ -140,7 +140,7 @@ public class ServiceService {
 	}
 
 
-    public List<ServiceSlotsDto> getServiceSlots(Long idRestaurant, Date date) {
+    public List<ServiceSlotsDto> getServiceSlots(Long idRestaurant, LocalDate date) {
 		List<Service> services =serviceDAO.findServicesByRestaurant(idRestaurant);
 		List<ServiceSlotsDto> servicesSlotsDto = new ArrayList<ServiceSlotsDto>();
 		for (Service service : services) {
@@ -151,7 +151,7 @@ public class ServiceService {
 
 
 	 
-	public List<ServiceDto> getDayServices(Restaurant restaurant, Date date) {
+	public List<ServiceDto> getDayServices(Restaurant restaurant, LocalDate date) {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException("Unimplemented method 'getDayServices'");
 	}

@@ -1,6 +1,6 @@
 package com.application.persistence.dao.Restaurant;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,13 +24,13 @@ public interface ServiceDAO extends JpaRepository<Service, Long> {
 					"GROUP BY s.day " +
 					"HAVING COUNT(s.id) = COUNT(sc.idservice) " +
 					"AND s.day >= CURDATE()", nativeQuery = true)
-	List<Date> findClosedOrFullDays(@Param("idrestaurant") Long idrestaurant);
+	List<LocalDate> findClosedOrFullDays(@Param("idrestaurant") Long idrestaurant);
 
 	@Query(value = "SELECT day " +
 			"FROM closed_day " +
 			"WHERE idrestaurant = :idrestaurant " +
 			"AND day >= CURDATE()", nativeQuery = true)
-	List<Date> findClosedDays(@Param("idrestaurant") Long idrestaurant);
+	List<LocalDate> findClosedDays(@Param("idrestaurant") Long idrestaurant);
 
 	@Query(value = """
 			SELECT * 

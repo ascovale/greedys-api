@@ -1,6 +1,6 @@
 package com.application.security.user;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -43,7 +43,7 @@ public class UserRememberMeServices extends PersistentTokenBasedRememberMeServic
     protected void onLoginSuccess(HttpServletRequest request, HttpServletResponse response, Authentication successfulAuthentication) {
         String username = ((User) successfulAuthentication.getPrincipal()).getEmail();
         logger.debug("Creating new persistent login for user " + username);
-        PersistentRememberMeToken persistentToken = new PersistentRememberMeToken(username, generateSeriesData(), generateTokenData(), new Date());
+        PersistentRememberMeToken persistentToken = new PersistentRememberMeToken(username, generateSeriesData(), generateTokenData(), java.sql.Date.valueOf(LocalDate.now()));
         try {
             tokenRepository.createNewToken(persistentToken);
             addCookie(persistentToken, request, response);

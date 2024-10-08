@@ -2,7 +2,6 @@ package com.application.persistence.dao.user;
 
 import java.time.LocalDate;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,7 +38,7 @@ public interface ReservationDAO extends JpaRepository<Reservation, Long> {
 						+ "FROM service "
 						+ "WHERE idrestaurant = :idrestaurant) AND "
 							+ "day >= CURRENT_DATE", nativeQuery = true)
-	List<Date> findClosedOrFullServices(@Param("idrestaurant") Long idrestaurant);
+	List<LocalDate> findClosedOrFullServices(@Param("idrestaurant") Long idrestaurant);
 	
 	@Query(value = "WITH date_range AS (" +
 		    "SELECT MIN(`from`) AS start_date, MAX(`to`) AS end_date " +
@@ -56,35 +55,35 @@ public interface ReservationDAO extends JpaRepository<Reservation, Long> {
 		    "SELECT 1 FROM service " +
 		    "WHERE all_dates.the_date BETWEEN service.`s_from` AND service.`s_to` " +
 		    "AND idrestaurant = :restaurantId)", nativeQuery = true)
-	List<Date> findDatesWithoutAnyService(@Param("restaurantId") Long restaurantId);
+	List<LocalDate> findDatesWithoutAnyService(@Param("restaurantId") Long restaurantId);
 
  
 	@Query(value = "SELECT r FROM Reservation r WHERE r.slot.service.restaurant.id = :idrestaurant AND r.date = :date")
-	List<Reservation> findDayReservation(@Param("idrestaurant") Long idRestaurant, @Param("date") Date date);
+	List<Reservation> findDayReservation(@Param("idrestaurant") Long idRestaurant, @Param("date") LocalDate date);
 	/* 
 	@Query(value = "SELECT r FROM Reservation r WHERE r.idservice IN "
 			+ "(SELECT id FROM Service WHERE idrestaurant = :idrestaurant) AND r.date = :date")
-	List<Reservation> findDayReservation(@Param("idrestaurant") Long idrestaurant, @Param("date") Date date);
+	List<Reservation> findDayReservation(@Param("idrestaurant") Long idrestaurant, @Param("date") LocalDate date);
 	
 	@Query(value = "SELECT r FROM Reservation r WHERE r.idservice IN "
 			+ "(SELECT id FROM Service WHERE idrestaurant = :idrestaurant) AND r.date = :date AND r.status = 1")
-	List<Reservation> findDayReservationConfirmed(@Param("idrestaurant") Long idrestaurant, @Param("date") Date date);
+	List<Reservation> findDayReservationConfirmed(@Param("idrestaurant") Long idrestaurant, @Param("date") LocalDate date);
 	
 	@Query(value = "SELECT r FROM Reservation r WHERE r.idservice IN "
 			+ "(SELECT id FROM Service WHERE idrestaurant = :idrestaurant) AND r.date = :date AND r.status = 0")
-	List<Reservation> findDayReservationPending(@Param("idrestaurant") Long idrestaurant, @Param("date") Date date);
+	List<Reservation> findDayReservationPending(@Param("idrestaurant") Long idrestaurant, @Param("date") LocalDate date);
 	
 	@Query(value = "SELECT r FROM Reservation r WHERE r.idservice IN "
 			+ "(SELECT id FROM Service WHERE idrestaurant = :idrestaurant) AND r.date = :date AND r.status = 2")
-	List<Reservation> findDayReservationRejected(@Param("idrestaurant") Long idrestaurant, @Param("date") Date date);
+	List<Reservation> findDayReservationRejected(@Param("idrestaurant") Long idrestaurant, @Param("date") LocalDate date);
 	
 	@Query(value = "SELECT r FROM Reservation r WHERE r.idservice IN "
 			+ "(SELECT id FROM Service WHERE idrestaurant = :idrestaurant) AND r.date = :date AND r.status = 3")
-	List<Reservation> findDayReservationCanceled(@Param("idrestaurant") Long idrestaurant, @Param("date") Date date);
+	List<Reservation> findDayReservationCanceled(@Param("idrestaurant") Long idrestaurant, @Param("date") LocalDate date);
 	
 	@Query(value = "SELECT r FROM Reservation r WHERE r.idservice IN "
 			+ "(SELECT id FROM Service WHERE idrestaurant = :idrestaurant) AND r.date = :date AND r.status = 4")
-	List<Reservation> findDayReservationExpired(@Param("idrestaurant") Long idrestaurant, @Param("date") Date date);
+	List<Reservation> findDayReservationExpired(@Param("idrestaurant") Long idrestaurant, @Param("date") LocalDate date);
 	
 	@Query(value = "SELECT r FROM Reservation r WHERE r.idservice IN "
 			+ "(SELECT id FROM Service WHERE idrestaurant = :idrestaurant) AND r.date = :date AND r.status = 5")

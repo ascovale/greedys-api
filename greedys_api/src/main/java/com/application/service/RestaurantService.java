@@ -2,7 +2,6 @@ package com.application.service;
 
 import java.time.LocalDate;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -80,7 +79,7 @@ public class RestaurantService {
 		Restaurant restaurant = new Restaurant();
 		restaurant.setName(restaurantDto.getName());
 		restaurant.setAddress(restaurantDto.getAddress());
-		restaurant.setCreationDate(new Date());
+		restaurant.setCreationDate(LocalDate.now());
 		restaurant.setEmail(restaurantDto.getEmail());
 		restaurant.setpI(restaurantDto.getpi());
 		restaurant.setPostCode(restaurantDto.getPost_code());

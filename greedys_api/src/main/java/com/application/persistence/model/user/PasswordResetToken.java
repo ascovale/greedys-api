@@ -1,7 +1,8 @@
 package com.application.persistence.model.user;
 
-import java.util.Calendar;
-import java.util.Date;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -23,7 +24,7 @@ public class PasswordResetToken {
     @OneToOne(targetEntity = User.class, fetch = FetchType.EAGER)
     @JoinColumn(nullable = false, name = "user_id")
     private User user;
-    private Date expiryDate;
+    private LocalDate expiryDate;
 
 	public PasswordResetToken() {
         super();
@@ -62,20 +63,19 @@ public class PasswordResetToken {
         this.user = user;
     }
 
-    public Date getExpiryDate() {
+    public LocalDate getExpiryDate() {
         return expiryDate;
     }
 
-    public void setExpiryDate(final Date expiryDate) {
+    public void setExpiryDate(final LocalDate expiryDate) {
         this.expiryDate = expiryDate;
     }
-
-    private Date calculateExpiryDate(final int expiryTimeInMinutes) {
-        final Calendar cal = Calendar.getInstance();
-        cal.setTimeInMillis(new Date().getTime());
-        cal.add(Calendar.MINUTE, expiryTimeInMinutes);
-        return new Date(cal.getTime().getTime());
+    private LocalDate calculateExpiryDate(final int expiryTimeInMinutes) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime expiryDateTime = now.plusMinutes(expiryTimeInMinutes);
+        return expiryDateTime.toLocalDate();
     }
+
 
     public void updateToken(final String token) {
         this.token = token;

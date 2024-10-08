@@ -1,23 +1,23 @@
 
 var notAvailableDays = /*[[${notAvailableDays}]]*/ null;
-let currentMonth = new Date().getMonth();
-let currentYear = new Date().getFullYear();
+let currentMonth = LocalDate.now().getMonth();
+let currentYear = LocalDate.now().getFullYear();
 let selectedDay = null;
 let isFirstLoad = true;
 
 
 function createCalendar() {
 	const daysOfWeek = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-	const today = new Date();
+	const today = LocalDate.now();
 	const year = currentYear;
 	const month = currentMonth;
-	const daysInMonth = new Date(year, month + 1, 0).getDate();
-	const firstDayOfMonth = new Date(year, month, 1).getDay();
+	const daysInMonth = new LocalDate(year, month + 1, 0).getDate();
+	const firstDayOfMonth = new LocalDate(year, month, 1).getDay();
 	const calendar = document.querySelector('.calendar');
 	calendar.innerHTML = '';
 
 	// Set current month and year
-	document.getElementById('current-month-year').textContent = new Date(year, month).toLocaleString('default', { month: 'long', year: 'numeric' });
+	document.getElementById('current-month-year').textContent = new LocalDate(year, month).toLocaleString('default', { month: 'long', year: 'numeric' });
 	// Create days of the week
 	// Create days of the week
 	daysOfWeek.forEach(day => {
@@ -67,7 +67,7 @@ function createCalendar() {
 	GIORNI PASSATI */
 	if (isFirstLoad) {
 
-		const tomorrow = new Date();
+		const tomorrow = LocalDate.now();
 		tomorrow.setDate(tomorrow.getDate() + 1);
 		const nextDay = tomorrow.getDate();
 		// Seleziona il giorno successivo nel mini calendario
@@ -137,7 +137,7 @@ function selectDay(dayElement) {
 function updateCalendar() {
 	createCalendar();
 	selectedDay = null;
-	//selectedDay = new Date().getDate();
+	//selectedDay = LocalDate.now().getDate();
 }
 
 document.querySelector('.prev-month').addEventListener('click', () => {
@@ -159,7 +159,7 @@ document.querySelector('.next-month').addEventListener('click', () => {
 });
 document.querySelectorAll('.day').forEach(day => {
 	day.addEventListener('click', () => {
-		const selectedDate = new Date(currentYear, currentMonth, parseInt(day.textContent));
+		const selectedDate = new LocalDate(currentYear, currentMonth, parseInt(day.textContent));
 		const form = document.createElement('form');
 		console.log("Entrato!!!");
 		form.method = 'POST';

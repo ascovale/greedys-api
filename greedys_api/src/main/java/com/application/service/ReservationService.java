@@ -3,7 +3,6 @@ package com.application.service;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -15,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.application.persistence.dao.Restaurant.ClosedDayDAO;
 import com.application.persistence.dao.Restaurant.ServiceDAO;
-import com.application.persistence.dao.Restaurant.SlotDAO;
 import com.application.persistence.dao.user.ReservationDAO;
 import com.application.persistence.model.reservation.Reservation;
 import com.application.persistence.model.reservation.Slot;
@@ -35,11 +33,15 @@ public class ReservationService {
 	@Autowired
 	private ReservationDAO reservationDAO;
 	@Autowired
-	private SlotDAO slotDAO;
-	@Autowired
 	private ServiceDAO serviceDAO;
+
+	/*
+	@Autowired
+	private SlotDAO slotDAO;
+
 	@Autowired
 	private NotificationService notificationService;
+	*/
 	@Autowired
 	private ClosedDayDAO closedDaysDAO;
 
@@ -77,7 +79,7 @@ public class ReservationService {
 		reservation.setRejected(false);
 		reservation.setAccepted(true);
 		reservation.setNoShow(false);
-		reservation.setCreationDate(new Date());
+		reservation.setCreationDate(LocalDate.now());
 		if (reservationDto.isAnonymous()) {
 			//set anonymous user
 			reservation.set_user_info(reservationDto.getClientUser());
@@ -108,7 +110,7 @@ public class ReservationService {
 		reservation.setRejected(false);
 		reservation.setAccepted(false);
 		reservation.setNoShow(false);
-		reservation.setCreationDate(new Date());
+		reservation.setCreationDate(LocalDate.now());
 		if (reservationDto.isAnonymous()) {
 			//set anonymous user
 			reservation.set_user_info(reservationDto.getClientUser());
@@ -125,21 +127,21 @@ public class ReservationService {
 	}
 
 	 
-	public List<Date> findNotAvailableDays(Long idRestaurant) {
-		List<Date> days = serviceDAO.findClosedOrFullDays(idRestaurant);
+	public List<LocalDate> findNotAvailableDays(Long idRestaurant) {
+		List<LocalDate> days = serviceDAO.findClosedOrFullDays(idRestaurant);
 		if (days == null)
-			days = new ArrayList<Date>();
+			days = new ArrayList<LocalDate>();
 		days.addAll(serviceDAO.findClosedOrFullDays(idRestaurant));
 		return days;
 	}
 
 	 
-	public List<Date> findClosedDays(Long idRestaurant) {
+	public List<LocalDate> findClosedDays(Long idRestaurant) {
 		return closedDaysDAO.findUpcomingClosedDay();
 	}
 
 	 
-	public List<Reservation> getDayReservations(Restaurant restaurant, Date date) {
+	public List<Reservation> getDayReservations(Restaurant restaurant, LocalDate date) {
 		return reservationDAO.findDayReservation(restaurant.getId(), date);
 	}
 

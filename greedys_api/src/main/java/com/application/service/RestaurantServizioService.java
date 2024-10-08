@@ -1,6 +1,6 @@
 package com.application.service;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +16,7 @@ public class RestaurantServizioService{
 	@Autowired
 	private RestaurantServiceDAO restaurantServiceDAO;
 
-	public List<com.application.persistence.model.reservation.Service> getServices(Long idRestaurant, Date date) {
+	public List<com.application.persistence.model.reservation.Service> getServices(Long idRestaurant, LocalDate date) {
 		return restaurantServiceDAO.getServices(idRestaurant);//, date);
 	}
 
