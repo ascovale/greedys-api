@@ -9,17 +9,21 @@ import com.application.web.dto.get.LocalTimeSerializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 public class NewSlotDTO {
 
 
     @JsonSerialize(using = LocalTimeSerializer.class)
     @JsonDeserialize(using = LocalTimeDeserializer.class)
     @DateTimeFormat(pattern = "HH:mm")
+    @Schema(type = "string", format = "time", example = "14:30")
     LocalTime start;
 
     @JsonSerialize(using = LocalTimeSerializer.class)
     @JsonDeserialize(using = LocalTimeDeserializer.class)
     @DateTimeFormat(pattern = "HH:mm")
+    @Schema(type = "string", format = "time", example = "15:30")
     LocalTime end;
 
     Weekday weekday;
