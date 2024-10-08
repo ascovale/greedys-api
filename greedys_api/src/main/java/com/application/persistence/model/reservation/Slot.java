@@ -15,6 +15,10 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 import com.application.mapper.Mapper.Weekday;
+import com.application.web.dto.get.LocalTimeSerializer;
+import com.application.web.dto.post.LocalTimeDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 @Entity
 @Table(name = "slot")
@@ -23,7 +27,13 @@ public class Slot {
 	@Id		
 	@GeneratedValue(strategy=GenerationType.AUTO)
 	Long id;
+	@JsonDeserialize(using = LocalTimeDeserializer.class)
+    @JsonSerialize(using = LocalTimeSerializer.class)
+
 	LocalTime start;
+	@JsonDeserialize(using = LocalTimeDeserializer.class)
+    @JsonSerialize(using = LocalTimeSerializer.class)
+
 	LocalTime end;
 
 	@Column(name="weekday")
