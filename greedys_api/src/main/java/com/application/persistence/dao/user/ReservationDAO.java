@@ -131,5 +131,5 @@ public interface ReservationDAO extends JpaRepository<Reservation, Long> {
 				AND r.accepted = False
 				AND r.rejected = False
 			""")
-    Optional<Reservation> findByRestaurantAndDateAndPending(Long restaurant_id, LocalDate start);
+    Collection<Reservation> findByRestaurantAndDateAndPending(Long restaurant_id, LocalDate start);
 }
