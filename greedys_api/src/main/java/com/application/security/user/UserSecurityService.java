@@ -1,7 +1,8 @@
 package com.application.security.user;
 
 import java.util.Arrays;
-import java.util.Calendar;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,9 +32,8 @@ public class UserSecurityService implements ISecurityUserService {
         if ((passToken == null) || (passToken.getUser().getId() != id)) {
             return "invalidToken";
         }
-
-        final Calendar cal = Calendar.getInstance();
-        if ((passToken.getExpiryDate().getTime() - cal.getTime().getTime()) <= 0) {
+        final LocalDateTime now = LocalDateTime.now();
+        if (passToken.getExpiryDate().isBefore(now)) {
             return "expired";
         }
 

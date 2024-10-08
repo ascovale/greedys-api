@@ -24,7 +24,7 @@ public class PasswordResetToken {
     @OneToOne(targetEntity = User.class, fetch = FetchType.EAGER)
     @JoinColumn(nullable = false, name = "user_id")
     private User user;
-    private LocalDate expiryDate;
+    private LocalDateTime expiryDate;
 
 	public PasswordResetToken() {
         super();
@@ -63,17 +63,17 @@ public class PasswordResetToken {
         this.user = user;
     }
 
-    public LocalDate getExpiryDate() {
+    public LocalDateTime getExpiryDate() {
         return expiryDate;
     }
 
-    public void setExpiryDate(final LocalDate expiryDate) {
+    public void setExpiryDate(final LocalDateTime expiryDate) {
         this.expiryDate = expiryDate;
     }
-    private LocalDate calculateExpiryDate(final int expiryTimeInMinutes) {
+    private LocalDateTime calculateExpiryDate(final int expiryTimeInMinutes) {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime expiryDateTime = now.plusMinutes(expiryTimeInMinutes);
-        return expiryDateTime.toLocalDate();
+        return expiryDateTime;
     }
 
 
