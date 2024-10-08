@@ -84,10 +84,19 @@ public class ReservationController {
 		@ApiResponse(responseCode = "404", description = "Reservation not found", content = @Content),
 		@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
 	})
-	@PostMapping("/confirm")
+	@PostMapping("/accept")
 	public ResponseEntity<?> confirmReservation(@RequestParam Long reservation_id) {
 		Reservation res = reservationService.findById(reservation_id);
 		res.setAccepted(true);
+		reservationService.save(res);
+		return ResponseEntity.ok().build();
+	}
+
+	@PostMapping("/reject")
+	@Operation(summary = "Reject a reservation", description = "Endpoint to reject a reservation by its ID")
+	public ResponseEntity<?> rejectReservation(@RequestParam Long reservation_id) {
+		Reservation res = reservationService.findById(reservation_id);
+		res.setRejected(true);
 		reservationService.save(res);
 		return ResponseEntity.ok().build();
 	}
