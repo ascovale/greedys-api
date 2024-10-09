@@ -191,7 +191,7 @@ public class RestaurantController {
 				else if(end != null){
 					reservations = reservationService.getPendingReservations(id, start);
 				}
-				else if (start != null && end == null){
+				else if (start == null && end == null){
 					reservations = reservationService.getPendingReservations(id);
 				}
 				else {
