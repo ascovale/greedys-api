@@ -3,7 +3,6 @@ package com.application.persistence.dao.user;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -152,7 +151,7 @@ public interface ReservationDAO extends JpaRepository<Reservation, Long> {
 			WHERE r.restaurant.id = :restaurant_id
 				AND r.accepted = False
 				AND r.rejected = False
-				ORDER BY r.creation_date, r.date, r.slot.start
+				ORDER BY r.creationDate, r.date, r.slot.start
 			""")
 	Collection<Reservation> findByRestaurantIdAndPending(Long restaurant_id);
 }
