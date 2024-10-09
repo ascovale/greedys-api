@@ -188,14 +188,16 @@ public class RestaurantController {
 				if(end != null && start != null){
 					reservations = reservationService.getPendingReservations(id, start, end);
 				}
-				else if(end != null){
+				else if(start != null){
 					reservations = reservationService.getPendingReservations(id, start);
 				}
-				else if (start == null && end == null){
-					reservations = reservationService.getPendingReservations(id);
+				else if (end != null){
+					throw new IllegalArgumentException("end cannot be null if start is not null");
+
 				}
 				else {
-					throw new IllegalArgumentException("end cannot be null if start is not null");
+					reservations = reservationService.getPendingReservations(id);
+
 				}
 				return reservations;
 	}
