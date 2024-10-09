@@ -185,7 +185,15 @@ public class RestaurantController {
 				@RequestParam(required = false) LocalDate end) {
 
 				Collection<ReservationDTO> reservations;
-				reservations = reservationService.getPendingReservations(id, start, end);
+				if(end != null && start != null){
+					reservations = reservationService.getPendingReservations(id, start, end);
+				}
+				else if(end != null){
+					reservations = reservationService.getPendingReservations(id, start);
+				}
+				else {
+					reservations = reservationService.getPendingReservations(id);
+				}
 				return reservations;
 	}
 
