@@ -137,4 +137,22 @@ public interface ReservationDAO extends JpaRepository<Reservation, Long> {
 				ORDER BY r.date, r.slot.start
 			""")
     Collection<Reservation> findByRestaurantAndDateAndPending(Long restaurant_id, LocalDate start);
+
+	@Query(value = """
+			SELECT r FROM Reservation r
+			WHERE r.restaurant.id = :restaurant_id
+				AND r.date >= :start
+				AND r.accepted = True
+				ORDER BY r.date, r.slot.start
+			""")
+	Collection<Reservation> findByRestaurantAndDateAndAccepted(Long restaurant_id, LocalDate start);
+
+	@Query(value = """
+			SELECT r FROM Reservation r
+			WHERE r.restaurant.id = :restaurant_id
+				AND r.accepted = False
+				AND r.rejected = False
+				ORDER BY r.creation_date, r.date, r.slot.start
+			""")
+	Collection<Reservation> findByRestaurantIdAndPending(Long restaurant_id);
 }

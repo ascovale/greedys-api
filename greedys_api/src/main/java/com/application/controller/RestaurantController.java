@@ -181,16 +181,11 @@ public class RestaurantController {
 	@GetMapping(value = "{id}/reservation/pending")
 	public Collection<ReservationDTO> getPendingReservations(
 				@PathVariable Long id,
-				@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
+				@RequestParam(required = false) LocalDate start,
 				@RequestParam(required = false) LocalDate end) {
 
 				Collection<ReservationDTO> reservations;
-				if(end != null){
-					reservations = reservationService.getPendingReservations(id, start, end);
-				}
-				else{
-					reservations = reservationService.getPendingReservations(id, start);
-				}
+				reservations = reservationService.getPendingReservations(id, start, end);
 				return reservations;
 	}
 

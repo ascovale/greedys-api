@@ -165,4 +165,9 @@ public class ReservationService {
 				.map(res -> new ReservationDTO(res)).collect(Collectors.toList());
 	}
 
+	public Collection<ReservationDTO> getPendingReservations(Long restaurant_id) {
+		return reservationDAO.findByRestaurantIdAndPending(restaurant_id).stream()
+				.map(res -> new ReservationDTO(res)).collect(Collectors.toList());
+	}
+
 }
