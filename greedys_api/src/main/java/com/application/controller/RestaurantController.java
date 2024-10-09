@@ -191,11 +191,11 @@ public class RestaurantController {
 				else if(end != null){
 					reservations = reservationService.getPendingReservations(id, start);
 				}
-				else if (start != null){
+				else if (start != null && end == null){
 					reservations = reservationService.getPendingReservations(id);
 				}
 				else {
-					throw new IllegalArgumentException("At least start or both start and end date must be provided");
+					throw new IllegalArgumentException("end cannot be null if start is not null");
 				}
 				return reservations;
 	}
