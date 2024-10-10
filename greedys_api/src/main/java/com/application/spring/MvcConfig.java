@@ -148,9 +148,9 @@ public class MvcConfig implements WebMvcConfigurer, ApplicationContextAware {
         return mailSender;
     }
 
-    
+
     @Bean
-    public JavaMailSender getUserMailSender() {
+    JavaMailSender getUserMailSender() {
         /*
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
         mailSender.setHost("smtp.example.com");
@@ -169,7 +169,7 @@ public class MvcConfig implements WebMvcConfigurer, ApplicationContextAware {
     }
 
     @Bean
-    public JavaMailSender getReservationMailSender() {
+    JavaMailSender getReservationMailSender() {
         /*
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
         mailSender.setHost("smtp.example.com");

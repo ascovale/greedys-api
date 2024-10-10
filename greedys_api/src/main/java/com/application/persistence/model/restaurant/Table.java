@@ -7,7 +7,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 
 @Entity
-@jakarta.persistence.Table(name = "table")
+@jakarta.persistence.Table(name = "restaurant_table")
 public class Table {
 
     @Id

@@ -84,8 +84,7 @@ public class SecurityConfig {
         return auth.build();
     }
 
-    @Bean
-    @Qualifier("userEncoder")
+    @Bean(name = "userEncoder")
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }

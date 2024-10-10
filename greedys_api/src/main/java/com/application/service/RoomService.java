@@ -3,7 +3,7 @@ package com.application.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.application.persistence.dao.Restaurant.RoomDAO;
+import com.application.persistence.dao.restaurant.RoomDAO;
 import com.application.persistence.model.restaurant.Restaurant;
 import com.application.persistence.model.restaurant.Room;
 import com.application.web.dto.get.RoomDTO;

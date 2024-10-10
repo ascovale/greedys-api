@@ -12,8 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.application.mapper.Mapper;
-import com.application.persistence.dao.Restaurant.RestaurantDAO;
-import com.application.persistence.dao.Restaurant.RestaurantUserDAO;
+import com.application.persistence.dao.restaurant.RestaurantDAO;
+import com.application.persistence.dao.restaurant.RestaurantUserDAO;
 import com.application.persistence.model.Image;
 import com.application.persistence.model.restaurant.Restaurant;
 import com.application.web.dto.RestaurantFullDetailsDto;

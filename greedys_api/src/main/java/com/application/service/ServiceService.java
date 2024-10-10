@@ -10,9 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.application.mapper.Mapper.Weekday;
-import com.application.persistence.dao.Restaurant.ServiceDAO;
-import com.application.persistence.dao.Restaurant.ServiceTypeDAO;
-import com.application.persistence.dao.Restaurant.SlotDAO;
+import com.application.persistence.dao.restaurant.ServiceDAO;
+import com.application.persistence.dao.restaurant.ServiceTypeDAO;
+import com.application.persistence.dao.restaurant.SlotDAO;
 import com.application.persistence.model.reservation.Service;
 import com.application.persistence.model.reservation.ServiceType;
 import com.application.persistence.model.reservation.Slot;

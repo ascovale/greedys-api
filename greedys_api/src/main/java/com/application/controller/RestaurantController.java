@@ -48,20 +48,21 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "bearerAuth")
 public class RestaurantController {
 
-	@Autowired
-	private RestaurantService restaurantService;
+	private final RestaurantService restaurantService;
+	private final ReservationService reservationService;
+	private final RestaurantUserService restaurantUserService;
+	private final RoomService roomService;
+	private final TableService tableService;
 
-	@Autowired
-	private ReservationService reservationService;
-
-	@Autowired
-	private RestaurantUserService restaurantUserService;
-
-	@Autowired 
-	private RoomService roomService;
-
-	@Autowired
-	private TableService tableService;
+	public RestaurantController(RestaurantService restaurantService, ReservationService reservationService, 
+								RestaurantUserService restaurantUserService, RoomService roomService, 
+								TableService tableService) {
+		this.restaurantService = restaurantService;
+		this.reservationService = reservationService;
+		this.restaurantUserService = restaurantUserService;
+		this.roomService = roomService;
+		this.tableService = tableService;
+	}
 
 
 	/*
@@ -79,7 +80,7 @@ public class RestaurantController {
     @GetMapping(value = "")
 	public ResponseEntity<Collection<RestaurantDTO>> getRestaurants() {
 		Collection<RestaurantDTO> restaurants = restaurantService.findAll().stream().map(r -> new RestaurantDTO(r)).toList();
-		return new ResponseEntity<Collection<RestaurantDTO>>(restaurants, HttpStatus.OK);
+		return new ResponseEntity<>(restaurants, HttpStatus.OK);
 	}
 
 	@GetMapping(value = "{id}/open-days")
@@ -258,7 +259,7 @@ public class RestaurantController {
     @GetMapping(value = "/search")
 	public ResponseEntity<Collection<RestaurantDTO>> searchRestaurants(@RequestParam String name) {
 		Collection<RestaurantDTO> restaurants = restaurantService.findBySearchTerm(name);
-		return new ResponseEntity<Collection<RestaurantDTO>>(restaurants, HttpStatus.OK);
+		return new ResponseEntity<>(restaurants, HttpStatus.OK);
 	}
 
 

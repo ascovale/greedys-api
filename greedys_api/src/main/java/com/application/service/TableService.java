@@ -3,7 +3,7 @@ package com.application.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.application.persistence.dao.Restaurant.TableDAO;
+import com.application.persistence.dao.restaurant.TableDAO;
 import com.application.persistence.model.restaurant.Table;
 import com.application.web.dto.get.TableDTO;
 import com.application.web.dto.post.NewTableDTO;

@@ -3,10 +3,10 @@ package com.application.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.application.service.rabbitMQ.ReservationEmailSenderService;
-import com.application.service.rabbitMQ.UserEmailSenderService;
-import com.application.service.rabbitMQ.email.ReservationEmail;
-import com.application.service.rabbitMQ.email.UserEmail;
+import com.application.service.rabbitmq.ReservationEmailSenderService;
+import com.application.service.rabbitmq.UserEmailSenderService;
+import com.application.service.rabbitmq.email.ReservationEmail;
+import com.application.service.rabbitmq.email.UserEmail;
 
 @Service
 public class EmailService {

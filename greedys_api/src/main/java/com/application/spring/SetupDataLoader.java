@@ -12,7 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.application.persistence.dao.Restaurant.ServiceTypeDAO;
+import com.application.persistence.dao.restaurant.ServiceTypeDAO;
 import com.application.persistence.dao.user.PrivilegeDAO;
 import com.application.persistence.dao.user.RoleDAO;
 import com.application.persistence.model.reservation.ServiceType;

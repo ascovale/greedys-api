@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.application.persistence.dao.Restaurant.RestaurantUserDAO;
+import com.application.persistence.dao.restaurant.RestaurantUserDAO;
 import com.application.persistence.model.restaurant.RestaurantUser;
 import com.application.web.dto.get.RestaurantUserDTO;
 import com.application.web.dto.post.NewRestaurantUserDTO;

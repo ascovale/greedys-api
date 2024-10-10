@@ -7,8 +7,8 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.application.mapper.Mapper.Weekday;
-import com.application.persistence.dao.Restaurant.ServiceDAO;
-import com.application.persistence.dao.Restaurant.SlotDAO;
+import com.application.persistence.dao.restaurant.ServiceDAO;
+import com.application.persistence.dao.restaurant.SlotDAO;
 import com.application.persistence.model.reservation.Slot;
 import com.application.web.dto.get.SlotDTO;
 import com.application.web.dto.post.NewSlotDTO;
