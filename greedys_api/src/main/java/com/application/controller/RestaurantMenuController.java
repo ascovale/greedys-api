@@ -1,5 +1,6 @@
 package com.application.controller;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -56,8 +57,9 @@ public class RestaurantMenuController {
     }
 
     @PostMapping("/item")
-    public void createItem(@RequestBody NewMenuItemDTO newItem) {
+    public ResponseEntity<Void> createItem(@RequestBody NewMenuItemDTO newItem) {
         restaurantMenuService.addMenuItem(newItem);
+        return ResponseEntity.ok().build();
     }
 
 }
