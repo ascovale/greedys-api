@@ -6,10 +6,36 @@ public class TableDTO {
     
         private Long id;
         private String name;
+
+        private RoomDTO room;
+        private int capacity;
+
+        private int positionX;
+        private int positionY;
     
         public TableDTO(Table table) {
             this.id = table.getId();
             this.name = table.getName();
+            this.room = new RoomDTO(table.getRoom());
+            this.capacity = table.getCapacity();
+            this.positionX = table.getPositionX();
+            this.positionY = table.getPositionY();
+        }
+
+        public int getPositionY() {
+            return positionY;
+        }
+
+        public int getPositionX() {
+            return positionX;
+        }
+
+        public int getCapacity() {
+            return capacity;
+        }
+
+        public RoomDTO getRoom() {
+            return room;
         }
     
         public Long getId() {

@@ -6,6 +6,36 @@ public class NewTableDTO {
 
     private Long roomId;
 
+    private int capacity;
+
+    private int positionX;
+
+    private int positionY;
+
+    public void setCapacity(int capacity) {
+        this.capacity = capacity;
+    }
+
+    public int getCapacity() {
+        return capacity;
+    }
+
+    public void setPositionX(int positionX) {
+        this.positionX = positionX;
+    }
+
+    public int getPositionX() {
+        return positionX;
+    }
+
+    public void setPositionY(int positionY) {
+        this.positionY = positionY;
+    }
+
+    public int getPositionY() {
+        return positionY;
+    }
+
     public void setName(String name) {
         this.name = name;
     }

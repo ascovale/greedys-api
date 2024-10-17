@@ -74,7 +74,7 @@ public class RestaurantMenuService {
 
     public void addMenuItem(NewMenuItemDTO menuItem) {
 
-        System.out.println("Adding menu item" + menuItem.getName() + " " + menuItem.getDescription() + " " + menuItem.getAllergen() + " " + menuItem.getRestaurantId());
+        System.out.println("Adding menu item: " + menuItem.getName() + " " + menuItem.getDescription() + " " + menuItem.getAllergen() + " " + menuItem.getRestaurantId());
         MenuItem item = new MenuItem();
         item.setName(menuItem.getName());
         item.setDescription(menuItem.getDescription());

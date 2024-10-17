@@ -3,6 +3,7 @@ package com.application.controller;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -14,7 +15,6 @@ import com.application.web.dto.post.NewMenuItemDTO;
 import com.application.web.dto.post.NewPricedMenuItemDTO;
 import com.application.web.dto.post.NewRestaurantMenuDTO;
 
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -58,6 +58,7 @@ public class RestaurantMenuController {
 
     @PostMapping("/item")
     public ResponseEntity<Void> createItem(@RequestBody NewMenuItemDTO newItem) {
+        System.out.println(newItem.getName() + " " + newItem.getDescription() + " " + newItem.getRestaurantId());
         restaurantMenuService.addMenuItem(newItem);
         return ResponseEntity.ok().build();
     }
