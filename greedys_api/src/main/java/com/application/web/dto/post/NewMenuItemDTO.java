@@ -3,12 +3,17 @@ package com.application.web.dto.post;
 import java.util.Collection;
 
 import com.application.persistence.model.menu.MenuItem.Allergen;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class NewMenuItemDTO {
     
+    @JsonProperty("name")
     private String name;
+    @JsonProperty("description")
     private String description;
+    @JsonProperty("allergen")
     private Collection<Allergen> allergen;
+    @JsonProperty("restaurantId")
     private Long restaurantId;
 
     public Long getRestaurantId() {
