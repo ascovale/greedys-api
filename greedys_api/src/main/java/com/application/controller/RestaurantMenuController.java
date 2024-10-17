@@ -2,11 +2,13 @@ package com.application.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.service.RestaurantMenuService;
+import com.application.web.dto.get.MenuItemDTO;
+import com.application.web.dto.get.PricedMenuItemDTO;
+import com.application.web.dto.get.RestaurantMenuDTO;
 import com.application.web.dto.post.NewMenuItemDTO;
 import com.application.web.dto.post.NewPricedMenuItemDTO;
 import com.application.web.dto.post.NewRestaurantMenuDTO;
@@ -14,6 +16,8 @@ import com.application.web.dto.post.NewRestaurantMenuDTO;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
+import java.util.Collection;
 
 @Tag(name = "Restaurant Menu Controller", description = "Restaurant Menu Controller APIs")
 @SecurityRequirement(name = "bearerAuth")
@@ -27,18 +31,18 @@ public class RestaurantMenuController {
     }
 
     @GetMapping("/restaurant/menu")
-    public void getRestaurantMenus( @RequestParam Long id) {
-        restaurantMenuService.getMenusByRestaurant(id);
+    public Collection<RestaurantMenuDTO> getRestaurantMenus( @RequestParam Long id) {
+        return restaurantMenuService.getMenusByRestaurant(id);
     }
 
     @GetMapping("/menu/item")
-    public void getMenuItems( @RequestParam Long id) {
-        restaurantMenuService.getMenuItems(id);
+    public Collection<PricedMenuItemDTO> getMenuItems( @RequestParam Long id) {
+        return restaurantMenuService.getMenuItems(id);
     }
 
     @GetMapping("/restaurant/item")
-    public void getRestaurantMenuItems( @RequestParam Long id) {
-        restaurantMenuService.getMenuItemsByRestaurant(id);
+    public Collection<MenuItemDTO> getRestaurantMenuItems( @RequestParam Long id) {
+        return restaurantMenuService.getMenuItemsByRestaurant(id);
     }
 
     @PostMapping("/menu")
