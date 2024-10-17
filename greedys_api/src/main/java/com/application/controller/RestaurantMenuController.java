@@ -19,7 +19,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.Collection;
 
-@Tag(name = "Restaurant Menu Controller", description = "Restaurant Menu Controller APIs")
+@Tag(name = "Menu", description = "Restaurant Menu Controller APIs")
 @SecurityRequirement(name = "bearerAuth")
 @RestController
 public class RestaurantMenuController {

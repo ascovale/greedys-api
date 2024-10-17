@@ -18,11 +18,12 @@ import com.application.web.dto.post.NewPricedMenuItemDTO;
 import com.application.web.dto.post.NewRestaurantMenuDTO;
 
 import jakarta.persistence.EntityManager;
-import jakarta.ws.rs.client.Entity;
+import jakarta.transaction.Transactional;
 
 import java.util.Collection;
 
 @Service
+@Transactional
 public class RestaurantMenuService {
 
     private final EntityManager entityManager;
