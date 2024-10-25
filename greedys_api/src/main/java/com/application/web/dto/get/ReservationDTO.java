@@ -26,6 +26,9 @@ public class ReservationDTO {
 	private LocalDate reservationDay; 
 	private Long restaurant;
 
+	private Boolean isAccepted;
+	private Boolean isRejected;
+
 	public ReservationDTO(Reservation reservation) {
 		
 		this.slot = new SlotDTO(reservation.getSlot());
@@ -40,6 +43,8 @@ public class ReservationDTO {
 		this.notes = reservation.getNotes();
 		this.reservationDay = reservation.getDate();
 		this.restaurant = reservation.getSlot().getService().getRestaurant().getId();
+		this.isAccepted = reservation.getAccepted();
+		this.isRejected = reservation.getRejected();
 	}
 
 	public Long getId() {
@@ -113,7 +118,15 @@ public class ReservationDTO {
 
 	public void setReservationDay(LocalDate reservationDay) {
 		this.reservationDay = reservationDay;
-	}	
+	}
+
+	public Boolean isAccepted() {
+		return isAccepted;
+	}
+
+	public Boolean isRejected() {
+		return isRejected;
+	}
 	
 }
 

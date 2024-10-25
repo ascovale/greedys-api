@@ -53,6 +53,9 @@ public class Service {
 
 	private boolean active = true;
 
+	// colore del servizio
+	private String color;
+
 	public boolean isActive() {
 		return active;
 	}
@@ -120,6 +123,14 @@ public class Service {
 
 	public void setInfo(String info) {
 		this.info = info;
+	}
+
+	public String getColor() {
+		return color;
+	}
+
+	public void setColor(String color) {
+		this.color = color;
 	}
 	
 }
