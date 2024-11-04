@@ -66,7 +66,7 @@ generate_and_publish_api:
     - echo "Getting the IP of the running container..."
     - GEN_IP=$(docker inspect --format '{{.NetworkSettings.IPAddress}}' $CID)
     - echo "Generating Dart API client using OpenAPI Generator Online..."
-    - curl -X POST --header "Content-Type: application/json" --header "Accept: application/json" \
+    - curl -X POST -H 'Content-Type: application/json' -H 'Accept: application/json' \
         -d '{"openAPIUrl": "http://46.101.209.92:5050/v3/api-docs"}' \
         "http://$GEN_IP:8080/api/gen/clients/dart-dio" > generation_output.json
     - echo "Downloading the generated Dart API client..."
