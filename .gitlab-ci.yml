@@ -64,7 +64,7 @@ generate_and_publish_api:
     - echo "Allowing OpenAPI Generator container to start..."
     - sleep 10
     - echo "Generating Dart API client using OpenAPI Generator Online..."
-    -     - curl -X POST --header "Content-Type: application/json" --header "Accept: application/json" \
+    - curl -X POST --header "Content-Type: application/json" --header "Accept: application/json" \
         -d '{"openAPIUrl": "http://46.101.209.92:5050/v3/api-docs"}' \
         http://localhost:8888/api/gen/clients/dart-dio > generation_output.json
     - echo "Downloading the generated Dart API client..."
