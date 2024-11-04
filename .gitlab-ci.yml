@@ -66,7 +66,7 @@ generate_api:
       echo "Fetching OpenAPI spec from server..."
       curl -X GET "http://46.101.209.92:5050/v3/api-docs" -H  "accept: application/json" > $API_SPEC
       echo "Generating Dart API client from OpenAPI spec..."
-      openapi-generator generate -g dart-dio -i $API_SPEC -o $API_OUTPUT_DIR
+      openapi-generator-cli generate -g dart-dio -i $API_SPEC -o $API_OUTPUT_DIR
     - echo "Archiving generated API files..."
     - tar -czf api_generated.tar.gz $API_OUTPUT_DIR
   artifacts:
