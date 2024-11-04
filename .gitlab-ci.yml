@@ -53,6 +53,8 @@ deploy:
 generate_api:
   image: openapitools/openapi-generator-cli
   stage: generate_api
+  services:
+    - docker:dind
   script:
     - |
       echo "Waiting for server to restart..."
@@ -60,6 +62,7 @@ generate_api:
       echo "Creating API directory..."
       mkdir -p lib/api/
       echo "Initializing Git repository..."
+      apk add --no-cache git
       cd lib/api/
       git init
       echo "Adding remote Git repository..."
