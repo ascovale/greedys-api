@@ -59,6 +59,7 @@ public interface ReservationDAO extends JpaRepository<Reservation, Long> {
  
 	@Query(value = "SELECT r FROM Reservation r WHERE r.slot.service.restaurant.id = :idrestaurant AND r.date = :date")
 	List<Reservation> findDayReservation(@Param("idrestaurant") Long idRestaurant, @Param("date") LocalDate date);
+
 	/* 
 	@Query(value = "SELECT r FROM Reservation r WHERE r.idservice IN "
 			+ "(SELECT id FROM Service WHERE idrestaurant = :idrestaurant) AND r.date = :date")
@@ -119,7 +120,7 @@ public interface ReservationDAO extends JpaRepository<Reservation, Long> {
 
 
 	@Query(value = """
-			SELECT r FROM Reservation r
+	SELECT r FROM Reservation r
 			WHERE r.restaurant.id = :restaurant_id
 				AND r.date BETWEEN :start AND :end
 				AND r.accepted = True
@@ -154,4 +155,28 @@ public interface ReservationDAO extends JpaRepository<Reservation, Long> {
 				ORDER BY r.creationDate, r.date, r.slot.start
 			""")
 	Collection<Reservation> findByRestaurantIdAndPending(Long restaurant_id);
+
+	@Query(value = """
+			SELECT r FROM Reservation r
+			WHERE r.user.id = :userId
+				ORDER BY r.date, r.slot.start
+			""")
+	Collection<Reservation> findByUser(Long userId);
+
+	@Query(value = """
+			SELECT r FROM Reservation r
+			WHERE r.user.id = :userId
+				AND r.accepted = False
+				AND r.rejected = False
+				ORDER BY r.date, r.slot.start
+			""")
+	Collection<Reservation> findByUserAndPending(Long userId);
+
+	@Query(value = """
+			SELECT r FROM Reservation r
+			WHERE r.user.id = :userId
+				AND r.accepted = True
+				ORDER BY r.date, r.slot.start
+			""")
+	Collection<Reservation> findByUserAndAccepted(Long userId);
 }

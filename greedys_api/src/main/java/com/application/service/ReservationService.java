@@ -28,146 +28,129 @@ import jakarta.persistence.PersistenceContext;
 @Transactional
 public class ReservationService {
 
-	@PersistenceContext
-	private EntityManager entityManager;
-	@Autowired
-	private ReservationDAO reservationDAO;
-	@Autowired
-	private ServiceDAO serviceDAO;
+    @PersistenceContext
+    private EntityManager entityManager;
 
-	/*
-	@Autowired
-	private SlotDAO slotDAO;
+    @Autowired
+    private ReservationDAO reservationDAO;
 
-	@Autowired
-	private NotificationService notificationService;
-	*/
-	@Autowired
-	private ClosedDayDAO closedDaysDAO;
+    @Autowired
+    private ServiceDAO serviceDAO;
 
-	@Transactional
-	public void save(Reservation reservation) {
-		reservationDAO.save(reservation);
-	}
+    @Autowired
+    private ClosedDayDAO closedDaysDAO;
 
-	@Transactional
-	public Reservation findAll(long id) {
-		Optional<Reservation> opt = reservationDAO.findById(id);
-		if (!opt.isPresent())
-			return null;
-		return opt.get();
-	}
+    @Transactional
+    public void save(Reservation reservation) {
+        reservationDAO.save(reservation);
+    }
 
-	 
-	public Reservation findById(Long id) {
-		return reservationDAO.findById(id).get();
-	}
+    @Transactional
+    public Reservation findAll(long id) {
+        return reservationDAO.findById(id).orElse(null);
+    }
 
-	 
-	@Transactional
-	public Reservation createReservation(NewReservationDTO reservationDto)
-			throws NoSuchElementException {
+    public Reservation findById(Long id) {
+        return reservationDAO.findById(id).orElse(null);
+    }
 
-		Reservation reservation = new Reservation();
-		reservation.setRestaurant(entityManager.getReference(Restaurant.class, reservationDto.getRestaurant_id()));
-		reservation.setPax(reservationDto.getPax());
-		reservation.setKids(reservationDto.getKids());
-		reservation.setNotes(reservationDto.getNotes());
-		reservation.setKids(reservationDto.getKids());
-		reservation.setDate(reservationDto.getReservationDay());
-		reservation.setSlot(entityManager.getReference(Slot.class, reservationDto.getIdSlot()));
-		reservation.setRejected(false);
-		reservation.setAccepted(true);
-		reservation.setNoShow(false);
-		reservation.setCreationDate(LocalDate.now());
-		if (reservationDto.isAnonymous()) {
-			//set anonymous user
-			reservation.set_user_info(reservationDto.getClientUser());
-		}
-		else {
-			//set User id
-			
-		}
-		// QUA PRESUME CHE IL CLIENTE SIA QUELLO DELLA EMAIL
-		// ClientUser user = clientUserDAO.findByEmail(userEmail);
-		// reservation.setClientUser(user);
-		// Notification rn = notificationService.createNotification();
-		return reservationDAO.save(reservation);
-	}
+    @Transactional
+    public Reservation createReservation(NewReservationDTO reservationDto) throws NoSuchElementException {
+        Reservation reservation = new Reservation();
+        reservation.setRestaurant(entityManager.getReference(Restaurant.class, reservationDto.getRestaurant_id()));
+        reservation.setPax(reservationDto.getPax());
+        reservation.setKids(reservationDto.getKids());
+        reservation.setNotes(reservationDto.getNotes());
+        reservation.setDate(reservationDto.getReservationDay());
+        reservation.setSlot(entityManager.getReference(Slot.class, reservationDto.getIdSlot()));
+        reservation.setRejected(false);
+        reservation.setAccepted(true);
+        reservation.setNoShow(false);
+        reservation.setCreationDate(LocalDate.now());
+        if (reservationDto.isAnonymous()) {
+            reservation.set_user_info(reservationDto.getClientUser());
+        } else {
+            // set User id
+        }
+        return reservationDAO.save(reservation);
+    }
 
-	@Transactional
-	public Reservation askForReservation(NewReservationDTO reservationDto)
-			throws NoSuchElementException {
+    @Transactional
+    public Reservation askForReservation(NewReservationDTO reservationDto) throws NoSuchElementException {
+        Reservation reservation = new Reservation();
+        reservation.setRestaurant(entityManager.getReference(Restaurant.class, reservationDto.getRestaurant_id()));
+        reservation.setPax(reservationDto.getPax());
+        reservation.setKids(reservationDto.getKids());
+        reservation.setNotes(reservationDto.getNotes());
+        reservation.setDate(reservationDto.getReservationDay());
+        reservation.setSlot(entityManager.getReference(Slot.class, reservationDto.getIdSlot()));
+        reservation.setRejected(false);
+        reservation.setAccepted(false);
+        reservation.setNoShow(false);
+        reservation.setCreationDate(LocalDate.now());
+        if (reservationDto.isAnonymous()) {
+            reservation.set_user_info(reservationDto.getClientUser());
+        } else {
+            // set User id
+        }
+        return reservationDAO.save(reservation);
+    }
 
-		Reservation reservation = new Reservation();
-		reservation.setRestaurant(entityManager.getReference(Restaurant.class, reservationDto.getRestaurant_id()));
-		reservation.setPax(reservationDto.getPax());
-		reservation.setKids(reservationDto.getKids());
-		reservation.setNotes(reservationDto.getNotes());
-		reservation.setKids(reservationDto.getKids());
-		reservation.setDate(reservationDto.getReservationDay());
-		reservation.setSlot(entityManager.getReference(Slot.class, reservationDto.getIdSlot()));
-		reservation.setRejected(false);
-		reservation.setAccepted(false);
-		reservation.setNoShow(false);
-		reservation.setCreationDate(LocalDate.now());
-		if (reservationDto.isAnonymous()) {
-			//set anonymous user
-			reservation.set_user_info(reservationDto.getClientUser());
-		}
-		else {
-			//set User id
-			
-		}
-		// QUA PRESUME CHE IL CLIENTE SIA QUELLO DELLA EMAIL
-		// ClientUser user = clientUserDAO.findByEmail(userEmail);
-		// reservation.setClientUser(user);
-		// Notification rn = notificationService.createNotification();
-		return reservationDAO.save(reservation);
-	}
+    public List<LocalDate> findNotAvailableDays(Long idRestaurant) {
+        List<LocalDate> days = serviceDAO.findClosedOrFullDays(idRestaurant);
+        if (days == null) {
+            days = new ArrayList<>();
+        }
+        days.addAll(serviceDAO.findClosedOrFullDays(idRestaurant));
+        return days;
+    }
 
-	 
-	public List<LocalDate> findNotAvailableDays(Long idRestaurant) {
-		List<LocalDate> days = serviceDAO.findClosedOrFullDays(idRestaurant);
-		if (days == null)
-			days = new ArrayList<LocalDate>();
-		days.addAll(serviceDAO.findClosedOrFullDays(idRestaurant));
-		return days;
-	}
+    public List<LocalDate> findClosedDays(Long idRestaurant) {
+        return closedDaysDAO.findUpcomingClosedDay();
+    }
 
-	 
-	public List<LocalDate> findClosedDays(Long idRestaurant) {
-		return closedDaysDAO.findUpcomingClosedDay();
-	}
-
-	 
-	public List<Reservation> getDayReservations(Restaurant restaurant, LocalDate date) {
-		return reservationDAO.findDayReservation(restaurant.getId(), date);
-	}
+    public List<Reservation> getDayReservations(Restaurant restaurant, LocalDate date) {
+        return reservationDAO.findDayReservation(restaurant.getId(), date);
+    }
 
     public Collection<ReservationDTO> getReservations(Long restaurant_id, LocalDate start, LocalDate end) {
         return reservationDAO.findByRestaurantAndDateBetween(restaurant_id, start, end).stream()
-						.map(res -> new ReservationDTO(res)).collect(Collectors.toList());
+                .map(ReservationDTO::new).collect(Collectors.toList());
     }
 
-	public Collection<ReservationDTO> getAcceptedReservations(Long restaurant_id, LocalDate start, LocalDate end) {
-		return reservationDAO.findByRestaurantAndDateBetweenAndAccepted(restaurant_id, start, end).stream()
-				.map(res -> new ReservationDTO(res)).collect(Collectors.toList());
-	}
+    public Collection<ReservationDTO> getAcceptedReservations(Long restaurant_id, LocalDate start, LocalDate end) {
+        return reservationDAO.findByRestaurantAndDateBetweenAndAccepted(restaurant_id, start, end).stream()
+                .map(ReservationDTO::new).collect(Collectors.toList());
+    }
 
-	public Collection<ReservationDTO> getPendingReservations(Long restaurant_id, LocalDate start) {
-		return reservationDAO.findByRestaurantAndDateAndPending(restaurant_id, start).stream()
-				.map(res -> new ReservationDTO(res)).collect(Collectors.toList());
-	}
+    public Collection<ReservationDTO> getPendingReservations(Long restaurant_id, LocalDate start) {
+        return reservationDAO.findByRestaurantAndDateAndPending(restaurant_id, start).stream()
+                .map(ReservationDTO::new).collect(Collectors.toList());
+    }
 
-	public Collection<ReservationDTO> getPendingReservations(Long restaurant_id, LocalDate start, LocalDate end) {
-		return reservationDAO.findByRestaurantAndDateBetweenAndPending(restaurant_id, start, end).stream()
-				.map(res -> new ReservationDTO(res)).collect(Collectors.toList());
-	}
+    public Collection<ReservationDTO> getPendingReservations(Long restaurant_id, LocalDate start, LocalDate end) {
+        return reservationDAO.findByRestaurantAndDateBetweenAndPending(restaurant_id, start, end).stream()
+                .map(ReservationDTO::new).collect(Collectors.toList());
+    }
 
-	public Collection<ReservationDTO> getPendingReservations(Long restaurant_id) {
-		return reservationDAO.findByRestaurantIdAndPending(restaurant_id).stream()
-				.map(res -> new ReservationDTO(res)).collect(Collectors.toList());
-	}
+    public Collection<ReservationDTO> getPendingReservations(Long restaurant_id) {
+        return reservationDAO.findByRestaurantIdAndPending(restaurant_id).stream()
+                .map(ReservationDTO::new).collect(Collectors.toList());
+    }
+
+    public Collection<ReservationDTO> findAllUserReservations(Long userId) {
+        return reservationDAO.findByUser(userId).stream()
+                .map(ReservationDTO::new).collect(Collectors.toList());
+    }
+
+    public Collection<ReservationDTO> findAcceptedUserReservations(Long userId) {
+        return reservationDAO.findByUserAndAccepted(userId).stream()
+                .map(ReservationDTO::new).collect(Collectors.toList());
+    }
+
+    public Collection<ReservationDTO> findPendingUserReservations(Long userId) {
+        return reservationDAO.findByUserAndPending(userId).stream()
+                .map(ReservationDTO::new).collect(Collectors.toList());
+    }
 
 }
