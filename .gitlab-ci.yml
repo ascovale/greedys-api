@@ -7,8 +7,7 @@ variables:
 stages:
   - publish
   - deploy
-  - generate_api
-  - publish_api
+  - generate_and_publish_api
 
 publish:
   image: docker:latest
@@ -52,51 +51,38 @@ deploy:
   only:
     - main
 
-generate_api:
-  image: openapitools/openapi-generator-cli
-  stage: generate_api
+generate_and_publish_api:
+  image: docker:latest
+  stage: generate_and_publish_api
   services:
     - docker:dind
   script:
-    - |
-      echo "Waiting for server to restart..."
-      sleep 60  # Attendere il riavvio del server
-      echo "Creating API directory..."
-      mkdir -p $API_OUTPUT_DIR
-      echo "Fetching OpenAPI spec from server..."
-      curl -X GET "http://46.101.209.92:5050/v3/api-docs" -H  "accept: application/json" > $API_SPEC
-      echo "Generating Dart API client from OpenAPI spec..."
-      openapi-generator-cli generate -g dart-dio -i $API_SPEC -o $API_OUTPUT_DIR
-    - echo "Archiving generated API files..."
-    - tar -czf api_generated.tar.gz $API_OUTPUT_DIR
-  artifacts:
-    paths:
-      - api_generated.tar.gz
-  only:
-    - main
-
-publish_api:
-  image: alpine:latest
-  stage: publish_api
-  script:
-    - echo "Installing Git..."
-    - apk add --no-cache git
-    - echo "Extracting generated API files..."
-    - tar -xzf api_generated.tar.gz
-    - echo "Initializing Git repository..."
-    - cd $API_OUTPUT_DIR
-    - git init
-    - echo "Adding remote Git repository..."
-    - git remote add origin git@gitlab.com:PsychoOrange/greedys_api_dart_lib.git
-    - echo "Pulling latest changes from remote repository..."
-    - git pull origin main --rebase  # Pull changes from remote repository
+    - echo "Fetching OpenAPI spec from server..."
+    - curl -X GET "http://46.101.209.92:5050/v3/api-docs" -H  "accept: application/json" > $API_SPEC
+    - echo "Starting OpenAPI Generator Online Docker container..."
+    - CID=$(docker run -d -p 8888:8080 openapitools/openapi-generator-online)
+    - echo "Generating Dart API client using OpenAPI Generator Online..."
+    - curl -X POST --header 'Content-Type: application/json' --header 'Accept: application/json' \
+        -d '{"openAPIUrl": "http://46.101.209.92:5050/v3/api-docs"}' \
+        'http://localhost:8888/api/gen/clients/dart-dio' > generation_output.json
+    - echo "Downloading the generated Dart API client..."
+    - DOWNLOAD_LINK=$(jq -r '.link' generation_output.json)
+    - wget "$DOWNLOAD_LINK" -O api_generated.zip
+    - echo "Unzipping the generated API files..."
+    - unzip -o api_generated.zip -d $API_OUTPUT_DIR
+    - echo "Stopping and removing OpenAPI Generator container..."
+    - docker stop $CID && docker rm $CID
+    - echo "Installing Git and cloning the API repository..."
+    - apk add --no-cache git openssh-client
+    - git clone git@gitlab.com:PsychoOrange/greedys_api_dart_lib.git temp_api_repo
+    - echo "Copying generated files to the repository..."
+    - cp -r $API_OUTPUT_DIR/* temp_api_repo/
+    - cd temp_api_repo
     - echo "Adding generated files to Git..."
     - git add .
     - echo "Committing changes..."
     - git commit -m "Generated Dart API from OpenAPI spec"
     - echo "Pushing changes to remote repository..."
     - git push origin main
-  dependencies:
-    - generate_api
   only:
     - main
