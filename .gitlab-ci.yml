@@ -2,11 +2,13 @@ variables:
   TAG_LATEST: $CI_REGISTRY_IMAGE/spring-app:latest
   TAG_COMMIT: $CI_REGISTRY_IMAGE/spring-app:$CI_COMMIT_SHORT_SHA
   API_SPEC: openapi.json
+  API_OUTPUT_DIR: lib/api
 
 stages:
   - publish
   - deploy
   - generate_api
+  - publish_api
 
 publish:
   image: docker:latest
@@ -60,26 +62,41 @@ generate_api:
       echo "Waiting for server to restart..."
       sleep 60  # Attendere il riavvio del server
       echo "Creating API directory..."
-      mkdir -p lib/api/
-      echo "Initializing Git repository..."
-      apk add --no-cache git
-      cd lib/api/
-      git init
-      echo "Adding remote Git repository..."
-      git remote add origin git@gitlab.com:PsychoOrange/greedys_api_dart_lib.git
-      echo "Pulling latest changes from remote repository..."
-      git pull origin main --rebase  # Pull changes from remote repository
-      cd -
+      mkdir -p $API_OUTPUT_DIR
       echo "Fetching OpenAPI spec from server..."
       curl -X GET "http://46.101.209.92:5050/v3/api-docs" -H  "accept: application/json" > $API_SPEC
       echo "Generating Dart API client from OpenAPI spec..."
-      openapi-generator generate -g dart-dio -i $API_SPEC -o lib/api/
-      echo "Adding generated files to Git..."
-      cd lib/api/
-      git add .
-      echo "Committing changes..."
-      git commit -m "Generated Dart API from OpenAPI spec"
-      echo "Pushing changes to remote repository..."
-      git push origin main
+      openapi-generator generate -g dart-dio -i $API_SPEC -o $API_OUTPUT_DIR
+    - echo "Archiving generated API files..."
+    - tar -czf api_generated.tar.gz $API_OUTPUT_DIR
+  artifacts:
+    paths:
+      - api_generated.tar.gz
+  only:
+    - main
+
+publish_api:
+  image: alpine:latest
+  stage: publish_api
+  script:
+    - echo "Installing Git..."
+    - apk add --no-cache git
+    - echo "Extracting generated API files..."
+    - tar -xzf api_generated.tar.gz
+    - echo "Initializing Git repository..."
+    - cd $API_OUTPUT_DIR
+    - git init
+    - echo "Adding remote Git repository..."
+    - git remote add origin git@gitlab.com:PsychoOrange/greedys_api_dart_lib.git
+    - echo "Pulling latest changes from remote repository..."
+    - git pull origin main --rebase  # Pull changes from remote repository
+    - echo "Adding generated files to Git..."
+    - git add .
+    - echo "Committing changes..."
+    - git commit -m "Generated Dart API from OpenAPI spec"
+    - echo "Pushing changes to remote repository..."
+    - git push origin main
+  dependencies:
+    - generate_api
   only:
     - main
