@@ -58,13 +58,16 @@ generate_and_publish_api:
     - docker:dind
   script:
     - echo "Fetching OpenAPI spec from server..."
-    - curl -X GET "http://46.101.209.92:5050/v3/api-docs" -H  "accept: application/json" > $API_SPEC
+    - curl -X GET "http://46.101.209.92:5050/v3/api-docs" -H "accept: application/json" -o $API_SPEC
     - echo "Starting OpenAPI Generator Online Docker container..."
     - CID=$(docker run -d -p 8888:8080 openapitools/openapi-generator-online)
+    - echo "Allowing OpenAPI Generator container to start..."
+    - sleep 10
     - echo "Generating Dart API client using OpenAPI Generator Online..."
-    - curl -X POST --header 'Content-Type: application/json' --header 'Accept: application/json' \
+    - GEN_IP=$(docker inspect --format '{{.NetworkSettings.IPAddress}}' $CID)
+    - curl -X POST --header "Content-Type: application/json" --header "Accept: application/json" \
         -d '{"openAPIUrl": "http://46.101.209.92:5050/v3/api-docs"}' \
-        http://localhost:8888/api/gen/clients/dart-dio > generation_output.json
+        http://$GEN_IP:8080/api/gen/clients/dart-dio > generation_output.json
     - echo "Downloading the generated Dart API client..."
     - DOWNLOAD_LINK=$(jq -r '.link' generation_output.json)
     - wget "$DOWNLOAD_LINK" -O api_generated.zip
@@ -84,6 +87,6 @@ generate_and_publish_api:
     - echo "Committing changes..."
     - git commit -m "Generated Dart API from OpenAPI spec" || echo "No changes to commit"
     - echo "Pushing changes to remote repository..."
-    - git push origin main
+    - git push origin main || echo "Failed to push changes, likely no new changes"
   only:
     - main
