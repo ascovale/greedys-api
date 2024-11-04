@@ -54,28 +54,29 @@ generate_api:
   image: openapitools/openapi-generator-cli
   stage: generate_api
   script:
-    - echo "Waiting for server to restart..."
-    - sleep 60  # Attendere il riavvio del server
-    - echo "Creating API directory..."
-    - mkdir -p lib/api/
-    - echo "Initializing Git repository..."
-    - cd lib/api/
-    - git init
-    - echo "Adding remote Git repository..."
-    - git remote add origin git@gitlab.com:PsychoOrange/greedys_api_dart_lib.git
-    - echo "Pulling latest changes from remote repository..."
-    - git pull origin main --rebase  # Pull changes from remote repository
-    - cd -
-    - echo "Fetching OpenAPI spec from server..."
-    - curl -X GET "http://46.101.209.92:5050/v3/api-docs" -H  "accept: application/json" > $API_SPEC
-    - echo "Generating Dart API client from OpenAPI spec..."
-    - openapi-generator generate -g dart-dio -i $API_SPEC -o lib/api/
-    - echo "Adding generated files to Git..."
-    - cd lib/api/
-    - git add .
-    - echo "Committing changes..."
-    - git commit -m "Generated Dart API from OpenAPI spec"
-    - echo "Pushing changes to remote repository..."
-    - git push origin main
+    - |
+      echo "Waiting for server to restart..."
+      sleep 60  # Attendere il riavvio del server
+      echo "Creating API directory..."
+      mkdir -p lib/api/
+      echo "Initializing Git repository..."
+      cd lib/api/
+      git init
+      echo "Adding remote Git repository..."
+      git remote add origin git@gitlab.com:PsychoOrange/greedys_api_dart_lib.git
+      echo "Pulling latest changes from remote repository..."
+      git pull origin main --rebase  # Pull changes from remote repository
+      cd -
+      echo "Fetching OpenAPI spec from server..."
+      curl -X GET "http://46.101.209.92:5050/v3/api-docs" -H  "accept: application/json" > $API_SPEC
+      echo "Generating Dart API client from OpenAPI spec..."
+      openapi-generator generate -g dart-dio -i $API_SPEC -o lib/api/
+      echo "Adding generated files to Git..."
+      cd lib/api/
+      git add .
+      echo "Committing changes..."
+      git commit -m "Generated Dart API from OpenAPI spec"
+      echo "Pushing changes to remote repository..."
+      git push origin main
   only:
     - main
