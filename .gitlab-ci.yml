@@ -64,7 +64,7 @@ generate_and_publish_api:
     - echo "Generating Dart API client using OpenAPI Generator Online..."
     - curl -X POST --header 'Content-Type: application/json' --header 'Accept: application/json' \
         -d '{"openAPIUrl": "http://46.101.209.92:5050/v3/api-docs"}' \
-        'http://localhost:8888/api/gen/clients/dart-dio' > generation_output.json
+        http://localhost:8888/api/gen/clients/dart-dio > generation_output.json
     - echo "Downloading the generated Dart API client..."
     - DOWNLOAD_LINK=$(jq -r '.link' generation_output.json)
     - wget "$DOWNLOAD_LINK" -O api_generated.zip
@@ -74,6 +74,7 @@ generate_and_publish_api:
     - docker stop $CID && docker rm $CID
     - echo "Installing Git and cloning the API repository..."
     - apk add --no-cache git openssh-client
+    - echo "Cloning the repository..."
     - git clone git@gitlab.com:PsychoOrange/greedys_api_dart_lib.git temp_api_repo
     - echo "Copying generated files to the repository..."
     - cp -r $API_OUTPUT_DIR/* temp_api_repo/
@@ -81,7 +82,7 @@ generate_and_publish_api:
     - echo "Adding generated files to Git..."
     - git add .
     - echo "Committing changes..."
-    - git commit -m "Generated Dart API from OpenAPI spec"
+    - git commit -m "Generated Dart API from OpenAPI spec" || echo "No changes to commit"
     - echo "Pushing changes to remote repository..."
     - git push origin main
   only:
