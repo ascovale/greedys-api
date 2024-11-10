@@ -53,13 +53,13 @@ deploy:
     - main
 
 generate_and_publish_api:
-  image: docker:latest
+  image: node:alpine
   stage: generate_and_publish_api
   services:
     - docker:dind
   script:
     - echo "Logging into Docker registry..."
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - echo $CI_JOB_TOKEN | docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY
     - echo "Installing curl and openapi-generator-cli..."
     - apk add --no-cache curl
     - npm install -g @openapitools/openapi-generator-cli
