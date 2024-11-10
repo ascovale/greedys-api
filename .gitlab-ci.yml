@@ -11,13 +11,13 @@ stages:
   - generate_and_publish_api
 
 publish:
-  image: docker:latest
+  image: docker:24.0.5
   stage: publish
   services:
-    - docker:dind
+    - docker:24.0.5-dind
   script:
     - echo "Logging into Docker registry..."
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - echo $CI_JOB_TOKEN | docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY
     - echo "Building Docker image for spring-app..."
     - docker compose build spring-app || (docker logs spring-app && exit 1)
     - echo "Tagging Docker image with commit and latest tags..."
@@ -32,7 +32,7 @@ publish:
     - main
 
 deploy:
-  image: alpine:latest
+  image: alpine:3.18
   stage: deploy
   script:
     - echo "Setting permissions for RSA key..."
@@ -53,7 +53,7 @@ deploy:
     - main
 
 generate_and_publish_api:
-  image: node:alpine
+  image: node:14-alpine
   stage: generate_and_publish_api
   script:
     - echo "Setting permissions for RSA key..."
