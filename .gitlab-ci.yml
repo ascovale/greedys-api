@@ -55,8 +55,6 @@ deploy:
 generate_and_publish_api:
   image: node:alpine
   stage: generate_and_publish_api
-  services:
-    - docker:dind
   script:
     - echo "Logging into Docker registry..."
     - echo $CI_JOB_TOKEN | docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY
@@ -69,7 +67,11 @@ generate_and_publish_api:
     - curl -o openapi.yaml http://spring-app:8080/v3/api-docs.yaml
     - echo "Generating Dart client library with Dio from OpenAPI specification..."
     - openapi-generator-cli generate -i openapi.yaml -g dart-dio -o greedys_api_dart_lib
-    - echo "Cloning Dart client library repository..."
+    - echo "Cloning Dart client library repository using SSH..."
+    - mkdir -p ~/.ssh
+    - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
     - git clone $DART_REPO
     - echo "Copying generated sources to Dart client library repository..."
     - rm -rf greedys_api_dart_lib/lib/api
