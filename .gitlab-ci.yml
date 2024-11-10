@@ -53,14 +53,14 @@ deploy:
     - main
 
 generate_and_publish_api:
-  image: adoptopenjdk:11-jre-hotspot
+  image: openjdk:11-jre-slim
   stage: generate_and_publish_api
   script:
     - echo "Setting permissions for RSA key..."
     - chmod 600 $ID_RSA
     - echo "Updating apt and installing curl and Node.js..."
     - apt-get update && apt-get install -y curl
-    - curl -sL https://deb.nodesource.com/setup_14.x | bash -
+    - curl -sL https://deb.nodesource.com/setup_18.x | bash -
     - apt-get install -y nodejs
     - npm install -g @openapitools/openapi-generator-cli
     - echo "Running health check on spring-app..."
