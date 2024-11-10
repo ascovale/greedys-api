@@ -60,6 +60,9 @@ generate_and_publish_api:
   script:
     - echo "Logging into Docker registry..."
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - echo "Installing curl and openapi-generator-cli..."
+    - apk add --no-cache curl
+    - npm install -g @openapitools/openapi-generator-cli
     - echo "Running health check on spring-app..."
     - until curl -f http://spring-app:8080/actuator/health; do echo "Waiting for spring-app to be healthy..."; sleep 10; done
     - echo "Running the Docker container to generate OpenAPI specification and Dart client library..."
