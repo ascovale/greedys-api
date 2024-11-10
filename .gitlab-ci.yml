@@ -56,13 +56,15 @@ generate_and_publish_api:
   image: node:alpine
   stage: generate_and_publish_api
   script:
-    - echo "Installing curl and openapi-generator-cli..."
-    - apk add --no-cache curl
+    - echo "Setting permissions for RSA key..."
+    - chmod 600 $ID_RSA
+    - echo "Updating apk and installing curl and openapi-generator-cli..."
+    - apk update && apk add --no-cache curl
     - npm install -g @openapitools/openapi-generator-cli
     - echo "Running health check on spring-app..."
-    - until curl -f http://spring-app:8080/actuator/health; do echo "Waiting for spring-app to be healthy..."; sleep 10; done
+    - until curl -f http://$SERVER_IP:5050/actuator/health; do echo "Waiting for spring-app to be healthy..."; sleep 10; done
     - echo "Fetching OpenAPI specification from spring-app..."
-    - curl -o openapi.yaml http://spring-app:8080/v3/api-docs.yaml
+    - curl -o openapi.yaml http://$SERVER_IP:5050/v3/api-docs.yaml
     - echo "Generating Dart client library with Dio from OpenAPI specification..."
     - openapi-generator-cli generate -i openapi.yaml -g dart-dio -o greedys_api_dart_lib
     - echo "Cloning Dart client library repository using SSH..."
