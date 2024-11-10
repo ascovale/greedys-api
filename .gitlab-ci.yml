@@ -19,7 +19,7 @@ publish:
     - echo "Logging into Docker registry..."
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - echo "Building Docker image for spring-app..."
-    - docker compose build spring-app
+    - docker compose build spring-app || (docker logs spring-app && exit 1)
     - echo "Tagging Docker image with commit and latest tags..."
     - docker tag $CI_REGISTRY_IMAGE/spring-app:latest $TAG_COMMIT
     - docker tag $CI_REGISTRY_IMAGE/spring-app:latest $TAG_LATEST
@@ -60,8 +60,10 @@ generate_and_publish_api:
   script:
     - echo "Logging into Docker registry..."
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - echo "Running the Docker container to generate Dart client library..."
-    - docker run --rm -v $(pwd):/usr/src/app -w /usr/src/app $TAG_LATEST mvn openapi-generator:generate
+    - echo "Running health check on spring-app..."
+    - until curl -f http://spring-app:8080/actuator/health; do echo "Waiting for spring-app to be healthy..."; sleep 10; done
+    - echo "Running the Docker container to generate OpenAPI specification and Dart client library..."
+    - docker run --rm -v $(pwd):/app/greedys_api -w /app/greedys_api $TAG_LATEST mvn springdoc-openapi:generate openapi-generator:generate -e
     - echo "Cloning Dart client library repository..."
     - git clone $DART_REPO
     - echo "Copying generated sources to Dart client library repository..."

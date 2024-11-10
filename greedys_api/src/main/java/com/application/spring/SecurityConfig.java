@@ -54,7 +54,8 @@ public class SecurityConfig {
                                                 "/restaurant/*/day-slots*",
                                                 "/restaurant/*/services",
                                                 "/reservation/**",
-                                                "/error*").permitAll()
+                                                "/error*",
+                                                "/actuator/health").permitAll()
                             .anyRequest().authenticated()
             )
             .sessionManagement(management -> management
