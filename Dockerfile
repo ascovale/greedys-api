@@ -1,14 +1,5 @@
-FROM node:alpine
+FROM maven:latest AS builder
 
-# Install Docker
-RUN apk add --no-cache docker openrc && \
-    rc-update add docker boot && \
-    service docker start
-
-# Install openapi-generator-cli
-RUN npm install -g @openapitools/openapi-generator-cli
-
-# Set the working directory
 WORKDIR /app/greedys_api
 
 COPY ./greedys_api/ /app/greedys_api
