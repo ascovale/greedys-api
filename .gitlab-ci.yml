@@ -3,6 +3,7 @@ variables:
   TAG_COMMIT: $CI_REGISTRY_IMAGE/spring-app:$CI_COMMIT_SHORT_SHA
   API_SPEC: openapi.json
   API_OUTPUT_DIR: lib/api
+  DART_REPO: git@gitlab.com:PsychoOrange/greedys_api_dart_lib.git
 
 stages:
   - publish
@@ -48,5 +49,27 @@ deploy:
     - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "cd /home/$SERVER_USER/greedys_api/ && docker compose pull"
     - echo "Starting Docker containers on remote server..."
     - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "cd /home/$SERVER_USER/greedys_api/ && docker compose up -d"
+  only:
+    - main
+
+generate_and_publish_api:
+  image: docker:latest
+  stage: generate_and_publish_api
+  services:
+    - docker:dind
+  script:
+    - echo "Logging into Docker registry..."
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - echo "Running the Docker container to generate Dart client library..."
+    - docker run --rm -v $(pwd):/usr/src/app -w /usr/src/app $TAG_LATEST mvn openapi-generator:generate
+    - echo "Cloning Dart client library repository..."
+    - git clone $DART_REPO
+    - echo "Copying generated sources to Dart client library repository..."
+    - rm -rf greedys_api_dart_lib/lib/api
+    - cp -r target/generated-sources/openapi/lib/api greedys_api_dart_lib/lib/
+    - cd greedys_api_dart_lib
+    - git add .
+    - git commit -m "Update Dart client library with latest API changes"
+    - git push origin main
   only:
     - main

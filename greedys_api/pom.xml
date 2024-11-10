@@ -170,6 +170,18 @@
             <version>3.7.1</version>
         </dependency>
 
+        <!-- Auth Dependencies -->
+        
+        <dependency>
+
+            <groupId>com.google.auth</groupId>
+
+            <artifactId>google-auth-library-oauth2-http</artifactId>
+
+            <version>1.1.0</version>
+
+        </dependency>
+
         <!-- Jakarta Dependencies -->
         <dependency>
 
@@ -245,6 +257,27 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+            <plugin>
+                <groupId>org.openapitools</groupId>
+                <artifactId>openapi-generator-maven-plugin</artifactId>
+                <version>6.2.1</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>${project.basedir}/src/main/resources/openapi.yaml</inputSpec>
+                            <generatorName>dart-dio</generatorName>
+                            <output>${project.build.directory}/generated-sources/openapi</output>
+                            <configOptions>
+                                <pubName>greedys_api_dart_lib</pubName>
+                                <pubVersion>1.0.0</pubVersion>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 </project>
