@@ -65,13 +65,15 @@ generate_and_publish_api:
     - npm install -g @openapitools/openapi-generator-cli
     - echo "Running health check on spring-app..."
     - until curl -f http://spring-app:8080/actuator/health; do echo "Waiting for spring-app to be healthy..."; sleep 10; done
-    - echo "Running the Docker container to generate OpenAPI specification and Dart client library..."
-    - docker run --rm -v $(pwd):/app/greedys_api -w /app/greedys_api $TAG_LATEST mvn springdoc-openapi:generate openapi-generator:generate -e
+    - echo "Fetching OpenAPI specification from spring-app..."
+    - curl -o openapi.yaml http://spring-app:8080/v3/api-docs.yaml
+    - echo "Generating Dart client library with Dio from OpenAPI specification..."
+    - openapi-generator-cli generate -i openapi.yaml -g dart-dio -o greedys_api_dart_lib
     - echo "Cloning Dart client library repository..."
     - git clone $DART_REPO
     - echo "Copying generated sources to Dart client library repository..."
     - rm -rf greedys_api_dart_lib/lib/api
-    - cp -r target/generated-sources/openapi/lib/api greedys_api_dart_lib/lib/
+    - cp -r greedys_api_dart_lib/lib/api greedys_api_dart_lib/lib/
     - cd greedys_api_dart_lib
     - git add .
     - git commit -m "Update Dart client library with latest API changes"
