@@ -56,8 +56,6 @@ generate_and_publish_api:
   image: node:alpine
   stage: generate_and_publish_api
   script:
-    - echo "Logging into Docker registry..."
-    - echo $CI_JOB_TOKEN | docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY
     - echo "Installing curl and openapi-generator-cli..."
     - apk add --no-cache curl
     - npm install -g @openapitools/openapi-generator-cli
