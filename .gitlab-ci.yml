@@ -67,18 +67,14 @@ generate_and_publish_api:
     - export GIT_ASKPASS=/tmp/git-askpass.sh
     - echo "Cloning Dart client library repository using HTTPS with PAT..."
     - git clone https://gitlab.com/PsychoOrange/greedys_api_dart_lib.git
+    - cd greedys_api_dart_lib
     - echo "Running health check on spring-app..."
     - until curl -f http://$SERVER_IP:5050/actuator/health; do echo "Waiting for spring-app to be healthy..."; sleep 10; done
     - echo "Fetching OpenAPI specification from spring-app..."
     - curl -o openapi.yaml http://$SERVER_IP:5050/v3/api-docs.yaml
-    - echo "Printing fetched OpenAPI specification content..."
-    - cat openapi.yaml
     - echo "Generating Dart client library with Dio from OpenAPI specification..."
-    - openapi-generator-cli generate -i openapi.yaml -g dart-dio -o greedys_api_dart_lib
-    - echo "Copying generated sources to Dart client library repository..."
-    - rm -rf greedys_api_dart_lib/lib/api
-    - cp -r greedys_api_dart_lib/lib/api greedys_api_dart_lib/lib/
-    - cd greedys_api_dart_lib
+    - openapi-generator-cli generate -i ../openapi.yaml -g dart-dio -o .
+    - echo "Committing and pushing changes to Dart client library repository..."
     - git add .
     - git commit -m "Update Dart client library with latest API changes"
     - git push origin main
