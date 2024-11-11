@@ -43,7 +43,7 @@ services:
       test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -pMinosse100%"]
       interval: 2s
       timeout: 30s
-      retries: 5
+      retries: 10
 
   rabbitmq:
     image: rabbitmq:latest
