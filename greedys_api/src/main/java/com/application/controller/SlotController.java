@@ -35,18 +35,21 @@ public class SlotController {
     @Autowired
     private SlotService slotService;
 
-    @Operation(summary = "Create a new slot")
-    @ApiResponse(responseCode = "200", description = "Slot created successfully")
-    @ApiResponse(responseCode = "400", description = "Invalid input data")
-    @ApiResponse(responseCode = "500", description = "Internal server error")
-    @PostMapping("/")
-    public ResponseEntity<?> newSlot(@RequestBody NewSlotDTO slotDto) {
+    @Operation(summary = "Create a new slot", description = "This method creates a new slot.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Slot created",
+                                    content = @Content(mediaType = "application/json", 
+                                    schema = @Schema(implementation = NewSlotDTO.class))),
+                    
+            })
+    @PostMapping
+    public ResponseEntity<String> newSlot(@RequestBody NewSlotDTO slotDto) {
         slotService.addSlot(slotDto);
         return ResponseEntity.ok().body("success");
     }
 
     @Operation(summary = "Get all slots")
-    @GetMapping("/")
+    @GetMapping
     public Collection<Slot> getAllSlots (@RequestParam String param) {
         return slotService.findAll();
     }

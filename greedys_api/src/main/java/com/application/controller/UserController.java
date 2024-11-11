@@ -6,7 +6,6 @@ import java.util.UUID;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,10 +15,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.application.service.ReservationService;
 import com.application.service.RestaurantUserService;
 import com.application.service.UserService;
 import com.application.persistence.model.user.User;
 import com.application.security.user.ISecurityUserService;
+import com.application.web.dto.get.ReservationDTO;
 import com.application.web.dto.get.RestaurantDTO;
 import com.application.web.dto.get.UserDTO;
 import com.application.web.dto.put.UpdatePasswordDTO;
@@ -47,32 +48,21 @@ import org.springframework.web.bind.annotation.PathVariable;
 public class UserController {
 
 
-    @Autowired
-    UserService userService;
-    @Autowired
-    RestaurantUserService ruService;
 
-    @Autowired
-    private MessageSource messages;
+    private final UserService userService;
+    private final RestaurantUserService ruService;
+    private final ReservationService reservationService;
+    private final MessageSource messages;
+    private final ISecurityUserService securityUserService;
 
-    @Autowired
-    private ISecurityUserService securityUserService;
-
-
-    @Operation(summary = "Get all users", description = "Recupera un elenco di tutti gli utenti",
-        responses = {
-            @ApiResponse(responseCode = "200", description = "Operazione riuscita",
-                         content = @Content(mediaType = "application/json", 
-                                            schema = @Schema(implementation = UserDTO.class))),
-            @ApiResponse(responseCode = "401", description = "Non autorizzato"),
-            @ApiResponse(responseCode = "403", description = "Accesso negato"),
-            @ApiResponse(responseCode = "404", description = "Risorsa non trovata")
-        })
-    @GetMapping("/")
-    public Collection<UserDTO> getUsers() {
-        return userService.findAll().stream().map(u -> new UserDTO(u)).toList();
+    public UserController(UserService userService, RestaurantUserService ruService, ReservationService reservationService,
+                          MessageSource messages, ISecurityUserService securityUserService) {
+        this.userService = userService;
+        this.ruService = ruService;
+        this.reservationService = reservationService;
+        this.messages = messages;
+        this.securityUserService = securityUserService;
     }
-
 
     @Operation(summary = "Get user ID", description = "Ottiene l'ID dell'utente corrente",
         responses = {
@@ -173,6 +163,18 @@ public class UserController {
     @GetMapping("{id}/restaurants")
     public Collection<RestaurantDTO> getUserRestaurants(@PathVariable Long id) {
         return userService.gerRestaurants(id);
+    }
+
+
+    @Operation(summary = "Get user's reservations", description = "Recupera l'elenco delle prenotazioni dell'utente")
+    @ApiResponse(responseCode = "200", description = "Operazione riuscita", 
+                 content = @Content(mediaType = "application/json", 
+                                    array = @ArraySchema(
+                                        schema = @Schema(implementation = ReservationDTO.class))))
+    @ApiResponse(responseCode = "404", description = "Utente non trovato")
+    @GetMapping("{id}/reservations")
+    public Collection<ReservationDTO> getUserReservations(@PathVariable Long id) {
+        return reservationService.findAllUserReservations(id);
     }
 
 }

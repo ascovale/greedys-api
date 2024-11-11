@@ -2,33 +2,39 @@ package com.application.controller;
 
 import java.time.LocalDate;
 import java.util.Collection;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.service.ReservationService;
 import com.application.service.RestaurantService;
 import com.application.service.RestaurantUserService;
+import com.application.service.RoomService;
+import com.application.service.TableService;
 import com.application.web.dto.get.ReservationDTO;
 import com.application.web.dto.get.RestaurantDTO;
 import com.application.web.dto.get.RestaurantUserDTO;
+import com.application.web.dto.get.RoomDTO;
 import com.application.web.dto.get.ServiceDTO;
 import com.application.web.dto.get.SlotDTO;
+import com.application.web.dto.get.TableDTO;
+import com.application.web.dto.post.NewRoomDTO;
+import com.application.web.dto.post.NewTableDTO;
 import com.application.web.util.GenericResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -42,14 +48,22 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "bearerAuth")
 public class RestaurantController {
 
-	@Autowired
-	private RestaurantService restaurantService;
+	private final RestaurantService restaurantService;
+	private final ReservationService reservationService;
+	private final RestaurantUserService restaurantUserService;
+	private final RoomService roomService;
+	private final TableService tableService;
 
-	@Autowired
-	private ReservationService reservationService;
+	public RestaurantController(RestaurantService restaurantService, ReservationService reservationService, 
+								RestaurantUserService restaurantUserService, RoomService roomService, 
+								TableService tableService) {
+		this.restaurantService = restaurantService;
+		this.reservationService = reservationService;
+		this.restaurantUserService = restaurantUserService;
+		this.roomService = roomService;
+		this.tableService = tableService;
+	}
 
-	@Autowired
-	private RestaurantUserService restaurantUserService;
 
 	/*
 	@Autowired
@@ -66,7 +80,7 @@ public class RestaurantController {
     @GetMapping(value = "")
 	public ResponseEntity<Collection<RestaurantDTO>> getRestaurants() {
 		Collection<RestaurantDTO> restaurants = restaurantService.findAll().stream().map(r -> new RestaurantDTO(r)).toList();
-		return new ResponseEntity<Collection<RestaurantDTO>>(restaurants, HttpStatus.OK);
+		return new ResponseEntity<>(restaurants, HttpStatus.OK);
 	}
 
 	@GetMapping(value = "{id}/open-days")
@@ -81,8 +95,8 @@ public class RestaurantController {
 	})
 	public ResponseEntity<Collection<String>> getOpenDays(
 				@PathVariable Long id,
-				@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate start,
-				@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate end){
+				@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
+				@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end){
 		Collection<String> openDays = restaurantService.getOpenDays(id, start, end);
 		return new ResponseEntity<>(openDays, HttpStatus.OK);
 	}
@@ -100,8 +114,8 @@ public class RestaurantController {
 	})
 	public ResponseEntity<Collection<LocalDate>> getClosedDays(
 				@PathVariable Long id,
-				@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate start,
-				@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate end){
+				@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
+				@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end){
 		Collection<LocalDate> openDays = restaurantService.getClosedDays(id, start, end);
 		return new ResponseEntity<>(openDays, HttpStatus.OK);
 	}
@@ -118,7 +132,7 @@ public class RestaurantController {
 	})
 	public ResponseEntity<Collection<SlotDTO>> getDaySlots(
 				@PathVariable Long id,
-				@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate date){
+				@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate date){
 		Collection<SlotDTO> slots = restaurantService.getDaySlots(id, date);
 		return new ResponseEntity<>(slots, HttpStatus.OK);
 	}
@@ -134,10 +148,59 @@ public class RestaurantController {
     @GetMapping(value = "{id}/reservation")
 	public Collection<ReservationDTO> getReservations(
 				@PathVariable Long id,
-				@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate start,
-				@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate end){
+				@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
+				@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end){
 		Collection<ReservationDTO> reservations = reservationService.getReservations(id, start, end);
 		return reservations;
+	}
+
+	@Operation(summary = "Get all accepted reservations of a restaurant", description = "Ottieni tutte le prenotazioni accettate di un ristorante")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Operazione riuscita", 
+					 content = @Content(mediaType = "application/json",
+					 				array = @ArraySchema(
+										schema = @Schema(implementation = ReservationDTO.class)))),
+		@ApiResponse(responseCode = "404", description = "Ristorante non trovato")
+	})
+	@GetMapping(value = "{id}/reservation/accepted")
+	public Collection<ReservationDTO> getAcceptedReservations(
+				@PathVariable Long id,
+				@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
+				@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end){
+		Collection<ReservationDTO> reservations = reservationService.getAcceptedReservations(id, start, end);
+		return reservations;
+	}
+
+	@Operation(summary = "Get all pending reservations of a restaurant", description = "Ottieni tutte le prenotazioni in attesa di un ristorante")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Operazione riuscita", 
+					 content = @Content(mediaType = "application/json",
+					 				array = @ArraySchema(
+										schema = @Schema(implementation = ReservationDTO.class)))),
+		@ApiResponse(responseCode = "404", description = "Ristorante non trovato")
+	})
+	@GetMapping(value = "{id}/reservation/pending")
+	public Collection<ReservationDTO> getPendingReservations(
+				@PathVariable Long id,
+				@RequestParam(required = false) LocalDate start,
+				@RequestParam(required = false) LocalDate end) {
+
+				Collection<ReservationDTO> reservations;
+				if(end != null && start != null){
+					reservations = reservationService.getPendingReservations(id, start, end);
+				}
+				else if(start != null){
+					reservations = reservationService.getPendingReservations(id, start);
+				}
+				else if (end != null){
+					throw new IllegalArgumentException("end cannot be null if start is not null");
+
+				}
+				else {
+					reservations = reservationService.getPendingReservations(id);
+
+				}
+				return reservations;
 	}
 
 	@Operation(summary = "Get all users of a restaurant", description = "Ottieni tutti gli utenti di un ristorante")
@@ -196,7 +259,7 @@ public class RestaurantController {
     @GetMapping(value = "/search")
 	public ResponseEntity<Collection<RestaurantDTO>> searchRestaurants(@RequestParam String name) {
 		Collection<RestaurantDTO> restaurants = restaurantService.findBySearchTerm(name);
-		return new ResponseEntity<Collection<RestaurantDTO>>(restaurants, HttpStatus.OK);
+		return new ResponseEntity<>(restaurants, HttpStatus.OK);
 	}
 
 
@@ -214,5 +277,67 @@ public class RestaurantController {
 	public ResponseEntity<Collection<ServiceDTO>> getServices(@PathVariable Long id){
 		Collection<ServiceDTO> services = restaurantService.getServices(id);
 		return new ResponseEntity<>(services, HttpStatus.OK);
+	}
+
+
+
+	/* -- === *** ROOMS AND TABLES *** === --- */
+
+	@GetMapping(value = "/{id}/rooms")
+	@Operation(summary = "Get rooms of a restaurant", description = "Ottieni le sale di un ristorante")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Operazione riuscita",
+						content = @Content(mediaType = "application/json",
+									array = @ArraySchema(
+											schema = @Schema(implementation = RoomDTO.class)))),
+		@ApiResponse(responseCode = "404", description = "Ristorante non trovato"),
+		@ApiResponse(responseCode = "400", description = "Richiesta non valida")
+	})
+	public ResponseEntity<Collection<RoomDTO>> getRooms(@PathVariable Long id){
+		Collection<RoomDTO> rooms = roomService.findByRestaurant(id);
+		return new ResponseEntity<>(rooms, HttpStatus.OK);
+	}
+
+	@GetMapping(value = "/{id}/room/{roomId}/tables")
+	@Operation(summary = "Get tables of a room", description = "Ottieni i tavoli di una sala")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Operazione riuscita",
+						content = @Content(mediaType = "application/json",
+									array = @ArraySchema(
+											schema = @Schema(implementation = TableDTO.class)))),
+		@ApiResponse(responseCode = "404", description = "Ristorante o sala non trovato"),
+		@ApiResponse(responseCode = "400", description = "Richiesta non valida")
+	})
+	public ResponseEntity<Collection<TableDTO>> getTables(@PathVariable Long id, @PathVariable Long roomId){
+		Collection<TableDTO> tables = tableService.findByRoom(roomId);
+		return new ResponseEntity<>(tables, HttpStatus.OK);
+	}
+
+	@PostMapping(value = "/room")
+	@Operation(summary = "Add a room to a restaurant", description = "Aggiungi una sala a un ristorante")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Operazione riuscita",
+						content = @Content(mediaType = "application/json",
+									schema = @Schema(implementation = GenericResponse.class))),
+		@ApiResponse(responseCode = "404", description = "Ristorante non trovato"),
+		@ApiResponse(responseCode = "400", description = "Richiesta non valida")
+	})
+	public GenericResponse addRoom(@RequestBody NewRoomDTO roomDto){
+		roomService.createRoom(roomDto);
+		return new GenericResponse("success");
+	}
+
+	@PostMapping(value = "/table")
+	@Operation(summary = "Add a table to a room", description = "Aggiungi un tavolo a una sala")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Operazione riuscita",
+						content = @Content(mediaType = "application/json",
+									schema = @Schema(implementation = GenericResponse.class))),
+		@ApiResponse(responseCode = "404", description = "Ristorante o sala non trovato"),
+		@ApiResponse(responseCode = "400", description = "Richiesta non valida")
+	})
+	public GenericResponse addTable(@RequestParam NewTableDTO tableDto){
+		tableService.createTable(tableDto);
+		return new GenericResponse("success");
 	}
 }

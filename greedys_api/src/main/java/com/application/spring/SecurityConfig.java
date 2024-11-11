@@ -54,7 +54,8 @@ public class SecurityConfig {
                                                 "/restaurant/*/day-slots*",
                                                 "/restaurant/*/services",
                                                 "/reservation/**",
-                                                "/error*").permitAll()
+                                                "/error*",
+                                                "/actuator/health").permitAll()
                             .anyRequest().authenticated()
             )
             .sessionManagement(management -> management
@@ -84,8 +85,7 @@ public class SecurityConfig {
         return auth.build();
     }
 
-    @Bean
-    @Qualifier("userEncoder")
+    @Bean(name = "userEncoder")
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }

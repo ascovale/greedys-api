@@ -3,6 +3,7 @@ package com.application.registration.listener;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.MessageSource;
 import org.springframework.core.env.Environment;
@@ -23,6 +24,7 @@ public class UserRegistrationListener implements ApplicationListener<UserOnRegis
 	private MessageSource messages;
 
 	@Autowired
+	@Qualifier("getUserMailSender")
 	private JavaMailSender mailSender;
 
 	@Autowired
@@ -43,14 +45,12 @@ public class UserRegistrationListener implements ApplicationListener<UserOnRegis
 		mailSender.send(email);
 	}
 
-
-
 	private final SimpleMailMessage constructEmailMessage(final UserOnRegistrationCompleteEvent event, final User user,
 			final String token) {
 		System.out.println("Prova inviare");
 		final String recipientAddress = user.getEmail();
 		final String subject = "Registration Confirmation";
-		final String confirmationUrl = event.getAppUrl() + "/registrationConfirm.html?token=" + token;
+		final String confirmationUrl = event.getAppUrl() + "/register/user/confirm?token=" + token;
 		final String message = messages.getMessage("message.regSucc", null, event.getLocale());
 		final SimpleMailMessage email = new SimpleMailMessage();
 		email.setTo(recipientAddress);

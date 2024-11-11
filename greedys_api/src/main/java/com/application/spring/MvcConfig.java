@@ -139,7 +139,7 @@ public class MvcConfig implements WebMvcConfigurer, ApplicationContextAware {
         mailSender.setHost("smtp.gmail.com");
         mailSender.setPort(587);
         mailSender.setUsername("reservationslasoffitta@gmail.com");
-        mailSender.setPassword("minosse100");
+        mailSender.setPassword("qtvm gswd soun aulm");
         Properties props = mailSender.getJavaMailProperties();
         props.put("mail.transport.protocol", "smtp");
         props.put("mail.smtp.auth", "true");
@@ -147,5 +147,43 @@ public class MvcConfig implements WebMvcConfigurer, ApplicationContextAware {
         props.put("mail.debug", "true");
         return mailSender;
     }
-}
 
+
+    @Bean
+    JavaMailSender getUserMailSender() {
+        /*
+        JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
+        mailSender.setHost("smtp.example.com");
+        mailSender.setPort(587);
+        mailSender.setUsername("user2@example.com");
+        mailSender.setPassword("password2");
+
+        Properties props = mailSender.getJavaMailProperties();
+        props.put("mail.transport.protocol", "smtp");
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.starttls.enable", "true");
+        props.put("mail.debug", "true");
+
+        return mailSender;*/
+        return getJavaMailSender();
+    }
+
+    @Bean
+    JavaMailSender getReservationMailSender() {
+        /*
+        JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
+        mailSender.setHost("smtp.example.com");
+        mailSender.setPort(587);
+        mailSender.setUsername("user2@example.com");
+        mailSender.setPassword("password2");
+
+        Properties props = mailSender.getJavaMailProperties();
+        props.put("mail.transport.protocol", "smtp");
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.starttls.enable", "true");
+        props.put("mail.debug", "true");
+
+        return mailSender;*/
+        return getJavaMailSender();
+    }
+}

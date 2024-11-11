@@ -1,12 +1,33 @@
 package com.application.web.dto.post;
 
+import java.time.LocalDate;
+
 public class NewServiceDTO {
 
-	String name;
-	Long restaurant;
-	Long serviceType;
-	String info;
-	
+	private String name;
+	private Long restaurant;
+	private Long serviceType;
+	private String info;
+	private LocalDate validFrom;
+	private LocalDate validTo;
+
+	public LocalDate getValidFrom() {
+		return validFrom;
+	}
+
+	public void setValidFrom(LocalDate validFrom) {
+		this.validFrom = validFrom;
+	}
+
+	public void setValidTo(LocalDate validTo) {
+		this.validTo = validTo;
+	}
+
+	public LocalDate getValidTo() {
+		return validTo;
+
+	}
+
     public Long getServiceType() {
 		return serviceType;
 	}

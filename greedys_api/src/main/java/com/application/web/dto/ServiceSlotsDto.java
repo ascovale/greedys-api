@@ -3,9 +3,11 @@ package com.application.web.dto;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.application.mapper.Mapper.Weekday;
 import com.application.persistence.model.reservation.Service;
+import com.application.persistence.model.reservation.ServiceType;
 import com.application.persistence.model.reservation.Slot;
 import com.application.web.dto.get.SlotDTO;
 
@@ -19,7 +21,9 @@ public class ServiceSlotsDto {
 	
 	public ServiceSlotsDto(Service service) {
 		this.name = service.getName();
-		this.serviceType = service.getServiceType().getName(); // Aggiungi questa linea
+		this.serviceType = service.getServiceType().stream()
+			.map(ServiceType::getName)
+			.collect(Collectors.joining(", ")); // Aggiungi questa linea
 		List<SlotDTO> slotDtos = new ArrayList<>();
 		for (Slot slot : service.getSlots()) {
 			SlotDTO slotDto = new SlotDTO(slot);

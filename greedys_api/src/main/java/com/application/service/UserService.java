@@ -1,12 +1,13 @@
 package com.application.service;
 
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import java.time.LocalDateTime;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
@@ -185,8 +186,8 @@ public class UserService {
 		}
 
 		final User user = verificationToken.getUser();
-		final Calendar cal = Calendar.getInstance();
-		if ((verificationToken.getExpiryDate().getTime() - cal.getTime().getTime()) <= 0) {
+		final LocalDateTime now = LocalDateTime.now();
+		if (verificationToken.getExpiryDate().isBefore(now)) {
 			tokenDAO.delete(verificationToken);
 			return TOKEN_EXPIRED;
 		}

@@ -2,7 +2,7 @@ package com.application.controller.Socket;
 
 import java.security.Principal;
 import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDate;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.Header;
@@ -29,7 +29,7 @@ public class SocketController {
     @MessageMapping(SECURED_CHAT)
     @SendTo(SECURED_CHAT_HISTORY)
     public OutputMessage sendAll(Message msg) throws Exception {
-        OutputMessage out = new OutputMessage(msg.getFrom(), msg.getText(), new SimpleDateFormat("HH:mm").format(new Date()));
+        OutputMessage out = new OutputMessage(msg.getFrom(), msg.getText(), new SimpleDateFormat("HH:mm").format(LocalDate.now()));
         return out;
     }
 
@@ -38,7 +38,7 @@ public class SocketController {
      */
     @MessageMapping(SECURED_CHAT_ROOM)
     public void sendSpecific(@Payload Message msg, Principal user, @Header("simpSessionId") String sessionId) throws Exception {
-        OutputMessage out = new OutputMessage(msg.getFrom(), msg.getText(), new SimpleDateFormat("HH:mm").format(new Date()));
+        OutputMessage out = new OutputMessage(msg.getFrom(), msg.getText(), new SimpleDateFormat("HH:mm").format(LocalDate.now()));
         simpMessagingTemplate.convertAndSendToUser(msg.getTo(), SECURED_CHAT_SPECIFIC_USER, out);
     }
 }

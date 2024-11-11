@@ -1,16 +1,17 @@
 package com.application.web.dto.get;
 
-import java.util.Date;
-import org.springframework.format.annotation.DateTimeFormat;
+import java.time.LocalDate;
 
-import com.application.controller.Validators.PasswordMatches;
 import com.application.controller.Validators.ValidEmail;
 import com.application.persistence.model.reservation.ClientInfo;
 import com.application.persistence.model.reservation.Reservation;
+import com.application.web.dto.post.LocalDateDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-@PasswordMatches()
 public class ReservationDTO {
 
+	private Long id;
 	private SlotDTO slot;
 	private Integer pax;
 	private Integer kids=0;
@@ -20,14 +21,18 @@ public class ReservationDTO {
 	@ValidEmail
 	private String email;
 	private String notes;
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-	private Date reservationDay; 
+	@JsonSerialize(using = LocalDateSerializer.class)
+	@JsonDeserialize(using = LocalDateDeserializer.class)
+	private LocalDate reservationDay; 
 	private Long restaurant;
+
+	private Boolean isAccepted;
+	private Boolean isRejected;
 
 	public ReservationDTO(Reservation reservation) {
 		
 		this.slot = new SlotDTO(reservation.getSlot());
-
+		this.id = reservation.getId();
 		this.pax = reservation.getPax();
 		this.kids = reservation.getKids();
 
@@ -38,8 +43,15 @@ public class ReservationDTO {
 		this.notes = reservation.getNotes();
 		this.reservationDay = reservation.getDate();
 		this.restaurant = reservation.getSlot().getService().getRestaurant().getId();
+		this.isAccepted = reservation.getAccepted();
+		this.isRejected = reservation.getRejected();
 	}
 
+	public Long getId() {
+		return id;
+	}
+
+	
 	public Long getRestaurant() {
 		return restaurant;
 	}
@@ -54,7 +66,7 @@ public class ReservationDTO {
 	public SlotDTO getSlot() {
 		return slot;
 	}
-	public void setIdSlot(SlotDTO slot) {
+	public void setSlot(SlotDTO slot) {
 		this.slot = slot;
 	}
 	public Integer getPax() {
@@ -100,13 +112,21 @@ public class ReservationDTO {
 		this.notes = notes;
 	}
 
-	public Date getReservationDay() {
+	public LocalDate getReservationDay() {
 		return reservationDay;
 	}
 
-	public void setReservationDay(Date reservationDay) {
+	public void setReservationDay(LocalDate reservationDay) {
 		this.reservationDay = reservationDay;
-	}	
+	}
+
+	public Boolean isAccepted() {
+		return isAccepted;
+	}
+
+	public Boolean isRejected() {
+		return isRejected;
+	}
 	
 }
 

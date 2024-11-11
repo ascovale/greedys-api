@@ -1,7 +1,7 @@
 package com.application.web.dto.post;
 
 
-import java.util.Date;
+import java.time.LocalDate;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -13,8 +13,8 @@ public class NewReservationDTO {
 	private Integer pax;
 	private Integer kids=0;
 	private String notes;
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-	private Date reservationDay; 
+    @DateTimeFormat(pattern = "dd-MM-yyyy")
+	private LocalDate reservationDay; 
     private Long restaurant_id;
 	private Long user_id;
 	private ClientInfo clientUser;
@@ -79,11 +79,11 @@ public class NewReservationDTO {
 		this.notes = notes;
 	}
 
-	public Date getReservationDay() {
+	public LocalDate getReservationDay() {
 		return reservationDay;
 	}
 
-	public void setReservationDay(Date reservationDay) {
+	public void setReservationDay(LocalDate reservationDay) {
 		this.reservationDay = reservationDay;
 	}	
 	

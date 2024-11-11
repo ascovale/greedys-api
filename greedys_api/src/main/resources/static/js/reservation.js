@@ -1,7 +1,7 @@
 const serverUrl = 'http://localhost:5050';
 
-let currentMonth = new Date().getMonth();
-let currentYear = new Date().getFullYear();
+let currentMonth = LocalDate.now().getMonth();
+let currentYear = LocalDate.now().getFullYear();
 let selectedDay = null;
 let slotId = null;
 let reservationDay = null;
@@ -226,18 +226,18 @@ function selectDay(dayElement, date) {
 
 function updateCalendar(calendar) {
 	const daysOfWeek = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-	const today = new Date();
+	const today = LocalDate.now();
 	const year = currentYear;
 	const month = currentMonth;
-	const daysInMonth = new Date(year, month + 1, 0).getDate();
-	const firstDayOfMonth = new Date(year, month, 1).getDay();
+	const daysInMonth = new LocalDate(year, month + 1, 0).getDate();
+	const firstDayOfMonth = new LocalDate(year, month, 1).getDay();
 
 	// Set current month and year
-	document.getElementById('current-month-year').textContent = new Date(year, month).toLocaleString('default', { month: 'long', year: 'numeric' });
+	document.getElementById('current-month-year').textContent = new LocalDate(year, month).toLocaleString('default', { month: 'long', year: 'numeric' });
 
 	const url = new URL(serverUrl + '/restaurant/' + id + '/open-days');
-	url.searchParams.append('start', new Date(currentYear, currentMonth, 1).toISOString());
-	url.searchParams.append('end', new Date(currentYear, currentMonth + 1, 0).toISOString());
+	url.searchParams.append('start', new LocalDate(currentYear, currentMonth, 1).toISOString());
+	url.searchParams.append('end', new LocalDate(currentYear, currentMonth + 1, 0).toISOString());
 	fetch(url.toString())
 		.then(response => {
 			if (!response.ok) {

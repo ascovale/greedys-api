@@ -1,7 +1,5 @@
 package com.application.controller;
 
-import jakarta.servlet.http.HttpServletRequest;
-
 import java.util.Collections;
 
 import org.slf4j.Logger;
@@ -15,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.application.service.RestaurantService;
 import com.application.service.RestaurantUserService;
-import com.application.persistence.dao.Restaurant.RestaurantRoleDAO;
+import com.application.persistence.dao.restaurant.RestaurantRoleDAO;
 import com.application.persistence.model.restaurant.RestaurantRole;
 import com.application.persistence.model.restaurant.RestaurantUser;
 import com.application.web.dto.get.RestaurantDTO;

@@ -1,7 +1,7 @@
 package com.application.web.dto;
 
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 import com.application.persistence.model.reservation.Reservation;
@@ -10,8 +10,8 @@ import com.application.persistence.model.restaurant.Restaurant;
 public class RestaurantServizioDto {
 	private Long id;
 	private String name;
-	private Date startDate;
-	private Date endDate;
+	private LocalDate startDate;
+	private LocalDate endDate;
 	private String description;
 	private List<Reservation> reservations;
 	private Restaurant restaurant;
@@ -28,16 +28,16 @@ public class RestaurantServizioDto {
 	public void setName(String name) {
 		this.name = name;
 	}
-	public Date getStartDate() {
+	public LocalDate getStartDate() {
 		return startDate;
 	}
-	public void setStartDate(Date startDate) {
+	public void setStartDate(LocalDate startDate) {
 		this.startDate = startDate;
 	}
-	public Date getEndDate() {
+	public LocalDate getEndDate() {
 		return endDate;
 	}
-	public void setEndDate(Date endDate) {
+	public void setEndDate(LocalDate endDate) {
 		this.endDate = endDate;
 	}
 	public String getDescription() {

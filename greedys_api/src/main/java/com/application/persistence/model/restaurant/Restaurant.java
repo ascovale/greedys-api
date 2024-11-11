@@ -1,7 +1,7 @@
 package com.application.persistence.model.restaurant;
 
 import java.util.Collection;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 import jakarta.persistence.CascadeType;
@@ -15,8 +15,6 @@ import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
-import com.application.service.ServiceService;
-import com.application.persistence.dao.Restaurant.ServiceDAO;
 import com.application.persistence.model.Image;
 import com.application.persistence.model.reservation.Service;
 
@@ -37,7 +35,7 @@ public class Restaurant {
 	private Long id;
 	private String name;
 	@Column(name = "date_creation")
-	private Date creationDate;
+	private LocalDate creationDate;
 	private String email;
 	@Column(name = "telephone")
 	private String tel;
@@ -134,11 +132,11 @@ public class Restaurant {
 		// TODO Auto-generated constructor stub
 	}
 
-	public Date getCreationDate() {
+	public LocalDate getCreationDate() {
 		return creationDate;
 	}
 
-	public void setCreationDate(Date creationDate) {
+	public void setCreationDate(LocalDate creationDate) {
 		this.creationDate = creationDate;
 	}
 

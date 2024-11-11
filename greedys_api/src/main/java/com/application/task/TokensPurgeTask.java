@@ -1,7 +1,7 @@
 package com.application.task;
 
 import java.time.Instant;
-import java.util.Date;
+import java.time.LocalDate;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,7 +22,7 @@ public class TokensPurgeTask {
     //@Scheduled(cron = "${purge.cron.expression}")
     public void purgeExpired() {
 
-        Date now = Date.from(Instant.now());
+        LocalDate now = LocalDate.from(Instant.now());
         passwordTokenRepository.deleteAllExpiredSince(now);
         tokenRepository.deleteAllExpiredSince(now);
     }

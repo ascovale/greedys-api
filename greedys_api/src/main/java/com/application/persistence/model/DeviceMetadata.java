@@ -1,6 +1,6 @@
 package com.application.persistence.model;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.Objects;
 
 import jakarta.persistence.Entity;
@@ -17,7 +17,7 @@ public class DeviceMetadata {
     private Long userId;
     private String deviceDetails;
     private String location;
-    private Date lastLoggedIn;
+    private LocalDate lastLoggedIn;
 
     public Long getId() {
         return id;
@@ -51,11 +51,11 @@ public class DeviceMetadata {
         this.location = location;
     }
 
-    public Date getLastLoggedIn() {
+    public LocalDate getLastLoggedIn() {
         return lastLoggedIn;
     }
 
-    public void setLastLoggedIn(Date lastLoggedIn) {
+    public void setLastLoggedIn(LocalDate lastLoggedIn) {
         this.lastLoggedIn = lastLoggedIn;
     }
 

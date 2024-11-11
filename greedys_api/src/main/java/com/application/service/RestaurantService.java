@@ -2,7 +2,6 @@ package com.application.service;
 
 import java.time.LocalDate;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -13,8 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.application.mapper.Mapper;
-import com.application.persistence.dao.Restaurant.RestaurantDAO;
-import com.application.persistence.dao.Restaurant.RestaurantUserDAO;
+import com.application.persistence.dao.restaurant.RestaurantDAO;
+import com.application.persistence.dao.restaurant.RestaurantUserDAO;
 import com.application.persistence.model.Image;
 import com.application.persistence.model.restaurant.Restaurant;
 import com.application.web.dto.RestaurantFullDetailsDto;
@@ -80,7 +79,7 @@ public class RestaurantService {
 		Restaurant restaurant = new Restaurant();
 		restaurant.setName(restaurantDto.getName());
 		restaurant.setAddress(restaurantDto.getAddress());
-		restaurant.setCreationDate(new Date());
+		restaurant.setCreationDate(LocalDate.now());
 		restaurant.setEmail(restaurantDto.getEmail());
 		restaurant.setpI(restaurantDto.getpi());
 		restaurant.setPostCode(restaurantDto.getPost_code());

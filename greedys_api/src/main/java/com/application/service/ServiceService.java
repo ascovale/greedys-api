@@ -1,9 +1,7 @@
 package com.application.service;
 
-
-import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -12,9 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.application.mapper.Mapper.Weekday;
-import com.application.persistence.dao.Restaurant.ServiceDAO;
-import com.application.persistence.dao.Restaurant.ServiceTypeDAO;
-import com.application.persistence.dao.Restaurant.SlotDAO;
+import com.application.persistence.dao.restaurant.ServiceDAO;
+import com.application.persistence.dao.restaurant.ServiceTypeDAO;
+import com.application.persistence.dao.restaurant.SlotDAO;
 import com.application.persistence.model.reservation.Service;
 import com.application.persistence.model.reservation.ServiceType;
 import com.application.persistence.model.reservation.Slot;
@@ -22,7 +20,6 @@ import com.application.persistence.model.restaurant.Restaurant;
 import com.application.web.dto.ServiceDto;
 import com.application.web.dto.ServiceSlotsDto;
 import com.application.web.dto.ServiceTypeDto;
-import com.application.web.dto.ServicesDto;
 import com.application.web.dto.get.ServiceDTO;
 import com.application.web.dto.post.NewServiceDTO;
 
@@ -45,7 +42,7 @@ public class ServiceService {
 	RestaurantService rService;
 
 	 
-	public List<ServiceDto> getServices(Long idRestaurant, Date selectedDate) {
+	public List<ServiceDto> getServices(Long idRestaurant, LocalDate selectedDate) {
 		List<Service> services = serviceDAO.findServicesByRestaurant(idRestaurant);
 		List<ServiceDto> servicesDto = new ArrayList<ServiceDto>();
 		for (Service service : services) {
@@ -77,7 +74,7 @@ public class ServiceService {
 	 * ATTENZIONE!!
 	 * La classe Calendar è obsoleta e non dovrebbe essere usata.
 	 
-	public List<ServiceDto> getDayServices(Restaurant restaurant, Date date) {
+	public List<ServiceDto> getDayServices(Restaurant restaurant, LocalDate date) {
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(date);
 		int weekday = calendar.get(Calendar.DAY_OF_WEEK);
@@ -114,47 +111,22 @@ public class ServiceService {
 		Service service = new Service();
 		service.setName(newServiceDTO.getName());
 		service.setRestaurant(rService.findById(newServiceDTO.getRestaurant()));
-		service.setServiceType(entityManager.
-			getReference(ServiceType.class, newServiceDTO.getServiceType()));
+
+		if (newServiceDTO.getServiceType() != null) {
+			Set<ServiceType> serviceTypes = new HashSet<>();
+			serviceTypes.add(entityManager.getReference(ServiceType.class, newServiceDTO.getServiceType()));
+			service.setServiceTypes(serviceTypes);
+		} else {
+			service.setServiceTypes(null);
+		}
+
+		service.setValidFrom(newServiceDTO.getValidFrom());
+		service.setValidTo(newServiceDTO.getValidTo());
+		service.setActive(false);
+		
 		serviceDAO.save(service);
 	}
 		
-
-	 
-	public void addService(ServicesDto servicesDto) {
-		List<String> weekdaysStrings = servicesDto.getWeekdays();
-		List<Weekday> weekdays = new ArrayList<>();
-		for (String weekdayString : weekdaysStrings) {
-			System.out.println("<<<   weekdayString: " + weekdayString);
-			Weekday weekdayEnum = Weekday.valueOf(weekdayString.toUpperCase());
-			weekdays.add(weekdayEnum);
-		}
-		ServiceType st = serviceTypeDAO.findById(servicesDto.getServiceType()).get();
-		for (Weekday weekday : weekdays) {
-			Service service = new Service();
-			service.setName(servicesDto.getName());
-			service.setRestaurant(rService.findById(servicesDto.getRestaurant()));
-			service.setServiceType(st);
-			serviceDAO.save(service);
-			LocalTime timeReservation = servicesDto.getTimeReservation();
-			LocalTime open = servicesDto.getOpen();
-			LocalTime close = servicesDto.getClose();
-
-			Set<Slot> slots = new HashSet<>();
-			
-			/* Il codice andrà sistemato perchè se si va al giorno dopo bisogna aggiungere anche il giorno dopo*/
-			while (open.isBefore(close) || open.equals(close)) {
-				System.out.print("	BEFORE   open: " + open);
-				Slot slot = new Slot(open, close);
-				slot.setService(service);
-				slots.add(slot);
-				open =open.plusHours(timeReservation.getHour()).plusMinutes(timeReservation.getMinute());
-				System.out.println("	AFTER   openDateTime: " + open + "    HOUR = " +timeReservation.getHour()+ "    MINUTES = " +timeReservation.getMinute());
-			}
-			save(service, slots);
-		}
-	}
-
 	@Transactional
 	private void save(Service service, Set<Slot> slots){
 		service.setSlots(slots);
@@ -168,7 +140,7 @@ public class ServiceService {
 	}
 
 
-    public List<ServiceSlotsDto> getServiceSlots(Long idRestaurant, Date date) {
+    public List<ServiceSlotsDto> getServiceSlots(Long idRestaurant, LocalDate date) {
 		List<Service> services =serviceDAO.findServicesByRestaurant(idRestaurant);
 		List<ServiceSlotsDto> servicesSlotsDto = new ArrayList<ServiceSlotsDto>();
 		for (Service service : services) {
@@ -179,7 +151,7 @@ public class ServiceService {
 
 
 	 
-	public List<ServiceDto> getDayServices(Restaurant restaurant, Date date) {
+	public List<ServiceDto> getDayServices(Restaurant restaurant, LocalDate date) {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException("Unimplemented method 'getDayServices'");
 	}

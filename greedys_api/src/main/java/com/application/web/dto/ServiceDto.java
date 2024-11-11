@@ -1,6 +1,8 @@
 package com.application.web.dto;
 
 import java.time.LocalTime;
+import java.util.stream.Collectors;
+import java.util.Set;
 
 import com.application.mapper.Mapper.Weekday;
 import com.application.persistence.model.reservation.Service;
@@ -10,20 +12,22 @@ public class ServiceDto {
 	LocalTime close;
 	String name;
 	Weekday weekday;
-	String serviceType;
+	Set<ServiceTypeDto> serviceTypes;
 	
 	public ServiceDto(Service service) {
 		this.name = service.getName();
-		this.serviceType = service.getServiceType().getName(); // Aggiungi questa linea
+		this.serviceTypes = service.getServiceType().stream()
+			.map(ServiceTypeDto::new)
+			.collect(Collectors.toSet());
 
 	}
 
-    public String getServiceType() {
-		return serviceType;
+    public Set<ServiceTypeDto> getServiceType() {
+		return serviceTypes;
 	}
 
-	public void setServiceType(String serviceType) {
-		this.serviceType = serviceType;
+	public void setServiceType(Set<ServiceTypeDto> serviceTypes) {
+		this.serviceTypes = serviceTypes;
 	}
 
 	public String getName() {
