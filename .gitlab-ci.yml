@@ -61,6 +61,10 @@ generate_and_publish_api:
     - curl -sL https://deb.nodesource.com/setup_18.x | bash -
     - apt-get install -y nodejs
     - npm install -g @openapitools/openapi-generator-cli
+    - echo "Running health check on spring-app..."
+    - until curl -f http://$SERVER_IP:5050/actuator/health; do echo "Waiting for spring-app to be healthy..."; sleep 10; done
+    - echo "Fetching OpenAPI specification from spring-app..."
+    - curl -o openapi.yaml http://$SERVER_IP:5050/v3/api-docs.yaml
     - echo "Setting up GIT_ASKPASS to use PAT..."
     - echo "echo \$PAT" > /tmp/git-askpass.sh
     - chmod +x /tmp/git-askpass.sh
@@ -68,10 +72,6 @@ generate_and_publish_api:
     - echo "Cloning Dart client library repository using HTTPS with PAT..."
     - git clone https://gitlab.com/PsychoOrange/greedys_api_dart_lib.git
     - cd greedys_api_dart_lib
-    - echo "Running health check on spring-app..."
-    - until curl -f http://$SERVER_IP:5050/actuator/health; do echo "Waiting for spring-app to be healthy..."; sleep 10; done
-    - echo "Fetching OpenAPI specification from spring-app..."
-    - curl -o openapi.yaml http://$SERVER_IP:5050/v3/api-docs.yaml
     - echo "Generating Dart client library with Dio from OpenAPI specification..."
     - openapi-generator-cli generate -i ../openapi.yaml -g dart-dio -o .
     - echo "Committing and pushing changes to Dart client library repository..."
