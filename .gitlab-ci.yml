@@ -72,6 +72,9 @@ generate_and_publish_api:
     - echo "Cloning Dart client library repository using HTTPS with PAT..."
     - git clone https://gitlab.com/PsychoOrange/greedys_api_dart_lib.git
     - cd greedys_api_dart_lib
+    - echo "Configuring Git user name and email..."
+    - git config user.email "ci-bot@greedys.com"
+    - git config user.name "Greedys CI Bot"
     - echo "Generating Dart client library with Dio from OpenAPI specification..."
     - openapi-generator-cli generate -i ../openapi.yaml -g dart-dio -o .
     - echo "Committing and pushing changes to Dart client library repository..."
