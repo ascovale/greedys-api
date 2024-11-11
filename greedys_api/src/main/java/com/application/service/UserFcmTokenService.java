@@ -28,10 +28,10 @@ public class UserFcmTokenService {
         userFcmToken.setFcmToken(userFcmTokenDTO.getFcmToken());
     }
 
-    public UserFcmToken updateUserFcmToken(String oldToken, String newToken) {
-        UserFcmToken existingToken = userFcmTokenRepository.findByFcmToken(oldToken);
+    public UserFcmToken updateUserFcmToken(String oldToken, UserFcmTokenDTO newToken) {
+        UserFcmToken existingToken = userFcmTokenRepository.findByFcmTokenAndUserId(oldToken, newToken.getUserId());
         if (existingToken != null) {
-            existingToken.setFcmToken(newToken);
+            existingToken.setFcmToken(newToken.getFcmToken());
             return userFcmTokenRepository.save(existingToken);
         } else {
             throw new RuntimeException("UserFcmToken not found for user");

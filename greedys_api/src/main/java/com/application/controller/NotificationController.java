@@ -7,7 +7,9 @@ import org.springframework.web.bind.annotation.*;
 
 import com.application.service.NotificationService;
 import com.application.service.ReservationService;
+import com.application.service.UserFcmTokenService;
 import com.application.service.UserService;
+import com.application.web.dto.post.UserFcmTokenDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -16,6 +18,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import com.application.persistence.dao.user.UserDAO;
 import com.application.persistence.model.user.User;
+import com.application.persistence.model.user.UserFcmToken;
 
 @RestController
 @RequestMapping("/notification")
@@ -24,10 +27,12 @@ import com.application.persistence.model.user.User;
 public class NotificationController {
 
     private final NotificationService notificationService;
+    private final UserFcmTokenService userFcmTokenService;
     private final ReservationService reservationService;
     private final UserDAO userService;
 
-    public NotificationController(NotificationService notificationService, ReservationService reservationService, UserDAO userService) {
+    public NotificationController(NotificationService notificationService, UserFcmTokenService userFcmTokenService, ReservationService reservationService, UserDAO userService) {
+        this.userFcmTokenService = userFcmTokenService;
         this.notificationService = notificationService;
         this.reservationService = reservationService;
         this.userService = userService;
@@ -75,6 +80,25 @@ public class NotificationController {
         }
         return ResponseEntity.ok().build();
     }
+
+    @Operation(summary = "Register a user's FCM token", description = "Registers a user's FCM token")
+    @PostMapping("/token")
+    public ResponseEntity<Void> registerUserFcmToken(
+            @RequestParam UserFcmTokenDTO userFcmToken) {
+        userFcmTokenService.saveUserFcmToken(userFcmToken);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Update a user's FCM token", description = "Updates a user's FCM token")
+    @PutMapping("/token")
+    public ResponseEntity<Void> updateUserFcmToken(
+            @RequestParam String oldToken,
+            @RequestParam UserFcmTokenDTO newToken
+            ) {
+        userFcmTokenService.updateUserFcmToken(oldToken, newToken);
+        return ResponseEntity.ok().build();
+    }
+
 
     private User getCurrentUser() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
