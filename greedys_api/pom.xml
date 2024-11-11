@@ -169,6 +169,10 @@
             <artifactId>jquery</artifactId>
             <version>3.7.1</version>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-client</artifactId>
+        </dependency>
 
         <!-- Jakarta Dependencies -->
         <dependency>
