@@ -58,8 +58,8 @@ generate_and_publish_api:
   script:
     - echo "Setting permissions for RSA key..."
     - chmod 600 $ID_RSA
-    - echo "Updating apt and installing curl, Node.js, and ssh-keyscan..."
-    - apt-get update && apt-get install -y curl openssh-client
+    - echo "Updating apt and installing curl, Node.js, ssh-keyscan, and git..."
+    - apt-get update && apt-get install -y curl openssh-client git
     - curl -sL https://deb.nodesource.com/setup_18.x | bash -
     - apt-get install -y nodejs
     - npm install -g @openapitools/openapi-generator-cli
