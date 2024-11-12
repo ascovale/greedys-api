@@ -1,14 +1,7 @@
 variables:
   TAG_LATEST: ${CI_REGISTRY_IMAGE}/spring-app:latest
   TAG_COMMIT: ${CI_REGISTRY_IMAGE}/spring-app:${CI_COMMIT_SHORT_SHA}
-  API_SPEC: openapi.json
-  API_OUTPUT_DIR: lib/api
   DART_REPO: git@gitlab.com:PsychoOrange/greedys_api_dart_lib.git
-  CI_REGISTRY_IMAGE: registry.gitlab.com/psychoorange/greedys_api
-  DB_PASSWORD: Minosse100Xcent0
-  KEYSTORE_PASSWORD: MinosseBellissimo2025
-  RABBITMQ_PASSWORD: Sirio56asc!
-  MAIL_PASSWORD: qtvm gswd soun aulm
 
 stages:
   - build
