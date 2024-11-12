@@ -15,6 +15,7 @@ services:
       MAIL_PASSWORD: ${MAIL_PASSWORD}
       KEYSTORE_PASSWORD: ${KEYSTORE_PASSWORD}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      CI_REGISTRY_IMAGE: ${CI_REGISTRY_IMAGE}
     depends_on:
       db:
         condition: service_healthy
