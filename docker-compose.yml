@@ -1,25 +1,20 @@
 services:
   spring-app:
-    image: registry.gitlab.com/psychoorange/greedys_api/spring-app
+    image: ${CI_REGISTRY_IMAGE}/spring-app:latest
     build:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "5050:8443"
+      - "5050:8443" 
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/greedys_v1
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
       SPRING_PROFILES_ACTIVE: docker
+      DB_PASSWORD: ${DB_PASSWORD}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
       KEYSTORE_PASSWORD: ${KEYSTORE_PASSWORD}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
-      MAIL_PASSWORD: ${MAIL_PASSWORD}
-      SERVER_SSL_KEY_STORE: /etc/letsencrypt/live/mydroplet.duckdns.org/fullchain.pem
-      SERVER_SSL_KEY_STORE_PASSWORD: ${KEYSTORE_PASSWORD}
-      SERVER_SSL_KEY_ALIAS: tomcat
-      SERVER_SSL_KEY_PASSWORD: ${KEYSTORE_PASSWORD}
-    volumes:
-      - /etc/letsencrypt/live/mydroplet.duckdns.org:/etc/letsencrypt/live/mydroplet.duckdns.org
     depends_on:
       db:
         condition: service_healthy
@@ -35,14 +30,13 @@ services:
 
   db:
     image: mysql:8.0
-    restart: unless-stopped
     environment:
       MYSQL_DATABASE: greedys_v1
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
     ports:
       - "3307:3306"
     volumes:
-      - /home/$USER/db_data:/var/lib/mysql
+      - /home/${USER}/db_data:/var/lib/mysql
     networks:
       - app-network
     stdin_open: true
@@ -56,15 +50,15 @@ services:
   rabbitmq:
     image: rabbitmq:latest
     environment:
-      - RABBITMQ_DEFAULT_USER=ascovale
-      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
+      RABBITMQ_DEFAULT_USER: ascovale
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
     ports:
       - "5672:5672"
       - "15672:15672"
     networks:
       - app-network
     volumes:
-      - /home/$USER/rabbitmq_data:/var/lib/rabbitmq
+      - /home/${USER}/rabbitmq_data:/var/lib/rabbitmq
 
 networks:
   app-network:
