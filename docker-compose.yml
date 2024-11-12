@@ -1,6 +1,6 @@
 services:
   spring-app:
-    image: ${CI_REGISTRY_IMAGE}/spring-app:latest
+    image: ${CI_REGISTRY_IMAGE}/spring-app
     build:
       context: .
       dockerfile: Dockerfile
