@@ -21,4 +21,5 @@ public interface UserFcmTokenDAO extends JpaRepository<UserFcmToken, Long> {
     boolean existsByDeviceIdAndCreatedAtBefore(String deviceId, LocalDateTime expiryDate);
 
     UserFcmToken findByDeviceId(String deviceId);
+
 }

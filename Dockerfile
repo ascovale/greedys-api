@@ -13,9 +13,12 @@ FROM openjdk:19-jdk-slim
 # Copy the credentials file into the container
 COPY ./secured/greedy-69de3-968988eeefce.json /secured/service-account.json
 
+# Copy the keystore into the container
+COPY ./greedys_api/src/main/resources/keystore.p12 /app/keystore.p12
+
 # Copy the built JAR file from the builder stage
 COPY --from=builder /app/greedys_api/target/*.jar /app.jar
 
-EXPOSE 8080
+EXPOSE 8443
 
 ENTRYPOINT ["java", "-jar", "/app.jar"]

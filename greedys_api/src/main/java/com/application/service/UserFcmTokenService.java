@@ -47,6 +47,10 @@ public class UserFcmTokenService {
         return userFcmTokenRepository.findByUserId(id);
     }
 
+    public UserFcmToken getTokenByDeviceId(String deviceId) {
+        return userFcmTokenRepository.findByDeviceId(deviceId);
+    }
+
     public boolean isDeviceTokenPresent(String deviceId) {
         return userFcmTokenRepository.existsByDeviceId(deviceId);
     }

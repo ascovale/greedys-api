@@ -1,6 +1,9 @@
 package com.application.controller;
 
 import com.google.firebase.auth.FirebaseAuth;
+
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
@@ -105,10 +108,16 @@ public class NotificationController {
 
     @Operation(summary = "Check if a device's token is present", description = "Checks if a device's token is present")
     @GetMapping("/token/present")
-    public ResponseEntity<Boolean> isDeviceTokenPresent(
+    public ResponseEntity<String> isDeviceTokenPresent(
             @RequestParam String deviceId) {
         boolean isPresent = userFcmTokenService.isDeviceTokenPresent(deviceId);
-        return ResponseEntity.ok().body(isPresent);
+        if (isPresent) {
+            Optional<String> oldToken = notificationService.getOldTokenIfPresent(deviceId);
+            if (oldToken.isPresent()) {
+                return ResponseEntity.ok().body(oldToken.get());
+            }
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Token not present");
     }
 
     @Operation(summary = "Verify a device's token", description = "Verifies a device's token and returns the status")
@@ -127,7 +136,12 @@ public class NotificationController {
             case "NOT FOUND":
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("NOT FOUND");
             default:
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("ERROR");
+                Optional<String> oldToken = notificationService.getOldTokenIfPresent(deviceId);
+                if (oldToken.isPresent()) {
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("ERROR: Old token found - " + oldToken.get());
+                } else {
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("ERROR");
+                }
         }
     }
 

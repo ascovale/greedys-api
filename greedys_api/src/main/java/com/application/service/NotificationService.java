@@ -165,6 +165,11 @@ public class NotificationService {
         }
     }
 
+    public Optional<String> getOldTokenIfPresent(String deviceId) {
+        UserFcmToken token = userFcmTokenService.getTokenByDeviceId(deviceId);
+        return Optional.of(token.getFcmToken());
+    }
+
     public List<NotificationDto> findByUser(User user) {
         List<Notification> notifications = notificationDAO.findByUser(user);
         return NotificationDto.toDto(notifications);

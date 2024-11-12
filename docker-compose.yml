@@ -5,12 +5,21 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "5050:8080"
+      - "5050:8443"
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/greedys_v1
       SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: Minosse100%
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
       SPRING_PROFILES_ACTIVE: docker
+      KEYSTORE_PASSWORD: ${KEYSTORE_PASSWORD}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      SERVER_SSL_KEY_STORE: /etc/letsencrypt/live/mydroplet.duckdns.org/fullchain.pem
+      SERVER_SSL_KEY_STORE_PASSWORD: ${KEYSTORE_PASSWORD}
+      SERVER_SSL_KEY_ALIAS: tomcat
+      SERVER_SSL_KEY_PASSWORD: ${KEYSTORE_PASSWORD}
+    volumes:
+      - /etc/letsencrypt/live/mydroplet.duckdns.org:/etc/letsencrypt/live/mydroplet.duckdns.org
     depends_on:
       db:
         condition: service_healthy
@@ -19,7 +28,7 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      test: ["CMD-SHELL", "curl -k -f https://localhost:8443/actuator/health || exit 1"]
       interval: 5s
       timeout: 30s
       retries: 6
@@ -29,7 +38,7 @@ services:
     restart: unless-stopped
     environment:
       MYSQL_DATABASE: greedys_v1
-      MYSQL_ROOT_PASSWORD: Minosse100%
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
     ports:
       - "3307:3306"
     volumes:
@@ -39,7 +48,7 @@ services:
     stdin_open: true
     tty: true
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -pMinosse100%"]
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p${DB_PASSWORD}"]
       interval: 2s
       timeout: 30s
       retries: 10
@@ -48,7 +57,7 @@ services:
     image: rabbitmq:latest
     environment:
       - RABBITMQ_DEFAULT_USER=ascovale
-      - RABBITMQ_DEFAULT_PASS=Sirio56asc!
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
     ports:
       - "5672:5672"
       - "15672:15672"

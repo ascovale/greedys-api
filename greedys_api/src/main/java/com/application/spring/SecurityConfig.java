@@ -44,6 +44,8 @@ public class SecurityConfig {
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+            .requiresChannel(channel -> channel
+                .anyRequest().requiresSecure())
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(authz -> authz
                             .requestMatchers("/doc**", "/swagger-ui/**",

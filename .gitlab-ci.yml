@@ -62,9 +62,9 @@ generate_and_publish_api:
     - apt-get install -y nodejs
     - npm install -g @openapitools/openapi-generator-cli
     - echo "Running health check on spring-app..."
-    - until curl -f http://$SERVER_IP:5050/actuator/health; do echo "Waiting for spring-app to be healthy..."; sleep 10; done
+    - until curl -k -f https://$SERVER_IP:5050/actuator/health; do echo "Waiting for spring-app to be healthy..."; sleep 10; done
     - echo "Fetching OpenAPI specification from spring-app..."
-    - curl -o openapi.yaml http://$SERVER_IP:5050/v3/api-docs.yaml
+    - curl -o openapi.yaml https://$SERVER_IP:5050/v3/api-docs.yaml
     - echo "Setting up GIT_ASKPASS to use PAT..."
     - echo "echo \$PAT" > /tmp/git-askpass.sh
     - chmod +x /tmp/git-askpass.sh
