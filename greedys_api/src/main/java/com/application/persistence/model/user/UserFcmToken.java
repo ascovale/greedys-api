@@ -19,6 +19,9 @@ public class UserFcmToken {
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    @Column(nullable = false)
+    private String deviceId;
+
     // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -31,4 +34,7 @@ public class UserFcmToken {
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public String getDeviceId() { return deviceId; }
+    public void setDeviceId(String deviceId) { this.deviceId = deviceId; }
 }

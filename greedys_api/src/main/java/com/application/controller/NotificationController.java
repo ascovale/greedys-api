@@ -1,7 +1,9 @@
 package com.application.controller;
 
+import com.google.firebase.auth.FirebaseAuth;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,12 +15,15 @@ import com.application.web.dto.post.UserFcmTokenDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import com.application.persistence.dao.user.UserDAO;
 import com.application.persistence.model.user.User;
 import com.application.persistence.model.user.UserFcmToken;
+import com.google.firebase.auth.FirebaseToken;
 
 @RestController
 @RequestMapping("/notification")
@@ -84,7 +89,7 @@ public class NotificationController {
     @Operation(summary = "Register a user's FCM token", description = "Registers a user's FCM token")
     @PostMapping("/token")
     public ResponseEntity<Void> registerUserFcmToken(
-            @RequestParam UserFcmTokenDTO userFcmToken) {
+            @RequestBody UserFcmTokenDTO userFcmToken) {
         userFcmTokenService.saveUserFcmToken(userFcmToken);
         return ResponseEntity.ok().build();
     }
@@ -93,12 +98,38 @@ public class NotificationController {
     @PutMapping("/token")
     public ResponseEntity<Void> updateUserFcmToken(
             @RequestParam String oldToken,
-            @RequestParam UserFcmTokenDTO newToken
-            ) {
+            @RequestBody UserFcmTokenDTO newToken) {
         userFcmTokenService.updateUserFcmToken(oldToken, newToken);
         return ResponseEntity.ok().build();
     }
 
+    @Operation(summary = "Check if a device's token is present", description = "Checks if a device's token is present")
+    @GetMapping("/token/present")
+    public ResponseEntity<Boolean> isDeviceTokenPresent(
+            @RequestParam String deviceId) {
+        boolean isPresent = userFcmTokenService.isDeviceTokenPresent(deviceId);
+        return ResponseEntity.ok().body(isPresent);
+    }
+
+    @Operation(summary = "Verify a device's token", description = "Verifies a device's token and returns the status")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "406", description = "Token expired")
+    })
+    @GetMapping("/token/verify")
+    public ResponseEntity<String> verifyToken(
+            @RequestParam String deviceId) {
+        String status = userFcmTokenService.verifyTokenByDeviceId(deviceId);
+        switch (status) {
+            case "OK":
+                return ResponseEntity.ok().body("OK");
+            case "EXPIRED":
+                return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("EXPIRED");
+            case "NOT FOUND":
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("NOT FOUND");
+            default:
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("ERROR");
+        }
+    }
 
     private User getCurrentUser() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
