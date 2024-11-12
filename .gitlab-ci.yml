@@ -6,13 +6,13 @@ variables:
   DART_REPO: git@gitlab.com:PsychoOrange/greedys_api_dart_lib.git
 
 stages:
-  - publish
+  - build
   - deploy
-  - generate_and_publish_api
+  - publish
 
-publish:
+build:
   image: docker:24.0.5
-  stage: publish
+  stage: build
   services:
     - docker:24.0.5-dind
   script:
@@ -39,6 +39,11 @@ publish:
     - docker compose push
   only:
     - main
+  variables:
+    DB_PASSWORD: $DB_PASSWORD
+    KEYSTORE_PASSWORD: $KEYSTORE_PASSWORD
+    RABBITMQ_PASSWORD: $RABBITMQ_PASSWORD
+    MAIL_PASSWORD: $MAIL_PASSWORD
 
 deploy:
   image: alpine:3.18
@@ -64,10 +69,6 @@ deploy:
     - echo "Logging into Docker registry on remote server..."
     - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY"
     
-    # Export environment variables on remote server
-    - echo "Exporting environment variables on remote server..."
-    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "export DB_PASSWORD=$DB_PASSWORD KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD RABBITMQ_PASSWORD=$RABBITMQ_PASSWORD MAIL_PASSWORD=$MAIL_PASSWORD"
-    
     # Pull Docker images on remote server
     - echo "Pulling Docker images on remote server..."
     - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "cd /home/$SERVER_USER/greedys_api/ && docker compose pull"
@@ -78,9 +79,9 @@ deploy:
   only:
     - main
 
-generate_and_publish_api:
+publish:
   image: openjdk:11-jre-slim
-  stage: generate_and_publish_api
+  stage: publish
   script:
     # Update apt and install curl, Node.js, and git
     - echo "Updating apt and installing curl, Node.js, and git..."
