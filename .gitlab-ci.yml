@@ -33,7 +33,7 @@ build:
     - main
   after_script:
     - echo "Cleaning up Docker resources..."
-    - docker system prune -f  # Clean up to free space and reduce clutter
+    - docker system prune -f
 
 
 deploy:
