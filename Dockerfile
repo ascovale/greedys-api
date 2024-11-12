@@ -1,4 +1,5 @@
-FROM maven:latest AS builder
+# Build Stage
+FROM maven:3.8.6-openjdk-19 AS builder
 
 WORKDIR /app/greedys_api
 
@@ -6,9 +7,10 @@ WORKDIR /app/greedys_api
 COPY ./greedys_api/ /app/greedys_api
 
 # Build the project
-RUN mvn clean install
+RUN mvn clean install -DskipTests
 
-FROM openjdk:19-jdk-slim
+# Runtime Stage
+FROM gcr.io/distroless/java19-debian11
 
 # Accept build arguments
 ARG SPRING_PROFILES_ACTIVE

@@ -2,8 +2,12 @@ variables:
   TAG_LATEST: ${CI_REGISTRY_IMAGE}/spring-app:latest
   TAG_COMMIT: ${CI_REGISTRY_IMAGE}/spring-app:${CI_COMMIT_SHORT_SHA}
   DART_REPO: git@gitlab.com:PsychoOrange/greedys_api_dart_lib.git
-  USER: $USER  # Ensure USER variable is set
-  
+  USER: $USER
+  KEYSTORE_PASSWORD: $KEYSTORE_PASSWORD
+  DB_PASSWORD: $DB_PASSWORD
+  RABBITMQ_PASSWORD: $RABBITMQ_PASSWORD
+  MAIL_PASSWORD: $MAIL_PASSWORD 
+
 stages:
   - build
   - deploy
@@ -15,66 +19,43 @@ build:
   services:
     - docker:24.0.5-dind
   script:
-    # Log into Docker registry
     - echo "Logging into Docker registry..."
     - echo $CI_JOB_TOKEN | docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY
-    
-    # Build Docker image for spring-app with build arguments
     - echo "Building Docker image for spring-app..."
-    - docker compose build --build-arg SPRING_PROFILES_ACTIVE="docker" --build-arg KEYSTORE_PASSWORD="$KEYSTORE_PASSWORD" --build-arg DB_PASSWORD="$DB_PASSWORD" --build-arg MAIL_PASSWORD="$MAIL_PASSWORD" --build-arg RABBITMQ_PASSWORD="$RABBITMQ_PASSWORD" spring-app || (docker logs spring-app && exit 1)
-    
-    # Tag Docker image with commit and latest tags
+    - docker compose build --build-arg SPRING_PROFILES_ACTIVE="docker" --build-arg KEYSTORE_PASSWORD="$KEYSTORE_PASSWORD" --build-arg DB_PASSWORD="$DB_PASSWORD" --build-arg MAIL_PASSWORD="$MAIL_PASSWORD" --build-arg RABBITMQ_PASSWORD="$RABBITMQ_PASSWORD" spring-app
     - echo "Tagging Docker image with commit and latest tags..."
     - docker tag ${CI_REGISTRY_IMAGE}/spring-app:latest $TAG_COMMIT
     - docker tag ${CI_REGISTRY_IMAGE}/spring-app:latest $TAG_LATEST
-    
-    # Push Docker images
     - echo "Pushing Docker images..."
     - docker push $TAG_COMMIT
     - docker push $TAG_LATEST
-    
-    # Push Docker compose
-    - echo "Pushing Docker compose..."
-    - docker compose push
   only:
     - main
-  
+  after_script:
+    - echo "Cleaning up Docker resources..."
+    - docker system prune -f  # Clean up to free space and reduce clutter
+
 
 deploy:
   image: alpine:3.18
   stage: deploy
   script:
-    # Set permissions for RSA key
     - echo "Setting permissions for RSA key..."
     - chmod 600 $ID_RSA
-    
-    # Update apk and install openssh-client
     - echo "Updating apk and installing openssh-client..."
     - apk update && apk add openssh-client
-    
-    # Create directory on remote server
     - echo "Creating directory on remote server..."
     - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "mkdir -p /home/$SERVER_USER/greedys_api/"
-    
-    # Copy docker-compose.yml to remote server
     - echo "Copying docker-compose.yml to remote server..."
     - scp -i $ID_RSA -o StrictHostKeyChecking=no docker-compose.yml $SERVER_USER@$SERVER_IP:/home/$SERVER_USER/greedys_api/
-    
-    # Copy keystore.p12 to remote server
     - echo "Copying keystore.p12 to remote server..."
     - scp -i $ID_RSA -o StrictHostKeyChecking=no keystore.p12 $SERVER_USER@$SERVER_IP:/home/$SERVER_USER/greedys_api/
-    
-    # Log into Docker registry on remote server
     - echo "Logging into Docker registry on remote server..."
     - echo $CI_JOB_TOKEN | ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY"
-    
-    # Pull Docker images on remote server with environment variables
     - echo "Pulling Docker images on remote server..."
-    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "export DB_PASSWORD=$DB_PASSWORD RABBITMQ_PASSWORD=$RABBITMQ_PASSWORD && cd /home/$SERVER_USER/greedys_api/ && docker compose pull"
-    
-    # Start Docker containers on remote server with environment variables
+    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "cd /home/$SERVER_USER/greedys_api/ && export DB_PASSWORD=$DB_PASSWORD RABBITMQ_PASSWORD=$RABBITMQ_PASSWORD && docker compose pull"
     - echo "Starting Docker containers on remote server..."
-    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "export DB_PASSWORD=$DB_PASSWORD RABBITMQ_PASSWORD=$RABBITMQ_PASSWORD && cd /home/$SERVER_USER/greedys_api/ && docker compose up -d"
+    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "cd /home/$SERVER_USER/greedys_api/ && export DB_PASSWORD=$DB_PASSWORD RABBITMQ_PASSWORD=$RABBITMQ_PASSWORD && docker compose up -d"
   only:
     - main
 
@@ -82,42 +63,27 @@ publish:
   image: openjdk:11-jre-slim
   stage: publish
   script:
-    # Update apt and install curl, Node.js, and git
     - echo "Updating apt and installing curl, Node.js, and git..."
     - apt-get update && apt-get install -y curl git
     - curl -sL https://deb.nodesource.com/setup_18.x | bash -
     - apt-get install -y nodejs
     - npm install -g @openapitools/openapi-generator-cli
-    
-    # Run health check on spring-app
     - echo "Running health check on spring-app..."
     - until curl -k -f https://$SERVER_IP:5050/actuator/health; do echo "Waiting for spring-app to be healthy..."; sleep 10; done
-    
-    # Fetch OpenAPI specification from spring-app
     - echo "Fetching OpenAPI specification from spring-app..."
     - curl -o openapi.yaml https://$SERVER_IP:5050/v3/api-docs.yaml
-    
-    # Set up GIT_ASKPASS to use PAT
     - echo "Setting up GIT_ASKPASS to use PAT..."
     - echo "echo \$PAT" > /tmp/git-askpass.sh
     - chmod +x /tmp/git-askpass.sh
     - export GIT_ASKPASS=/tmp/git-askpass.sh
-    
-    # Clone Dart client library repository using HTTPS with PAT
     - echo "Cloning Dart client library repository using HTTPS with PAT..."
     - git clone https://gitlab.com/PsychoOrange/greedys_api_dart_lib.git
     - cd greedys_api_dart_lib
-    
-    # Configure Git user name and email
     - echo "Configuring Git user name and email..."
     - git config user.email "ci-bot@greedys.com"
     - git config user.name "Greedys CI Bot"
-    
-    # Generate Dart client library with Dio from OpenAPI specification
     - echo "Generating Dart client library with Dio from OpenAPI specification..."
     - openapi-generator-cli generate -i ../openapi.yaml -g dart-dio -o .
-    
-    # Commit and push changes to Dart client library repository
     - echo "Committing and pushing changes to Dart client library repository..."
     - git add .
     - git commit -m "Update Dart client library with latest API changes"

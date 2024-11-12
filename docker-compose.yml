@@ -10,12 +10,12 @@ services:
       db:
         condition: service_healthy
       rabbitmq:
-        condition: service_started
+        condition: service_healthy  # Use service_healthy to ensure rabbitmq is ready
     networks:
       - app-network
     healthcheck:
       test: ["CMD-SHELL", "curl -k -f https://localhost:8443/actuator/health || exit 1"]
-      interval: 5s
+      interval: 10s  # Increased to give service time to start
       timeout: 30s
       retries: 6
 
@@ -33,26 +33,32 @@ services:
     stdin_open: true
     tty: true
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p${DB_PASSWORD}"]
-      interval: 2s
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p${DB_PASSWORD} || exit 1"]  # Fixed syntax for mysqladmin command
+      interval: 5s  # Increased for stability
       timeout: 30s
       retries: 10
 
   rabbitmq:
-    image: rabbitmq:latest
+    image: rabbitmq:management
     environment:
       RABBITMQ_DEFAULT_USER: ascovale
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
     ports:
       - "5672:5672"
-      - "15672:15672"
+      - "15672:15672"  # RabbitMQ management plugin enabled
     networks:
       - app-network
     volumes:
       - /home/${USER}/rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD-SHELL", "rabbitmqctl status || exit 1"]  # Added healthcheck to ensure RabbitMQ is ready
+      interval: 10s
+      timeout: 30s
+      retries: 5
 
 networks:
   app-network:
+    driver: bridge  # Explicitly specify bridge driver for better clarity
 
 volumes:
   db_data:
