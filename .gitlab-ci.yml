@@ -39,11 +39,7 @@ build:
     - docker compose push
   only:
     - main
-  variables:
-    DB_PASSWORD: $DB_PASSWORD
-    KEYSTORE_PASSWORD: $KEYSTORE_PASSWORD
-    RABBITMQ_PASSWORD: $RABBITMQ_PASSWORD
-    MAIL_PASSWORD: $MAIL_PASSWORD
+  
 
 deploy:
   image: alpine:3.18
@@ -78,6 +74,11 @@ deploy:
     - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "cd /home/$SERVER_USER/greedys_api/ && docker compose up -d"
   only:
     - main
+  variables:
+    DB_PASSWORD: $DB_PASSWORD
+    KEYSTORE_PASSWORD: $KEYSTORE_PASSWORD
+    RABBITMQ_PASSWORD: $RABBITMQ_PASSWORD
+    MAIL_PASSWORD: $MAIL_PASSWORD
 
 publish:
   image: openjdk:11-jre-slim
