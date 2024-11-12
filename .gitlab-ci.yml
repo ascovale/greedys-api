@@ -3,6 +3,9 @@ variables:
   TAG_COMMIT: ${CI_REGISTRY_IMAGE}/spring-app:${CI_COMMIT_SHORT_SHA}
   DART_REPO: git@gitlab.com:PsychoOrange/greedys_api_dart_lib.git
   USER: $USER  # Ensure USER variable is set
+  KEYSTORE_PASSWORD: $KEYSTORE_PASSWORD  # Ensure the correct password is set
+  DB_PASSWORD: $DB_PASSWORD  # Ensure the correct password is set
+  RABBITMQ_PASSWORD: $RABBITMQ_PASSWORD  # Ensure the correct password is set
   
 stages:
   - build
@@ -68,13 +71,13 @@ deploy:
     - echo "Logging into Docker registry on remote server..."
     - echo $CI_JOB_TOKEN | ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY"
     
-    # Pull Docker images on remote server
+    # Pull Docker images on remote server with environment variables
     - echo "Pulling Docker images on remote server..."
-    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "cd /home/$SERVER_USER/greedys_api/ && docker compose pull"
+    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "export DB_PASSWORD=$DB_PASSWORD RABBITMQ_PASSWORD=$RABBITMQ_PASSWORD && cd /home/$SERVER_USER/greedys_api/ && docker compose pull"
     
-    # Start Docker containers on remote server
+    # Start Docker containers on remote server with environment variables
     - echo "Starting Docker containers on remote server..."
-    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "cd /home/$SERVER_USER/greedys_api/ && docker compose up -d"
+    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "export DB_PASSWORD=$DB_PASSWORD RABBITMQ_PASSWORD=$RABBITMQ_PASSWORD && cd /home/$SERVER_USER/greedys_api/ && docker compose up -d"
   only:
     - main
 
