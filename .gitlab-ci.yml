@@ -18,9 +18,9 @@ build:
     - echo "Logging into Docker registry..."
     - echo $CI_JOB_TOKEN | docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY
     
-    # Build Docker image for spring-app
+    # Build Docker image for spring-app with build arguments
     - echo "Building Docker image for spring-app..."
-    - docker compose build spring-app || (docker logs spring-app && exit 1)
+    - docker compose build --build-arg SPRING_PROFILES_ACTIVE=docker --build-arg KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD --build-arg DB_PASSWORD=$DB_PASSWORD --build-arg MAIL_PASSWORD=$MAIL_PASSWORD --build-arg RABBITMQ_PASSWORD=$RABBITMQ_PASSWORD spring-app || (docker logs spring-app && exit 1)
     
     # Tag Docker image with commit and latest tags
     - echo "Tagging Docker image with commit and latest tags..."
@@ -58,6 +58,10 @@ deploy:
     # Copy docker-compose.yml to remote server
     - echo "Copying docker-compose.yml to remote server..."
     - scp -i $ID_RSA -o StrictHostKeyChecking=no docker-compose.yml $SERVER_USER@$SERVER_IP:/home/$SERVER_USER/greedys_api/
+    
+    # Copy keystore.p12 to remote server
+    - echo "Copying keystore.p12 to remote server..."
+    - scp -i $ID_RSA -o StrictHostKeyChecking=no keystore.p12 $SERVER_USER@$SERVER_IP:/home/$SERVER_USER/greedys_api/
     
     # Log into Docker registry on remote server
     - echo "Logging into Docker registry on remote server..."

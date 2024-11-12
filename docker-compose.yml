@@ -5,17 +5,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "5050:8443" 
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/greedys_v1
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
-      SPRING_PROFILES_ACTIVE: docker
-      DB_PASSWORD: ${DB_PASSWORD}
-      MAIL_PASSWORD: ${MAIL_PASSWORD}
-      KEYSTORE_PASSWORD: ${KEYSTORE_PASSWORD}
-      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
-      CI_REGISTRY_IMAGE: ${CI_REGISTRY_IMAGE}
+      - "5050:8443"
     depends_on:
       db:
         condition: service_healthy

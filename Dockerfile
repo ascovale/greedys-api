@@ -10,6 +10,22 @@ RUN mvn clean install
 
 FROM openjdk:19-jdk-slim
 
+# Accept build arguments
+ARG SPRING_PROFILES_ACTIVE
+ARG KEYSTORE_PASSWORD
+ARG DB_PASSWORD
+ARG MAIL_PASSWORD
+ARG RABBITMQ_PASSWORD
+
+# Set environment variables from build arguments
+ENV SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+ENV KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD}
+ENV SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/greedys_v1
+ENV SPRING_DATASOURCE_USERNAME=root
+ENV SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+ENV MAIL_PASSWORD=${MAIL_PASSWORD}
+ENV RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+
 # Copy the credentials file into the container
 COPY ./secured/greedy-69de3-968988eeefce.json /secured/service-account.json
 
