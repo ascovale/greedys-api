@@ -2,6 +2,8 @@ variables:
   TAG_LATEST: ${CI_REGISTRY_IMAGE}/spring-app:latest
   TAG_COMMIT: ${CI_REGISTRY_IMAGE}/spring-app:${CI_COMMIT_SHORT_SHA}
   DART_REPO: git@gitlab.com:PsychoOrange/greedys_api_dart_lib.git
+  USER: $USER  # Ensure USER variable is set
+  KEYSTORE_PASSWORD: "your-keystore-password"  # Ensure the correct password is set
 
 stages:
   - build
@@ -20,7 +22,7 @@ build:
     
     # Build Docker image for spring-app with build arguments
     - echo "Building Docker image for spring-app..."
-    - docker compose build --build-arg SPRING_PROFILES_ACTIVE=docker --build-arg KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD --build-arg DB_PASSWORD=$DB_PASSWORD --build-arg MAIL_PASSWORD=$MAIL_PASSWORD --build-arg RABBITMQ_PASSWORD=$RABBITMQ_PASSWORD spring-app || (docker logs spring-app && exit 1)
+    - docker compose build --build-arg SPRING_PROFILES_ACTIVE="docker" --build-arg KEYSTORE_PASSWORD="$KEYSTORE_PASSWORD" --build-arg DB_PASSWORD="$DB_PASSWORD" --build-arg MAIL_PASSWORD="$MAIL_PASSWORD" --build-arg RABBITMQ_PASSWORD="$RABBITMQ_PASSWORD" spring-app || (docker logs spring-app && exit 1)
     
     # Tag Docker image with commit and latest tags
     - echo "Tagging Docker image with commit and latest tags..."
