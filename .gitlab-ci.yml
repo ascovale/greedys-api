@@ -3,9 +3,6 @@ variables:
   TAG_COMMIT: ${CI_REGISTRY_IMAGE}/spring-app:${CI_COMMIT_SHORT_SHA}
   DART_REPO: git@gitlab.com:PsychoOrange/greedys_api_dart_lib.git
   USER: $USER  # Ensure USER variable is set
-  KEYSTORE_PASSWORD: $KEYSTORE_PASSWORD  # Ensure the correct password is set
-  DB_PASSWORD: $DB_PASSWORD  # Ensure the correct password is set
-  RABBITMQ_PASSWORD: $RABBITMQ_PASSWORD  # Ensure the correct password is set
   
 stages:
   - build
