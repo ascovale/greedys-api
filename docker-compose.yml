@@ -62,7 +62,6 @@ services:
 
 networks:
   app-network:
-    external: true
 
 volumes:
   db_data:
