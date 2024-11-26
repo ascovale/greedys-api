@@ -51,9 +51,11 @@ deploy:
     - echo $CI_JOB_TOKEN | ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY"
     - echo "Pulling Docker images on remote server..."
     - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "cd /home/$SERVER_USER/greedys_api/ && docker compose pull"
-    - echo "Starting Docker stack on remote server..."
+    - echo "Pulling Docker images on all nodes..."
+    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker service update --force --image $TAG_LATEST greedys_api_spring-app"
+    - echo "Starting or updating Docker stack on remote server..."
     - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP \
-      "cd /home/$SERVER_USER/greedys_api/ && docker stack deploy -c docker-compose.yml greedys_api"
+      "cd /home/$SERVER_USER/greedys_api/ && docker stack deploy --with-registry-auth -c docker-compose.yml greedys_api"
   only:
     - main
 
