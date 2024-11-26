@@ -21,24 +21,19 @@ build:
   script:
     - echo "Logging into Docker registry..."
     - echo $CI_JOB_TOKEN | docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY
-    - echo "Creating Docker secrets..."
-    - echo $KEYSTORE_PASSWORD | docker secret create keystore_password -
-    - echo $DB_PASSWORD | docker secret create db_password -
-    - echo $MAIL_PASSWORD | docker secret create mail_password -
-    - echo $RABBITMQ_PASSWORD | docker secret create rabbitmq_password -
     - echo "Building Docker image for spring-app..."
-    - sudo docker compose build --build-arg SPRING_PROFILES_ACTIVE="docker" spring-app
+    - docker compose build --build-arg SPRING_PROFILES_ACTIVE="docker" spring-app
     - echo "Tagging Docker image with commit and latest tags..."
-    - sudo docker tag ${CI_REGISTRY_IMAGE}/spring-app:latest $TAG_COMMIT
-    - sudo docker tag ${CI_REGISTRY_IMAGE}/spring-app:latest $TAG_LATEST
+    - docker tag ${CI_REGISTRY_IMAGE}/spring-app:latest $TAG_COMMIT
+    - docker tag ${CI_REGISTRY_IMAGE}/spring-app:latest $TAG_LATEST
     - echo "Pushing Docker images..."
-    - sudo docker push $TAG_COMMIT
-    - sudo docker push $TAG_LATEST
+    - docker push $TAG_COMMIT
+    - docker push $TAG_LATEST
   only:
     - main
   after_script:
     - echo "Cleaning up Docker resources..."
-    - sudo docker system prune -f
+    - docker system prune -f
 
 deploy:
   image: alpine:3.18
