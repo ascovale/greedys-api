@@ -2,16 +2,16 @@ variables:
   TAG_LATEST: ${CI_REGISTRY_IMAGE}/spring-app:latest
   TAG_COMMIT: ${CI_REGISTRY_IMAGE}/spring-app:${CI_COMMIT_SHORT_SHA}
   DART_REPO: git@gitlab.com:PsychoOrange/greedys_api_dart_lib.git
-  USER: $USER
-  KEYSTORE_PASSWORD: $KEYSTORE_PASSWORD
-  DB_PASSWORD: $DB_PASSWORD
-  RABBITMQ_PASSWORD: $RABBITMQ_PASSWORD
-  MAIL_PASSWORD: $MAIL_PASSWORD 
 
 stages:
   - build
   - deploy
   - publish
+
+cache:
+  paths:
+    - .m2/repository
+    - node_modules/
 
 build:
   image: docker:24.0.5
@@ -21,20 +21,24 @@ build:
   script:
     - echo "Logging into Docker registry..."
     - echo $CI_JOB_TOKEN | docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY
+    - echo "Creating Docker secrets..."
+    - echo $KEYSTORE_PASSWORD | docker secret create keystore_password -
+    - echo $DB_PASSWORD | docker secret create db_password -
+    - echo $MAIL_PASSWORD | docker secret create mail_password -
+    - echo $RABBITMQ_PASSWORD | docker secret create rabbitmq_password -
     - echo "Building Docker image for spring-app..."
-    - docker compose build --build-arg SPRING_PROFILES_ACTIVE="docker" --build-arg KEYSTORE_PASSWORD="$KEYSTORE_PASSWORD" --build-arg DB_PASSWORD="$DB_PASSWORD" --build-arg MAIL_PASSWORD="$MAIL_PASSWORD" --build-arg RABBITMQ_PASSWORD="$RABBITMQ_PASSWORD" spring-app
+    - sudo docker compose build --build-arg SPRING_PROFILES_ACTIVE="docker" spring-app
     - echo "Tagging Docker image with commit and latest tags..."
-    - docker tag ${CI_REGISTRY_IMAGE}/spring-app:latest $TAG_COMMIT
-    - docker tag ${CI_REGISTRY_IMAGE}/spring-app:latest $TAG_LATEST
+    - sudo docker tag ${CI_REGISTRY_IMAGE}/spring-app:latest $TAG_COMMIT
+    - sudo docker tag ${CI_REGISTRY_IMAGE}/spring-app:latest $TAG_LATEST
     - echo "Pushing Docker images..."
-    - docker push $TAG_COMMIT
-    - docker push $TAG_LATEST
+    - sudo docker push $TAG_COMMIT
+    - sudo docker push $TAG_LATEST
   only:
     - main
   after_script:
     - echo "Cleaning up Docker resources..."
-    - docker system prune -f
-
+    - sudo docker system prune -f
 
 deploy:
   image: alpine:3.18
@@ -48,14 +52,13 @@ deploy:
     - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "mkdir -p /home/$SERVER_USER/greedys_api/"
     - echo "Copying docker-compose.yml to remote server..."
     - scp -i $ID_RSA -o StrictHostKeyChecking=no docker-compose.yml $SERVER_USER@$SERVER_IP:/home/$SERVER_USER/greedys_api/
-    - echo "Copying keystore.p12 to remote server..."
-    - scp -i $ID_RSA -o StrictHostKeyChecking=no keystore.p12 $SERVER_USER@$SERVER_IP:/home/$SERVER_USER/greedys_api/
     - echo "Logging into Docker registry on remote server..."
     - echo $CI_JOB_TOKEN | ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY"
     - echo "Pulling Docker images on remote server..."
-    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "cd /home/$SERVER_USER/greedys_api/ && export DB_PASSWORD=$DB_PASSWORD RABBITMQ_PASSWORD=$RABBITMQ_PASSWORD && docker compose pull"
-    - echo "Starting Docker containers on remote server..."
-    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "cd /home/$SERVER_USER/greedys_api/ && export DB_PASSWORD=$DB_PASSWORD RABBITMQ_PASSWORD=$RABBITMQ_PASSWORD && docker compose up -d"
+    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "cd /home/$SERVER_USER/greedys_api/ && sudo docker compose pull"
+    - echo "Starting Docker stack on remote server..."
+    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP \
+      "cd /home/$SERVER_USER/greedys_api/ && sudo docker stack deploy -c docker-compose.yml greedys_api"
   only:
     - main
 
@@ -68,8 +71,6 @@ publish:
     - curl -sL https://deb.nodesource.com/setup_18.x | bash -
     - apt-get install -y nodejs
     - npm install -g @openapitools/openapi-generator-cli
-    - echo "Running health check on spring-app..."
-    - until curl -k -f https://$SERVER_IP:5050/actuator/health; do echo "Waiting for spring-app to be healthy..."; sleep 10; done
     - echo "Fetching OpenAPI specification from spring-app..."
     - curl -o openapi.yaml https://$SERVER_IP:5050/v3/api-docs.yaml
     - echo "Setting up GIT_ASKPASS to use PAT..."

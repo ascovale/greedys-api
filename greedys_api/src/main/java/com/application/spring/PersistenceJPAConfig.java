@@ -8,11 +8,15 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
+import org.springframework.beans.factory.annotation.Value;
 
 import javax.sql.DataSource;
 import jakarta.persistence.EntityManagerFactory;
 import java.util.HashMap;
 import java.util.Map;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.io.IOException;
 
 @Configuration
 @EnableJpaRepositories(basePackages = "com.application.persistence.dao")
@@ -26,10 +30,16 @@ public class PersistenceJPAConfig {
 
     @Bean
     DataSource dataSource() {
+        String dbPassword = "";
+        try {
+            dbPassword = new String(Files.readAllBytes(Paths.get("/run/secrets/db_password"))).trim();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return DataSourceBuilder.create()
                 .url(env.getProperty("spring.datasource.url"))
                 .username(env.getProperty("spring.datasource.username"))
-                .password(env.getProperty("spring.datasource.password"))
+                .password(dbPassword)
                 .driverClassName(env.getProperty("spring.datasource.driver-class-name"))
                 .build();
     }

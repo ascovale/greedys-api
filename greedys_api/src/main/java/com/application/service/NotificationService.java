@@ -48,7 +48,7 @@ public class NotificationService {
         this.reservationDAO = reservationDAO;
         this.userFcmTokenService = userFcmTokenService;
         try {
-            this.googleCredentials = GoogleCredentials.fromStream(new FileInputStream("/secured/service-account.json"))
+            this.googleCredentials = GoogleCredentials.fromStream(new FileInputStream("/run/secrets/service_account"))
                     .createScoped("https://www.googleapis.com/auth/cloud-platform");
             this.googleCredentials.refreshIfExpired();
         } catch (IOException e) {
