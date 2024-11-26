@@ -2,6 +2,7 @@ variables:
   TAG_LATEST: ${CI_REGISTRY_IMAGE}/spring-app:latest
   TAG_COMMIT: ${CI_REGISTRY_IMAGE}/spring-app:${CI_COMMIT_SHORT_SHA}
   DART_REPO: git@gitlab.com:PsychoOrange/greedys_api_dart_lib.git
+  USER: root  # Set USER variable to avoid warnings
 
 stages:
   - build
@@ -21,14 +22,13 @@ build:
   script:
     - echo "Logging into Docker registry..."
     - echo $CI_JOB_TOKEN | docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY
-    - echo "Building Docker image for spring-app..."
-    - docker compose build --build-arg SPRING_PROFILES_ACTIVE="docker" spring-app
-    - echo "Tagging Docker image with commit and latest tags..."
-    - docker tag ${CI_REGISTRY_IMAGE}/spring-app:latest $TAG_COMMIT
-    - docker tag ${CI_REGISTRY_IMAGE}/spring-app:latest $TAG_LATEST
+    - echo "Building and tagging Docker image for spring-app..."
+    - docker build -t $TAG_LATEST --build-arg SPRING_PROFILES_ACTIVE="docker" .
+    - echo "Tagging Docker image with commit tag..."
+    - docker tag $TAG_LATEST $TAG_COMMIT
     - echo "Pushing Docker images..."
-    - docker push $TAG_COMMIT
     - docker push $TAG_LATEST
+    - docker push $TAG_COMMIT
   only:
     - main
   after_script:
