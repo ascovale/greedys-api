@@ -30,7 +30,7 @@ services:
       MYSQL_DATABASE: greedys_v1
       MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_password  # Password di root dal Docker secret
     ports:
-      - "3307:3306"
+      - "3306:3306"
     volumes:
       - /home/${USER}/db_data:/var/lib/mysql
     networks:
