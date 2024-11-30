@@ -5,7 +5,8 @@ IMAGE_NAME="registry.gitlab.com/psychoorange/greedys_api/spring-app:latest"
 STACK_NAME="greedys_api"
 COMPOSE_FILE="docker-compose.yml"
 
-# 2. Ottieni il digest dell'immagine
+# Ottieni il digest
+docker pull $IMAGE_NAME
 DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' $IMAGE_NAME)
 
 if [ -z "$DIGEST" ]; then
@@ -13,8 +14,12 @@ if [ -z "$DIGEST" ]; then
   exit 1
 fi
 
-# 3. Esegui il deploy dello stack specificando l'immagine con il digest e passando le credenziali del registro
-docker stack deploy --with-registry-auth -c <(sed "s|registry.gitlab.com/psychoorange/greedys_api/spring-app:latest|$DIGEST|g" $COMPOSE_FILE) $STACK_NAME
+# Crea un file temporaneo con la modifica
+TEMP_COMPOSE_FILE=$(mktemp)
+sed "s|registry.gitlab.com/psychoorange/greedys_api/spring-app:latest|$DIGEST|g" $COMPOSE_FILE > $TEMP_COMPOSE_FILE
+
+# Esegui il deploy
+docker stack deploy --with-registry-auth -c $TEMP_COMPOSE_FILE $STACK_NAME
 
 # Controllo del successo del comando di deploy
 if [ $? -eq 0 ]; then
@@ -23,3 +28,6 @@ else
   echo "Errore durante il deployment dello stack Docker"
   exit 1
 fi
+
+# Rimuovi il file temporaneo
+rm $TEMP_COMPOSE_FILE
