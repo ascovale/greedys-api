@@ -20,7 +20,7 @@ services:
       - keystore
       - keystore_password
       - db_password
-      - mail_password
+      - email_password
       - rabbitmq_password
       - service_account
 
@@ -73,7 +73,7 @@ secrets:
     external: true
   db_password:
     external: true
-  mail_password:
+  email_password:
     external: true
   rabbitmq_password:
     external: true
