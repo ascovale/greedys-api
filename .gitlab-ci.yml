@@ -2,7 +2,6 @@ variables:
   TAG_LATEST: ${CI_REGISTRY_IMAGE}/spring-app:latest
   TAG_COMMIT: ${CI_REGISTRY_IMAGE}/spring-app:${CI_COMMIT_SHORT_SHA}
   DART_REPO: git@gitlab.com:PsychoOrange/greedys_api_dart_lib.git
-  USER: root  # Set USER variable to avoid warnings
 
 stages:
   - build
