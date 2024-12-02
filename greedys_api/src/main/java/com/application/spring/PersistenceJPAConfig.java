@@ -8,7 +8,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
-import org.springframework.context.annotation.Primary;
 
 import javax.sql.DataSource;
 import jakarta.persistence.EntityManagerFactory;
@@ -40,12 +39,11 @@ public class PersistenceJPAConfig {
                 .url(env.getProperty("spring.datasource.url"))
                 .username(env.getProperty("spring.datasource.username"))
                 .password(dbPassword)
-                .driverClassName(env.getProperty("spring.datasource.driver-class-name"))
+                .driverClassName(env.getProperty("spring.datasource.driverClassName"))
                 .build();
     }
 
     @Bean
-    @Primary
     LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
         LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
         em.setDataSource(dataSource);
@@ -56,7 +54,6 @@ public class PersistenceJPAConfig {
 
         Map<String, Object> properties = new HashMap<>();
         properties.put("hibernate.hbm2ddl.auto", env.getProperty("spring.jpa.hibernate.ddl-auto"));
-        properties.put("hibernate.dialect", env.getProperty("spring.jpa.properties.hibernate.dialect"));
         em.setJpaPropertyMap(properties);
 
         return em;
