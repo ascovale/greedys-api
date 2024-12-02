@@ -19,7 +19,7 @@ TEMP_COMPOSE_FILE=$(mktemp)
 sed "s|registry.gitlab.com/psychoorange/greedys_api/spring-app:latest|$DIGEST|g" $COMPOSE_FILE > $TEMP_COMPOSE_FILE
 
 # Esegui il deploy
-docker stack deploy --with-registry-auth -c $TEMP_COMPOSE_FILE $STACK_NAME
+docker stack deploy --detach=false --with-registry-auth -c $TEMP_COMPOSE_FILE $STACK_NAME
 
 # Controllo del successo del comando di deploy
 if [ $? -eq 0 ]; then
