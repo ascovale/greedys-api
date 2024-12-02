@@ -10,10 +10,8 @@ services:
         delay: 5s
         max_attempts: 3
     depends_on:
-      db:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
+      - db
+      - rabbitmq
     networks:
       - app-network
     environment:
