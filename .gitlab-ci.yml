@@ -63,7 +63,7 @@ publish:
     - apt-get install -y nodejs
     - npm install -g @openapitools/openapi-generator-cli
     - echo "Fetching OpenAPI specification from spring-app..."
-    - curl -o openapi.yaml https://$SERVER_IP:5050/v3/api-docs.yaml
+    - curl -o openapi.yaml https://www.greedys.it/api/v3/api-docs.yaml
     - echo "Setting up GIT_ASKPASS to use PAT..."
     - echo "echo \$PAT" > /tmp/git-askpass.sh
     - chmod +x /tmp/git-askpass.sh
