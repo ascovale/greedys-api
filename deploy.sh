@@ -31,3 +31,6 @@ fi
 
 # Rimuovi il file temporaneo
 rm $TEMP_COMPOSE_FILE
+
+
+docker container prune -f
