@@ -1,21 +1,26 @@
 package com.application.spring;
+import jakarta.persistence.EntityManagerFactory;
+import javax.sql.DataSource;
+import org.springframework.core.env.Environment;
 
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-import javax.sql.DataSource;
-import jakarta.persistence.EntityManagerFactory;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Properties;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.io.IOException;
 
 @Configuration
 @EnableJpaRepositories(basePackages = "com.application.persistence.dao")
+@EnableTransactionManagement
 public class PersistenceJPAConfig {
 
     private final Environment env;
@@ -26,35 +31,45 @@ public class PersistenceJPAConfig {
 
     @Bean
     DataSource dataSource() {
+        String dbPassword = "";
+        try {
+            dbPassword = new String(Files.readAllBytes(Paths.get("/run/secrets/db_password"))).trim();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return DataSourceBuilder.create()
                 .url(env.getProperty("spring.datasource.url"))
                 .username(env.getProperty("spring.datasource.username"))
-                .password(env.getProperty("spring.datasource.password"))
-                .driverClassName(env.getProperty("spring.datasource.driver-class-name"))
+                .password(dbPassword)
+                .driverClassName(env.getProperty("spring.datasource.driverClassName"))
                 .build();
     }
 
     @Bean
-    LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
+    public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
         LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
         em.setDataSource(dataSource);
         em.setPackagesToScan("com.application.persistence.model");
 
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         em.setJpaVendorAdapter(vendorAdapter);
-
-        Map<String, Object> properties = new HashMap<>();
-        properties.put("hibernate.hbm2ddl.auto", env.getProperty("spring.jpa.hibernate.ddl-auto"));
-        properties.put("hibernate.dialect", env.getProperty("spring.jpa.properties.hibernate.dialect"));
-        em.setJpaPropertyMap(properties);
+        em.setJpaProperties(additionalProperties());
 
         return em;
     }
 
     @Bean
-    JpaTransactionManager transactionManager(EntityManagerFactory entityManagerFactory) {
+    public PlatformTransactionManager transactionManager(EntityManagerFactory emf) {
         JpaTransactionManager transactionManager = new JpaTransactionManager();
-        transactionManager.setEntityManagerFactory(entityManagerFactory);
+        transactionManager.setEntityManagerFactory(emf);
+
         return transactionManager;
+    }
+
+    private Properties additionalProperties() {
+        Properties properties = new Properties();
+        properties.setProperty("hibernate.hbm2ddl.auto", "update");
+        
+        return properties;
     }
 }

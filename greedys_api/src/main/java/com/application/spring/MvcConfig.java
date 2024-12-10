@@ -2,6 +2,9 @@ package com.application.spring;
 
 import java.util.Locale;
 import java.util.Properties;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.io.IOException;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.ApplicationContext;
@@ -139,7 +142,13 @@ public class MvcConfig implements WebMvcConfigurer, ApplicationContextAware {
         mailSender.setHost("smtp.gmail.com");
         mailSender.setPort(587);
         mailSender.setUsername("reservationslasoffitta@gmail.com");
-        mailSender.setPassword("qtvm gswd soun aulm");
+        String emailPassword = "";
+        try {
+            emailPassword = new String(Files.readAllBytes(Paths.get("/run/secrets/email_password"))).trim();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        mailSender.setPassword(emailPassword);
         Properties props = mailSender.getJavaMailProperties();
         props.put("mail.transport.protocol", "smtp");
         props.put("mail.smtp.auth", "true");

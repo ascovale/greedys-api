@@ -1,2 +1,3 @@
 greedys_api/target/
 .vscode/settings.json
+.env

@@ -1,35 +1,38 @@
 variables:
-  TAG_LATEST: $CI_REGISTRY_IMAGE/spring-app:latest
-  TAG_COMMIT: $CI_REGISTRY_IMAGE/spring-app:$CI_COMMIT_SHORT_SHA
-  API_SPEC: openapi.json
-  API_OUTPUT_DIR: lib/api
+  TAG_LATEST: ${CI_REGISTRY_IMAGE}/spring-app:latest
+  TAG_COMMIT: ${CI_REGISTRY_IMAGE}/spring-app:${CI_COMMIT_SHORT_SHA}
   DART_REPO: git@gitlab.com:PsychoOrange/greedys_api_dart_lib.git
 
 stages:
-  - publish
+  - build
   - deploy
-  - generate_and_publish_api
+  - publish
 
-publish:
+cache:
+  paths:
+    - .m2/repository
+    - node_modules/
+
+build:
   image: docker:24.0.5
-  stage: publish
+  stage: build
   services:
     - docker:24.0.5-dind
   script:
     - echo "Logging into Docker registry..."
     - echo $CI_JOB_TOKEN | docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY
-    - echo "Building Docker image for spring-app..."
-    - docker compose build spring-app || (docker logs spring-app && exit 1)
-    - echo "Tagging Docker image with commit and latest tags..."
-    - docker tag $CI_REGISTRY_IMAGE/spring-app:latest $TAG_COMMIT
-    - docker tag $CI_REGISTRY_IMAGE/spring-app:latest $TAG_LATEST
+    - echo "Building and tagging Docker image for spring-app..."
+    - docker build -t $TAG_LATEST --build-arg SPRING_PROFILES_ACTIVE="docker" .
+    - echo "Tagging Docker image with commit tag..."
+    - docker tag $TAG_LATEST $TAG_COMMIT
     - echo "Pushing Docker images..."
-    - docker push $TAG_COMMIT
     - docker push $TAG_LATEST
-    - echo "Pushing Docker compose..."
-    - docker compose push
+    - docker push $TAG_COMMIT
   only:
     - main
+  after_script:
+    - echo "Cleaning up Docker resources..."
+    - docker system prune -f
 
 deploy:
   image: alpine:3.18
@@ -41,44 +44,39 @@ deploy:
     - apk update && apk add openssh-client
     - echo "Creating directory on remote server..."
     - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "mkdir -p /home/$SERVER_USER/greedys_api/"
-    - echo "Copying docker-compose.yml to remote server..."
-    - scp -i $ID_RSA -o StrictHostKeyChecking=no docker-compose.yml $SERVER_USER@$SERVER_IP:/home/$SERVER_USER/greedys_api/
+    - echo "Copying docker-compose.yml and deploy.sh to remote server..."
+    - scp -i $ID_RSA -o StrictHostKeyChecking=no docker-compose.yml deploy.sh $SERVER_USER@$SERVER_IP:/home/$SERVER_USER/greedys_api/
     - echo "Logging into Docker registry on remote server..."
-    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY"
-    - echo "Pulling Docker images on remote server..."
-    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "cd /home/$SERVER_USER/greedys_api/ && docker compose pull"
-    - echo "Starting Docker containers on remote server..."
-    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "cd /home/$SERVER_USER/greedys_api/ && docker compose up -d"
+    - echo $CI_JOB_TOKEN | ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY"
+    - echo "Executing deploy.sh on remote server..."
+    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "cd /home/$SERVER_USER/greedys_api/ && chmod +x deploy.sh && ./deploy.sh"
   only:
     - main
 
-generate_and_publish_api:
+publish:
   image: openjdk:11-jre-slim
-  stage: generate_and_publish_api
+  stage: publish
   script:
-    - echo "Setting permissions for RSA key..."
-    - chmod 600 $ID_RSA
-    - echo "Updating apt and installing curl and Node.js..."
-    - apt-get update && apt-get install -y curl
+    - echo "Updating apt and installing curl, Node.js, and git..."
+    - apt-get update && apt-get install -y curl git
     - curl -sL https://deb.nodesource.com/setup_18.x | bash -
     - apt-get install -y nodejs
     - npm install -g @openapitools/openapi-generator-cli
-    - echo "Running health check on spring-app..."
-    - until curl -f http://$SERVER_IP:5050/actuator/health; do echo "Waiting for spring-app to be healthy..."; sleep 10; done
     - echo "Fetching OpenAPI specification from spring-app..."
-    - curl -o openapi.yaml http://$SERVER_IP:5050/v3/api-docs.yaml
-    - echo "Generating Dart client library with Dio from OpenAPI specification..."
-    - openapi-generator-cli generate -i openapi.yaml -g dart-dio -o greedys_api_dart_lib
-    - echo "Cloning Dart client library repository using SSH..."
-    - mkdir -p ~/.ssh
-    - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-    - chmod 600 ~/.ssh/id_rsa
-    - ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
-    - git clone $DART_REPO
-    - echo "Copying generated sources to Dart client library repository..."
-    - rm -rf greedys_api_dart_lib/lib/api
-    - cp -r greedys_api_dart_lib/lib/api greedys_api_dart_lib/lib/
+    - curl -o openapi.yaml https://www.greedys.it/api/v3/api-docs.yaml
+    - echo "Setting up GIT_ASKPASS to use PAT..."
+    - echo "echo \$PAT" > /tmp/git-askpass.sh
+    - chmod +x /tmp/git-askpass.sh
+    - export GIT_ASKPASS=/tmp/git-askpass.sh
+    - echo "Cloning Dart client library repository using HTTPS with PAT..."
+    - git clone https://gitlab.com/PsychoOrange/greedys_api_dart_lib.git
     - cd greedys_api_dart_lib
+    - echo "Configuring Git user name and email..."
+    - git config user.email "ci-bot@greedys.com"
+    - git config user.name "Greedys CI Bot"
+    - echo "Generating Dart client library with Dio from OpenAPI specification..."
+    - openapi-generator-cli generate -i ../openapi.yaml -g dart-dio -o .
+    - echo "Committing and pushing changes to Dart client library repository..."
     - git add .
     - git commit -m "Update Dart client library with latest API changes"
     - git push origin main

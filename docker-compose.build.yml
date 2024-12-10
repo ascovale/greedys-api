@@ -1,0 +1,80 @@
+services:
+  spring-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5050:8443"
+    depends_on:
+      - db
+      - rabbitmq
+    networks:
+      - app-network
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD-SHELL", "curl -k -f https://localhost:8443/actuator/health || exit 1"]
+      interval: 5s 
+      timeout: 30s
+      retries: 6
+    environment:
+      SPRING_PROFILES_ACTIVE: "docker"
+    secrets:
+      - keystore_password
+      - db_password
+      - mail_password
+      - rabbitmq_password
+
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: greedys_v1
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_password
+    ports:
+      - "3307:3306"
+    volumes:
+      - /home/${USER}/db_data:/var/lib/mysql
+    networks:
+      - app-network
+    stdin_open: true
+    tty: true
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$$(< /run/secrets/db_password) || exit 1"]
+      interval: 5s
+      timeout: 30s
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:management
+    environment:
+      RABBITMQ_DEFAULT_USER: ascovale
+      RABBITMQ_DEFAULT_PASS_FILE: /run/secrets/rabbitmq_password
+    ports:
+      - "5672:5672"
+      - "15672:15672" 
+    networks:
+      - app-network
+    volumes:
+      - /home/${USER}/rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD-SHELL", "rabbitmqctl status || exit 1"]
+      interval: 10s
+      timeout: 30s
+      retries: 5
+
+networks:
+  app-network:
+    external: true
+
+volumes:
+  db_data:
+
+secrets:
+  keystore_password:
+    external: true
+  db_password:
+    external: true
+  mail_password:
+    external: true
+  rabbitmq_password:
+    external: true

@@ -48,7 +48,7 @@ public class NotificationService {
         this.reservationDAO = reservationDAO;
         this.userFcmTokenService = userFcmTokenService;
         try {
-            this.googleCredentials = GoogleCredentials.fromStream(new FileInputStream("/secured/greedy-69de3-968988eeefce.json"))
+            this.googleCredentials = GoogleCredentials.fromStream(new FileInputStream("/run/secrets/service_account"))
                     .createScoped("https://www.googleapis.com/auth/cloud-platform");
             this.googleCredentials.refreshIfExpired();
         } catch (IOException e) {
@@ -163,6 +163,11 @@ public class NotificationService {
                 System.err.println("Error sending Firebase notification: " + e.getMessage());
             }
         }
+    }
+
+    public Optional<String> getOldTokenIfPresent(String deviceId) {
+        UserFcmToken token = userFcmTokenService.getTokenByDeviceId(deviceId);
+        return Optional.of(token.getFcmToken());
     }
 
     public List<NotificationDto> findByUser(User user) {
