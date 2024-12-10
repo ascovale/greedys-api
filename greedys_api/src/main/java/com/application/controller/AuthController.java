@@ -66,36 +66,44 @@ public class AuthController {
         return ResponseEntity.ok(responseDTO);
     }
     
+    @Operation(summary = "Autentica con Google", description = "Autentica un utente utilizzando un token di Google e restituisce un token JWT", responses = {
+            @ApiResponse(responseCode = "200", description = "Autenticazione riuscita", content = @Content(schema = @Schema(implementation = AuthResponseDTO.class))),
+            @ApiResponse(responseCode = "401", description = "Autenticazione fallita")
+    })
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Richiesta di autenticazione con Google", required = true, content = @Content(schema = @Schema(implementation = AuthRequestGoogleDTO.class)))
     @PostMapping("/google")
-public ResponseEntity<AuthResponseDTO> authenticateWithGoogle(@RequestBody AuthRequestGoogleDTO authRequest) throws Exception {
-    GoogleIdToken idToken = verifyGoogleToken(authRequest.getToken());
-    if (idToken != null) {
-        String email = idToken.getPayload().getEmail();
-        String name = (String) idToken.getPayload().get("name");
-        // quali dati vogliamo prendere da google?
-        User user = userService.findUserByEmail(email);
-        if (user == null) {
-            NewUserDTO accountDto = new NewUserDTO();
-            // devo verificare questa cosa
-            accountDto.setFirstName(name.split(" ")[0]);
-            accountDto.setLastName(name.split(" ")[1]);
-            accountDto.setEmail(email);
-            accountDto.setPassword(generateRandomPassword()); // Generate and set a random password
-            user = userService.registerNewUserAccount(accountDto);
+    public ResponseEntity<AuthResponseDTO> authenticateWithGoogle(@RequestBody AuthRequestGoogleDTO authRequest)
+            throws Exception {
+        GoogleIdToken idToken = verifyGoogleToken(authRequest.getToken());
+        if (idToken != null) {
+            String email = idToken.getPayload().getEmail();
+            String name = (String) idToken.getPayload().get("name");
+            // quali dati vogliamo prendere da google?
+            User user = userService.findUserByEmail(email);
+            if (user == null) {
+                NewUserDTO accountDto = new NewUserDTO();
+                // devo verificare questa cosa
+                accountDto.setFirstName(name.split(" ")[0]);
+                accountDto.setLastName(name.split(" ")[1]);
+                accountDto.setEmail(email);
+                accountDto.setPassword(generateRandomPassword()); // Generate and set a random password
+                user = userService.registerNewUserAccount(accountDto);
+            }
+            String jwt = jwtUtil.generateToken(user);
+            return ResponseEntity.ok(new AuthResponseDTO(jwt, new UserDTO(user)));
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        String jwt = jwtUtil.generateToken(user);
-        return ResponseEntity.ok(new AuthResponseDTO(jwt, new UserDTO(user)));
-    } else {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
-}
 
     private GoogleIdToken verifyGoogleToken(String token) throws Exception {
-    GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(GoogleNetHttpTransport.newTrustedTransport(), 
-            GsonFactory.getDefaultInstance())
-            .setAudience(Collections.singletonList("982346813437-3s1uepb5ic7ib5r4mfegdsbrkjjvtl7b.apps.googleusercontent.com"))
-            .build();
-    return verifier.verify(token);}
+        GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(GoogleNetHttpTransport.newTrustedTransport(),
+                GsonFactory.getDefaultInstance())
+                .setAudience(Collections
+                        .singletonList("982346813437-3s1uepb5ic7ib5r4mfegdsbrkjjvtl7b.apps.googleusercontent.com"))
+                .build();
+        return verifier.verify(token);
+    }
 
     private String generateRandomPassword() {
         // Implement a method to generate a random password
