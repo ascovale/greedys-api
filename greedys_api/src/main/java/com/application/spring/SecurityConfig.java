@@ -23,6 +23,7 @@ import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
+import static org.springframework.security.config.Customizer.withDefaults;
 
 import com.application.security.jwt.JwtRequestFilter;
 import com.application.security.user.UserRememberMeServices;
@@ -57,7 +58,10 @@ public class SecurityConfig {
                                                 "/error*",
                                                 "/actuator/health").permitAll()
                             .anyRequest().authenticated()
+
+                            //.and() .oauth2Login();
             )
+            .oauth2Login(withDefaults()) // Abilita l'autenticazione OAuth2
             .sessionManagement(management -> management
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);

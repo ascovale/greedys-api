@@ -72,7 +72,6 @@ public class UserService {
 		return new UserDTO(user);
 	}
 
-	 
 	public User registerNewUserAccount(final NewUserDTO accountDto) {
 		if (emailExists(accountDto.getEmail())) {
 			throw new UserAlreadyExistException("There is an account with that email adress: " + accountDto.getEmail());
@@ -90,8 +89,7 @@ public class UserService {
 		user.setRoles(Arrays.asList(roleRepository.findByName("ROLE_USER")));
 		return userDAO.save(user);
 	}
-
-	 
+ 
 	public User getUser(final String verificationToken) {
 		final VerificationToken token = tokenDAO.findByToken(verificationToken);
 		if (token != null) {
@@ -99,18 +97,15 @@ public class UserService {
 		}
 		return null;
 	}
-
 	 
 	public VerificationToken getVerificationToken(final String verificationToken) {
 		return tokenDAO.findByToken(verificationToken);
 	}
 
-	 
 	public void saveRegisteredUser(final User user) {
 		userDAO.save(user);
 	}
 
-	 
 	public void deleteUser(final User user) {
 		final VerificationToken verificationToken = tokenDAO.findByUser(user);
 
@@ -131,7 +126,6 @@ public class UserService {
 		final VerificationToken myToken = new VerificationToken(token, user);
 		tokenDAO.save(myToken);
 	}
-
 	 
 	public VerificationToken generateNewVerificationToken(final String existingVerificationToken) {
 		VerificationToken vToken = tokenDAO.findByToken(existingVerificationToken);
@@ -140,44 +134,36 @@ public class UserService {
 		return vToken;
 	}
 
-	 
 	public void createPasswordResetTokenForUser(final User user, final String token) {
 		final PasswordResetToken myToken = new PasswordResetToken(token, user);
 		passwordTokenRepository.save(myToken);
 	}
 
-	 
 	public User findUserByEmail(final String email) {
 		return userDAO.findByEmail(email);
 	}
-
 	 
 	public PasswordResetToken getPasswordResetToken(final String token) {
 		return passwordTokenRepository.findByToken(token);
 	}
 
-	 
 	public User getUserByPasswordResetToken(final String token) {
 		return passwordTokenRepository.findByToken(token).getUser();
 	}
 
-	 
 	public Optional<User> getUserByID(final long id) {
 		return userDAO.findById(id);
 	}
 
-	 
 	public void changeUserPassword(final Long id, final String password) {
 		final User user = userDAO.findById(id).get();
 		user.setPassword(passwordEncoder.encode(password));
 		userDAO.save(user);
 	}
 
-	 
 	public boolean checkIfValidOldPassword(final Long id, final String oldPassword) {
 		return passwordEncoder.matches(oldPassword, userDAO.findById(id).get().getPassword());
 	}
-
 	 
 	public String validateVerificationToken(String token) {
 		final VerificationToken verificationToken = tokenDAO.findByToken(token);
@@ -216,8 +202,7 @@ public class UserService {
 	private boolean emailExists(final String email) {
 		return userDAO.findByEmail(email) != null;
 	}
-
-	 
+ 
 	public List<String> getUsersFromSessionRegistry() {
 		return sessionRegistry.getAllPrincipals().stream()
 				.filter((u) -> !sessionRegistry.getAllSessions(u, false).isEmpty()).map(o -> {
@@ -245,11 +230,9 @@ public class UserService {
 		userDAO.save(user);
 	}
 
-
     public User getReference(Long userId) {
         return entityManager.getReference(User.class, userId); 
     }
-
 
     public Collection<RestaurantDTO> gerRestaurants(Long id) {
 		return userDAO.getRestaurants(id).stream().map(r -> new RestaurantDTO(r)).toList();

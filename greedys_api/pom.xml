@@ -21,6 +21,12 @@
     </properties>
     <dependencies>
         <!-- Spring Boot Dependencies -->
+         <dependency>
+        <groupId>com.google.api-client</groupId>
+        <artifactId>google-api-client</artifactId>
+        <version>1.32.1</version>
+    </dependency>
+       
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
@@ -251,7 +257,16 @@
             <artifactId>springfox-boot-starter</artifactId>
             <version>3.0.0</version>
         </dependency>
-    </dependencies>
+    
+      <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-core</artifactId>
+        <version>2.12.1</version>
+      </dependency>
+
+     
+
+</dependencies>
     <build>
         <finalName>greedys_api</finalName>
         <pluginManagement>
