@@ -17,7 +17,7 @@ public class SSLConfig {
         return factory -> {
             Ssl ssl = new Ssl();
             ssl.setKeyStore("/run/secrets/keystore");
-            ssl.setKeyStoreType("PEM");
+            ssl.setKeyStoreType("PKCS12");
             ssl.setKeyAlias("greedysapi");
 
             // Leggi la password del keystore direttamente dal file Docker secret
