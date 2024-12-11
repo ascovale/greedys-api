@@ -22,24 +22,26 @@ import com.application.persistence.model.restaurant.RestaurantImage;
 @Repository
 public interface RestaurantDAO extends JpaRepository<Restaurant, Long> {
 
-  @Query(value =  "SELECT cd.closedDate " +
-                    "FROM ClosedDay cd " +
-                    "WHERE cd.restaurant.id = :idrestaurant " +
-                      "AND cd.closedDate BETWEEN :start AND :end " +
+  @Query(value =  """
+                    SELECT cd.closedDate 
+                    FROM ClosedDay cd 
+                    WHERE cd.restaurant.id = :idrestaurant 
+                      AND cd.closedDate BETWEEN :start AND :end 
 
-                    "UNION " +
+                    UNION 
 
-                    "SELECT cs.closedDate " +
-                      "FROM ClosedSlot cs " +
-                      "JOIN cs.slot s " +
-                      "JOIN s.service sv " +
-                      "WHERE sv.restaurant.id = :idrestaurant " +
-                        "AND cs.closedDate BETWEEN :start AND :end " +
-                      "GROUP BY cs.closedDate " +
-                      "HAVING COUNT(cs.id) = (SELECT COUNT(s2.id) " +
-                                           "FROM Slot s2 " +
-                                           "WHERE cs.slot.service.id = s2.service.id" +
-                                           "AND cs.slot.weekday = s2.weekday) ", 
+                    SELECT cs.closedDate 
+                      FROM ClosedSlot cs 
+                      JOIN cs.slot s 
+                      JOIN s.service sv 
+                      WHERE sv.restaurant.id = :idrestaurant 
+                        AND cs.closedDate BETWEEN :start AND :end 
+                      GROUP BY cs.closedDate 
+                      HAVING COUNT(cs.id) = (SELECT COUNT(s2.id) 
+                                           FROM Slot s2 
+                                           WHERE cs.slot.service.id = s2.service.id 
+                                           AND cs.slot.weekday = s2.weekday) 
+                    """, 
           nativeQuery = true)
   public Collection<LocalDate> findClosedDays(@Param("idrestaurant") Long idrestaurant, @Param("start") LocalDate start, @Param("end") LocalDate end);
 
