@@ -30,10 +30,15 @@ import com.application.web.dto.AuthResponseDTO;
 import com.application.web.dto.get.UserDTO;
 import com.application.web.dto.post.NewUserDTO;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Tag(name = "Auth", description = "Controller per la gestione dell'autenticazione")
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
+
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     private AuthenticationManager authenticationManager;
     private JwtUtil jwtUtil;
@@ -74,10 +79,12 @@ public class AuthController {
     @PostMapping("/google")
     public ResponseEntity<AuthResponseDTO> authenticateWithGoogle(@RequestBody AuthRequestGoogleDTO authRequest)
             throws Exception {
+        logger.debug("Received Google authentication request: {}", authRequest);
         GoogleIdToken idToken = verifyGoogleToken(authRequest.getToken());
         if (idToken != null) {
             String email = idToken.getPayload().getEmail();
             String name = (String) idToken.getPayload().get("name");
+            logger.debug("Google token verified. Email: {}, Name: {}", email, name);
             // quali dati vogliamo prendere da google?
             User user = userService.findUserByEmail(email);
             if (user == null) {
@@ -92,17 +99,25 @@ public class AuthController {
             String jwt = jwtUtil.generateToken(user);
             return ResponseEntity.ok(new AuthResponseDTO(jwt, new UserDTO(user)));
         } else {
+            logger.warn("Google token verification failed.");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
 
     private GoogleIdToken verifyGoogleToken(String token) throws Exception {
+        logger.debug("Verifying Google token: {}", token);
         GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(GoogleNetHttpTransport.newTrustedTransport(),
                 GsonFactory.getDefaultInstance())
                 .setAudience(Collections
                         .singletonList("982346813437-3s1uepb5ic7ib5r4mfegdsbrkjjvtl7b.apps.googleusercontent.com"))
                 .build();
-        return verifier.verify(token);
+        GoogleIdToken idToken = verifier.verify(token);
+        if (idToken != null) {
+            logger.debug("Google token verified successfully.");
+        } else {
+            logger.warn("Google token verification failed.");
+        }
+        return idToken;
     }
 
     private String generateRandomPassword() {
