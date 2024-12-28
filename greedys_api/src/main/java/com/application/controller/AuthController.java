@@ -79,7 +79,7 @@ public class AuthController {
     @PostMapping("/google")
     public ResponseEntity<AuthResponseDTO> authenticateWithGoogle(@RequestBody AuthRequestGoogleDTO authRequest)
             throws Exception {
-        logger.warn("Received Google authentication request: {}", authRequest);
+        logger.warn("Received Google authentication request: {}", authRequest.getToken());
         GoogleIdToken idToken = verifyGoogleToken(authRequest.getToken());
         if (idToken != null) {
             String email = idToken.getPayload().getEmail();
