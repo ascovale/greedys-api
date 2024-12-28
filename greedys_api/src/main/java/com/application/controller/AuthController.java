@@ -79,12 +79,12 @@ public class AuthController {
     @PostMapping("/google")
     public ResponseEntity<AuthResponseDTO> authenticateWithGoogle(@RequestBody AuthRequestGoogleDTO authRequest)
             throws Exception {
-        logger.debug("Received Google authentication request: {}", authRequest);
+        logger.warn("Received Google authentication request: {}", authRequest);
         GoogleIdToken idToken = verifyGoogleToken(authRequest.getToken());
         if (idToken != null) {
             String email = idToken.getPayload().getEmail();
             String name = (String) idToken.getPayload().get("name");
-            logger.debug("Google token verified. Email: {}, Name: {}", email, name);
+            logger.warn("Google token verified. Email: {}, Name: {}", email, name);
             // quali dati vogliamo prendere da google?
             User user = userService.findUserByEmail(email);
             if (user == null) {
