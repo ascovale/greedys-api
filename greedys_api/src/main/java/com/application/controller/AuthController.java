@@ -8,7 +8,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import com.google.api.client.json.gson.GsonFactory;
 import java.util.UUID;
-
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.Collections;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -70,7 +71,7 @@ public class AuthController {
 
         return ResponseEntity.ok(responseDTO);
     }
-    
+
     @Operation(summary = "Autentica con Google", description = "Autentica un utente utilizzando un token di Google e restituisce un token JWT", responses = {
             @ApiResponse(responseCode = "200", description = "Autenticazione riuscita", content = @Content(schema = @Schema(implementation = AuthResponseDTO.class))),
             @ApiResponse(responseCode = "401", description = "Autenticazione fallita")
@@ -81,6 +82,7 @@ public class AuthController {
             throws Exception {
         logger.warn("Received Google authentication request: {}", authRequest.getToken());
         GoogleIdToken idToken = verifyGoogleToken(authRequest.getToken());
+
         if (idToken != null) {
             String email = idToken.getPayload().getEmail();
             String name = (String) idToken.getPayload().get("name");
@@ -105,19 +107,27 @@ public class AuthController {
     }
 
     private GoogleIdToken verifyGoogleToken(String token) throws Exception {
-        logger.debug("Verifying Google token: {}", token);
-        GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(GoogleNetHttpTransport.newTrustedTransport(),
-                GsonFactory.getDefaultInstance())
-                .setAudience(Collections
-                        .singletonList("982346813437-3s1uepb5ic7ib5r4mfegdsbrkjjvtl7b.apps.googleusercontent.com"))
-                .build();
-        GoogleIdToken idToken = verifier.verify(token);
-        if (idToken != null) {
-            logger.debug("Google token verified successfully.");
-        } else {
-            logger.warn("Google token verification failed.");
+        try {
+            logger.debug("Verifying Google token: {}", token);
+            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
+                    GoogleNetHttpTransport.newTrustedTransport(),
+                    GsonFactory.getDefaultInstance())
+                    .setAudience(Collections
+                            .singletonList("982346813437-3s1uepb5ic7ib5r4mfegdsbrkjjvtl7b.apps.googleusercontent.com"))
+                    .build();
+            GoogleIdToken idToken = verifier.verify(token);
+            if (idToken != null) {
+                logger.debug("Google token verified successfully.");
+            } else {
+                logger.warn("Google token verification failed.");
+            }
+            return idToken;
+        } catch (GeneralSecurityException e) {
+            logger.error("Google token verification failed: GeneralSecurityException", e);
+        } catch (IOException e) {
+            logger.error("Google token verification failed: IOException", e);
         }
-        return idToken;
+        return null;
     }
 
     private String generateRandomPassword() {
