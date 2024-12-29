@@ -108,6 +108,7 @@ public class AuthController {
 
     private GoogleIdToken verifyGoogleToken(String token) throws Exception {
         try {
+            
             logger.debug("Verifying Google token: {}", token);
             GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
                     GoogleNetHttpTransport.newTrustedTransport(),
