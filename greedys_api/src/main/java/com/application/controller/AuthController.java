@@ -108,7 +108,7 @@ public class AuthController {
 
     private GoogleIdToken verifyGoogleToken(String token) throws Exception {
         try {
-            
+
             logger.debug("Verifying Google token... {}", token);
             GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
                     GoogleNetHttpTransport.newTrustedTransport(),
@@ -124,9 +124,11 @@ public class AuthController {
             }
             return idToken;
         } catch (GeneralSecurityException e) {
-            logger.error("Google token verification failed: GeneralSecurityException", e);
+            logger.error("\\n --->>> Google token verification failed: GeneralSecurityException - {}", e.getMessage(), e);
         } catch (IOException e) {
-            logger.error("Google token verification failed: IOException", e);
+            logger.error("\n --->>> Google token verification failed: IOException - {}", e.getMessage(), e);
+        } catch (Exception e) {
+            logger.error("\n --->>> Google token verification failed: Exception - {}", e.getMessage(), e);
         }
         return null;
     }
