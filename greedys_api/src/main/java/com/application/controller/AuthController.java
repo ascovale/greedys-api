@@ -124,7 +124,7 @@ public class AuthController {
             }
             return idToken;
         } catch (GeneralSecurityException e) {
-            logger.error("\\n --->>> Google token verification failed: GeneralSecurityException - {}", e.getMessage(), e);
+            logger.error("\n --->>> Google token verification failed: GeneralSecurityException - {}", e.getMessage(), e);
         } catch (IOException e) {
             logger.error("\n --->>> Google token verification failed: IOException - {}", e.getMessage(), e);
         } catch (Exception e) {
