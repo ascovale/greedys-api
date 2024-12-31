@@ -10,6 +10,7 @@ import com.google.api.client.json.gson.GsonFactory;
 import java.util.UUID;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.Arrays;
 import java.util.Collections;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -112,9 +113,24 @@ public class AuthController {
             GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
                     GoogleNetHttpTransport.newTrustedTransport(),
                     GsonFactory.getDefaultInstance())
-                    .setAudience(Collections
-                            .singletonList("982346813437-3s1uepb5ic7ib5r4mfegdsbrkjjvtl7b.apps.googleusercontent.com"))
+                    .setAudience(Arrays.asList(
+                            "982346813437-3s1uepb5ic7ib5r4mfegdsbrkjjvtl7b.apps.googleusercontent.com", // Web client ID
+                                                                                                        // (API)
+                            "982346813437-d0kerhe6h2km0veqs563avsgtv6vb7p5.apps.googleusercontent.com", // Flutter Web
+                            "982346813437-e1vsuujvorosiaamfdc3honrrbur17ri.apps.googleusercontent.com", // Android
+                            "982346813437-iosclientid.apps.googleusercontent.com" // iOS DA FARE !!!! ??????
+                    ))
                     .build();
+
+            /*
+             * GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
+             * GoogleNetHttpTransport.newTrustedTransport(),
+             * GsonFactory.getDefaultInstance())
+             * .setAudience(Collections
+             * .singletonList(
+             * "982346813437-3s1uepb5ic7ib5r4mfegdsbrkjjvtl7b.apps.googleusercontent.com"))
+             * .build();
+             */
             GoogleIdToken idToken = verifier.verify(token);
             if (idToken != null) {
                 logger.debug("Google token verified successfully.");
