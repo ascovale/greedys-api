@@ -54,8 +54,6 @@ public class ServicesController {
         return ResponseEntity.ok(new GenericResponse("success"));
     }
 
-
-
     @Operation(summary = "Delete a service", description = "This method deletes a service by its ID.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Service deleted successfully"),

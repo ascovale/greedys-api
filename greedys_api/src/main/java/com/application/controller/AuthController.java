@@ -118,19 +118,10 @@ public class AuthController {
                                                                                                         // (API)
                             "982346813437-d0kerhe6h2km0veqs563avsgtv6vb7p5.apps.googleusercontent.com", // Flutter Web
                             "982346813437-e1vsuujvorosiaamfdc3honrrbur17ri.apps.googleusercontent.com", // Android
-                            "982346813437-iosclientid.apps.googleusercontent.com" // iOS DA FARE !!!! ??????
+                            "982346813437-iosclientid.apps.googleusercontent.com" // TODO: Inserire il token per Ios
                     ))
                     .build();
-
-            /*
-             * GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
-             * GoogleNetHttpTransport.newTrustedTransport(),
-             * GsonFactory.getDefaultInstance())
-             * .setAudience(Collections
-             * .singletonList(
-             * "982346813437-3s1uepb5ic7ib5r4mfegdsbrkjjvtl7b.apps.googleusercontent.com"))
-             * .build();
-             */
+            
             GoogleIdToken idToken = verifier.verify(token);
             if (idToken != null) {
                 logger.debug("Google token verified successfully.");

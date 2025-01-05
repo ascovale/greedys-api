@@ -68,26 +68,6 @@ public class ServiceService {
 		}
 		return days;
 	}
-
-
-	/*
-	 * ATTENZIONE!!
-	 * La classe Calendar è obsoleta e non dovrebbe essere usata.
-	 
-	public List<ServiceDto> getDayServices(Restaurant restaurant, LocalDate date) {
-		Calendar calendar = Calendar.getInstance();
-		calendar.setTime(date);
-		int weekday = calendar.get(Calendar.DAY_OF_WEEK);
-		Weekday weekdayEnum = Weekday.values()[weekday - 1];
-		List<Service> services = serviceDAO.findServicesByWeekdayAndRestaurant(restaurant.getId(), weekdayEnum);
-		List<ServiceDto> servicesDto = new ArrayList<>();
-		for (Service service : services) {
-			servicesDto.add(Mapper.toDTO(service));
-		}
-		return servicesDto;
-	}
-	*/
-
 	 
 	public List<ServiceDto> getDayServicesFromWeekday(Restaurant restaurant, int weekday) {
 		//DA CONTROLLARE QUI C'è QUALCHE ERRORE
@@ -123,10 +103,10 @@ public class ServiceService {
 		service.setValidFrom(newServiceDTO.getValidFrom());
 		service.setValidTo(newServiceDTO.getValidTo());
 		service.setActive(false);
-		
 		serviceDAO.save(service);
 	}
-		
+	
+	//TODO: Don't know why don't just create the slots while creating the service?
 	@Transactional
 	private void save(Service service, Set<Slot> slots){
 		service.setSlots(slots);
@@ -134,11 +114,9 @@ public class ServiceService {
 		serviceDAO.save(service);
 	}
 
-	 
 	public List<ServiceTypeDto> getServiceTypes() {
 		return serviceTypeDAO.findAll().stream().map(ServiceTypeDto::new).toList();
 	}
-
 
     public List<ServiceSlotsDto> getServiceSlots(Long idRestaurant, LocalDate date) {
 		List<Service> services =serviceDAO.findServicesByRestaurant(idRestaurant);
@@ -148,11 +126,9 @@ public class ServiceService {
 		}
 		return servicesSlotsDto;
     }
-
-
 	 
 	public List<ServiceDto> getDayServices(Restaurant restaurant, LocalDate date) {
-		// TODO Auto-generated method stub
+		// TODO: Auto-generated method stub
 		throw new UnsupportedOperationException("Unimplemented method 'getDayServices'");
 	}
 

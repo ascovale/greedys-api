@@ -233,7 +233,6 @@ public class RestaurantController {
         return new GenericResponse("success");
     }
 	
-
 /* 
 	@Async
 	private void asyncTmp(HttpServletRequest request, User registered) {
@@ -262,8 +261,6 @@ public class RestaurantController {
 		return new ResponseEntity<>(restaurants, HttpStatus.OK);
 	}
 
-
-
 	@GetMapping(value = "/{id}/services")
 	@Operation(summary = "Get services of a restaurant", description = "Ottieni i servizi di un ristorante")
 	@ApiResponses(value = {
@@ -278,8 +275,6 @@ public class RestaurantController {
 		Collection<ServiceDTO> services = restaurantService.getServices(id);
 		return new ResponseEntity<>(services, HttpStatus.OK);
 	}
-
-
 
 	/* -- === *** ROOMS AND TABLES *** === --- */
 
