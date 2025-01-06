@@ -80,13 +80,10 @@ public class RestaurantService {
 		restaurant.setName(restaurantDto.getName());
 		restaurant.setAddress(restaurantDto.getAddress());
 		restaurant.setCreationDate(LocalDate.now());
-		restaurant.setEmail(restaurantDto.getEmail());
-		restaurant.setpI(restaurantDto.getpi());
+  		restaurant.setpI(restaurantDto.getpi());
 		restaurant.setPostCode(restaurantDto.getPost_code());
-		;
 		rDAO.save(restaurant);
 		System.out.println("<<< ID= "+restaurant.getId());
-
 		return new RestaurantDTO(restaurant);
 	}
 

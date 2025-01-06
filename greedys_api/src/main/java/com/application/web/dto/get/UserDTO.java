@@ -31,7 +31,10 @@ public class UserDTO {
         this.firstName = user.getName();
         this.lastName = user.getSurname();
         this.email = user.getEmail();
+    }
 
+    public UserDTO() {
+        //TODO Auto-generated constructor stub
     }
 
     public String getEmail() {
