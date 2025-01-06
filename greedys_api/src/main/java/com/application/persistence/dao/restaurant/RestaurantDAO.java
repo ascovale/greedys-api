@@ -39,7 +39,7 @@ public interface RestaurantDAO extends JpaRepository<Restaurant, Long> {
                       GROUP BY cs.closedDate 
                       HAVING COUNT(cs.id) = (SELECT COUNT(s2.id) 
                                            FROM Slot s2 
-                                           WHERE cs.slot.service.id = s2.service.id 
+                                           WHERE cs.slot.service = s2.service.id 
                                            AND cs.slot.weekday = s2.weekday) 
                     """, 
           nativeQuery = true)
