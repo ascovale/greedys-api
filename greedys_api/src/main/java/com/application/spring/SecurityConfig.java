@@ -48,6 +48,7 @@ public class SecurityConfig {
             .requiresChannel(channel -> channel
                 .anyRequest().requiresSecure())
             .csrf(csrf -> csrf.disable())
+            .cors(cors -> cors.disable())
             .authorizeHttpRequests(authz -> authz
                             .requestMatchers("/doc**", "/swagger-ui/**",
                                                 "/register/**",
@@ -70,6 +71,7 @@ public class SecurityConfig {
         return http.build();
     }
 
+    /*
     @Bean
     CorsFilter corsFilter() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -81,6 +83,7 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);
     }
+    */
 
     @Bean
     AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
