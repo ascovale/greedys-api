@@ -77,6 +77,7 @@ public class RestaurantService {
 	 
 	public RestaurantDTO registerRestaurant(NewRestaurantDTO restaurantDto) {
 		Restaurant restaurant = new Restaurant();
+		restaurant.setEmail(restaurantDto.getEmail());
 		restaurant.setName(restaurantDto.getName());
 		restaurant.setAddress(restaurantDto.getAddress());
 		restaurant.setCreationDate(LocalDate.now());
