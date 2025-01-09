@@ -68,7 +68,7 @@ public class SecurityConfig {
             .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
-
+    
     @Bean
     CorsFilter corsFilter() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -77,6 +77,8 @@ public class SecurityConfig {
         config.addAllowedOriginPattern("*"); // Permetti tutte le origini
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
+        config.addExposedHeader("Authorization"); // Aggiungi le intestazioni esposte
+        config.addExposedHeader("Content-Type");
         source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);
     }
