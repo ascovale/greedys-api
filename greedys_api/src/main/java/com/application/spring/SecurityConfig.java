@@ -22,6 +22,7 @@ import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
+import org.springframework.web.cors.CorsConfigurationSource;
 import static org.springframework.security.config.Customizer.withDefaults;
 
 import com.application.security.jwt.JwtRequestFilter;
@@ -47,40 +48,34 @@ public class SecurityConfig {
             .requiresChannel(channel -> channel
                 .anyRequest().requiresSecure())
             .csrf(csrf -> csrf.disable())
+            .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Use the cors filter
             .authorizeHttpRequests(authz -> authz
-                            .requestMatchers("/doc**", "/swagger-ui/**",
-                                                "/register/**",
-                                                "/v3/api-docs*/**", "/api/**",
-                                                "/auth/**",
-                                                "/restaurant/search*", "/restaurant/*/open-days*",
-                                                "/restaurant/*/day-slots*",
-                                                "/restaurant/*/services",
-                                                "/reservation/**",
-                                                "/error*",
-                                                "/actuator/health").permitAll()
-                            .anyRequest().authenticated()
-
-                            //.and() .oauth2Login();
+                .requestMatchers("/doc**", "/swagger-ui/**",
+                                 "/register/**", "/v3/api-docs*/**", "/api/**",
+                                 "/auth/**", "/restaurant/search*", "/restaurant/*/open-days*",
+                                 "/restaurant/*/day-slots*", "/restaurant/*/services",
+                                 "/reservation/**", "/error*", "/actuator/health").permitAll()
+                .anyRequest().authenticated()
             )
-            .oauth2Login(withDefaults()) // Abilita l'autenticazione OAuth2
+            .oauth2Login(withDefaults()) // Enable OAuth2 authentication
             .sessionManagement(management -> management
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
-    
+
     @Bean
-    CorsFilter corsFilter() {
+    CorsConfigurationSource corsConfigurationSource() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.addAllowedOriginPattern("*"); // Permetti tutte le origini
+        config.addAllowedOriginPattern("*"); // Allow all origins
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
-        config.addExposedHeader("Authorization"); // Aggiungi le intestazioni esposte
+        config.addExposedHeader("Authorization"); // Add exposed headers
         config.addExposedHeader("Content-Type");
         source.registerCorsConfiguration("/**", config);
-        return new CorsFilter(source);
+        return source;
     }
 
     @Bean
