@@ -18,7 +18,7 @@ public class SSLConfig {
             Ssl ssl = new Ssl();
             ssl.setKeyStore("/run/secrets/keystore");
             ssl.setKeyStoreType("PKCS12");
-            ssl.setKeyAlias("greedysapi");
+            ssl.setKeyAlias("api.greedys.it");
 
             // Leggi la password del keystore direttamente dal file Docker secret
             try (BufferedReader br = new BufferedReader(new FileReader("/run/secrets/keystore_password"))) {
