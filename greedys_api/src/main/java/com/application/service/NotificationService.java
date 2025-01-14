@@ -8,7 +8,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -26,7 +25,6 @@ import com.application.persistence.model.user.Notification;
 import com.application.persistence.model.user.Notification.Type;
 import com.application.web.dto.NotificationDto;
 import com.application.persistence.model.user.UserFcmToken;
-import com.application.service.UserFcmTokenService;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.gson.Gson;
 
@@ -36,7 +34,6 @@ public class NotificationService {
     public static final String SECURED_CHAT_SPECIFIC_USER = "/secured/user/queue/specific-user";
     private static final String FIREBASE_API_URL = "https://fcm.googleapis.com/v1/projects/YOUR_PROJECT_ID/messages:send";
     private GoogleCredentials googleCredentials;
-
     private final NotificationDAO notificationDAO;
     private final UserDAO userDAO;
     private final ReservationDAO reservationDAO;

@@ -18,6 +18,7 @@ import jakarta.persistence.TemporalType;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import com.application.persistence.model.restaurant.Restaurant;
+import com.application.persistence.model.restaurant.RestaurantUser;
 import com.application.persistence.model.user.User;
 
 @Entity
@@ -38,13 +39,10 @@ public class Reservation {
 	@Column(name = "creation_date")
 	private LocalDate creationDate;
 	
-
 	private ClientInfo user_info;
 
 	@ManyToOne(optional = true)
 	private User user;
-
-
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idslot")
 	private	Slot slot;
@@ -60,7 +58,7 @@ public class Reservation {
 	private LocalDateTime lastModificationTime;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idrestaurant_user")
- 	private User restaurantUser;
+ 	private RestaurantUser restaurantUser;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	private com.application.persistence.model.restaurant.Table table;
@@ -173,11 +171,11 @@ public class Reservation {
 		this.lastModificationTime = lastModificationTime;
 	}
 
-	public User getRestaurantUser() {
+	public RestaurantUser getRestaurantUser() {
 		return restaurantUser;
 	}
 
-	public void setRestaurantUser(User restaurantUser) {
+	public void setRestaurantUser(RestaurantUser restaurantUser) {
 		this.restaurantUser = restaurantUser;
 	}
 
@@ -188,6 +186,13 @@ public class Reservation {
 
 	public Restaurant getRestaurant() {
 		return restaurant;
+	}
+	public User getUser() {
+		return user;
+	}
+
+	public void setUser(User user) {
+		this.user = user;
 	}
 
 }

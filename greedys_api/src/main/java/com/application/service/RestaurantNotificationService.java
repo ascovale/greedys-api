@@ -1,48 +1,34 @@
 package com.application.service;
 
-import java.util.List;
-import java.util.Optional;
-
+import java.util.Collection;
 import org.springframework.stereotype.Service;
 
+import com.application.persistence.dao.restaurant.RestaurantNotificationDAO;
+import com.application.persistence.model.restaurant.Restaurant;
 import com.application.persistence.model.restaurant.RestaurantNotification;
+import com.application.persistence.model.restaurant.RestaurantUser;
+
+import jakarta.transaction.Transactional;
 @Service
 public class RestaurantNotificationService {
+	private final RestaurantNotificationDAO restaurantNotificationDAO;
+	private final FirebaseService firebaseService;
 
-	 
-	public RestaurantNotification createReservationNotification() {
-		// TODO Auto-generated method stub
-		return null;
+	public RestaurantNotificationService(RestaurantNotificationDAO restaurantNotificationDAO, FirebaseService firebaseService) {
+		this.restaurantNotificationDAO = restaurantNotificationDAO;
+		this.firebaseService = firebaseService;
 	}
-
-	 
-	public RestaurantNotification createAlteredNotification() {
-		// TODO Auto-generated method stub
-		return null;
+	@Transactional
+	public void createNotificationsForRestaurant(Restaurant restaurant, RestaurantNotification.Type type) {
+		Collection<RestaurantUser> restaurantUsers = restaurant.getRestaurantUsers();
+		for (RestaurantUser restaurantUser : restaurantUsers) {
+			RestaurantNotification notification = new RestaurantNotification();
+			notification.setRestaurantUser(restaurantUser);
+			notification.setType(type);
+			notification.setOpened(false);
+			restaurantNotificationDAO.save(notification);
+			firebaseService.sendFirebaseNotification(restaurantUser.getUser(), "No Show", "You have missed your reservation.");
+		}
 	}
-
-	 
-	public RestaurantNotification createdReviewNotification() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	 
-	public RestaurantNotification createRequestNotification() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	 
-	public List<RestaurantNotification> findAll() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	 
-	public Optional<RestaurantNotification> findById(Long id) {
-		// TODO Auto-generated method stub
-		return Optional.empty();
-	}
-
+	
 }

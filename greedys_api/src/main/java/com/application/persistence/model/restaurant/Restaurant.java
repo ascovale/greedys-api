@@ -46,7 +46,7 @@ public class Restaurant {
 	private String pI;
 	@Column(name = "description")
 	private String description;
-	// cambiare il fetch in LAZY
+	// TODO cambiare il fetch in LAZY
 	// bisogna fare in modo che la pageable prende anche le foto basta fare il join
 	// fetch ma è solo in jpql
 	// quindi da vedere come fare con una query normale o come scrivere in jpql

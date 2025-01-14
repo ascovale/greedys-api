@@ -1,10 +1,8 @@
 package com.application.controller;
 
-import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -13,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 import com.application.service.NotificationService;
 import com.application.service.ReservationService;
 import com.application.service.UserFcmTokenService;
-import com.application.service.UserService;
 import com.application.web.dto.post.UserFcmTokenDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,9 +22,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import com.application.persistence.dao.user.UserDAO;
 import com.application.persistence.model.user.User;
-import com.application.persistence.model.user.UserFcmToken;
-import com.google.firebase.auth.FirebaseToken;
-
 @RestController
 @RequestMapping("/notification")
 @SecurityRequirement(name = "bearerAuth")
@@ -144,6 +138,8 @@ public class NotificationController {
                 }
         }
     }
+
+
 
     private User getCurrentUser() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();

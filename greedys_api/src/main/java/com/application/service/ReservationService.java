@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,9 +14,12 @@ import org.springframework.transaction.annotation.Transactional;
 import com.application.persistence.dao.restaurant.ClosedDayDAO;
 import com.application.persistence.dao.restaurant.ServiceDAO;
 import com.application.persistence.dao.user.ReservationDAO;
+import com.application.persistence.dao.user.UserDAO;
 import com.application.persistence.model.reservation.Reservation;
 import com.application.persistence.model.reservation.Slot;
 import com.application.persistence.model.restaurant.Restaurant;
+import com.application.persistence.model.restaurant.RestaurantNotification;
+import com.application.persistence.model.user.User;
 import com.application.web.dto.post.NewReservationDTO;
 import com.application.web.dto.get.ReservationDTO;
 
@@ -30,15 +32,16 @@ public class ReservationService {
 
     @PersistenceContext
     private EntityManager entityManager;
-
     @Autowired
     private ReservationDAO reservationDAO;
-
     @Autowired
     private ServiceDAO serviceDAO;
-
     @Autowired
     private ClosedDayDAO closedDaysDAO;
+    @Autowired
+    private RestaurantNotificationService restaurantNotificationService;
+    @Autowired
+    private UserDAO userDAO;
 
     @Transactional
     public void save(Reservation reservation) {
@@ -76,7 +79,7 @@ public class ReservationService {
     }
 
     @Transactional
-    public Reservation askForReservation(NewReservationDTO reservationDto) throws NoSuchElementException {
+    public Reservation askForReservation(NewReservationDTO reservationDto, User user) throws NoSuchElementException {
         Reservation reservation = new Reservation();
         reservation.setRestaurant(entityManager.getReference(Restaurant.class, reservationDto.getRestaurant_id()));
         reservation.setPax(reservationDto.getPax());
@@ -88,11 +91,11 @@ public class ReservationService {
         reservation.setAccepted(false);
         reservation.setNoShow(false);
         reservation.setCreationDate(LocalDate.now());
-        if (reservationDto.isAnonymous()) {
-            reservation.set_user_info(reservationDto.getClientUser());
-        } else {
-            // set User id
-        }
+        restaurantNotificationService.createNotificationsForRestaurant(reservation.getRestaurant(),
+                RestaurantNotification.Type.REQUEST);
+        //anche qui come verifichiamo che non sia uno iscritto come
+        reservation.setUser(user);
+        user.getReservations().add(reservation);
         return reservationDAO.save(reservation);
     }
 

@@ -17,7 +17,7 @@ import com.application.persistence.model.reservation.Reservation;
 @Table(name="notification_restaurant")
 public class RestaurantNotification {
 	
-	enum Type {CREATION, MODIFICATION, REVIEW, REVIEW_MODIFY};
+	public enum Type {REQUEST, MODIFICATION, REVIEW, REVIEW_MODIFY};
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
@@ -27,6 +27,18 @@ public class RestaurantNotification {
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "reservation_id")
 	private Reservation reservation;
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "restaurantuser_id")
+	private RestaurantUser restaurantUser;
+
+	public RestaurantUser getRestaurantUser() {
+		return restaurantUser;
+	}
+
+	public void setRestaurantUser(RestaurantUser restaurantUser) {
+		this.restaurantUser = restaurantUser;
+	}
+
 	@Column(name = "n_type")
 	private Type type;
 	
