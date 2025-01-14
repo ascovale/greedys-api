@@ -40,7 +40,7 @@ public class User implements UserDetails{
 	private String numero_di_telefono;
 	@OneToMany(fetch = FetchType.EAGER, mappedBy = "user")
 	private Collection<RestaurantUser> restaurants;
-	@OneToMany(fetch = FetchType.LAZY, mappedBy = "restaurantUser")
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "user")
 	private Set<Reservation> reservations; 
 	@ManyToMany
 	@JoinTable(name = "user_has_role", 
