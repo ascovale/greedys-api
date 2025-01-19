@@ -21,7 +21,6 @@ import com.application.persistence.model.reservation.Slot;
 import com.application.persistence.model.restaurant.Restaurant;
 import com.application.persistence.model.restaurant.RestaurantNotification;
 import com.application.persistence.model.user.User;
-import com.application.service.acl.AclService;
 import com.application.web.dto.post.NewReservationDTO;
 import com.application.web.dto.get.ReservationDTO;
 

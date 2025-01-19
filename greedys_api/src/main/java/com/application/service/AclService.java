@@ -1,4 +1,4 @@
-package com.application.service.acl;
+package com.application.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.acls.domain.BasePermission;
