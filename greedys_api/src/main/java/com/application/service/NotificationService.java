@@ -115,6 +115,19 @@ public class NotificationService {
         sendFirebaseNotification(user, "Test Notification", "This is a test notification.");
     }
 
+    public NotificationDto newReservation(User user, Reservation reservation) {
+        Notification notification = new Notification();
+        notification.setClientUser(user);
+        notification.setReservation(reservation);
+        notification.setType(Type.NEW_RESERVATION);
+        notificationDAO.save(notification);
+        sendFirebaseNotification(user, "New Reservation", "Your reservation has been created by the restaurant.");
+        return NotificationDto.toDto(notification);
+    }
+
+    
+
+
     public void sendFirebaseNotification(User user, String title, String message) {
         List<UserFcmToken> tokens = userFcmTokenService.getTokensByUserId(user.getId());
         for (UserFcmToken token : tokens) {

@@ -1,7 +1,6 @@
 package com.application.persistence.model.user;
 
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Entity;

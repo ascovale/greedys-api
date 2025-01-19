@@ -238,4 +238,5 @@ public class UserService {
 		return userDAO.getRestaurants(id).stream().map(r -> new RestaurantDTO(r)).toList();
     }
 
+	
 }

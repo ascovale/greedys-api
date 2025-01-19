@@ -17,6 +17,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 import com.application.persistence.model.reservation.Reservation;
@@ -47,6 +48,16 @@ public class User implements UserDetails{
 			joinColumns = @JoinColumn(name = "user_id"), 
 			inverseJoinColumns = @JoinColumn(name = "role_id"))
 	private Collection<Role> roles; 
+	@OneToOne
+	private RestaurantUser restaurantUser;
+
+	public RestaurantUser getRestaurantUser() {
+		return restaurantUser;
+	}
+
+	public void setRestaurantUser(RestaurantUser restaurantUser) {
+		this.restaurantUser = restaurantUser;
+	}
 
 	public Set<Reservation> getReservations() {
 		return reservations;
@@ -55,7 +66,7 @@ public class User implements UserDetails{
 	public void setReservations(Set<Reservation> reservations) {
 		this.reservations = reservations;
 	}
-
+	@Override
 	public boolean isEnabled() {
 		return enabled;
 	}
@@ -109,7 +120,7 @@ public class User implements UserDetails{
 	public void setEmail(final String email) {
 		this.email = email;
 	}
-
+	@Override
 	public String getPassword() {
 		return password;
 	}
@@ -164,7 +175,23 @@ public class User implements UserDetails{
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'setToReadNotification'");
     }
-	
-	
+	@Override
+    public boolean isCredentialsNonExpired() {
+		//TODO: Metodo richiesto quando ho aggiornato le dipendenze bisogna verificare come è necessario implementarlo
+        return true; // Implementa la logica appropriata per il tuo caso d'uso
+    }
+	@Override
+    public boolean isAccountNonExpired() {
+        // TODO: Metodo richiesto quando ho aggiornato le dipendenze bisogna verificare come è necessario implementarlo
+		// Implementa la logica per verificare se l'account non è scaduto
+        return true;
+    }
 
+	@Override
+    public boolean isAccountNonLocked() {
+		// TODO: Metodo richiesto quando ho aggiornato le dipendenze bisogna verificare come è necessario implementarlo
+        // Implementa la logica per verificare se l'account non è bloccato
+        return true;
+    }
+	
 }

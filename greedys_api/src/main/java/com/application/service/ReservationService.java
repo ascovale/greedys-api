@@ -8,6 +8,7 @@ import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +21,7 @@ import com.application.persistence.model.reservation.Slot;
 import com.application.persistence.model.restaurant.Restaurant;
 import com.application.persistence.model.restaurant.RestaurantNotification;
 import com.application.persistence.model.user.User;
+import com.application.service.acl.AclService;
 import com.application.web.dto.post.NewReservationDTO;
 import com.application.web.dto.get.ReservationDTO;
 
@@ -41,7 +43,11 @@ public class ReservationService {
     @Autowired
     private RestaurantNotificationService restaurantNotificationService;
     @Autowired
+    private NotificationService notificationService;
+    @Autowired
     private UserDAO userDAO;
+    @Autowired
+    private AclService aclService;
 
     @Transactional
     public void save(Reservation reservation) {
@@ -56,11 +62,10 @@ public class ReservationService {
     public Reservation findById(Long id) {
         return reservationDAO.findById(id).orElse(null);
     }
-
     @Transactional
-    public Reservation createReservation(NewReservationDTO reservationDto) throws NoSuchElementException {
+    public Reservation createReservation(NewReservationDTO reservationDto,Restaurant restaurant) throws NoSuchElementException {
         Reservation reservation = new Reservation();
-        reservation.setRestaurant(entityManager.getReference(Restaurant.class, reservationDto.getRestaurant_id()));
+        reservation.setRestaurant(restaurant);
         reservation.setPax(reservationDto.getPax());
         reservation.setKids(reservationDto.getKids());
         reservation.setNotes(reservationDto.getNotes());
@@ -73,7 +78,10 @@ public class ReservationService {
         if (reservationDto.isAnonymous()) {
             reservation.set_user_info(reservationDto.getClientUser());
         } else {
-            // set User id
+            // TODO: creare NewReservationDTO senza passare restaurant_id ma mettendo id dell'utente che non c'è
+            User user = userDAO.findByEmail(reservationDto.getClientUser().email());
+            aclService.setReservationAcl(user, reservation, restaurant);
+            notificationService.newReservation(user, reservation);//TODO creare la notifica per nuova prenotazione inserita dal ristoratore
         }
         return reservationDAO.save(reservation);
     }
@@ -93,7 +101,6 @@ public class ReservationService {
         reservation.setCreationDate(LocalDate.now());
         restaurantNotificationService.createNotificationsForRestaurant(reservation.getRestaurant(),
                 RestaurantNotification.Type.REQUEST);
-        //anche qui come verifichiamo che non sia uno iscritto come
         reservation.setUser(user);
         user.getReservations().add(reservation);
         return reservationDAO.save(reservation);
@@ -155,5 +162,20 @@ public class ReservationService {
         return reservationDAO.findByUserAndPending(userId).stream()
                 .map(ReservationDTO::new).collect(Collectors.toList());
     }
+
+        @PreAuthorize("@aclService.hasPermission(#dto.id, T(org.springframework.security.acls.domain.BasePermission).WRITE)")
+    public Reservation modifyReservation(ReservationDTO dto) {
+        // Logica per modificare la prenotazione
+        Reservation reservation = reservationDAO.findById(dto.getId()).get();
+        // Modifica i dettagli della prenotazione
+
+        // TODO prendere i parametri nuovi e modifica prenotazione
+
+
+
+        // Salva la prenotazione modificata nel database
+        return reservationDAO.save(reservation);
+    }
+
 
 }
