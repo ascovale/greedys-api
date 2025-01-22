@@ -61,4 +61,39 @@ public class ReservationController {
 			return null;
 		}
 	}
+
+	@Operation(summary = "The customer user cancels a reservation", description = "Endpoint to cancel a reservation")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Reservation cancelled successfully"),
+		@ApiResponse(responseCode = "400", description = "Invalid input", content = @Content),
+		@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
+	})
+	@PostMapping("/cancel")
+	public ResponseEntity<?> cancelReservation(@RequestBody Long reservationId) {
+		reservationService.cancelReservation(reservationId, getCurrentUser());
+		return ResponseEntity.ok().build();
+	}
+
+	@Operation(summary = "The customer user requests a reservation modification", description = "Endpoint to request a reservation modification")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Reservation modification requested successfully"),
+		@ApiResponse(responseCode = "400", description = "Invalid input", content = @Content),
+		@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
+	})
+	@PostMapping("/modify")
+	public ResponseEntity<?> requestModifyReservation(@RequestBody Long oldReservationId,@RequestBody NewReservationDTO DTO) {
+		reservationService.requestModifyReservation(oldReservationId,DTO, getCurrentUser());
+		return ResponseEntity.ok().build();
+	}
+	@Operation(summary = "The admin user accepts a reservation request", description = "Endpoint to accept a reservation request")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Reservation request accepted successfully"),
+		@ApiResponse(responseCode = "400", description = "Invalid input", content = @Content),
+		@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
+	})
+	@PostMapping("/accept")
+	public ResponseEntity<?> acceptRequest(@RequestBody Long reservationRequestId) {
+		reservationService.acceptReservationRequest(reservationRequestId, getCurrentUser());
+		return ResponseEntity.ok().build();
+	}
 }

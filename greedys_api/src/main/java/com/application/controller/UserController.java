@@ -11,6 +11,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -36,6 +37,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -175,6 +177,28 @@ public class UserController {
     @GetMapping("{id}/reservations")
     public Collection<ReservationDTO> getUserReservations(@PathVariable Long id) {
         return reservationService.findAllUserReservations(id);
+    }
+
+    @Operation(summary = "Delete user", description = "Cancella un utente specifico tramite il suo ID")
+    @ApiResponse(responseCode = "200", description = "Utente cancellato con successo", 
+                 content = @Content(mediaType = "application/json", 
+                                    schema = @Schema(implementation = GenericResponse.class)))
+    @ApiResponse(responseCode = "404", description = "Utente non trovato")
+    @DeleteMapping("/{id}")
+    public GenericResponse deleteUser(@PathVariable Long id) {
+        userService.deleteUserById(id);
+        return new GenericResponse("User deleted successfully");
+    }
+
+    @Operation(summary = "Update user", description = "Modifica i dettagli di un utente specifico tramite il suo ID")
+    @ApiResponse(responseCode = "200", description = "Utente aggiornato con successo", 
+                 content = @Content(mediaType = "application/json", 
+                                    schema = @Schema(implementation = UserDTO.class)))
+    @ApiResponse(responseCode = "404", description = "Utente non trovato")
+    @PutMapping("/{id}")
+    public GenericResponse updateUser(@PathVariable Long id, @Valid @RequestBody UserDTO userDto) {
+        userService.updateUser(id, userDto);
+        return new GenericResponse("User modified successfully");
     }
 
 }

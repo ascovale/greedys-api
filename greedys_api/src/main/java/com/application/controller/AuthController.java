@@ -1,39 +1,39 @@
 package com.application.controller;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.tags.Tag;
-
-import com.google.api.client.json.gson.GsonFactory;
-import java.util.UUID;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.UUID;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
-import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.application.persistence.model.user.User;
 import com.application.security.jwt.JwtUtil;
-import com.application.security.user.UserUserDetailsService;
 import com.application.service.UserService;
 import com.application.web.dto.AuthRequestDTO;
 import com.application.web.dto.AuthRequestGoogleDTO;
 import com.application.web.dto.AuthResponseDTO;
 import com.application.web.dto.get.UserDTO;
 import com.application.web.dto.post.NewUserDTO;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.json.gson.GsonFactory;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "Auth", description = "Controller per la gestione dell'autenticazione")
 @RestController

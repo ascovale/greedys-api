@@ -1,5 +1,9 @@
 package com.application.persistence.model.menu;
 
+import java.util.Collection;
+
+import com.application.persistence.model.restaurant.Restaurant;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -7,12 +11,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-
-import java.util.Collection;
-
-import com.application.persistence.model.restaurant.Restaurant;
-
-import java.util.Collection;
 
 /**
  * Represents an item on the menu.

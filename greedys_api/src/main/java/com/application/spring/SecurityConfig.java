@@ -4,29 +4,15 @@ import static org.springframework.security.config.Customizer.withDefaults;
 
 import javax.sql.DataSource;
 
-import org.springframework.cache.CacheManager;
-import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.acls.domain.AclAuthorizationStrategy;
-import org.springframework.security.acls.domain.AclAuthorizationStrategyImpl;
-import org.springframework.security.acls.domain.ConsoleAuditLogger;
-import org.springframework.security.acls.domain.DefaultPermissionGrantingStrategy;
-import org.springframework.security.acls.domain.SpringCacheBasedAclCache;
-import org.springframework.security.acls.jdbc.BasicLookupStrategy;
-import org.springframework.security.acls.jdbc.JdbcMutableAclService;
-import org.springframework.security.acls.jdbc.LookupStrategy;
-import org.springframework.security.acls.model.AclCache;
-import org.springframework.security.acls.model.MutableAclService;
-import org.springframework.security.acls.model.PermissionGrantingStrategy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -126,34 +112,4 @@ public class SecurityConfig {
         return new HttpSessionEventPublisher();
     }
 
-    @Bean
-    public MutableAclService mutableAclService() {
-        return new JdbcMutableAclService(dataSource, lookupStrategy(), aclCache());
-    }
-
-    @Bean
-    public LookupStrategy lookupStrategy() {
-        return new BasicLookupStrategy(dataSource, aclCache(), aclAuthorizationStrategy(), new ConsoleAuditLogger());
-    }
-
-    @Bean
-    public AclCache aclCache() {
-        return new SpringCacheBasedAclCache(cacheManager().getCache("aclCache"), permissionGrantingStrategy(),
-                aclAuthorizationStrategy());
-    }
-
-    @Bean
-    public CacheManager cacheManager() {
-        return new ConcurrentMapCacheManager("aclCache");
-    }
-
-    @Bean
-    public PermissionGrantingStrategy permissionGrantingStrategy() {
-        return new DefaultPermissionGrantingStrategy(new ConsoleAuditLogger());
-    }
-
-    @Bean
-    public AclAuthorizationStrategy aclAuthorizationStrategy() {
-        return new AclAuthorizationStrategyImpl(new SimpleGrantedAuthority("ROLE_ADMIN"));
-    }
 }

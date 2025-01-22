@@ -108,17 +108,13 @@ public class UserService {
 
 	public void deleteUser(final User user) {
 		final VerificationToken verificationToken = tokenDAO.findByUser(user);
-
 		if (verificationToken != null) {
 			tokenDAO.delete(verificationToken);
 		}
-
 		final PasswordResetToken passwordToken = passwordTokenRepository.findByUser(user);
-
 		if (passwordToken != null) {
 			passwordTokenRepository.delete(passwordToken);
 		}
-
 		userDAO.delete(user);
 	}
 
@@ -212,7 +208,6 @@ public class UserService {
 						return o.toString();
 					}
 				}).collect(Collectors.toList());
-
 	}
 
 	public void save(User user) {
@@ -238,5 +233,25 @@ public class UserService {
 		return userDAO.getRestaurants(id).stream().map(r -> new RestaurantDTO(r)).toList();
     }
 
+	public void deleteUserById(Long id) {
+		User user = userDAO.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
+		deleteUser(user);
+	}
 	
+	public User updateUser(Long id, UserDTO userDto) {
+		User user = userDAO.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));	
+		if (userDto.getFirstName() != null) {
+			user.setName(userDto.getFirstName());
+		}
+		if (userDto.getLastName() != null) {
+			user.setSurname(userDto.getLastName());
+		}
+		if (userDto.getEmail() != null && !userDto.getEmail().equals(user.getEmail())) {
+			if (emailExists(userDto.getEmail())) {
+				throw new UserAlreadyExistException("There is an account with that email address: " + userDto.getEmail());
+			}
+			user.setEmail(userDto.getEmail());
+		}
+		return userDAO.save(user);
+	}
 }

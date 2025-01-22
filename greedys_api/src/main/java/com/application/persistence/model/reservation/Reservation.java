@@ -53,8 +53,9 @@ public class Reservation {
 	private Boolean rejected = false;
 	private Boolean accepted = false;
 	private Boolean noShow = false;
-
-	// si potrebbe fare una tabella a parte per i log
+	private Boolean cancelled = false;
+	Integer version=1;
+    // si potrebbe fare una tabella a parte per i log
 	@DateTimeFormat(pattern = "yyyy/MM/dd/HH:mm")
 	private LocalDateTime lastModificationTime;
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -194,6 +195,29 @@ public class Reservation {
 
 	public void setUser(User user) {
 		this.user = user;
+	}
+
+	public Boolean getCancelled() {
+		return cancelled;
+	}
+
+	public void setCancelled(Boolean cancelled) {
+		this.cancelled = cancelled;
+	}
+
+	public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
+    }
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public void setVersion(int version) {
+		this.version = version;
 	}
 
 }
