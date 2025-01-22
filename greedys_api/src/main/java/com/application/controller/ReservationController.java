@@ -70,7 +70,7 @@ public class ReservationController {
 	})
 	@PostMapping("/cancel")
 	public ResponseEntity<?> cancelReservation(@RequestBody Long reservationId) {
-		reservationService.cancelReservation(reservationId, getCurrentUser());
+		reservationService.cancelReservation(reservationId);
 		return ResponseEntity.ok().build();
 	}
 
