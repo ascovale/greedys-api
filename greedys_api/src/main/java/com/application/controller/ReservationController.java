@@ -32,7 +32,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Reservation", description = "APIs for managing reservations")
 public class ReservationController {
-	//class UserReservationService extends ReservationService<Notification> {}
 	@Autowired
 	private ReservationService<Notification> reservationService;
 
