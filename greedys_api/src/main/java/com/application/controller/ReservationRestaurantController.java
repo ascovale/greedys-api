@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.application.persistence.model.reservation.Reservation;
 import com.application.persistence.model.restaurant.Restaurant;
+import com.application.persistence.model.restaurant.RestaurantNotification;
 import com.application.persistence.model.user.User;
 import com.application.service.ReservationService;
 import com.application.web.dto.post.NewReservationDTO;
@@ -36,7 +37,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class ReservationRestaurantController {
 
 	@Autowired
-	private ReservationService reservationService;
+	private ReservationService<RestaurantNotification> reservationService;
 
 	@Autowired
 	private ResourceLoader resourceLoader;
@@ -77,8 +78,6 @@ public class ReservationRestaurantController {
 		reservationService.save(res);
 		return ResponseEntity.ok().build();
 	}
-
-	
 
 	private Restaurant getCurrentRestaurant() {
 		Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();

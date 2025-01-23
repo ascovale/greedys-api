@@ -29,8 +29,8 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.gson.Gson;
 
 @Service
-public class NotificationService {
-    
+public class NotificationService extends INotificationService<Notification> {
+
     public static final String SECURED_CHAT_SPECIFIC_USER = "/secured/user/queue/specific-user";
     private static final String FIREBASE_API_URL = "https://fcm.googleapis.com/v1/projects/YOUR_PROJECT_ID/messages:send";
     private GoogleCredentials googleCredentials;
@@ -53,47 +53,51 @@ public class NotificationService {
         }
     }
 
-    public NotificationDto createNoShowNotification(User user, Reservation reservation) {
+    public Notification createNoShowNotification(Reservation reservation) {
+        User user = super.getCurrentUser();
         Notification notification = new Notification();
         notification.setClientUser(user); 
         notification.setReservation(reservation);
         notification.setType(Type.NO_SHOW);
         notificationDAO.save(notification);
         sendFirebaseNotification(user, "No Show", "You have missed your reservation.");
-        return NotificationDto.toDto(notification);
+        return notification;
     }
 
-    public NotificationDto createSeatedNotification(User user, Reservation reservation) {
+    public Notification createSeatedNotification(Reservation reservation) {
+        User user = super.getCurrentUser();
         Notification notification = new Notification();
         notification.setClientUser(user);
         notification.setReservation(reservation);
         notification.setType(Type.SEATED);
         notificationDAO.save(notification);
         sendFirebaseNotification(user, "Seated", "You have been seated successfully.");
-        return NotificationDto.toDto(notification);
+        return notification;
     }
 
-    public NotificationDto createdCancelNotification(User user, Reservation reservation) {
+    public void deleteReservationNotification(Reservation reservation) {
+        User user = super.getCurrentUser();
         Notification notification = new Notification();
         notification.setClientUser(user);
         notification.setReservation(reservation);
         notification.setType(Type.CANCEL);
         notificationDAO.save(notification);
         sendFirebaseNotification(user, "Reservation Cancelled", "Your reservation has been cancelled.");
-        return NotificationDto.toDto(notification);
     }
 
-    public NotificationDto createConfirmedNotification(User user, Reservation reservation) {
+    public Notification createConfirmedNotification(Reservation reservation) {
+        User user = super.getCurrentUser();
         Notification notification = new Notification();
         notification.setClientUser(user);
         notification.setReservation(reservation);
         notification.setType(Type.CONFIRMED);
         notificationDAO.save(notification);
         sendFirebaseNotification(user, "Reservation Confirmed", "Your reservation has been confirmed.");
-        return NotificationDto.toDto(notification);
+        return notification;
     }
 
-    public NotificationDto createAlteredNotification(User user, Reservation reservation) {
+    public NotificationDto createAlteredNotification(Reservation reservation) {
+        User user = super.getCurrentUser();
         Notification notification = new Notification();
         notification.setClientUser(user);
         notification.setReservation(reservation);
@@ -115,18 +119,16 @@ public class NotificationService {
         sendFirebaseNotification(user, "Test Notification", "This is a test notification.");
     }
 
-    public NotificationDto newReservation(User user, Reservation reservation) {
+    @Override
+    public void newReservationNotification(Reservation reservation) {
+        User user = super.getCurrentUser();
         Notification notification = new Notification();
         notification.setClientUser(user);
         notification.setReservation(reservation);
         notification.setType(Type.NEW_RESERVATION);
         notificationDAO.save(notification);
         sendFirebaseNotification(user, "New Reservation", "Your reservation has been created by the restaurant.");
-        return NotificationDto.toDto(notification);
     }
-
-    
-
 
     public void sendFirebaseNotification(User user, String title, String message) {
         List<UserFcmToken> tokens = userFcmTokenService.getTokensByUserId(user.getId());
@@ -211,4 +213,11 @@ public class NotificationService {
     public void deleteNotification(long idNotification) {
         notificationDAO.deleteById(idNotification);
     }
+
+    @Override
+    public void modifyReservationNotification(Reservation reservation) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'modifyReservationNotification'");
+    }
+
 }

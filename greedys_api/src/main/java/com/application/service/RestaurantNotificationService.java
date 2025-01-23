@@ -4,13 +4,14 @@ import java.util.Collection;
 import org.springframework.stereotype.Service;
 
 import com.application.persistence.dao.restaurant.RestaurantNotificationDAO;
+import com.application.persistence.model.reservation.Reservation;
 import com.application.persistence.model.restaurant.Restaurant;
 import com.application.persistence.model.restaurant.RestaurantNotification;
 import com.application.persistence.model.restaurant.RestaurantUser;
 
 import jakarta.transaction.Transactional;
 @Service
-public class RestaurantNotificationService {
+public class RestaurantNotificationService extends INotificationService<RestaurantNotification> {
 	private final RestaurantNotificationDAO restaurantNotificationDAO;
 	private final FirebaseService firebaseService;
 
@@ -18,6 +19,10 @@ public class RestaurantNotificationService {
 		this.restaurantNotificationDAO = restaurantNotificationDAO;
 		this.firebaseService = firebaseService;
 	}
+
+
+
+	
 	@Transactional
 	public void createNotificationsForRestaurant(Restaurant restaurant, RestaurantNotification.Type type) {
 		Collection<RestaurantUser> restaurantUsers = restaurant.getRestaurantUsers();
@@ -30,5 +35,23 @@ public class RestaurantNotificationService {
 			firebaseService.sendFirebaseNotification(restaurantUser.getUser(), "No Show", "You have missed your reservation.");
 		}
 	}
+
+	@Override
+	public void newReservationNotification(Reservation reservation) {
+		Restaurant restaurant =reservation.getRestaurant();
+		createNotificationsForRestaurant(restaurant, RestaurantNotification.Type.REQUEST);
+	}
+
+	@Override
+	public void modifyReservationNotification(Reservation reservation) {
+		Restaurant restaurant =reservation.getRestaurant();
+		createNotificationsForRestaurant(restaurant, RestaurantNotification.Type.REQUEST);
+}
+
+	@Override
+	public void deleteReservationNotification(Reservation reservation) {
+		Restaurant restaurant =reservation.getRestaurant();
+		createNotificationsForRestaurant(restaurant, RestaurantNotification.Type.REQUEST);
+}
 	
 }

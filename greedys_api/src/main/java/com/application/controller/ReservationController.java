@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.application.persistence.model.user.Notification;
 import com.application.persistence.model.user.User;
 import com.application.service.ReservationService;
 import com.application.web.dto.post.NewReservationDTO;
@@ -27,13 +28,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  * reservation lists, and managing the calendar.
  */
 @Controller
-@RequestMapping("/reservation")
+@RequestMapping("/reservation/costumer")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Reservation", description = "APIs for managing reservations")
 public class ReservationController {
-
+	//class UserReservationService extends ReservationService<Notification> {}
 	@Autowired
-	private ReservationService reservationService;
+	private ReservationService<Notification> reservationService;
 
 	@Autowired
 	private ResourceLoader resourceLoader;

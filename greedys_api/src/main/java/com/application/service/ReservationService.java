@@ -33,7 +33,7 @@ import jakarta.persistence.PersistenceContext;
 
 @Service("reservationService")
 @Transactional
-public class ReservationService {
+public class ReservationService<T> {
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -50,7 +50,7 @@ public class ReservationService {
     @Autowired
     private RestaurantNotificationService restaurantNotificationService;
     @Autowired
-    private NotificationService notificationService;
+    private INotificationService<T> notificationService;
     @Autowired
     private UserDAO userDAO;
 
@@ -87,12 +87,10 @@ public class ReservationService {
         } else {
             // TODO: creare NewReservationDTO senza passare restaurant_id ma mettendo id
             // dell'utente che non c'è
-            User user = userDAO.findByEmail(reservationDto.getClientUser().email());
             // securityService.hasRestaurantUserPermissionOnReservation(user.getRestaurantUser(),
             // reservation);
             
-                notificationService.newReservation(user, reservation); // TODO creare la notifica per nuova prenotazione
-                                                                       // inserita dal ri
+                notificationService.newReservationNotification(reservation);
         }
         return reservationDAO.save(reservation);
     }
@@ -197,7 +195,7 @@ public class ReservationService {
         reservationDAO.save(reservation);
         // TODO DIRE CHE SE IL RUOLO è utente allora invia notifica al ristorante
         // TODO DIRE CHE SE IL RUOLO è ristoratore allora invia notifica all'utente
-        notificationService.createdCancelNotification(reservation.getUser(), reservation);
+        notificationService.deleteReservationNotification(reservation);
     }
 
     @Transactional
@@ -211,7 +209,7 @@ public class ReservationService {
         reservation.setDate(dTO.getReservationDay());
         reservation.setSlot(entityManager.getReference(Slot.class, dTO.getIdSlot()));
         reservationDAO.save(reservation);
-        notificationService.createdCancelNotification(currentUser, reservation);
+        notificationService.deleteReservationNotification(reservation);
     }
 
     @Transactional
