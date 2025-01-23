@@ -1,6 +1,9 @@
 package com.application.service;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.application.persistence.dao.restaurant.RestaurantNotificationDAO;
@@ -37,9 +40,20 @@ public class RestaurantNotificationService extends INotificationService<Restaura
 	}
 
 	@Override
-	public void newReservationNotification(Reservation reservation) {
+	public List<RestaurantNotification> newReservationNotification(Reservation reservation) {
+		List<RestaurantNotification> notifications = new ArrayList<>();
 		Restaurant restaurant =reservation.getRestaurant();
-		createNotificationsForRestaurant(restaurant, RestaurantNotification.Type.REQUEST);
+		Collection<RestaurantUser> restaurantUsers = restaurant.getRestaurantUsers();
+		for (RestaurantUser restaurantUser : restaurantUsers) {
+			RestaurantNotification notification = new RestaurantNotification();
+			notification.setRestaurantUser(restaurantUser);
+			notification.setType(RestaurantNotification.Type.REQUEST);
+			notification.setOpened(false);
+			restaurantNotificationDAO.save(notification);
+			notifications.add(notification);
+			firebaseService.sendFirebaseNotification(restaurantUser.getUser(), "No Show", "You have missed your reservation.");
+		}
+		return notifications;
 	}
 
 	@Override

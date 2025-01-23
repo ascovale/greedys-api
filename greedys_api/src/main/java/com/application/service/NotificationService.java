@@ -2,6 +2,7 @@ package com.application.service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.io.FileInputStream;
@@ -120,7 +121,7 @@ public class NotificationService extends INotificationService<Notification> {
     }
 
     @Override
-    public void newReservationNotification(Reservation reservation) {
+    public List<Notification> newReservationNotification(Reservation reservation) {
         User user = super.getCurrentUser();
         Notification notification = new Notification();
         notification.setClientUser(user);
@@ -128,6 +129,10 @@ public class NotificationService extends INotificationService<Notification> {
         notification.setType(Type.NEW_RESERVATION);
         notificationDAO.save(notification);
         sendFirebaseNotification(user, "New Reservation", "Your reservation has been created by the restaurant.");
+        List<Notification> l = new ArrayList<>();
+        l.add(notification);
+        return l;
+
     }
 
     public void sendFirebaseNotification(User user, String title, String message) {
