@@ -23,12 +23,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Admin", description = "Admin management APIs")
-public class AllergyController {
+public class AdminAllergyController {
     private final RestaurantService restaurantService;
     private final UserService userService;
 
 
-    public AllergyController(UserService userService, RestaurantService restaurantService) {
+    public AdminAllergyController(UserService userService, RestaurantService restaurantService) {
         this.userService = userService;
         this.restaurantService = restaurantService;
     }
