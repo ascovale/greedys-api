@@ -13,19 +13,18 @@ import com.application.persistence.model.restaurant.RestaurantNotification;
 import com.application.persistence.model.restaurant.RestaurantUser;
 
 import jakarta.transaction.Transactional;
+
 @Service
-public class RestaurantNotificationService extends INotificationService<RestaurantNotification> {
+public class RestaurantNotificationService {
 	private final RestaurantNotificationDAO restaurantNotificationDAO;
 	private final FirebaseService firebaseService;
 
-	public RestaurantNotificationService(RestaurantNotificationDAO restaurantNotificationDAO, FirebaseService firebaseService) {
+	public RestaurantNotificationService(RestaurantNotificationDAO restaurantNotificationDAO,
+			FirebaseService firebaseService) {
 		this.restaurantNotificationDAO = restaurantNotificationDAO;
 		this.firebaseService = firebaseService;
 	}
 
-
-
-	
 	@Transactional
 	public void createNotificationsForRestaurant(Restaurant restaurant, RestaurantNotification.Type type) {
 		Collection<RestaurantUser> restaurantUsers = restaurant.getRestaurantUsers();
@@ -35,14 +34,13 @@ public class RestaurantNotificationService extends INotificationService<Restaura
 			notification.setType(type);
 			notification.setOpened(false);
 			restaurantNotificationDAO.save(notification);
-			firebaseService.sendFirebaseNotification(restaurantUser.getUser(), "No Show", "You have missed your reservation.");
+			firebaseService.sendFirebaseNotification(notification);
 		}
 	}
 
-	@Override
 	public List<RestaurantNotification> newReservationNotification(Reservation reservation) {
 		List<RestaurantNotification> notifications = new ArrayList<>();
-		Restaurant restaurant =reservation.getRestaurant();
+		Restaurant restaurant = reservation.getRestaurant();
 		Collection<RestaurantUser> restaurantUsers = restaurant.getRestaurantUsers();
 		for (RestaurantUser restaurantUser : restaurantUsers) {
 			RestaurantNotification notification = new RestaurantNotification();
@@ -51,21 +49,19 @@ public class RestaurantNotificationService extends INotificationService<Restaura
 			notification.setOpened(false);
 			restaurantNotificationDAO.save(notification);
 			notifications.add(notification);
-			firebaseService.sendFirebaseNotification(restaurantUser.getUser(), "No Show", "You have missed your reservation.");
+			firebaseService.sendFirebaseNotification(notification);
 		}
 		return notifications;
 	}
 
-	@Override
 	public void modifyReservationNotification(Reservation reservation) {
-		Restaurant restaurant =reservation.getRestaurant();
+		Restaurant restaurant = reservation.getRestaurant();
 		createNotificationsForRestaurant(restaurant, RestaurantNotification.Type.REQUEST);
-}
+	}
 
-	@Override
 	public void deleteReservationNotification(Reservation reservation) {
-		Restaurant restaurant =reservation.getRestaurant();
+		Restaurant restaurant = reservation.getRestaurant();
 		createNotificationsForRestaurant(restaurant, RestaurantNotification.Type.REQUEST);
-}
-	
+	}
+
 }

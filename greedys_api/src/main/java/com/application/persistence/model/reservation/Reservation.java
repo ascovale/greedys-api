@@ -2,6 +2,7 @@ package com.application.persistence.model.reservation;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -31,16 +32,13 @@ public class Reservation {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "id_restaurant")
 	private Restaurant restaurant;
-
 	@DateTimeFormat(pattern = "yyyy/MM/dd")
 	@Temporal(TemporalType.DATE)
 	@Column(name = "r_date")
 	private LocalDate date;
 	@Column(name = "creation_date")
 	private LocalDate creationDate;
-	
 	private ClientInfo user_info;
-
 	@ManyToOne(optional = true)
 	@JoinColumn(name = "user_id")
 	private User user;
@@ -52,6 +50,7 @@ public class Reservation {
 	private String notes;
 	private Boolean rejected = false;
 	private Boolean accepted = false;
+	private Boolean seated = false;
 	private Boolean noShow = false;
 	private Boolean cancelled = false;
 	Integer version=1;
@@ -80,6 +79,14 @@ public class Reservation {
 
 	public void set_user_info(ClientInfo user_info) {
 		this.user_info = user_info;
+	}
+
+	public Boolean getSeated() {
+		return seated;
+	}
+
+	public void setSeated(Boolean seated) {
+		this.seated = seated;
 	}
 
 	public Long get_user_id() {
@@ -218,6 +225,24 @@ public class Reservation {
 
 	public void setVersion(int version) {
 		this.version = version;
+	}
+
+	public LocalDateTime getReservationDateTime() {
+        if (date != null && slot != null && slot.getStart() != null) {
+            return LocalDateTime.of(date, slot.getStart());
+        }
+        return null;
+    }
+
+
+	public boolean isAfterNoShowTimeLimit(LocalDateTime dateTime) {
+		long noShowTimeLimit = this.getRestaurant().getNoShowTimeLimit();
+		LocalDateTime reservationDateTime = getReservationDateTime();
+		if (reservationDateTime == null) {
+			throw new IllegalArgumentException("Reservation date time or slot start time is null.");
+		}
+		LocalDateTime noShowDeadline = reservationDateTime.plusMinutes(noShowTimeLimit);
+		return dateTime.isAfter(noShowDeadline);
 	}
 
 }

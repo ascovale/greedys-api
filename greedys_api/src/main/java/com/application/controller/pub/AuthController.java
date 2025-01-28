@@ -1,4 +1,4 @@
-package com.application.controller;
+package com.application.controller.pub;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;

@@ -1,4 +1,4 @@
-package com.application.controller;
+package com.application.controller.customer;
 
 
 import java.util.Optional;
@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import com.application.service.FirebaseService;
 import com.application.service.NotificationService;
 import com.application.service.ReservationService;
 import com.application.service.UserFcmTokenService;
@@ -21,23 +22,26 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import com.application.persistence.dao.user.UserDAO;
+import com.application.persistence.model.user.Notification;
 import com.application.persistence.model.user.User;
 @RestController
-@RequestMapping("/notification")
+@RequestMapping("/user/notification")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Notification", description = "Notification management APIs")
 public class NotificationController {
 
     private final NotificationService notificationService;
     private final UserFcmTokenService userFcmTokenService;
+    private final FirebaseService firebaseService;
     private final ReservationService reservationService;
     private final UserDAO userService;
 
-    public NotificationController(NotificationService notificationService, UserFcmTokenService userFcmTokenService, ReservationService reservationService, UserDAO userService) {
+    public NotificationController(NotificationService notificationService, UserFcmTokenService userFcmTokenService, ReservationService reservationService, UserDAO userService,FirebaseService firebaseService) {
         this.userFcmTokenService = userFcmTokenService;
         this.notificationService = notificationService;
         this.reservationService = reservationService;
         this.userService = userService;
+        this.firebaseService = firebaseService;
     }
     
     @Operation(summary = "Get notifications for index page", description = "Returns notifications for the index page")
@@ -70,19 +74,6 @@ public class NotificationController {
         return ResponseEntity.ok().body("Notification 2 page");
     }
 
-    @Operation(summary = "Send a generic notification", description = "Sends a generic notification to the user")
-    @PostMapping("/send")
-    public ResponseEntity<Void> sendGenericNotification(
-            @Parameter(description = "ID of the user") @RequestParam Long idUser,
-            @Parameter(description = "Notification title") @RequestParam String title,
-            @Parameter(description = "Notification message") @RequestParam String message) {
-        User user = userService.findById(idUser).orElse(null);
-        if (user != null) {
-            notificationService.sendFirebaseNotification(user, title, message);
-        }
-        return ResponseEntity.ok().build();
-    }
-
     @Operation(summary = "Register a user's FCM token", description = "Registers a user's FCM token")
     @PostMapping("/token")
     public ResponseEntity<Void> registerUserFcmToken(
@@ -106,7 +97,7 @@ public class NotificationController {
             @RequestParam String deviceId) {
         boolean isPresent = userFcmTokenService.isDeviceTokenPresent(deviceId);
         if (isPresent) {
-            Optional<String> oldToken = notificationService.getOldTokenIfPresent(deviceId);
+            Optional<String> oldToken = firebaseService.getOldTokenIfPresent(deviceId);
             if (oldToken.isPresent()) {
                 return ResponseEntity.ok().body(oldToken.get());
             }
@@ -130,7 +121,7 @@ public class NotificationController {
             case "NOT FOUND":
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("NOT FOUND");
             default:
-                Optional<String> oldToken = notificationService.getOldTokenIfPresent(deviceId);
+                Optional<String> oldToken = firebaseService.getOldTokenIfPresent(deviceId);
                 if (oldToken.isPresent()) {
                     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("ERROR: Old token found - " + oldToken.get());
                 } else {
@@ -138,7 +129,6 @@ public class NotificationController {
                 }
         }
     }
-
 
 
     private User getCurrentUser() {

@@ -1,6 +1,7 @@
 package com.application.persistence.model.restaurant;
 
 import java.util.Collection;
+import java.math.BigInteger;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -11,6 +12,9 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -57,10 +61,22 @@ public class Restaurant {
 	@OneToMany(mappedBy = "restaurant")
 	private Collection<RestaurantUser> restaurantUsers;
 	@OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "restaurant")
-	//@JsonManagedReference
-    private List<Image> restaurantImages;
-	
-	
+	// @JsonManagedReference
+	private List<Image> restaurantImages;
+	@Column(name = "no_show_time_limit", columnDefinition = "integer default 15")
+	private Integer noShowTimeLimit = 15;
+	@ManyToMany
+	@JoinTable(name = "restaurant_has_restaurant_type", joinColumns = @JoinColumn(name = "restaurant_id"), inverseJoinColumns = @JoinColumn(name = "restaurant_type_id"))
+	private List<RestaurantCategory> restaurantTypes;
+
+	public List<RestaurantCategory> getRestaurantTypes() {
+		return restaurantTypes;
+	}
+
+	public void setRestaurantTypes(List<RestaurantCategory> restaurantTypes) {
+		this.restaurantTypes = restaurantTypes;
+	}
+
 	public Collection<RestaurantUser> getRestaurantUsers() {
 		return restaurantUsers;
 	}
@@ -178,6 +194,14 @@ public class Restaurant {
 
 	public void setpI(String pI) {
 		this.pI = pI;
+	}
+
+	public Integer getNoShowTimeLimit() {
+		return this.noShowTimeLimit;
+	}
+
+	public void setNoShowTimeLimit(Integer noShowTimeLimit) {
+		this.noShowTimeLimit = noShowTimeLimit;
 	}
 
 }

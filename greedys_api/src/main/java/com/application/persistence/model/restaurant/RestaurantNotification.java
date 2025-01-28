@@ -17,7 +17,7 @@ import com.application.persistence.model.reservation.Reservation;
 @Table(name="notification_restaurant")
 public class RestaurantNotification {
 	
-	public enum Type {REQUEST, MODIFICATION, REVIEW, REVIEW_MODIFY};
+	public enum Type {NEW_RESERVATION,REQUEST, MODIFICATION, REVIEW, REVIEW_ALTERED};
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)

@@ -1,17 +1,11 @@
 package com.application.service;
 
-import com.application.persistence.model.user.User;
-import com.application.persistence.model.user.UserFcmToken;
-import com.google.auth.oauth2.GoogleCredentials;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseToken;
-import com.google.gson.Gson;
-
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -21,6 +15,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import com.application.service.utils.NotificatioUtils;
+import com.application.persistence.model.restaurant.RestaurantNotification;
+import com.application.persistence.model.user.Notification;
+import com.application.persistence.model.user.User;
+import com.application.persistence.model.user.UserFcmToken;
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseToken;
+import com.google.gson.Gson;
 
 @Service
 public class FirebaseService {
@@ -28,7 +31,6 @@ public class FirebaseService {
     private static final String FIREBASE_API_URL = "https://fcm.googleapis.com/v1/projects/YOUR_PROJECT_ID/messages:send";
     private GoogleCredentials googleCredentials;
     private final UserFcmTokenService userFcmTokenService;
-
 
     public FirebaseService(UserFcmTokenService userFcmTokenService) {
         this.userFcmTokenService = userFcmTokenService;
@@ -51,45 +53,40 @@ public class FirebaseService {
     }
 
     @Async
-    public void sendFirebaseNotification(User user, String title, String message) {
+    public void sendFirebaseNotification(Notification notification) {
+        User user = notification.getClientUser();
         List<UserFcmToken> tokens = userFcmTokenService.getTokensByUserId(user.getId());
         for (UserFcmToken token : tokens) {
             try {
                 googleCredentials.refreshIfExpired();
                 String accessToken = googleCredentials.getAccessToken().getTokenValue();
-
                 RestTemplate restTemplate = new RestTemplate();
-
                 // Set HTTP Headers
                 HttpHeaders headers = new HttpHeaders();
                 headers.setContentType(MediaType.APPLICATION_JSON);
                 headers.set("Authorization", "Bearer " + accessToken);
-
                 // Create notification body
                 Map<String, Object> messageBody = new HashMap<>();
                 Map<String, Object> messageData = new HashMap<>();
                 messageData.put("token", token.getFcmToken());
-                Map<String, String> notification = new HashMap<>();
-                notification.put("title", title);
-                notification.put("body", message);
-                messageData.put("notification", notification);
+                Map<String, String> notificationData = new HashMap<>();
+                notificationData.put("title", NotificatioUtils.getUserTemplates().get(notification.getType()).getTitle());
+                notificationData.put("body", NotificatioUtils.getUserTemplates().get(notification.getType()).getMessage());
+                notificationData.put("idNotification", notification.getId().toString());
+                notificationData.put("type", notification.getType().toString());
+                messageData.put("notificationData", notificationData);
                 messageBody.put("message", messageData);
-
                 // Convert to JSON
                 Gson gson = new Gson();
                 String jsonBody = gson.toJson(messageBody);
-
                 // Create the request
                 HttpEntity<String> request = new HttpEntity<>(jsonBody, headers);
-
                 // Send the request to Firebase
                 ResponseEntity<String> response = restTemplate.exchange(
-                    FIREBASE_API_URL,
-                    HttpMethod.POST,
-                    request,
-                    String.class
-                );
-
+                        FIREBASE_API_URL,
+                        HttpMethod.POST,
+                        request,
+                        String.class);
                 // Log the response (optional)
                 System.out.println("Firebase response: " + response.getBody());
             } catch (Exception e) {
@@ -97,4 +94,56 @@ public class FirebaseService {
             }
         }
     }
+
+
+    
+    @Async
+    public void sendFirebaseNotification(RestaurantNotification notification) {
+        User user = notification.getRestaurantUser().getUser();
+        List<UserFcmToken> tokens = userFcmTokenService.getTokensByUserId(user.getId());
+        for (UserFcmToken token : tokens) {
+            try {
+                googleCredentials.refreshIfExpired();
+                String accessToken = googleCredentials.getAccessToken().getTokenValue();
+                RestTemplate restTemplate = new RestTemplate();
+                // Set HTTP Headers
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_JSON);
+                headers.set("Authorization", "Bearer " + accessToken);
+                // Create notification body
+                Map<String, Object> messageBody = new HashMap<>();
+                Map<String, Object> messageData = new HashMap<>();
+                messageData.put("token", token.getFcmToken());
+                Map<String, String> notificationData = new HashMap<>();
+                notificationData.put("title", NotificatioUtils.getRestaurantTemplates().get(notification.getType()).getTitle());
+                notificationData.put("body", NotificatioUtils.getRestaurantTemplates().get(notification.getType()).getMessage());
+                notificationData.put("idNotification", notification.getId().toString());
+                notificationData.put("type", notification.getType().toString());
+                messageData.put("notificationData", notificationData);
+                messageBody.put("message", messageData);
+                // Convert to JSON
+                Gson gson = new Gson();
+                String jsonBody = gson.toJson(messageBody);
+                // Create the request
+                HttpEntity<String> request = new HttpEntity<>(jsonBody, headers);
+                // Send the request to Firebase
+                ResponseEntity<String> response = restTemplate.exchange(
+                        FIREBASE_API_URL,
+                        HttpMethod.POST,
+                        request,
+                        String.class);
+                // Log the response (optional)
+                System.out.println("Firebase response: " + response.getBody());
+            } catch (Exception e) {
+                System.err.println("Error sending Firebase notification: " + e.getMessage());
+            }
+        }
+    }
+
+    public Optional<String> getOldTokenIfPresent(String deviceId) {
+        UserFcmToken token = userFcmTokenService.getTokenByDeviceId(deviceId);
+        return Optional.of(token.getFcmToken());
+    }
+
+
 }

@@ -2,6 +2,7 @@ package com.application.spring;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springdoc.core.GroupedOpenApi;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -9,11 +10,9 @@ import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.responses.ApiResponse;
-import io.swagger.v3.oas.models.responses.ApiResponses;
 
 @Configuration
 public class SwaggerConfig {
-
     @Bean
     OpenAPI customOpenAPI() {
         return new OpenAPI()
@@ -35,4 +34,40 @@ public class SwaggerConfig {
                         .addResponses("404", new ApiResponse().description("Not Found"))
                         .addResponses("500", new ApiResponse().description("Internal Server Error")));
     }
+
+    
+    @Bean
+    public GroupedOpenApi adminApi() {
+        return GroupedOpenApi.builder()
+                .group("admin-api")
+                .pathsToMatch("/admin/**")
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi userApi() {
+        return GroupedOpenApi.builder()
+                .group("user-api")
+                .pathsToMatch("/user/**")
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi restaurantApi() {
+        return GroupedOpenApi.builder()
+                .group("restaurant-api")
+                .pathsToMatch("/restaurant/**")
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi publicApi() {
+        return GroupedOpenApi.builder()
+                .group("public-api")
+                .pathsToMatch("/public/**","/register/**","/auth/**")
+                .build();
+    }
+
+
+
 }

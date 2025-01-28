@@ -1,6 +1,7 @@
 package com.application.persistence.model.user;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -24,10 +25,9 @@ import com.application.persistence.model.reservation.Reservation;
 import com.application.persistence.model.restaurant.Restaurant;
 import com.application.persistence.model.restaurant.RestaurantUser;
 
-
 @Entity
 @Table(name = "user")
-public class User implements UserDetails{
+public class User implements UserDetails {
 	@Id
 	@Column(unique = true, nullable = false)
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -42,14 +42,24 @@ public class User implements UserDetails{
 	@OneToMany(fetch = FetchType.EAGER, mappedBy = "user")
 	private Collection<RestaurantUser> restaurants;
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "user")
-	private Set<Reservation> reservations; 
+	private Set<Reservation> reservations;
 	@ManyToMany
-	@JoinTable(name = "user_has_role", 
-			joinColumns = @JoinColumn(name = "user_id"), 
-			inverseJoinColumns = @JoinColumn(name = "role_id"))
-	private Collection<Role> roles; 
+	@JoinTable(name = "user_has_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
+	private Collection<Role> roles;
 	@OneToOne
 	private RestaurantUser restaurantUser;
+
+	@ManyToMany
+	@JoinTable(name = "user_allergy", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "allergy_id"))
+	private List<Allergy> allergies;
+
+	public List<Allergy> getAllergies() {
+		return allergies;
+	}
+
+	public void setAllergies(List<Allergy> allergies) {
+		this.allergies = allergies;
+	}
 
 	public RestaurantUser getRestaurantUser() {
 		return restaurantUser;
@@ -66,6 +76,7 @@ public class User implements UserDetails{
 	public void setReservations(Set<Reservation> reservations) {
 		this.reservations = reservations;
 	}
+
 	@Override
 	public boolean isEnabled() {
 		return enabled;
@@ -78,7 +89,7 @@ public class User implements UserDetails{
 	public Collection<Restaurant> getRestaurants() {
 
 		return restaurants.stream().map(RestaurantUser::getRestaurant)
-									.collect(Collectors.toSet());
+				.collect(Collectors.toSet());
 	}
 
 	public Collection<Role> getRestaurantRoles() {
@@ -120,6 +131,7 @@ public class User implements UserDetails{
 	public void setEmail(final String email) {
 		this.email = email;
 	}
+
 	@Override
 	public String getPassword() {
 		return password;
@@ -129,7 +141,6 @@ public class User implements UserDetails{
 		this.password = password;
 	}
 
-	
 	public Collection<Role> getRoles() {
 		return roles;
 	}
@@ -171,27 +182,32 @@ public class User implements UserDetails{
 		throw new UnsupportedOperationException("Unimplemented method 'getToReadNotification'");
 	}
 
-    public void setToReadNotification(long l) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'setToReadNotification'");
-    }
-	@Override
-    public boolean isCredentialsNonExpired() {
-		//TODO: Metodo richiesto quando ho aggiornato le dipendenze bisogna verificare come è necessario implementarlo
-        return true; // Implementa la logica appropriata per il tuo caso d'uso
-    }
-	@Override
-    public boolean isAccountNonExpired() {
-        // TODO: Metodo richiesto quando ho aggiornato le dipendenze bisogna verificare come è necessario implementarlo
-		// Implementa la logica per verificare se l'account non è scaduto
-        return true;
-    }
+	public void setToReadNotification(long l) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'setToReadNotification'");
+	}
 
 	@Override
-    public boolean isAccountNonLocked() {
-		// TODO: Metodo richiesto quando ho aggiornato le dipendenze bisogna verificare come è necessario implementarlo
-        // Implementa la logica per verificare se l'account non è bloccato
-        return true;
-    }
-	
+	public boolean isCredentialsNonExpired() {
+		// TODO: Metodo richiesto quando ho aggiornato le dipendenze bisogna verificare
+		// come è necessario implementarlo
+		return true; // Implementa la logica appropriata per il tuo caso d'uso
+	}
+
+	@Override
+	public boolean isAccountNonExpired() {
+		// TODO: Metodo richiesto quando ho aggiornato le dipendenze bisogna verificare
+		// come è necessario implementarlo
+		// Implementa la logica per verificare se l'account non è scaduto
+		return true;
+	}
+
+	@Override
+	public boolean isAccountNonLocked() {
+		// TODO: Metodo richiesto quando ho aggiornato le dipendenze bisogna verificare
+		// come è necessario implementarlo
+		// Implementa la logica per verificare se l'account non è bloccato
+		return true;
+	}
+
 }

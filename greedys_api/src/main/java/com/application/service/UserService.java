@@ -13,19 +13,24 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.application.persistence.dao.user.AllergyDAO;
 import com.application.persistence.dao.user.PasswordResetTokenDAO;
 import com.application.persistence.dao.user.RoleDAO;
 import com.application.persistence.dao.user.UserDAO;
 import com.application.persistence.dao.user.VerificationTokenDAO;
 import com.application.persistence.model.Image;
+import com.application.persistence.model.user.Allergy;
 import com.application.persistence.model.user.PasswordResetToken;
 import com.application.persistence.model.user.User;
 import com.application.persistence.model.user.VerificationToken;
+import com.application.web.dto.AllergyDTO;
+import com.application.web.dto.RestaurantCategoryDTO;
 import com.application.web.dto.get.RestaurantDTO;
 import com.application.web.dto.get.UserDTO;
 import com.application.web.dto.post.NewUserDTO;
@@ -49,13 +54,15 @@ public class UserService {
     private final RoleDAO roleRepository;
     private final SessionRegistry sessionRegistry;
     private final EntityManager entityManager;
+	private final AllergyDAO allergyDAO;
 
     public UserService(UserDAO userDAO, VerificationTokenDAO tokenDAO, 
                        PasswordResetTokenDAO passwordTokenRepository, 
                        @Qualifier("userEncoder") PasswordEncoder passwordEncoder, 
                        RoleDAO roleRepository, 
                        @Qualifier("userSessionRegistry") SessionRegistry sessionRegistry,
-                       EntityManager entityManager) {
+                       EntityManager entityManager,
+					   AllergyDAO allergyDAO) {
         this.userDAO = userDAO;
         this.tokenDAO = tokenDAO;
         this.passwordTokenRepository = passwordTokenRepository;
@@ -63,6 +70,7 @@ public class UserService {
         this.roleRepository = roleRepository;
         this.sessionRegistry = sessionRegistry;
         this.entityManager = entityManager;
+		this.allergyDAO = allergyDAO;
     }
 
 	// API
@@ -254,4 +262,42 @@ public class UserService {
 		}
 		return userDAO.save(user);
 	}
+	
+	@Transactional
+    public void addAllergy(Long idAllergy) {
+        User user = getCurrentUser();
+		Allergy allergy = allergyDAO.findById(idAllergy).orElseThrow(() -> new EntityNotFoundException("Allergy not found"));
+		user.getAllergies().add(allergy);
+		userDAO.save(user);
+    }
+
+	@Transactional
+	public void removeAllergy(Long idAllergy) {
+        User user = getCurrentUser();
+		Allergy allergy = allergyDAO.findById(idAllergy).orElseThrow(() -> new EntityNotFoundException("Allergy not found"));
+		user.getAllergies().remove(allergy);
+		userDAO.save(user);
+	}
+
+
+
+
+	  private User getCurrentUser() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof User) {
+            return ((User) principal);
+        } else {
+            System.out.println("Questo non dovrebbe succedere");
+            return null;
+        }
+    }
+
+	@Transactional
+    public void createAllergy(AllergyDTO allergyDto) {
+		Allergy allergy = new Allergy();
+		allergy.setName(allergyDto.getName());
+		allergy.setDescription(allergyDto.getDescription());
+		allergyDAO.save(allergy);
+    }
+
 }

@@ -1,4 +1,4 @@
-package com.application.controller;
+package com.application.controller.restaurant;
 
 import java.util.Collection;
 import org.springframework.beans.factory.annotation.Autowired;

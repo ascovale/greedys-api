@@ -1,7 +1,8 @@
-package com.application.controller;
+package com.application.controller.restaurant;
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.List;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.application.persistence.model.restaurant.RestaurantCategory;
 import com.application.service.ReservationService;
 import com.application.service.RestaurantService;
 import com.application.service.RestaurantUserService;
@@ -333,5 +335,34 @@ public class RestaurantController {
 	public GenericResponse addTable(@RequestParam NewTableDTO tableDto){
 		tableService.createTable(tableDto);
 		return new GenericResponse("success");
+	}
+
+	@Operation(summary = "Set now show time limit", description = "Imposta il limite di tempo per il no show")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Operazione riuscita",
+					 content = @Content(mediaType = "application/json",
+										schema = @Schema(implementation = GenericResponse.class))),
+		@ApiResponse(responseCode = "404", description = "Ristorante non trovato"),
+		@ApiResponse(responseCode = "400", description = "Richiesta non valida")
+	})
+	@PostMapping(value = "{id}/now-show-time-limit")
+	public GenericResponse setNowShowTimeLimit(@PathVariable Long id, @RequestParam int minutes) {
+		restaurantService.setNowShowTimeLimit(id, minutes);
+		return new GenericResponse("success");
+	}
+
+	@GetMapping(value = "{id}/types")
+	@Operation(summary = "Get types of a restaurant", description = "Ottieni i tipi di un ristorante")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Operazione riuscita",
+					 content = @Content(mediaType = "application/json",
+								array = @ArraySchema(
+										schema = @Schema(implementation = String.class)))),
+		@ApiResponse(responseCode = "404", description = "Ristorante non trovato"),
+		@ApiResponse(responseCode = "400", description = "Richiesta non valida")
+	})
+	public ResponseEntity<Collection<String>> getRestaurantTypesNames(@PathVariable Long id) {
+		List<String> types = restaurantService.getRestaurantTypesNames(id);
+		return new ResponseEntity<>(types, HttpStatus.OK);
 	}
 }

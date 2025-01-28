@@ -1,4 +1,4 @@
-package com.application.controller;
+package com.application.controller.pub;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;

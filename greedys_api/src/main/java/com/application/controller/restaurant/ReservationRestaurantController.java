@@ -1,4 +1,4 @@
-package com.application.controller;
+package com.application.controller.restaurant;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ResourceLoader;
@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.application.persistence.model.reservation.Reservation;
 import com.application.persistence.model.restaurant.Restaurant;
-import com.application.persistence.model.restaurant.RestaurantNotification;
 import com.application.persistence.model.user.User;
 import com.application.service.ReservationService;
 import com.application.web.dto.post.NewReservationDTO;
@@ -25,19 +24,20 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
- * The ReservationRestaurantController class is responsible for handling HTTP requests
+ * The ReservationRestaurantController class is responsible for handling HTTP
+ * requests
  * related to reservations for the restaurant.
  * It contains methods for booking, creating reservations, retrieving
  * reservation lists, and managing the calendar.
  */
 @Controller
-@RequestMapping("/reservation/restaurant")
+@RequestMapping("/restaurant/reservation")
 @SecurityRequirement(name = "bearerAuth")
-@Tag(name = "Reservation Restaurant", description = "APIs for managing reservations")
+@Tag(name = "Reservation Restaurant", description = "APIs for managing reservations from the restaurant")
 public class ReservationRestaurantController {
 
 	@Autowired
-	private ReservationService<RestaurantNotification> reservationService;
+	private ReservationService reservationService;
 
 	@Autowired
 	private ResourceLoader resourceLoader;
@@ -51,6 +51,7 @@ public class ReservationRestaurantController {
 	@PostMapping("/")
 	public ResponseEntity<?> createReservation(
 			@RequestBody NewReservationDTO DTO) {
+		//TODO BISOGNA CAMBIARE NEW RESERVATION DTO
 		reservationService.createReservation(DTO, getCurrentRestaurant());
 		return ResponseEntity.ok().build();
 	}
@@ -76,6 +77,32 @@ public class ReservationRestaurantController {
 		Reservation res = reservationService.findById(reservation_id);
 		res.setRejected(true);
 		reservationService.save(res);
+		return ResponseEntity.ok().build();
+	}
+
+	@Operation(summary = "Mark a reservation as no show", description = "Endpoint to mark a reservation as no show by its ID")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Reservation marked as no show successfully"),
+			@ApiResponse(responseCode = "400", description = "Invalid reservation ID", content = @Content),
+			@ApiResponse(responseCode = "404", description = "Reservation not found", content = @Content),
+			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
+	})
+	@PostMapping("/no-show")
+	public ResponseEntity<?> markReservationNoShow(@RequestParam Long reservation_id, @RequestParam Boolean noShow) {
+		reservationService.markReservationSeated(reservation_id, noShow);
+		return ResponseEntity.ok().build();
+	}
+
+	@Operation(summary = "Mark a reservation as seated", description = "Endpoint to mark a reservation as seated by its ID")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Reservation marked as seated successfully"),
+			@ApiResponse(responseCode = "400", description = "Invalid reservation ID", content = @Content),
+			@ApiResponse(responseCode = "404", description = "Reservation not found", content = @Content),
+			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
+	})
+	@PostMapping("/seated")
+	public ResponseEntity<?> markReservationSeated(@RequestParam Long reservation_id, Boolean seated) {
+		reservationService.markReservationSeated(reservation_id, seated);
 		return ResponseEntity.ok().build();
 	}
 

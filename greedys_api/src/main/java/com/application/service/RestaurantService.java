@@ -12,10 +12,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.application.mapper.Mapper;
+import com.application.persistence.dao.restaurant.RestaurantCategoryDAO;
 import com.application.persistence.dao.restaurant.RestaurantDAO;
 import com.application.persistence.dao.restaurant.RestaurantUserDAO;
 import com.application.persistence.model.Image;
 import com.application.persistence.model.restaurant.Restaurant;
+import com.application.persistence.model.restaurant.RestaurantCategory;
+import com.application.web.dto.RestaurantCategoryDTO;
 import com.application.web.dto.RestaurantFullDetailsDto;
 import com.application.web.dto.RestaurantImageDto;
 import com.application.web.dto.get.RestaurantDTO;
@@ -41,7 +44,8 @@ public class RestaurantService {
 
 	@PersistenceContext
 	private EntityManager entityManager;
-
+	@Autowired
+	private RestaurantCategoryDAO restaurantCategoryDAO;
 
 	public Restaurant getReference(Long id) {
 		return entityManager.getReference(Restaurant.class, id);
@@ -133,5 +137,28 @@ public class RestaurantService {
 			.map(s -> new ServiceDTO(s))
 			.collect(Collectors.toList());
     }
+
+	@Transactional
+    public void setNowShowTimeLimit(Long idRestaurant, int minutes) {
+		Restaurant restaurant = rDAO.findById(idRestaurant).orElseThrow(() -> new IllegalArgumentException("Invalid restaurant ID"));
+		restaurant.setNoShowTimeLimit(minutes);
+		rDAO.save(restaurant);
+	}
+
+    public List<String> getRestaurantTypesNames(Long idRestaurant) {
+		Restaurant restaurant = rDAO.findById(idRestaurant).orElseThrow(() -> new IllegalArgumentException("Invalid restaurant ID"));
+		 restaurant.getRestaurantTypes();
+	return restaurant.getRestaurantTypes().stream()
+		.map(RestaurantCategory::getName)
+		.collect(Collectors.toList());
+	}
+
+	@Transactional
+	public void createRestaurantCategory(RestaurantCategoryDTO restaurantCategoryDto) {
+		RestaurantCategory restaurantCategory = new RestaurantCategory();
+		restaurantCategory.setName(restaurantCategoryDto.getName());
+		restaurantCategory.setDescription(restaurantCategoryDto.getDescription());
+		restaurantCategoryDAO.save(restaurantCategory);
+	}
 
 }

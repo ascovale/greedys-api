@@ -1,4 +1,4 @@
-package com.application.controller;
+package com.application.controller.customer;
 
 import java.util.Collection;
 import java.util.Locale;
@@ -21,6 +21,7 @@ import com.application.service.RestaurantUserService;
 import com.application.service.UserService;
 import com.application.persistence.model.user.User;
 import com.application.security.user.ISecurityUserService;
+import com.application.web.dto.AllergyDTO;
 import com.application.web.dto.get.ReservationDTO;
 import com.application.web.dto.get.RestaurantDTO;
 import com.application.web.dto.get.UserDTO;
@@ -200,5 +201,7 @@ public class UserController {
         userService.updateUser(id, userDto);
         return new GenericResponse("User modified successfully");
     }
+
+ 
 
 }

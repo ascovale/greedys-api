@@ -18,6 +18,12 @@ public class SecurityService {
     ReservationService reservationService;
 
     @Transactional
+    public boolean hasUserPermissionOnReservation(Long idReservation) {
+        Reservation reservation = reservationService.findById(idReservation);
+        return hasUserPermissionOnReservation(reservation);
+    }
+    
+    @Transactional
     public boolean hasUserPermissionOnReservation(Reservation reservation) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Object principal = authentication.getPrincipal();    

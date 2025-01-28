@@ -1,6 +1,7 @@
 package com.application.service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -25,7 +26,9 @@ import com.application.persistence.model.reservation.Slot;
 import com.application.persistence.model.restaurant.Restaurant;
 import com.application.persistence.model.restaurant.RestaurantNotification;
 import com.application.persistence.model.user.User;
+import com.application.persistence.model.user.Notification.Type;
 import com.application.web.dto.get.ReservationDTO;
+import com.application.web.dto.post.NewCustomerReservationDTO;
 import com.application.web.dto.post.NewReservationDTO;
 
 import jakarta.persistence.EntityManager;
@@ -33,7 +36,7 @@ import jakarta.persistence.PersistenceContext;
 
 @Service("reservationService")
 @Transactional
-public class ReservationService<T> {
+public class ReservationService {
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -50,7 +53,7 @@ public class ReservationService<T> {
     @Autowired
     private RestaurantNotificationService restaurantNotificationService;
     @Autowired
-    private INotificationService<T> notificationService;
+    private NotificationService notificationService;
     @Autowired
     private UserDAO userDAO;
 
@@ -89,21 +92,21 @@ public class ReservationService<T> {
             // dell'utente che non c'è
             // securityService.hasRestaurantUserPermissionOnReservation(user.getRestaurantUser(),
             // reservation);
-            
-                notificationService.newReservationNotification(reservation);
+            restaurantNotificationService.createNotificationsForRestaurant(restaurant,
+                    RestaurantNotification.Type.NEW_RESERVATION);
         }
         return reservationDAO.save(reservation);
     }
 
     @Transactional
-    public Reservation askForReservation(NewReservationDTO reservationDto, User user) throws NoSuchElementException {
+    public Reservation askForReservation(NewCustomerReservationDTO dTO, User user) throws NoSuchElementException {
         Reservation reservation = new Reservation();
-        reservation.setRestaurant(entityManager.getReference(Restaurant.class, reservationDto.getRestaurant_id()));
-        reservation.setPax(reservationDto.getPax());
-        reservation.setKids(reservationDto.getKids());
-        reservation.setNotes(reservationDto.getNotes());
-        reservation.setDate(reservationDto.getReservationDay());
-        reservation.setSlot(entityManager.getReference(Slot.class, reservationDto.getIdSlot()));
+        reservation.setRestaurant(entityManager.getReference(Restaurant.class, dTO.getRestaurant_id()));
+        reservation.setPax(dTO.getPax());
+        reservation.setKids(dTO.getKids());
+        reservation.setNotes(dTO.getNotes());
+        reservation.setDate(dTO.getReservationDay());
+        reservation.setSlot(entityManager.getReference(Slot.class, dTO.getIdSlot()));
         reservation.setRejected(false);
         reservation.setAccepted(false);
         reservation.setNoShow(false);
@@ -189,13 +192,11 @@ public class ReservationService<T> {
     @PreAuthorize("@securityService.hasPermissionOnReservation(#reservationId)")
     public void cancelReservation(Long reservationId) {
         Reservation reservation = reservationDAO.findById(reservationId).get();
-        // TODO inserire cancellata la prenotazione
-
         reservation.setRejected(true);
         reservationDAO.save(reservation);
         // TODO DIRE CHE SE IL RUOLO è utente allora invia notifica al ristorante
         // TODO DIRE CHE SE IL RUOLO è ristoratore allora invia notifica all'utente
-        notificationService.deleteReservationNotification(reservation);
+        notificationService.createReservationNotification(reservation, Type.CANCEL);
     }
 
     @Transactional
@@ -209,13 +210,12 @@ public class ReservationService<T> {
         reservation.setDate(dTO.getReservationDay());
         reservation.setSlot(entityManager.getReference(Slot.class, dTO.getIdSlot()));
         reservationDAO.save(reservation);
-        notificationService.deleteReservationNotification(reservation);
+        notificationService.createReservationNotification(reservation, Type.ALTERED);
     }
 
     @Transactional
     @PreAuthorize("@securityService.hasPermissionOnReservation(#reservationId)")
     public void requestModifyReservation(Long oldReservationId, NewReservationDTO dTO, User currentUser) {
-        // TODO Verificare che lo user abbia i permessi
         Reservation reservation = reservationDAO.findById(oldReservationId)
                 .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
         ReservationRequest reservationRequest = new ReservationRequest();
@@ -253,4 +253,32 @@ public class ReservationService<T> {
         // Delete the reservation request after accepting it
         reservationRequestDAO.delete(reservationRequest);
     }
+
+    @Transactional
+    public void markReservationNoShow(Long reservationId, Boolean noShow ) {
+        Reservation reservation = reservationDAO.findById(reservationId)
+                .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
+        LocalDateTime now = LocalDateTime.now();
+        if (reservation.isAfterNoShowTimeLimit(now)){
+            reservation.setNoShow(noShow);
+            if(noShow) reservation.setSeated(false);
+            reservationDAO.save(reservation);
+            notificationService.createReservationNotification(reservation, Type.NO_SHOW);
+        } else {
+            throw new IllegalStateException(
+                    "The time limit for marking this reservation as no-show has not passed yet.");
+        }
+    }
+
+    @Transactional
+    public Reservation markReservationSeated(Long reservation_id, Boolean seated) {
+        Reservation reservation = reservationDAO.findById(reservation_id)
+            .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
+        reservation.setSeated(seated);
+        if(seated) reservation.setNoShow(false);
+        reservationDAO.save(reservation);
+        notificationService.createReservationNotification(reservation, Type.SEATED);
+        return reservation;
+    }
+
 }
