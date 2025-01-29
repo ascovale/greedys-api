@@ -229,7 +229,6 @@ public class ReservationService {
 
     @Transactional
     public void acceptReservationRequest(Long reservationRequestId, User user) {
-        // TODO Verificare che lo user abbia i permessi
         ReservationRequest reservationRequest = reservationRequestDAO.findById(reservationRequestId)
                 .orElseThrow(() -> new NoSuchElementException("Reservation request not found"));
         Reservation reservation = reservationRequest.getReservation();

@@ -284,7 +284,8 @@ public class RestaurantController {
 	//TODO Add type of restaurant
 	//TODO Add types of restaurant
 	//TODO Remove type of restaurant
-	//TODO Remove list og type
+	//TODO Remove list of type of restaurant
 	//TODO AddMenu
 	//TODO Update Menu
+	//creare i relativi DTO
 }

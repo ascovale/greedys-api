@@ -40,38 +40,38 @@ import com.application.web.error.UserAlreadyExistException;
 @Transactional
 public class UserService {
 
-    public static final String TOKEN_INVALID = "invalidToken";
-    public static final String TOKEN_EXPIRED = "expired";
-    public static final String TOKEN_VALID = "valid";
+	public static final String TOKEN_INVALID = "invalidToken";
+	public static final String TOKEN_EXPIRED = "expired";
+	public static final String TOKEN_VALID = "valid";
 
-    public static String QR_PREFIX = "https://chart.googleapis.com/chart?chs=200x200&chld=M%%7C0&cht=qr&chl=";
-    public static String APP_NAME = "SpringRegistration";
+	public static String QR_PREFIX = "https://chart.googleapis.com/chart?chs=200x200&chld=M%%7C0&cht=qr&chl=";
+	public static String APP_NAME = "SpringRegistration";
 
-    private final UserDAO userDAO;
-    private final VerificationTokenDAO tokenDAO;
-    private final PasswordResetTokenDAO passwordTokenRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final RoleDAO roleRepository;
-    private final SessionRegistry sessionRegistry;
-    private final EntityManager entityManager;
+	private final UserDAO userDAO;
+	private final VerificationTokenDAO tokenDAO;
+	private final PasswordResetTokenDAO passwordTokenRepository;
+	private final PasswordEncoder passwordEncoder;
+	private final RoleDAO roleRepository;
+	private final SessionRegistry sessionRegistry;
+	private final EntityManager entityManager;
 	private final AllergyDAO allergyDAO;
 
-    public UserService(UserDAO userDAO, VerificationTokenDAO tokenDAO, 
-                       PasswordResetTokenDAO passwordTokenRepository, 
-                       @Qualifier("userEncoder") PasswordEncoder passwordEncoder, 
-                       RoleDAO roleRepository, 
-                       @Qualifier("userSessionRegistry") SessionRegistry sessionRegistry,
-                       EntityManager entityManager,
-					   AllergyDAO allergyDAO) {
-        this.userDAO = userDAO;
-        this.tokenDAO = tokenDAO;
-        this.passwordTokenRepository = passwordTokenRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.roleRepository = roleRepository;
-        this.sessionRegistry = sessionRegistry;
-        this.entityManager = entityManager;
+	public UserService(UserDAO userDAO, VerificationTokenDAO tokenDAO,
+			PasswordResetTokenDAO passwordTokenRepository,
+			@Qualifier("userEncoder") PasswordEncoder passwordEncoder,
+			RoleDAO roleRepository,
+			@Qualifier("userSessionRegistry") SessionRegistry sessionRegistry,
+			EntityManager entityManager,
+			AllergyDAO allergyDAO) {
+		this.userDAO = userDAO;
+		this.tokenDAO = tokenDAO;
+		this.passwordTokenRepository = passwordTokenRepository;
+		this.passwordEncoder = passwordEncoder;
+		this.roleRepository = roleRepository;
+		this.sessionRegistry = sessionRegistry;
+		this.entityManager = entityManager;
 		this.allergyDAO = allergyDAO;
-    }
+	}
 
 	// API
 
@@ -85,8 +85,8 @@ public class UserService {
 			throw new UserAlreadyExistException("There is an account with that email adress: " + accountDto.getEmail());
 		}
 		if (accountDto.getPassword() == null) {
-            throw new IllegalArgumentException("rawPassword cannot be null");
-        }
+			throw new IllegalArgumentException("rawPassword cannot be null");
+		}
 		final User user = new User();
 
 		user.setName(accountDto.getFirstName());
@@ -97,7 +97,7 @@ public class UserService {
 		user.setRoles(Arrays.asList(roleRepository.findByName("ROLE_USER")));
 		return userDAO.save(user);
 	}
- 
+
 	public User getUser(final String verificationToken) {
 		final VerificationToken token = tokenDAO.findByToken(verificationToken);
 		if (token != null) {
@@ -105,7 +105,7 @@ public class UserService {
 		}
 		return null;
 	}
-	 
+
 	public VerificationToken getVerificationToken(final String verificationToken) {
 		return tokenDAO.findByToken(verificationToken);
 	}
@@ -130,7 +130,7 @@ public class UserService {
 		final VerificationToken myToken = new VerificationToken(token, user);
 		tokenDAO.save(myToken);
 	}
-	 
+
 	public VerificationToken generateNewVerificationToken(final String existingVerificationToken) {
 		VerificationToken vToken = tokenDAO.findByToken(existingVerificationToken);
 		vToken.updateToken(UUID.randomUUID().toString());
@@ -146,7 +146,7 @@ public class UserService {
 	public User findUserByEmail(final String email) {
 		return userDAO.findByEmail(email);
 	}
-	 
+
 	public PasswordResetToken getPasswordResetToken(final String token) {
 		return passwordTokenRepository.findByToken(token);
 	}
@@ -168,7 +168,7 @@ public class UserService {
 	public boolean checkIfValidOldPassword(final Long id, final String oldPassword) {
 		return passwordEncoder.matches(oldPassword, userDAO.findById(id).get().getPassword());
 	}
-	 
+
 	public String validateVerificationToken(String token) {
 		final VerificationToken verificationToken = tokenDAO.findByToken(token);
 		if (verificationToken == null) {
@@ -189,12 +189,12 @@ public class UserService {
 	}
 
 	/*
-	 *   public String generateQRUrl(User user) throws
+	 * public String generateQRUrl(User user) throws
 	 * UnsupportedEncodingException { return QR_PREFIX +
 	 * URLEncoder.encode(String.format("otpauth://totp/%s:%s?secret=%s&issuer=%s",
 	 * APP_NAME, user.getEmail(), APP_NAME), "UTF-8"); }
 	 * 
-	 *   public User updateUser2FA(boolean use2FA) { final Authentication
+	 * public User updateUser2FA(boolean use2FA) { final Authentication
 	 * curAuth = SecurityContextHolder.getContext() .getAuthentication(); User
 	 * currentUser = (User) curAuth.getPrincipal(); //
 	 * currentUser.setUsing2FA(use2FA); currentUser =
@@ -206,7 +206,7 @@ public class UserService {
 	private boolean emailExists(final String email) {
 		return userDAO.findByEmail(email) != null;
 	}
- 
+
 	public List<String> getUsersFromSessionRegistry() {
 		return sessionRegistry.getAllPrincipals().stream()
 				.filter((u) -> !sessionRegistry.getAllSessions(u, false).isEmpty()).map(o -> {
@@ -226,28 +226,28 @@ public class UserService {
 		return userDAO.findAll();
 	}
 
-	public void addImage(String email,Image image){
+	public void addImage(String email, Image image) {
 		User user = userDAO.findByEmail(email);
-		//user.setImage(image);
-		//BIsogna aggiungere una lista di immagini
+		// user.setImage(image);
+		// BIsogna aggiungere una lista di immagini
 		userDAO.save(user);
 	}
 
-    public User getReference(Long userId) {
-        return entityManager.getReference(User.class, userId); 
-    }
+	public User getReference(Long userId) {
+		return entityManager.getReference(User.class, userId);
+	}
 
-    public Collection<RestaurantDTO> gerRestaurants(Long id) {
+	public Collection<RestaurantDTO> gerRestaurants(Long id) {
 		return userDAO.getRestaurants(id).stream().map(r -> new RestaurantDTO(r)).toList();
-    }
+	}
 
 	public void deleteUserById(Long id) {
 		User user = userDAO.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
 		deleteUser(user);
 	}
-	
+
 	public User updateUser(Long id, UserDTO userDto) {
-		User user = userDAO.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));	
+		User user = userDAO.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
 		if (userDto.getFirstName() != null) {
 			user.setName(userDto.getFirstName());
 		}
@@ -256,48 +256,82 @@ public class UserService {
 		}
 		if (userDto.getEmail() != null && !userDto.getEmail().equals(user.getEmail())) {
 			if (emailExists(userDto.getEmail())) {
-				throw new UserAlreadyExistException("There is an account with that email address: " + userDto.getEmail());
+				throw new UserAlreadyExistException(
+						"There is an account with that email address: " + userDto.getEmail());
 			}
 			user.setEmail(userDto.getEmail());
 		}
 		return userDAO.save(user);
 	}
-	
+
 	@Transactional
-    public void addAllergy(Long idAllergy) {
-        User user = getCurrentUser();
-		Allergy allergy = allergyDAO.findById(idAllergy).orElseThrow(() -> new EntityNotFoundException("Allergy not found"));
+	public void addAllergy(Long idAllergy) {
+		User user = getCurrentUser();
+		Allergy allergy = allergyDAO.findById(idAllergy)
+				.orElseThrow(() -> new EntityNotFoundException("Allergy not found"));
 		user.getAllergies().add(allergy);
 		userDAO.save(user);
-    }
+	}
 
 	@Transactional
 	public void removeAllergy(Long idAllergy) {
-        User user = getCurrentUser();
-		Allergy allergy = allergyDAO.findById(idAllergy).orElseThrow(() -> new EntityNotFoundException("Allergy not found"));
+		User user = getCurrentUser();
+		Allergy allergy = allergyDAO.findById(idAllergy)
+				.orElseThrow(() -> new EntityNotFoundException("Allergy not found"));
 		user.getAllergies().remove(allergy);
 		userDAO.save(user);
 	}
 
-
-
-
-	  private User getCurrentUser() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (principal instanceof User) {
-            return ((User) principal);
-        } else {
-            System.out.println("Questo non dovrebbe succedere");
-            return null;
-        }
-    }
+	private User getCurrentUser() {
+		Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		if (principal instanceof User) {
+			return ((User) principal);
+		} else {
+			System.out.println("Questo non dovrebbe succedere");
+			return null;
+		}
+	}
 
 	@Transactional
-    public void createAllergy(AllergyDTO allergyDto) {
+	public void createAllergy(AllergyDTO allergyDto) {
 		Allergy allergy = new Allergy();
 		allergy.setName(allergyDto.getName());
 		allergy.setDescription(allergyDto.getDescription());
 		allergyDAO.save(allergy);
-    }
+	}
+
+	public void deleteAllergy(Long idAllergy) {
+		Allergy allergy = allergyDAO.findById(idAllergy)
+				.orElseThrow(() -> new EntityNotFoundException("Allergy not found"));
+		allergyDAO.delete(allergy);
+	}
+
+	@Transactional
+	public void modifyAllergy(Long idAllergy, AllergyDTO allergyDto) {
+		Allergy allergy = allergyDAO.findById(idAllergy)
+				.orElseThrow(() -> new EntityNotFoundException("Allergy not found"));
+		if (allergyDto.getName() != null) {
+			allergy.setName(allergyDto.getName());
+		}
+		if (allergyDto.getDescription() != null) {
+			allergy.setDescription(allergyDto.getDescription());
+		}
+		allergyDAO.save(allergy);
+	}
+
+	@Transactional
+	public void disableUser(Long idUser) {
+		//TODO credo che disable e enable da parte del ristorante debbano essere diversi
+		// dall'abilitazione tramite mail
+		User user = userDAO.findById(idUser).orElseThrow(() -> new EntityNotFoundException("User not found"));
+		user.setEnabled(false);
+		userDAO.save(user);
+	}
+
+	@Transactional
+    public void enableUser(Long userId) {
+		User user = userDAO.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
+		user.setEnabled(true);
+		userDAO.save(user);}
 
 }

@@ -161,4 +161,39 @@ public class RestaurantService {
 		restaurantCategoryDAO.save(restaurantCategory);
 	}
 
+    public void disableRestaurant(Long idRestaurant) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'disableRestaurant'");
+    }
+
+    public void deleteRestaurant(Long idRestaurant) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'deleteRestaurant'");
+    }
+
+    public void createRestaurant(RestaurantDTO restaurantDto) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'createRestaurant'");
+    }
+
+    public void changeRestaurantEmail(Long idRestaurant, String newEmail) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'changeRestaurantEmail'");
+    }
+
+    public void enableRestaurant(Long idRestaurant) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'enableRestaurant'");
+    }
+
+    public void updateRestaurantCategory(Long idCategory, RestaurantCategoryDTO restaurantCategoryDto) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'updateRestaurantCategory'");
+    }
+
+    public void deleteRestaurantCategory(Long idCategory) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'deleteRestaurantCategory'");
+    }
+
 }
