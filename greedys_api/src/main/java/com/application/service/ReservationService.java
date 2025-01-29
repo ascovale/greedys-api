@@ -189,7 +189,6 @@ public class ReservationService {
     }
 
     @Transactional
-    @PreAuthorize("@securityService.hasPermissionOnReservation(#reservationId)")
     public void cancelReservation(Long reservationId) {
         Reservation reservation = reservationDAO.findById(reservationId).get();
         reservation.setRejected(true);
@@ -200,7 +199,6 @@ public class ReservationService {
     }
 
     @Transactional
-    @PreAuthorize("@securityService.hasPermissionOnReservation(#reservationId)")
     public void modifyReservation(Long oldReservationId, NewReservationDTO dTO, User currentUser) {
         Reservation reservation = reservationDAO.findById(oldReservationId)
                 .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
@@ -214,7 +212,6 @@ public class ReservationService {
     }
 
     @Transactional
-    @PreAuthorize("@securityService.hasPermissionOnReservation(#reservationId)")
     public void requestModifyReservation(Long oldReservationId, NewReservationDTO dTO, User currentUser) {
         Reservation reservation = reservationDAO.findById(oldReservationId)
                 .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
@@ -255,13 +252,17 @@ public class ReservationService {
     }
 
     @Transactional
-    public void markReservationNoShow(Long reservationId, Boolean noShow ) {
+    public void markReservationNoShow(Long idRestaurant, Long reservationId, Boolean noShow) {
         Reservation reservation = reservationDAO.findById(reservationId)
                 .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
+        if (!reservation.getRestaurant().getId().equals(idRestaurant)) {
+            throw new IllegalArgumentException("Reservation does not belong to the specified restaurant");
+        }
         LocalDateTime now = LocalDateTime.now();
-        if (reservation.isAfterNoShowTimeLimit(now)){
+        if (reservation.isAfterNoShowTimeLimit(now)) {
             reservation.setNoShow(noShow);
-            if(noShow) reservation.setSeated(false);
+            if (noShow)
+                reservation.setSeated(false);
             reservationDAO.save(reservation);
             notificationService.createReservationNotification(reservation, Type.NO_SHOW);
         } else {
@@ -271,11 +272,45 @@ public class ReservationService {
     }
 
     @Transactional
-    public Reservation markReservationSeated(Long reservation_id, Boolean seated) {
-        Reservation reservation = reservationDAO.findById(reservation_id)
-            .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
+    public Reservation markReservationSeated(Long idRestaurant, Long reservationId, Boolean seated) {
+        Reservation reservation = reservationDAO.findById(reservationId)
+                .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
+        if (!reservation.getRestaurant().getId().equals(idRestaurant)) {
+            throw new IllegalArgumentException("Reservation does not belong to the specified restaurant");
+        }
         reservation.setSeated(seated);
-        if(seated) reservation.setNoShow(false);
+        if (seated)
+            reservation.setNoShow(false);
+        reservationDAO.save(reservation);
+        notificationService.createReservationNotification(reservation, Type.SEATED);
+        return reservation;
+    }
+
+    @Transactional
+    public Reservation markReservationAccepted(Long idRestaurant, Long reservationId, Boolean accepted) {
+        Reservation reservation = reservationDAO.findById(reservationId)
+                .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
+        if (!reservation.getRestaurant().getId().equals(idRestaurant)) {
+            throw new IllegalArgumentException("Reservation does not belong to the specified restaurant");
+        }
+        reservation.setAccepted(accepted);
+        if (accepted)
+            reservation.setRejected(false);
+        reservationDAO.save(reservation);
+        notificationService.createReservationNotification(reservation, Type.SEATED);
+        return reservation;
+    }
+
+    @Transactional
+    public Reservation markReservationRejected(Long idRestaurant, Long reservationId, Boolean rejected) {
+        Reservation reservation = reservationDAO.findById(reservationId)
+                .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
+        if (!reservation.getRestaurant().getId().equals(idRestaurant)) {
+            throw new IllegalArgumentException("Reservation does not belong to the specified restaurant");
+        }
+        reservation.setRejected(rejected);
+        if (rejected)
+            reservation.setAccepted(false);
         reservationDAO.save(reservation);
         notificationService.createReservationNotification(reservation, Type.SEATED);
         return reservation;
