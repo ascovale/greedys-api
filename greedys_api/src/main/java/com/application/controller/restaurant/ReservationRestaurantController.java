@@ -51,7 +51,7 @@ public class ReservationRestaurantController {
 			@ApiResponse(responseCode = "400", description = "Invalid input", content = @Content),
 			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
 	})
-	@PostMapping("/{idRestaurant}/reservation}")
+	@PostMapping("/{idRestaurant}/new_reservation}")
 	@PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant) or hasRole('ADMIN')")
 	public ResponseEntity<?> createReservation(@PathVariable Long idRestaurant,
 			@RequestBody NewReservationDTO DTO) {
