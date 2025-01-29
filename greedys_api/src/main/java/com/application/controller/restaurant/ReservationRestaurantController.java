@@ -3,9 +3,12 @@ package com.application.controller.restaurant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -31,7 +34,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  * reservation lists, and managing the calendar.
  */
 @Controller
-@RequestMapping("/restaurant/reservation")
+@RequestMapping({"/restaurant","/admin/restaurant"})
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Reservation Restaurant", description = "APIs for managing reservations from the restaurant")
 public class ReservationRestaurantController {
@@ -51,7 +54,7 @@ public class ReservationRestaurantController {
 	@PostMapping("/")
 	public ResponseEntity<?> createReservation(
 			@RequestBody NewReservationDTO DTO) {
-		//TODO BISOGNA CAMBIARE NEW RESERVATION DTO
+		//TODO BISOGNA CAMBIARE NEW RESERVATION DTO verificare inerimento restaurant user
 		reservationService.createReservation(DTO, getCurrentRestaurant());
 		return ResponseEntity.ok().build();
 	}
@@ -63,18 +66,19 @@ public class ReservationRestaurantController {
 			@ApiResponse(responseCode = "404", description = "Reservation not found", content = @Content),
 			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
 	})
-	@PostMapping("/accept")
-	public ResponseEntity<?> acceptReservation(@RequestParam Long reservation_id) {
-		Reservation res = reservationService.findById(reservation_id);
+	@PutMapping("/{idRestaurant}/reservation/{reservationId}/accept")
+	@PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant) or hasRole('ADMIN')")
+	public ResponseEntity<?> acceptReservation(@PathVariable Long idRestaurant,@PathVariable Long reservationId) {
+		Reservation res = reservationService.findById(reservationId);
 		res.setAccepted(true);
 		reservationService.save(res);
 		return ResponseEntity.ok().build();
 	}
 
 	@Operation(summary = "Reject a reservation", description = "Endpoint to reject a reservation by its ID")
-	@PostMapping("/reject")
-	public ResponseEntity<?> rejectReservation(@RequestParam Long reservation_id) {
-		Reservation res = reservationService.findById(reservation_id);
+	@PutMapping("/{idRestaurant}/reservation/{reservationId}/reject")
+	public ResponseEntity<?> rejectReservation(@PathVariable Long idRestaurant,@PathVariable Long reservationId) {
+		Reservation res = reservationService.findById(reservationId);
 		res.setRejected(true);
 		reservationService.save(res);
 		return ResponseEntity.ok().build();
@@ -87,7 +91,7 @@ public class ReservationRestaurantController {
 			@ApiResponse(responseCode = "404", description = "Reservation not found", content = @Content),
 			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
 	})
-	@PostMapping("/no-show")
+	@PostMapping("/{idRestaurant}/reservation/{reservationId}/no-show")
 	public ResponseEntity<?> markReservationNoShow(@RequestParam Long reservation_id, @RequestParam Boolean noShow) {
 		reservationService.markReservationSeated(reservation_id, noShow);
 		return ResponseEntity.ok().build();
@@ -100,7 +104,7 @@ public class ReservationRestaurantController {
 			@ApiResponse(responseCode = "404", description = "Reservation not found", content = @Content),
 			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
 	})
-	@PostMapping("/seated")
+	@PostMapping("/{idRestaurant}/reservation/{reservationId}/seated")
 	public ResponseEntity<?> markReservationSeated(@RequestParam Long reservation_id, Boolean seated) {
 		reservationService.markReservationSeated(reservation_id, seated);
 		return ResponseEntity.ok().build();
