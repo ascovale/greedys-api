@@ -52,7 +52,8 @@ public class ReservationRestaurantController {
 			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
 	})
 	@PostMapping("/{idRestaurant}/reservation}")
-	public ResponseEntity<?> createReservation(
+	@PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant) or hasRole('ADMIN')")
+	public ResponseEntity<?> createReservation(@PathVariable Long idRestaurant,
 			@RequestBody NewReservationDTO DTO) {
 				//TODO verificare NEWRESERVATIONDTO
 		reservationService.createReservation(DTO, getCurrentRestaurant());
