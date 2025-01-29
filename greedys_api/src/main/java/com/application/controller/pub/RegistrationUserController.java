@@ -46,7 +46,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/register/user")
+@RequestMapping("/public/register/user")
 public class RegistrationUserController {
     private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 

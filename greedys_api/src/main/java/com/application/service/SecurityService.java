@@ -16,6 +16,8 @@ import com.application.persistence.model.user.User;
 public class SecurityService {
     @Autowired
     ReservationService reservationService;
+    @Autowired
+    RestaurantService restaurantService;
 
     @Transactional
     public boolean hasUserPermissionOnReservation(Long idReservation) {
@@ -86,4 +88,26 @@ public class SecurityService {
         Acl acl = aclService.readAclById(oi);
         return acl.isGranted(List.of(permission), List.of(sid), false);
     } */
+
+    @Transactional
+    public boolean hasRestaurantUserPermissionOnRestaurantWithId(Long idRestaurant) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Restaurant restaurant = restaurantService.findById(idRestaurant);
+        Object principal = authentication.getPrincipal();
+        User user;
+		if (principal instanceof User) {
+            user= ((User) principal);
+            if(user.getRestaurantUser()!=null) {
+                RestaurantUser restaurantUser = user.getRestaurantUser();
+                if (restaurant != null) {
+                    for (RestaurantUser ruser : restaurant.getRestaurantUsers()) {
+                        if (ruser.equals(restaurantUser)) return true;       
+                    }
+                }
+            }
+            return false;
+            
+        }   
+        else throw new IllegalStateException("Illegal principal type");
+    }
 }

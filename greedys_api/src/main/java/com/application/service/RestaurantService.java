@@ -139,7 +139,7 @@ public class RestaurantService {
     }
 
 	@Transactional
-    public void setNowShowTimeLimit(Long idRestaurant, int minutes) {
+    public void setNoShowTimeLimit(Long idRestaurant, int minutes) {
 		Restaurant restaurant = rDAO.findById(idRestaurant).orElseThrow(() -> new IllegalArgumentException("Invalid restaurant ID"));
 		restaurant.setNoShowTimeLimit(minutes);
 		rDAO.save(restaurant);

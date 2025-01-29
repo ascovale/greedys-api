@@ -33,7 +33,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 
 @RestController
-@RequestMapping("/register/restaurant")
+@RequestMapping("/public/register/restaurant")
 @SecurityRequirement(name = "bearerAuth")
 public class RegistrationRestaurantController {
     private final Logger LOGGER = LoggerFactory.getLogger(getClass());
