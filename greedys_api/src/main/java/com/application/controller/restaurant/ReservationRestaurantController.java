@@ -30,7 +30,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  * It contains methods for creating, accepting, rejecting, marking as no-show, and marking as seated reservations.
  */
 @Controller
-@RequestMapping("/restaurant")
+@RequestMapping({"/restaurant","/admin/restaurant"})
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Reservation Restaurant", description = "APIs for managing reservations from the restaurant")
 public class ReservationRestaurantController {

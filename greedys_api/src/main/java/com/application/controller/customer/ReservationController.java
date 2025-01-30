@@ -1,7 +1,6 @@
 package com.application.controller.customer;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -35,9 +34,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class ReservationController {
 	@Autowired
 	private ReservationService reservationService;
-
-	@Autowired
-	private ResourceLoader resourceLoader;
 	
 	@Operation(summary = "The customer user ask for a reservation", description = "Endpoint to ask for a reservation")
 	@ApiResponses(value = {
