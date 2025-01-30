@@ -320,23 +320,21 @@ public class UserService {
 	}
 
 	@Transactional
-	public void disableUser(Long idUser) {
-		//TODO credo che disable e enable da parte del ristorante debbano essere diversi
-		// dall'abilitazione tramite mail
-		User user = userDAO.findById(idUser).orElseThrow(() -> new EntityNotFoundException("User not found"));
-		user.setEnabled(false);
-		userDAO.save(user);
-	}
-
-	@Transactional
     public void enableUser(Long userId) {
 		User user = userDAO.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
 		user.setEnabled(true);
 		userDAO.save(user);}
-
+/* 
     public void removePermissions(Long idUser) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'removePermissions'");
+		User user = userDAO.findById(idUser).orElseThrow(() -> new EntityNotFoundException("User not found"));
+		user.setRoles(Arrays.asList(roleRepository.findByName("ROLE_USER")));
+		userDAO.save(user);
+	}*/
+
+    public void blockUser(Long userId) {
+		User user = userDAO.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
+		user.setEnabled(false);
+		userDAO.save(user);
     }
 
 }

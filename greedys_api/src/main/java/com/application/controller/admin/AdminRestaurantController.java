@@ -114,4 +114,5 @@ public class AdminRestaurantController {
         restaurantService.changeRestaurantEmail(idRestaurant, newEmail);
         return new GenericResponse("Restaurant email changed successfully");
     }
+    
 }

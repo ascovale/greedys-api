@@ -48,6 +48,15 @@ public class User implements UserDetails {
 	private Collection<Role> roles;
 	@OneToOne
 	private RestaurantUser restaurantUser;
+	private Boolean blooked = false;
+
+	public Boolean getBlooked() {
+		return blooked;
+	}
+
+	public void setIsBlooked(Boolean blooked) {
+		this.blooked = blooked;
+	}
 
 	@ManyToMany
 	@JoinTable(name = "user_allergy", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "allergy_id"))

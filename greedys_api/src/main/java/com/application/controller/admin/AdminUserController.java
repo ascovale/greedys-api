@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.application.service.RestaurantService;
 import com.application.service.UserService;
 import com.application.web.dto.AllergyDTO;
 import com.application.web.util.GenericResponse;
@@ -64,13 +63,13 @@ public class AdminUserController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Disable user", description = "Disables a user by their ID")
-    @ApiResponse(responseCode = "200", description = "User disabled successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
+    @Operation(summary = "Block user", description = "Blocks a user by their ID")
+    @ApiResponse(responseCode = "200", description = "User blocked successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
-    @PutMapping("/{idUser}/disableUser")
-    public GenericResponse disableUser(@PathVariable Long idUser) {
-        userService.disableUser(idUser);
-        return new GenericResponse("User disabled successfully");
+    @PutMapping("/blockUser/{userId}")
+    public GenericResponse blockUser(@PathVariable Long userId) {
+        userService.blockUser(userId);
+        return new GenericResponse("User blocked successfully");
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -82,7 +81,7 @@ public class AdminUserController {
         userService.enableUser(userId);
         return new GenericResponse("User enabled successfully");
     }
-
+    /*
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Remove user permissions", description = "Removes permissions from a user by their ID")
     @ApiResponse(responseCode = "200", description = "Permissions removed successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
@@ -91,7 +90,9 @@ public class AdminUserController {
     public GenericResponse removePermissions(@PathVariable Long idUser) {
         userService.removePermissions(idUser);
         return new GenericResponse("Permissions removed successfully");
-    }
+    }*/
+
+
 
     
 

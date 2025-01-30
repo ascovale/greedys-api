@@ -3,16 +3,11 @@ package com.application.controller.admin;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.application.service.RestaurantService;
 import com.application.service.RestaurantUserService;
-import com.application.service.UserService;
-import com.application.web.dto.AllergyDTO;
 import com.application.web.util.GenericResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
