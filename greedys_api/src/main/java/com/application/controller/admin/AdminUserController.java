@@ -1,5 +1,6 @@
 package com.application.controller.admin;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -11,7 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.application.service.RestaurantService;
 import com.application.service.UserService;
 import com.application.web.dto.AllergyDTO;
-import com.application.web.dto.RestaurantCategoryDTO;
 import com.application.web.util.GenericResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -24,15 +24,15 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RequestMapping("/admin/user")
 @RestController
 @SecurityRequirement(name = "bearerAuth")
-@Tag(name = "Admin", description = "Admin management APIs for the User")
+@Tag(name = "Admin User", description = "Admin management APIs for the User")
 public class AdminUserController {
-    private final RestaurantService restaurantService;
     private final UserService userService;
 
-    public AdminUserController(UserService userService, RestaurantService restaurantService) {
+    @Autowired
+    public AdminUserController(UserService userService) {
         this.userService = userService;
-        this.restaurantService = restaurantService;
     }
+
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Create allergy", description = "Creates a new allergy for the specified user by their ID")
     @ApiResponse(responseCode = "200", description = "Allergy created successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
@@ -42,6 +42,7 @@ public class AdminUserController {
         userService.createAllergy(allergyDto);
         return new GenericResponse("Allergy created successfully");
     }
+
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Delete allergy", description = "Deletes an allergy by its ID")
     @ApiResponse(responseCode = "200", description = "Allergy deleted successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
@@ -61,7 +62,7 @@ public class AdminUserController {
         userService.modifyAllergy(idAllergy, allergyDto);
         return new GenericResponse("Allergy modified successfully");
     }
-    
+
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Disable user", description = "Disables a user by their ID")
     @ApiResponse(responseCode = "200", description = "User disabled successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
@@ -82,14 +83,25 @@ public class AdminUserController {
         return new GenericResponse("User enabled successfully");
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Remove user permissions", description = "Removes permissions from a user by their ID")
+    @ApiResponse(responseCode = "200", description = "Permissions removed successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
+    @ApiResponse(responseCode = "400", description = "Invalid request")
+    @PutMapping("/{idUser}/removePermissions")
+    public GenericResponse removePermissions(@PathVariable Long idUser) {
+        userService.removePermissions(idUser);
+        return new GenericResponse("Permissions removed successfully");
+    }
 
+    
 
-    //TODO creare altre classi controller per la gestione
-    //Creare le notifiche per l'admin quando viene aggiunto un ristorante cosi che abilita un ristorante dopo che ha verificato i vari dati forniti
-    //disabilita un utente di un ristorante
-    //cambia password ad un ristorante
-    //rimuovi recensioni successivamente
-    //Creare la recensione interna ed esterna
-    //voto del recensore
-    //sia del ristorante sia del pubblico che ne da credibilità
+    // TODO creare altre classi controller per la gestione
+    // Creare le notifiche per l'admin quando viene aggiunto un ristorante cosi che
+    // abilita un ristorante dopo che ha verificato i vari dati forniti
+    // disabilita un utente di un ristorante
+    // cambia password ad un ristorante
+    // rimuovi recensioni successivamente
+    // Creare la recensione interna ed esterna
+    // voto del recensore
+    // sia del ristorante sia del pubblico che ne da credibilità
 }

@@ -15,7 +15,7 @@ import com.application.web.dto.post.NewRestaurantUserDTO;
 public class RestaurantUserService {
 
     @Autowired
-	private RestaurantUserDAO ruDAO;
+    private RestaurantUserDAO ruDAO;
 
     @Autowired
     private RestaurantService restaurantService;
@@ -23,22 +23,20 @@ public class RestaurantUserService {
     @Autowired
     private UserService userService;
 
-    
     // @Autowired
     // private RestaurantRoleService roleService;
 
-
     public RestaurantUser registerRestaurantUser(NewRestaurantUserDTO restaurantUserDTO) {
-        System.out.println("Registering restaurant user with information:" + restaurantUserDTO.getRestaurantId() + " " + restaurantUserDTO.getUserId());
+        System.out.println("Registering restaurant user with information:" + restaurantUserDTO.getRestaurantId() + " "
+                + restaurantUserDTO.getUserId());
         RestaurantUser ru = new RestaurantUser();
-		ru.setRestaurant(restaurantService.findById(restaurantUserDTO.getRestaurantId()));
-		ru.setUser(userService.getReference(restaurantUserDTO.getUserId()));
+        ru.setRestaurant(restaurantService.findById(restaurantUserDTO.getRestaurantId()));
+        ru.setUser(userService.getReference(restaurantUserDTO.getUserId()));
         ruDAO.save(ru);
         return ru;
     }
 
     public void acceptUser(Long id) {
-        // TODO Auto-generated method stub
         ruDAO.acceptUser(id);
     }
 
@@ -46,5 +44,15 @@ public class RestaurantUserService {
         return ruDAO.findByRestaurantId(id).stream().map(user -> new RestaurantUserDTO(user)).toList();
     }
 
+    public void blockRestaurantUser(Long idRestaurantUser) {
+        RestaurantUser ru = ruDAO.findById(idRestaurantUser)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid restaurant user ID: " + idRestaurantUser));
+        ru.setBlocked(true);
+        ruDAO.save(ru);
+    }
+
+    public void removeRestaurantUser(Long idRestaurantUser) {
+        ruDAO.deleteById(idRestaurantUser);
+    }
 
 }

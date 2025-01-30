@@ -28,6 +28,15 @@ public class RestaurantUser {
 
     private Boolean accepted = false;
     private Boolean rejected = false;
+    private Boolean blocked = false;
+
+    public void setBlocked(Boolean blocked) {
+        this.blocked = blocked;
+    }
+
+    public Boolean getBlocked() {
+        return blocked;
+    }
 
     public void setRestaurant(Restaurant restaurant) {
         this.restaurant = restaurant;

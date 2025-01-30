@@ -334,4 +334,9 @@ public class UserService {
 		user.setEnabled(true);
 		userDAO.save(user);}
 
+    public void removePermissions(Long idUser) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'removePermissions'");
+    }
+
 }

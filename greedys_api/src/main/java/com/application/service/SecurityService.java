@@ -101,7 +101,10 @@ public class SecurityService {
                 RestaurantUser restaurantUser = user.getRestaurantUser();
                 if (restaurant != null) {
                     for (RestaurantUser ruser : restaurant.getRestaurantUsers()) {
-                        if (ruser.equals(restaurantUser)) return true;       
+                        //DEVE ESSERE ACCETTATO E NON BLOCCATO
+                        if (ruser.getAccepted() && !ruser.getBlocked()) {
+                            if (ruser.equals(restaurantUser)) return true;  
+                        }     
                     }
                 }
             }

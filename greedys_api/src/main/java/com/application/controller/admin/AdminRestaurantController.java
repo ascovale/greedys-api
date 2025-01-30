@@ -25,7 +25,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RequestMapping("/admin/restaurant")
 @RestController
 @SecurityRequirement(name = "bearerAuth")
-@Tag(name = "Admin", description = "Admin management APIs for the Restaurant")
+@Tag(name = "Admin Restaurant", description = "Admin management APIs for the Restaurant")
 public class AdminRestaurantController {
 
     private RestaurantService restaurantService;
