@@ -452,7 +452,6 @@ public class ReservationService {
             return null;
         }
     }
-    
 
     public void rejectReservationCreatedByAdminOrRestaurant(Long reservationId) {
         Reservation reservation = reservationDAO.findById(reservationId)
