@@ -116,7 +116,7 @@ public class ReservationService {
         reservation.setCreationDate(LocalDate.now());
         reservationDAO.save(reservation);
         restaurantNotificationService.createNotificationsForRestaurant(reservation.getRestaurant(),
-                RestaurantNotification.Type.REQUEST);
+                RestaurantNotification.Type.NEW_RESERVATION);
         if (reservationDto.isAnonymous()) {
             reservation.set_user_info(reservationDto.getClientUser());
         } else
