@@ -337,4 +337,10 @@ public class UserService {
 		userDAO.save(user);
     }
 
+    public void reportRestaurantAbuse(Long restaurantId) {
+
+        // TODO Auto-generated method stub
+		//L'utente segnala qualche tipo di abuso nella recensione o altro
+    }
+
 }

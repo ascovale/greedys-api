@@ -29,13 +29,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Controller
 @RequestMapping({"/admin/reservation"})
 @SecurityRequirement(name = "bearerAuth")
-@Tag(name = "Reservation Restaurant", description = "APIs for managing reservations from the restaurant")
-public class AdminReservationRestaurantController {
+@Tag(name = "Reservation Admin", description = "APIs for managing reservations from the administrator")
+public class AdminReservationController {
 
 	private ReservationService reservationService;
 
 	@Autowired
-	public AdminReservationRestaurantController(ReservationService reservationService) {
+	public AdminReservationController(ReservationService reservationService) {
 		this.reservationService = reservationService;
 	}
 
@@ -76,8 +76,8 @@ public class AdminReservationRestaurantController {
 	})
 	@PutMapping("/reservation/{reservationId}/accept")
 	@PreAuthorize("hasRole('ADMIN')")
-	public ResponseEntity<?> acceptReservation(@RequestParam Long idRestaurant,@PathVariable Long reservationId, @RequestParam Boolean accepted) {
-		reservationService.markReservationAccepted(idRestaurant, reservationId, accepted);
+	public ResponseEntity<?> acceptReservation(@PathVariable Long reservationId, @RequestParam Boolean accepted) {
+		reservationService.adminMarkReservationAccepted(reservationId, accepted);
 		return ResponseEntity.ok().build();
 	}
 
@@ -90,9 +90,9 @@ public class AdminReservationRestaurantController {
 	 * @return ResponseEntity indicating the result of the operation
 	 */
 	@Operation(summary = "Reject a reservation", description = "Endpoint to reject a reservation by its ID")
-	@PutMapping("/{idRestaurant}/reservation/{reservationId}/reject")
-	public ResponseEntity<?> rejectReservation(@PathVariable Long idRestaurant, @PathVariable Long reservationId, @RequestParam Boolean rejected) {
-		reservationService.markReservationRejected(idRestaurant, reservationId, rejected);
+	@PutMapping("/reservation/{reservationId}/reject")
+	public ResponseEntity<?> rejectReservation(@PathVariable Long reservationId, @RequestParam Boolean rejected) {
+		reservationService.adminMarkReservationRejected(reservationId, rejected);
 		return ResponseEntity.ok().build();
 	}
 	//TODO: La notifica va messa anche ai ristoratori
@@ -111,15 +111,14 @@ public class AdminReservationRestaurantController {
 			@ApiResponse(responseCode = "404", description = "Reservation not found", content = @Content),
 			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
 	})
-	@PutMapping("/{idRestaurant}/reservation/{reservationId}/no-show")
+	@PutMapping("/reservation/{reservationId}/no-show")
 	@PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant) or hasRole('ADMIN')")
-	public ResponseEntity<?> markReservationNoShow(@PathVariable Long idRestaurant, @PathVariable Long reservationId, @RequestParam Boolean noShow) {
-		reservationService.markReservationNoShow(idRestaurant, reservationId, noShow);
+	public ResponseEntity<?> markReservationNoShow(@PathVariable Long reservationId, @RequestParam Boolean noShow) {
+		reservationService.adminMarkReservationNoShow(reservationId, noShow);
 		return ResponseEntity.ok().build();
 	}
 
 
-	//TODO: Dobbiamo inserire la notifica in caso di user Admin il sistema deve iniviare anche notifica al restaurant
 	/**
 	 * Marks a reservation as seated by its ID.
 	 *

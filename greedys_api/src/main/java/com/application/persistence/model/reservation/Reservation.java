@@ -60,6 +60,30 @@ public class Reservation {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idrestaurant_user")
  	private RestaurantUser restaurantUser;
+	private User creator;
+	private User rejectUser;
+	private User cancelUser;
+
+
+	public User getCancelUser() {
+		return cancelUser;
+	}
+
+	public void setCancelUser(User cancelUser) {
+		this.cancelUser = cancelUser;
+	}
+
+	public User getRejectUser() {
+		return rejectUser;
+	}
+
+	public void setRejectUser(User rejectUser) {
+		this.rejectUser = rejectUser;
+	}
+
+	public User getCreator() {
+		return creator;
+	}
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	private com.application.persistence.model.restaurant.Table table;
@@ -243,6 +267,10 @@ public class Reservation {
 		}
 		LocalDateTime noShowDeadline = reservationDateTime.plusMinutes(noShowTimeLimit);
 		return dateTime.isAfter(noShowDeadline);
+	}
+
+    public void setCreator(User creator) {
+		this.creator = creator;
 	}
 
 }

@@ -121,8 +121,6 @@ public class ReservationRestaurantController {
 		return ResponseEntity.ok().build();
 	}
 
-
-	//TODO: Dobbiamo inserire la notifica in caso di user Admin il sistema deve iniviare anche notifica al restaurant
 	/**
 	 * Marks a reservation as seated by its ID.
 	 *
@@ -144,7 +142,25 @@ public class ReservationRestaurantController {
 		reservationService.markReservationSeated(idRestaurant, reservationId, seated);
 		return ResponseEntity.ok().build();
 	}
-
+	/**
+	 * Accepts a reservation modification request by its ID.
+	 *
+	 * @param reservationId the ID of the reservation
+	 * @return ResponseEntity indicating the result of the operation
+	 */
+	@Operation(summary = "Accept a reservation modification request", description = "Endpoint to accept a reservation modification request by its ID")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Reservation modification request accepted successfully"),
+		@ApiResponse(responseCode = "400", description = "Invalid reservation ID", content = @Content),
+		@ApiResponse(responseCode = "404", description = "Reservation not found", content = @Content),
+		@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
+	})
+	@PutMapping("/reservation/{reservationId}/accept-modification")
+	@PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant) or hasRole('ADMIN')")
+	public ResponseEntity<?> acceptReservationModificationRequest( @PathVariable Long reservationId) {
+		reservationService.restaurantAcceptReservatioModifyRequest(reservationId);
+		return ResponseEntity.ok().build();
+	}
 	/**
 	 * Retrieves the current restaurant from the security context.
 	 *

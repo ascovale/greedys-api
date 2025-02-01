@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -53,7 +54,7 @@ public class ReservationController {
 	})
 	@PostMapping("/cancel")
 	public ResponseEntity<?> cancelReservation(@RequestBody Long reservationId) {
-		reservationService.cancelReservation(reservationId);
+		reservationService.customerCancelReservation(reservationId);
 		return ResponseEntity.ok().build();
 	}
 
@@ -70,4 +71,16 @@ public class ReservationController {
 		return ResponseEntity.ok().build();
 	}
 
+	@PreAuthorize("@securityService.hasUserPermissionOnReservation(#reservationId)")
+	@Operation(summary = "The customer user rejects a reservation", description = "Endpoint User reject a reservation created by the restaurant or admin")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Reservation rejected successfully"),
+		@ApiResponse(responseCode = "400", description = "Invalid input", content = @Content),
+		@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
+	})
+	@PutMapping("/reject")
+	public ResponseEntity<?> rejectReservationCreatedByAdminOrRestaurant(@RequestBody Long reservationId) {
+		reservationService.rejectReservationCreatedByAdminOrRestaurant(reservationId);
+		return ResponseEntity.ok().build();
+	}
 }

@@ -58,11 +58,23 @@ public class ReservationLog {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idreservation", referencedColumnName = "id")
 	private Reservation reservation;
+	private User logCreator;
+	//TODO AGGIUNGERE ORARIO DI REQUEST RESERVATION e altri dati
+	
+	
+
+	public User getLogCreator() {
+		return logCreator;
+	}
+
+	public void setLogCreator(User logCreator) {
+		this.logCreator = logCreator;
+	}
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	private com.application.persistence.model.restaurant.Table table;
 
-	public ReservationLog(Reservation reservation) {
+	public ReservationLog(Reservation reservation,User logCreator) {
 		this.reservation = reservation;
 		this.date = reservation.getDate();
 		this.creationDate = reservation.getCreationDate();
@@ -74,9 +86,16 @@ public class ReservationLog {
 		this.notes = reservation.getNotes();
 		this.restaurantUser = reservation.getRestaurantUser();
 		this.table = reservation.getTable();
+		this.logCreator = user;
 	}
 
-	public com.application.persistence.model.restaurant.Table getTable() {
+	public ReservationLog(Reservation reservation2, User currentUser, ReservationRequest reservationRequest) {
+		this(reservation2, currentUser);
+		//TODO AGGIUNGERE ORARIO DI REQUEST RESERVATION e altri dati
+
+	}
+
+    public com.application.persistence.model.restaurant.Table getTable() {
 		return table;
 	}
 
