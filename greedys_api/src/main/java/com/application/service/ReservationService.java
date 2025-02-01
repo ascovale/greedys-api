@@ -457,7 +457,7 @@ public class ReservationService {
         Reservation reservation = reservationDAO.findById(reservationId)
                 .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
         reservationLogDAO.save(new ReservationLog(reservation,getCurrentUser()));
-
+        //TODO scrivere il codice per dire se è stata creata o collegata dall'utente
         reservation.setUser(null);
         ClientInfo anonymousClientInfo = new ClientInfo("Anonymous", null, null);
         reservation.set_user_info(anonymousClientInfo);
