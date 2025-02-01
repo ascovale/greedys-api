@@ -3,44 +3,35 @@ package com.application.controller.customer;
 
 import java.util.Optional;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.application.service.FirebaseService;
-import com.application.service.NotificationService;
-import com.application.service.ReservationService;
 import com.application.service.UserFcmTokenService;
 import com.application.web.dto.post.UserFcmTokenDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
-import com.application.persistence.dao.user.UserDAO;
-import com.application.persistence.model.user.Notification;
-import com.application.persistence.model.user.User;
 @RestController
 @RequestMapping("/user/notification")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Notification", description = "Notification management APIs")
 public class NotificationController {
 
-    private final NotificationService notificationService;
     private final UserFcmTokenService userFcmTokenService;
     private final FirebaseService firebaseService;
-    private final ReservationService reservationService;
-    private final UserDAO userService;
-
-    public NotificationController(NotificationService notificationService, UserFcmTokenService userFcmTokenService, ReservationService reservationService, UserDAO userService,FirebaseService firebaseService) {
+    public NotificationController(UserFcmTokenService userFcmTokenService, FirebaseService firebaseService) {
         this.userFcmTokenService = userFcmTokenService;
-        this.notificationService = notificationService;
-        this.reservationService = reservationService;
-        this.userService = userService;
         this.firebaseService = firebaseService;
     }
     
@@ -131,13 +122,4 @@ public class NotificationController {
     }
 
 
-    private User getCurrentUser() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (principal instanceof User) {
-            return ((User) principal);
-        } else {
-            System.out.println("Questo non dovrebbe succedere");
-            return null;
-        }
-    }
 }

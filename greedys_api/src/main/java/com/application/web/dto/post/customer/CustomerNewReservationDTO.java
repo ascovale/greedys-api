@@ -1,15 +1,11 @@
-package com.application.web.dto.post;
+package com.application.web.dto.post.customer;
 
 
 import java.time.LocalDate;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
-import com.application.persistence.model.reservation.ClientInfo;
-import com.application.persistence.model.reservation.Reservation;
-import com.application.persistence.model.reservation.Slot;
-
-public class NewReservationDTO {
+public class CustomerNewReservationDTO {
 	
 	private Long idSlot;
 	private Integer pax;
@@ -18,19 +14,7 @@ public class NewReservationDTO {
     @DateTimeFormat(pattern = "dd-MM-yyyy")
 	private LocalDate reservationDay; 
     private Long restaurant_id;
-	private Long user_id;
-	private ClientInfo clientUser;
 
-	public Boolean isAnonymous() {
-		return user_id == null;
-	}
-
-	public Long getUser_id() {
-		if (user_id == null) {
-			throw new IllegalArgumentException("User id is null, the reservation is anonymous.");
-		}
-		return user_id;
-	}
 
     public Long getRestaurant_id() {
         return restaurant_id;
@@ -64,15 +48,6 @@ public class NewReservationDTO {
 		this.kids = kids;
 	}
 
-	public ClientInfo getClientUser() {
-		return clientUser;
-	}
-
-	public void setClientUser(ClientInfo clientUser) {
-		this.clientUser = clientUser;
-	}
-
-
 	public String getNotes() {
 		return notes;
 	}
@@ -88,7 +63,6 @@ public class NewReservationDTO {
 	public void setReservationDay(LocalDate reservationDay) {
 		this.reservationDay = reservationDay;
 	}	
-	
 	
 }
 

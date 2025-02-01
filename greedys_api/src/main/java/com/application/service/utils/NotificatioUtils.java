@@ -23,6 +23,8 @@ public class NotificatioUtils {
         put(RestaurantNotification.Type.MODIFICATION, new NotificationTemplate("modification", "A reservation has been modified."));
         put(RestaurantNotification.Type.REVIEW, new NotificationTemplate("review", "A new review has been submitted."));
         put(RestaurantNotification.Type.REVIEW_ALTERED, new NotificationTemplate("review_modify", "A review has been modified."));
+        put(RestaurantNotification.Type.SEATED, new NotificationTemplate("seated", "A reservation has been seated."));
+        put(RestaurantNotification.Type.NO_SHOW, new NotificationTemplate("no_show", "A reservation has been marked as no_show."));
     }};
 
     public static class NotificationTemplate {

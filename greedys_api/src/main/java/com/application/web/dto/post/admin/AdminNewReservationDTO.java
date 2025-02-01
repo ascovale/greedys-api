@@ -1,4 +1,4 @@
-package com.application.web.dto.post;
+package com.application.web.dto.post.admin;
 
 
 import java.time.LocalDate;
@@ -6,10 +6,8 @@ import java.time.LocalDate;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import com.application.persistence.model.reservation.ClientInfo;
-import com.application.persistence.model.reservation.Reservation;
-import com.application.persistence.model.reservation.Slot;
 
-public class NewReservationDTO {
+public class AdminNewReservationDTO {
 	
 	private Long idSlot;
 	private Integer pax;
@@ -20,6 +18,42 @@ public class NewReservationDTO {
     private Long restaurant_id;
 	private Long user_id;
 	private ClientInfo clientUser;
+	private Boolean accept;
+	private Boolean seated;
+	private Boolean noShow;
+	private Boolean rejected;
+
+	public Boolean getRejected() {
+		return rejected;
+	}
+
+	public void setRejected(Boolean rejected) {
+		this.rejected = rejected;
+	}
+
+	public Boolean getAccept() {
+		return accept;
+	}
+
+	public void setAccept(Boolean accept) {
+		this.accept = accept;
+	}
+
+	public Boolean getSeated() {
+		return seated;
+	}
+
+	public void setSeated(Boolean seated) {
+		this.seated = seated;
+	}
+
+	public Boolean getNoShow() {
+		return noShow;
+	}
+
+	public void setNoShow(Boolean noShow) {
+		this.noShow = noShow;
+	}
 
 	public Boolean isAnonymous() {
 		return user_id == null;
@@ -88,7 +122,6 @@ public class NewReservationDTO {
 	public void setReservationDay(LocalDate reservationDay) {
 		this.reservationDay = reservationDay;
 	}	
-	
 	
 }
 

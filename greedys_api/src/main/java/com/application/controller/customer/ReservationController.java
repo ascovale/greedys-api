@@ -3,16 +3,13 @@ package com.application.controller.customer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import com.application.persistence.model.user.User;
 import com.application.service.ReservationService;
-import com.application.web.dto.post.NewCustomerReservationDTO;
-import com.application.web.dto.post.NewReservationDTO;
+import com.application.web.dto.post.customer.CustomerNewReservationDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -42,8 +39,8 @@ public class ReservationController {
 			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
 	})
 	@PostMapping("/ask")
-	public ResponseEntity<?> askReservation(@RequestBody NewCustomerReservationDTO DTO) {
-		reservationService.askForReservation(DTO, getCurrentUser());
+	public ResponseEntity<?> askReservation(@RequestBody CustomerNewReservationDTO DTO) {
+		reservationService.askForReservation(DTO);
 		return ResponseEntity.ok().build();
 	}
 
@@ -68,18 +65,9 @@ public class ReservationController {
 		@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
 	})
 	@PostMapping("/request-modify")
-	public ResponseEntity<?> requestModifyReservation(@RequestBody Long oldReservationId,@RequestBody NewReservationDTO DTO) {
-		reservationService.requestModifyReservation(oldReservationId,DTO, getCurrentUser());
+	public ResponseEntity<?> requestModifyReservation(@RequestBody Long oldReservationId,@RequestBody CustomerNewReservationDTO DTO) {
+		reservationService.requestModifyReservation(oldReservationId,DTO);
 		return ResponseEntity.ok().build();
 	}
 
-	private User getCurrentUser() {
-		Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-		if (principal instanceof User) {
-			return ((User) principal);
-		} else {
-			System.out.println("Questo non dovrebbe succedere");
-			return null;
-		}
-	}
 }

@@ -1,4 +1,4 @@
-package com.application.web.dto.post;
+package com.application.web.dto.post.restaurant;
 
 
 import java.time.LocalDate;
@@ -7,7 +7,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import com.application.persistence.model.reservation.ClientInfo;
 
-public class NewCustomerReservationDTO {
+public class RestaurantNewReservationDTO {
 	
 	private Long idSlot;
 	private Integer pax;
@@ -16,7 +16,19 @@ public class NewCustomerReservationDTO {
     @DateTimeFormat(pattern = "dd-MM-yyyy")
 	private LocalDate reservationDay; 
     private Long restaurant_id;
+	private Long user_id;
+	private ClientInfo clientUser;
 
+	public Boolean isAnonymous() {
+		return user_id == null;
+	}
+
+	public Long getUser_id() {
+		if (user_id == null) {
+			throw new IllegalArgumentException("User id is null, the reservation is anonymous.");
+		}
+		return user_id;
+	}
 
     public Long getRestaurant_id() {
         return restaurant_id;
@@ -49,6 +61,15 @@ public class NewCustomerReservationDTO {
 	public void setKids(Integer kids) {
 		this.kids = kids;
 	}
+
+	public ClientInfo getClientUser() {
+		return clientUser;
+	}
+
+	public void setClientUser(ClientInfo clientUser) {
+		this.clientUser = clientUser;
+	}
+
 
 	public String getNotes() {
 		return notes;

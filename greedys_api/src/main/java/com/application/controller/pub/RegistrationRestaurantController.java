@@ -5,30 +5,28 @@ import java.util.Collections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.application.service.RestaurantService;
-import com.application.service.RestaurantUserService;
 import com.application.persistence.dao.restaurant.RestaurantRoleDAO;
 import com.application.persistence.model.restaurant.RestaurantRole;
 import com.application.persistence.model.restaurant.RestaurantUser;
+import com.application.service.RestaurantService;
+import com.application.service.RestaurantUserService;
 import com.application.web.dto.get.RestaurantDTO;
 import com.application.web.dto.post.NewRestaurantDTO;
 import com.application.web.dto.post.NewRestaurantUserDTO;
 import com.application.web.util.GenericResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-
-import org.springframework.web.bind.annotation.RequestBody;
 
 
 
@@ -46,9 +44,6 @@ public class RegistrationRestaurantController {
 
     @Autowired
     private RestaurantUserService restaurantUserService;
-
-    @Autowired
-    private ApplicationEventPublisher eventPublisher;
 
 
     // Restaurant Registration
