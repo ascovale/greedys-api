@@ -28,7 +28,6 @@ public class Reservation {
 	@Id		
 	@GeneratedValue(strategy=GenerationType.AUTO)
 	private Long id;
-
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "id_restaurant")
 	private Restaurant restaurant;
@@ -52,9 +51,8 @@ public class Reservation {
 	private Boolean accepted = false;
 	private Boolean seated = false;
 	private Boolean noShow = false;
-	private Boolean cancelled = false;
+	private Boolean deleted = false;
 	Integer version=1;
-    // si potrebbe fare una tabella a parte per i log
 	@DateTimeFormat(pattern = "yyyy/MM/dd/HH:mm")
 	private LocalDateTime lastModificationTime;
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -228,12 +226,12 @@ public class Reservation {
 		this.user = user;
 	}
 
-	public Boolean getCancelled() {
-		return cancelled;
+	public Boolean getDeleted() {
+		return deleted;
 	}
 
-	public void setCancelled(Boolean cancelled) {
-		this.cancelled = cancelled;
+	public void setDeleted(Boolean deleted) {
+		this.deleted = deleted;
 	}
 
 	public Integer getVersion() {

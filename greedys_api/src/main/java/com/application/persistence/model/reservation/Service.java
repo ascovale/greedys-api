@@ -19,27 +19,22 @@ import jakarta.persistence.Table;
 
 import com.application.persistence.model.restaurant.Restaurant;
 
-
-
 @Entity
 @Table(name = "service")
 public class Service {
-	
-	@Id		
-	@GeneratedValue(strategy=GenerationType.AUTO)
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
 	private String name;
 
-	@ManyToOne(fetch = FetchType.EAGER) // qui potrebbe essere utile condividere il servizio tra più ristoranti in alcuni casi
+	@ManyToOne(fetch = FetchType.EAGER) // qui potrebbe essere utile condividere il servizio tra più ristoranti in
+										// alcuni casi
 	@JoinColumn(name = "restaurant_id")
 	private Restaurant restaurant;
 
 	@ManyToMany(fetch = FetchType.EAGER)
-	@JoinTable(
-		name = "service_service_type",
-		joinColumns = @JoinColumn(name = "service_id"),
-		inverseJoinColumns = @JoinColumn(name = "type_id")
-	)
+	@JoinTable(name = "service_service_type", joinColumns = @JoinColumn(name = "service_id"), inverseJoinColumns = @JoinColumn(name = "type_id"))
 	private Set<ServiceType> serviceTypes = new HashSet<>();
 
 	@OneToMany(mappedBy = "service", fetch = FetchType.EAGER)
@@ -47,6 +42,9 @@ public class Service {
 
 	@Column(name = "info")
 	private String info;
+
+	private Boolean deleted = false;
+
 
 	private LocalDate validFrom;
 	private LocalDate validTo;
@@ -64,7 +62,6 @@ public class Service {
 		this.active = active;
 	}
 
-
 	public LocalDate getValidFrom() {
 		return validFrom;
 	}
@@ -80,11 +77,20 @@ public class Service {
 	public void setValidTo(LocalDate validTo) {
 		this.validTo = validTo;
 	}
-	
+
 	public Set<ServiceType> getServiceType() {
 		return serviceTypes;
 	}
 
+	
+	public Boolean getDeleted() {
+		return deleted;
+	}
+
+	public void setDeleted(Boolean deleted) {
+		this.deleted = deleted;
+	}
+	
 	public void setServiceTypes(Set<ServiceType> serviceType) {
 		this.serviceTypes = serviceType;
 	}
@@ -110,12 +116,12 @@ public class Service {
 	}
 
 	public Set<Slot> getSlots() {
-        return slots;
-    }
+		return slots;
+	}
 
-    public void setSlots(Set<Slot> slots) {
-        this.slots=slots;
-    }
+	public void setSlots(Set<Slot> slots) {
+		this.slots = slots;
+	}
 
 	public String getInfo() {
 		return this.info;
@@ -132,5 +138,5 @@ public class Service {
 	public void setColor(String color) {
 		this.color = color;
 	}
-	
+
 }

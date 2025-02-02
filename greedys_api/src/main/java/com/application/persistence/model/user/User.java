@@ -49,6 +49,15 @@ public class User implements UserDetails {
 	@OneToOne
 	private RestaurantUser restaurantUser;
 	private Boolean blooked = false;
+	private Boolean deleted = false;
+	
+	public Boolean getDeleted() {
+		return deleted;
+	}
+
+	public void setDeleted(Boolean deleted) {
+		this.deleted = deleted;
+	}
 
 	public Boolean getBlooked() {
 		return blooked;

@@ -179,4 +179,7 @@ public interface ReservationDAO extends JpaRepository<Reservation, Long> {
 				ORDER BY r.date, r.slot.start
 			""")
 	Collection<Reservation> findByUserAndAccepted(Long userId);
+
+	Collection<Reservation> findBySlot_Id(Long slotId);
+
 }

@@ -1,38 +1,48 @@
 package com.application.service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.application.mapper.Mapper.Weekday;
 import com.application.persistence.dao.restaurant.ServiceDAO;
 import com.application.persistence.dao.restaurant.ServiceTypeDAO;
 import com.application.persistence.dao.restaurant.SlotDAO;
+import com.application.persistence.dao.user.ReservationDAO;
+import com.application.persistence.model.reservation.Reservation;
 import com.application.persistence.model.reservation.Service;
 import com.application.persistence.model.reservation.ServiceType;
 import com.application.persistence.model.reservation.Slot;
 import com.application.persistence.model.restaurant.Restaurant;
+import com.application.persistence.model.user.User;
 import com.application.web.dto.ServiceDto;
 import com.application.web.dto.ServiceSlotsDto;
 import com.application.web.dto.ServiceTypeDto;
 import com.application.web.dto.get.ServiceDTO;
 import com.application.web.dto.post.NewServiceDTO;
+import com.application.web.dto.post.admin.AdminNewServiceDTO;
+import com.application.web.dto.post.restaurant.RestaurantNewServiceDTO;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
 @org.springframework.stereotype.Service
 public class ServiceService {
-	
+	// TODO aggiungere tutti i controlli ristorante cancellato
+
 	@Autowired
 	ServiceDAO serviceDAO;
 	@Autowired
 	ServiceTypeDAO serviceTypeDAO;
+	@Autowired
+	ReservationDAO reservationDAO;
 	@Autowired
 	SlotDAO slotDAO;
 	@PersistenceContext
@@ -41,7 +51,6 @@ public class ServiceService {
 	@Autowired
 	RestaurantService rService;
 
-	 
 	public List<ServiceDto> getServices(Long idRestaurant, LocalDate selectedDate) {
 		List<Service> services = serviceDAO.findServicesByRestaurant(idRestaurant);
 		List<ServiceDto> servicesDto = new ArrayList<ServiceDto>();
@@ -68,22 +77,25 @@ public class ServiceService {
 		}
 		return days;
 	}
-	 
+
 	public List<ServiceDto> getDayServicesFromWeekday(Restaurant restaurant, int weekday) {
-		//DA CONTROLLARE QUI C'è QUALCHE ERRORE
+		// DA CONTROLLARE QUI C'è QUALCHE ERRORE
 		/*
-		int adjustedWeekday = (weekday == 0) ? 6 : weekday - 1;
-		Weekday weekdayEnum = Weekday.values()[adjustedWeekday];
-		System.out.println("<<<   getDayServicesFromWeekday weekdayEnum: " + weekdayEnum);
-		List<Service> list = serviceDAO.findServicesByWeekdayAndRestaurant(restaurant.getId(), weekdayEnum);
-		List<ServiceDto> listDto = new ArrayList<ServiceDto>();
-		for (Service service : list) {
-			System.out.println("	<<<   list get: " + service.getName());
-			System.out.println(service.getName());
-			listDto.add(Mapper.toDTO(service));
-		}
-		return listDto;
-		*/
+		 * int adjustedWeekday = (weekday == 0) ? 6 : weekday - 1;
+		 * Weekday weekdayEnum = Weekday.values()[adjustedWeekday];
+		 * System.out.println("<<<   getDayServicesFromWeekday weekdayEnum: " +
+		 * weekdayEnum);
+		 * List<Service> list =
+		 * serviceDAO.findServicesByWeekdayAndRestaurant(restaurant.getId(),
+		 * weekdayEnum);
+		 * List<ServiceDto> listDto = new ArrayList<ServiceDto>();
+		 * for (Service service : list) {
+		 * System.out.println("	<<<   list get: " + service.getName());
+		 * System.out.println(service.getName());
+		 * listDto.add(Mapper.toDTO(service));
+		 * }
+		 * return listDto;
+		 */
 		throw new UnsupportedOperationException("Unimplemented method 'getDayServicesFromWeekday'");
 	}
 
@@ -105,10 +117,10 @@ public class ServiceService {
 		service.setActive(false);
 		serviceDAO.save(service);
 	}
-	
-	//TODO: Don't know why don't just create the slots while creating the service?
+
+	// TODO: Don't know why don't just create the slots while creating the service?
 	@Transactional
-	private void save(Service service, Set<Slot> slots){
+	private void save(Service service, Set<Slot> slots) {
 		service.setSlots(slots);
 		slotDAO.saveAll(slots);
 		serviceDAO.save(service);
@@ -118,22 +130,120 @@ public class ServiceService {
 		return serviceTypeDAO.findAll().stream().map(ServiceTypeDto::new).toList();
 	}
 
-    public List<ServiceSlotsDto> getServiceSlots(Long idRestaurant, LocalDate date) {
-		List<Service> services =serviceDAO.findServicesByRestaurant(idRestaurant);
+	public List<ServiceSlotsDto> getServiceSlots(Long idRestaurant, LocalDate date) {
+		List<Service> services = serviceDAO.findServicesByRestaurant(idRestaurant);
 		List<ServiceSlotsDto> servicesSlotsDto = new ArrayList<ServiceSlotsDto>();
 		for (Service service : services) {
 			servicesSlotsDto.add(new ServiceSlotsDto(service));
 		}
 		return servicesSlotsDto;
-    }
-	 
+	}
+
 	public List<ServiceDto> getDayServices(Restaurant restaurant, LocalDate date) {
 		// TODO: Auto-generated method stub
 		throw new UnsupportedOperationException("Unimplemented method 'getDayServices'");
 	}
-
+	// TODO Cambierei non può tornare direttamente i dto
 	public ServiceDTO findById(Long serviceId) {
 		return new ServiceDTO(serviceDAO.findById(serviceId).get());
 	}
+
+	public Service getById(Long serviceId) {
+		return serviceDAO.findById(serviceId).get();
+	}
+
+	public void newService(AdminNewServiceDTO newServiceDTO) {
+		Service service = new Service();
+		Restaurant restaurant = rService.findById(newServiceDTO.getRestaurant());
+		if (restaurant == null) {
+			throw new IllegalArgumentException("Restaurant not found");
+		}
+		service.setName(newServiceDTO.getName());
+		service.setRestaurant(restaurant);
+		if (newServiceDTO.getServiceType() != null) {
+			Set<ServiceType> serviceTypes = new HashSet<>();
+			serviceTypes.add(entityManager.getReference(ServiceType.class, newServiceDTO.getServiceType()));
+			service.setServiceTypes(serviceTypes);
+		} else {
+			service.setServiceTypes(null);
+		}
+
+		service.setValidFrom(newServiceDTO.getValidFrom());
+		service.setValidTo(newServiceDTO.getValidTo());
+		service.setActive(false);
+		serviceDAO.save(service);
+	}
+
+	public void newService(Long idRestaurant, RestaurantNewServiceDTO newServiceDTO) {
+		Restaurant restaurant = rService.findById(idRestaurant);
+		if (restaurant == null) {
+			throw new IllegalArgumentException("Restaurant not found");
+		}
+		Service service = new Service();
+		service.setName(newServiceDTO.getName());
+		service.setRestaurant(rService.findById(restaurant.getId()));
+
+		if (newServiceDTO.getServiceType() != null) {
+			Set<ServiceType> serviceTypes = new HashSet<>();
+			serviceTypes.add(entityManager.getReference(ServiceType.class, newServiceDTO.getServiceType()));
+			service.setServiceTypes(serviceTypes);
+		} else {
+			service.setServiceTypes(null);
+		}
+
+		service.setValidFrom(newServiceDTO.getValidFrom());
+		service.setValidTo(newServiceDTO.getValidTo());
+		service.setActive(false);
+		serviceDAO.save(service);
+	}
+
+	@Transactional
+	public void deleteService(Long serviceId) {
+		Service service = serviceDAO.findById(serviceId)
+				.orElseThrow(() -> new IllegalArgumentException("Service not found"));
+		service.setDeleted(true);
+		serviceDAO.save(service);
+
+		Collection<Slot> slots = slotDAO.findByService_Id(serviceId);
+		for (Slot slot : slots) {
+			slot.setDeleted(true);
+			slotDAO.save(slot);
+			Collection<Reservation> reservations = reservationDAO.findBySlot_Id(slot.getId());
+			for (Reservation reservation : reservations) {
+				reservation.setDeleted(true);
+				reservation.setCancelUser(getCurrentUser());
+				reservationDAO.save(reservation);
+			}
+		}
+	}
+
+	
+
+	private User getCurrentUser() {
+		Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		if (principal instanceof User) {
+			return ((User) principal);
+		} else {
+			System.out.println("Questo non dovrebbe succedere");
+			return null;
+		}
+	}
+	
+
+	//TODO inefficientissimo creare query
+	@Transactional
+    public Collection<ServiceTypeDto> getServiceTypes(Long idRestaurant) {
+		Restaurant restaurant = rService.findById(idRestaurant);
+		if (restaurant == null) {
+			throw new IllegalArgumentException("Restaurant not found");
+		}
+		Set<ServiceType> serviceTypes = new HashSet<>();
+		for (Service service : restaurant.getServices()) {
+			serviceTypes.addAll(service.getServiceType());
+		}
+		return serviceTypes.stream().map(ServiceTypeDto::new).toList();
+	}
+
+	
 
 }

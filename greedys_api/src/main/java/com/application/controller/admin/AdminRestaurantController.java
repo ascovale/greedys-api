@@ -21,7 +21,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-
 @RequestMapping("/admin/restaurant")
 @RestController
 @SecurityRequirement(name = "bearerAuth")
@@ -34,7 +33,7 @@ public class AdminRestaurantController {
     public AdminRestaurantController(RestaurantService restaurantService) {
         this.restaurantService = restaurantService;
     }
-    
+
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Create category", description = "Creates a new category for the specified restaurant by its ID")
     @ApiResponse(responseCode = "200", description = "Category created successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
@@ -60,7 +59,8 @@ public class AdminRestaurantController {
     @ApiResponse(responseCode = "200", description = "Category updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
     @PutMapping("/updateRestaurantCategory/{idCategory}")
-    public GenericResponse updateCategory(@PathVariable Long idCategory, @RequestBody RestaurantCategoryDTO restaurantCategoryDto) {
+    public GenericResponse updateCategory(@PathVariable Long idCategory,
+            @RequestBody RestaurantCategoryDTO restaurantCategoryDto) {
         restaurantService.updateRestaurantCategory(idCategory, restaurantCategoryDto);
         return new GenericResponse("Category updated successfully");
     }
@@ -73,16 +73,6 @@ public class AdminRestaurantController {
     public GenericResponse enableRestaurant(@PathVariable Long idRestaurant) {
         restaurantService.enableRestaurant(idRestaurant);
         return new GenericResponse("Restaurant enabled successfully");
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Disable restaurant", description = "Disables a restaurant by its ID")
-    @ApiResponse(responseCode = "200", description = "Restaurant disabled successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
-    @ApiResponse(responseCode = "400", description = "Invalid request")
-    @PutMapping("/restaurant/{idRestaurant}/disableRestaurant")
-    public GenericResponse disableRestaurant(@PathVariable Long idRestaurant) {
-        restaurantService.disableRestaurant(idRestaurant);
-        return new GenericResponse("Restaurant disabled successfully");
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -114,5 +104,15 @@ public class AdminRestaurantController {
         restaurantService.changeRestaurantEmail(idRestaurant, newEmail);
         return new GenericResponse("Restaurant email changed successfully");
     }
-    
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Mark restaurant as deleted", description = "Marks a restaurant as deleted similar to disable by its ID")
+    @ApiResponse(responseCode = "200", description = "Restaurant marked as deleted successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
+    @ApiResponse(responseCode = "400", description = "Invalid request")
+    @PutMapping("/restaurant/{idRestaurant}/markAsDeleted")
+    public GenericResponse markRestaurantAsDeleted(@PathVariable Long idRestaurant) {
+        restaurantService.markRestaurantAsDeleted(idRestaurant);
+        return new GenericResponse("Restaurant marked as deleted successfully");
+    }
+
 }

@@ -29,6 +29,15 @@ public class RestaurantUser {
     private Boolean accepted = false;
     private Boolean rejected = false;
     private Boolean blocked = false;
+    private Boolean deleted = false;
+
+    public Boolean getDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(Boolean deleted) {
+        this.deleted = deleted;
+    }
 
     public void setBlocked(Boolean blocked) {
         this.blocked = blocked;

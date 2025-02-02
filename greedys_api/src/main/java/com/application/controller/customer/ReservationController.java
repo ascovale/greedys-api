@@ -46,15 +46,15 @@ public class ReservationController {
 	}
 
 	@PreAuthorize("@securityService.hasUserPermissionOnReservation(#oldReservationId)")
-	@Operation(summary = "The customer user cancels a reservation", description = "Endpoint to cancel a reservation")
+	@Operation(summary = "The customer user deletes a reservation", description = "Endpoint to delete a reservation")
 	@ApiResponses(value = {
-		@ApiResponse(responseCode = "200", description = "Reservation cancelled successfully"),
+		@ApiResponse(responseCode = "200", description = "Reservation deleted successfully"),
 		@ApiResponse(responseCode = "400", description = "Invalid input", content = @Content),
 		@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
 	})
-	@PostMapping("/cancel")
-	public ResponseEntity<?> cancelReservation(@RequestBody Long reservationId) {
-		reservationService.customerCancelReservation(reservationId);
+	@PostMapping("/delete")
+	public ResponseEntity<?> deleteReservation(@RequestBody Long reservationId) {
+		reservationService.customerDeleteReservation(reservationId);
 		return ResponseEntity.ok().build();
 	}
 

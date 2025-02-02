@@ -68,6 +68,12 @@ public class Restaurant {
 	@ManyToMany
 	@JoinTable(name = "restaurant_has_restaurant_type", joinColumns = @JoinColumn(name = "restaurant_id"), inverseJoinColumns = @JoinColumn(name = "restaurant_type_id"))
 	private List<RestaurantCategory> restaurantTypes;
+	private Boolean deleted = false;
+	
+
+	public void setDeleted(Boolean deleted) {
+		this.deleted = deleted;
+	}
 
 	public List<RestaurantCategory> getRestaurantTypes() {
 		return restaurantTypes;
@@ -203,5 +209,8 @@ public class Restaurant {
 	public void setNoShowTimeLimit(Integer noShowTimeLimit) {
 		this.noShowTimeLimit = noShowTimeLimit;
 	}
+
+    public boolean getDeleted() {
+		return this.deleted;   }
 
 }

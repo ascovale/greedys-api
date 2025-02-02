@@ -161,15 +161,11 @@ public class RestaurantService {
 		restaurantCategoryDAO.save(restaurantCategory);
 	}
 
-    public void disableRestaurant(Long idRestaurant) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'disableRestaurant'");
-    }
-
-    public void deleteRestaurant(Long idRestaurant) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'deleteRestaurant'");
-    }
+	@Transactional
+	public void deleteRestaurant(Long idRestaurant) {
+		Restaurant restaurant = rDAO.findById(idRestaurant).orElseThrow(() -> new IllegalArgumentException("Invalid restaurant ID"));
+		rDAO.delete(restaurant);
+	}
 
     public void createRestaurant(RestaurantDTO restaurantDto) {
         // TODO Auto-generated method stub
@@ -194,6 +190,11 @@ public class RestaurantService {
     public void deleteRestaurantCategory(Long idCategory) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'deleteRestaurantCategory'");
+    }
+
+    public void markRestaurantAsDeleted(Long idRestaurant) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'markRestaurantAsDeleted'");
     }
 
 }

@@ -74,7 +74,7 @@ public class AdminReservationController {
 			@ApiResponse(responseCode = "404", description = "Reservation not found", content = @Content),
 			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
 	})
-	@PutMapping("/reservation/{reservationId}/accept")
+	@PutMapping("/{reservationId}/accept")
 	@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<?> acceptReservation(@PathVariable Long reservationId, @RequestParam Boolean accepted) {
 		reservationService.adminMarkReservationAccepted(reservationId, accepted);
@@ -90,12 +90,13 @@ public class AdminReservationController {
 	 * @return ResponseEntity indicating the result of the operation
 	 */
 	@Operation(summary = "Reject a reservation", description = "Endpoint to reject a reservation by its ID")
-	@PutMapping("/reservation/{reservationId}/reject")
+	@PreAuthorize("hasRole('ADMIN')")
+	@PutMapping("/{reservationId}/reject")
 	public ResponseEntity<?> rejectReservation(@PathVariable Long reservationId, @RequestParam Boolean rejected) {
 		reservationService.adminMarkReservationRejected(reservationId, rejected);
 		return ResponseEntity.ok().build();
 	}
-	//TODO: La notifica va messa anche ai ristoratori
+
 	/**
 	 * Marks a reservation as no show by its ID.
 	 *
@@ -111,8 +112,8 @@ public class AdminReservationController {
 			@ApiResponse(responseCode = "404", description = "Reservation not found", content = @Content),
 			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
 	})
-	@PutMapping("/reservation/{reservationId}/no-show")
-	@PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant) or hasRole('ADMIN')")
+	@PutMapping("/{reservationId}/no-show")
+	@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<?> markReservationNoShow(@PathVariable Long reservationId, @RequestParam Boolean noShow) {
 		reservationService.adminMarkReservationNoShow(reservationId, noShow);
 		return ResponseEntity.ok().build();
@@ -134,11 +135,29 @@ public class AdminReservationController {
 			@ApiResponse(responseCode = "404", description = "Reservation not found", content = @Content),
 			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
 	})
-	@PutMapping("/reservation/{reservationId}/seated")
+	@PutMapping("/{reservationId}/seated")
 	@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<?> markReservationSeated(@PathVariable Long reservationId, @RequestParam Boolean seated) {
 		reservationService.adminMarkReservationSeated(reservationId, seated);
 		return ResponseEntity.ok().build();
 	}
-
+	/**
+	 * Delets a reservation by its ID.
+	 *
+	 * @param reservationId the ID of the reservation
+	 * @return ResponseEntity indicating the result of the operation
+	 */
+	@Operation(summary = "Delete a reservation", description = "Endpoint to delete a reservation by its ID")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Reservation deleted successfully"),
+			@ApiResponse(responseCode = "400", description = "Invalid reservation ID", content = @Content),
+			@ApiResponse(responseCode = "404", description = "Reservation not found", content = @Content),
+			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
+	})
+	@PutMapping("/{reservationId}/delete")
+	@PreAuthorize("hasRole('ADMIN')")
+	public ResponseEntity<?> deleteReservation(@PathVariable Long reservationId) {
+		reservationService.adminDeleteReservation(reservationId);
+		return ResponseEntity.ok().build();
+	}
 }

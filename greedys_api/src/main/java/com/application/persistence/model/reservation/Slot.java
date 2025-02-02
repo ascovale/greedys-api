@@ -45,7 +45,16 @@ public class Slot {
 	@ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "service_id")
 	Service service;
+	private Boolean deleted = false;
 	
+	public Boolean getDeleted() {
+		return deleted;
+	}
+
+	public void setDeleted(Boolean deleted) {
+		this.deleted = deleted;
+	}
+
 	public Slot() {
 	}
 
@@ -97,4 +106,9 @@ public class Slot {
 	public void setWeekday(Weekday weekday) {
 		this.weekday = weekday;
 	}
+
+    public void setDeleted(boolean b) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'setDeleted'");
+    }
 }

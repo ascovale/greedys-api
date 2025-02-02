@@ -4,6 +4,7 @@ import java.util.Collection;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestMapping;
 import com.application.service.SlotService;
 import com.application.persistence.model.reservation.Slot;
@@ -34,19 +35,6 @@ public class SlotController {
     
     @Autowired
     private SlotService slotService;
-
-    @Operation(summary = "Create a new slot", description = "This method creates a new slot.",
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "Slot created",
-                                    content = @Content(mediaType = "application/json", 
-                                    schema = @Schema(implementation = NewSlotDTO.class))),
-                    
-            })
-    @PostMapping
-    public ResponseEntity<String> newSlot(@RequestBody NewSlotDTO slotDto) {
-        slotService.addSlot(slotDto);
-        return ResponseEntity.ok().body("success");
-    }
 
     @Operation(summary = "Get all slots")
     @GetMapping
