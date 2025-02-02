@@ -99,9 +99,12 @@ public class AdminUserController {
     // TODO creare altre classi controller per la gestione
     // Aggiungere ad un ristorante le opzioni ricevi email e ricevi notifiche
     // Aggiungere dei ruoli ad esempio OWNER, MANAGER, WAITER, CHEF
+    //aggiungere note e allergie ad una prenotazione
+    //aggiungere icone per le allergie
     // Aggiungere la possibilità di bloccare un utente
     // Aggiungere la possibilità di bloccare un ristorante
     // Rivedere come aggiungere immagini
+    // PreAutorize perfezionare aggiungendo le query nel security service
     // Ritornare la lista di notifiche deve essere un pageable
     // Tutte quante devono ritornare un pageable quando si tratta di dati visibilii
     // Creare le notifiche per l'admin quando viene aggiunto un ristorante cosi che

@@ -1,4 +1,4 @@
-package com.application.controller.restaurant;
+package com.application.controller.pub;
 
 import java.util.Collection;
 

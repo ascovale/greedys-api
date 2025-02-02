@@ -18,6 +18,7 @@ import com.application.persistence.dao.restaurant.RestaurantUserDAO;
 import com.application.persistence.model.Image;
 import com.application.persistence.model.restaurant.Restaurant;
 import com.application.persistence.model.restaurant.RestaurantCategory;
+import com.application.persistence.model.restaurant.RestaurantUser;
 import com.application.web.dto.RestaurantCategoryDTO;
 import com.application.web.dto.RestaurantFullDetailsDto;
 import com.application.web.dto.RestaurantImageDto;
@@ -124,6 +125,10 @@ public class RestaurantService {
 		return ruDAO.findByRestaurantId(id).stream()
 			.map(r -> new RestaurantUserDTO(r))
 			.collect(Collectors.toList());
+	}
+
+	public Collection<RestaurantUser> findRestaurantUsers(Long id) {
+		return ruDAO.findByRestaurantId(id);
 	}
 
 	public Collection<SlotDTO> getDaySlots(Long id, LocalDate date) {

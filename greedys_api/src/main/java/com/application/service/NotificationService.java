@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.application.persistence.dao.user.NotificationDAO;
-import com.application.persistence.dao.user.ReservationDAO;
 import com.application.persistence.dao.user.UserDAO;
 import com.application.persistence.model.reservation.Reservation;
 import com.application.persistence.model.user.Notification;
@@ -21,7 +20,6 @@ public class NotificationService {
     private final NotificationDAO notificationDAO;
     private final UserDAO userDAO;
     private final FirebaseService firebaseService;
-
 
     public NotificationService(NotificationDAO notificationDAO, UserDAO userDAO, FirebaseService firebaseService) {
         this.notificationDAO = notificationDAO;

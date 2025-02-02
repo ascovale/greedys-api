@@ -69,21 +69,30 @@ public class AdminRestaurantController {
     @Operation(summary = "Enable restaurant", description = "Enables a restaurant by its primary email")
     @ApiResponse(responseCode = "200", description = "Restaurant enabled successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
-    @PutMapping("/restaurant/{idRestaurant}/enableRestaurant")
+    @PutMapping("/{idRestaurant}/enableRestaurant")
     public GenericResponse enableRestaurant(@PathVariable Long idRestaurant) {
         restaurantService.enableRestaurant(idRestaurant);
         return new GenericResponse("Restaurant enabled successfully");
     }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Delete restaurant", description = "Deletes a restaurant by its ID")
-    @ApiResponse(responseCode = "200", description = "Restaurant deleted successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
-    @ApiResponse(responseCode = "400", description = "Invalid request")
-    @PutMapping("/restaurant/{idRestaurant}/deleteRestaurant")
-    public GenericResponse deleteRestaurant(@PathVariable Long idRestaurant) {
-        restaurantService.deleteRestaurant(idRestaurant);
-        return new GenericResponse("Restaurant deleted successfully");
-    }
+    /*
+     * @PreAuthorize("hasRole('ADMIN')")
+     * 
+     * @Operation(summary = "Delete restaurant", description =
+     * "Deletes a restaurant by its ID")
+     * 
+     * @ApiResponse(responseCode = "200", description =
+     * "Restaurant deleted successfully", content = @Content(mediaType =
+     * "application/json", schema = @Schema(implementation =
+     * GenericResponse.class)))
+     * 
+     * @ApiResponse(responseCode = "400", description = "Invalid request")
+     * 
+     * @PutMapping("/{idRestaurant}/deleteRestaurant")
+     * public GenericResponse deleteRestaurant(@PathVariable Long idRestaurant) {
+     * restaurantService.deleteRestaurant(idRestaurant);
+     * return new GenericResponse("Restaurant deleted successfully");
+     * }
+     */
 
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Create restaurant", description = "Creates a new restaurant")
@@ -99,7 +108,7 @@ public class AdminRestaurantController {
     @Operation(summary = "Change restaurant email", description = "Changes the email of a restaurant by its ID")
     @ApiResponse(responseCode = "200", description = "Restaurant email changed successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
-    @PutMapping("/restaurant/{idRestaurant}/changeEmail")
+    @PutMapping("/{idRestaurant}/changeEmail")
     public GenericResponse changeRestaurantEmail(@PathVariable Long idRestaurant, @RequestBody String newEmail) {
         restaurantService.changeRestaurantEmail(idRestaurant, newEmail);
         return new GenericResponse("Restaurant email changed successfully");
@@ -109,7 +118,7 @@ public class AdminRestaurantController {
     @Operation(summary = "Mark restaurant as deleted", description = "Marks a restaurant as deleted similar to disable by its ID")
     @ApiResponse(responseCode = "200", description = "Restaurant marked as deleted successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
-    @PutMapping("/restaurant/{idRestaurant}/markAsDeleted")
+    @PutMapping("/{idRestaurant}/markAsDeleted")
     public GenericResponse markRestaurantAsDeleted(@PathVariable Long idRestaurant) {
         restaurantService.markRestaurantAsDeleted(idRestaurant);
         return new GenericResponse("Restaurant marked as deleted successfully");

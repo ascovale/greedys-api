@@ -1,4 +1,4 @@
-package com.application.controller.pub;
+package com.application.controller.restaurant;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -34,7 +34,7 @@ public class RestaurantSlotController {
             @ApiResponse(responseCode = "200", description = "Slot created", content = @Content(mediaType = "application/json", schema = @Schema(implementation = NewSlotDTO.class))),
 
     })
-    @PostMapping("/newSlot/{idRestaurant}")
+    @PostMapping("/{idRestaurant}/newSlot")
     public ResponseEntity<String> newSlot(@PathVariable Long idRestaurant, @RequestBody RestaurantNewSlotDTO slotDto) {
         slotService.addSlot(idRestaurant,slotDto);
         return ResponseEntity.ok().body("success");
