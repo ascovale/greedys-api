@@ -55,9 +55,6 @@ public class RestaurantService {
 	private RestaurantRoleDAO restaurantRoleDAO;
 
 	@Autowired
-	private RestaurantService restaurantService;
-
-	@Autowired
 	private RestaurantUserService restaurantUserService;
 
 	public Restaurant getReference(Long id) {
@@ -106,7 +103,7 @@ public class RestaurantService {
 		RestaurantUser owner = restaurantUserService.registerRestaurantUser(restaurantUserDTO);
 		RestaurantRole rRole = new RestaurantRole();
 		rRole.setName("ROLE_OWNER");
-		rRole.setRestaurant(restaurantService.getReference(r.getId()));
+		rRole.setRestaurant(getReference(r.getId()));
 		rRole.setUsers(Collections.singletonList(owner));
 		restaurantRoleDAO.save(rRole);
 		restaurantUserService.acceptUser(owner.getId());
