@@ -9,7 +9,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.application.persistence.dao.restaurant.RestaurantDAO;
 import com.application.persistence.dao.restaurant.RestaurantUserDAO;
+import com.application.persistence.model.restaurant.Restaurant;
 import com.application.persistence.model.restaurant.RestaurantRole;
 import com.application.persistence.model.restaurant.RestaurantUser;
 import com.application.persistence.model.user.User;
@@ -24,9 +26,8 @@ public class RestaurantUserService {
     private EmailService emailService;
     @Autowired
     private RestaurantUserDAO ruDAO;
-
     @Autowired
-    private RestaurantService restaurantService;
+    private RestaurantDAO restaurantDAO;
 
     @Autowired
     private UserService userService;
@@ -38,7 +39,10 @@ public class RestaurantUserService {
         System.out.println("Registering restaurant user with information:" + restaurantUserDTO.getRestaurantId() + " "
                 + restaurantUserDTO.getUserId());
         RestaurantUser ru = new RestaurantUser();
-        ru.setRestaurant(restaurantService.findById(restaurantUserDTO.getRestaurantId()));
+        Restaurant restaurant = restaurantDAO.findById(restaurantUserDTO.getRestaurantId())
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Invalid restaurant ID: " + restaurantUserDTO.getRestaurantId()));
+        ru.setRestaurant(restaurant);
         ru.setUser(userService.getReference(restaurantUserDTO.getUserId()));
         ruDAO.save(ru);
         emailService.sendRestaurantAssociationConfirmationEmail(ru);
@@ -85,5 +89,16 @@ public class RestaurantUserService {
         oldOwner.setRole(new RestaurantRole("ROLE_USER"));
         newOwner.setRole(new RestaurantRole("ROLE_OWNER"));
 
+    }
+
+    public RestaurantUser registerRestaurantUser(NewRestaurantUserDTO restaurantUserDTO, Restaurant restaurant) {
+        System.out.println("Registering restaurant user with information:" + restaurantUserDTO.getRestaurantId() + " "
+                + restaurantUserDTO.getUserId());
+        RestaurantUser ru = new RestaurantUser();
+        ru.setRestaurant(restaurant);
+        ru.setUser(userService.getReference(restaurantUserDTO.getUserId()));
+        ruDAO.save(ru);
+        emailService.sendRestaurantAssociationConfirmationEmail(ru);
+        return ru;
     }
 }

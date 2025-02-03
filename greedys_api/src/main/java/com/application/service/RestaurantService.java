@@ -56,7 +56,6 @@ public class RestaurantService {
 	private RestaurantRoleDAO restaurantRoleDAO;
 
 	@Autowired
-	@Lazy
 	private RestaurantUserService restaurantUserService;
 
 	public Restaurant getReference(Long id) {
@@ -102,7 +101,7 @@ public class RestaurantService {
 		NewRestaurantUserDTO restaurantUserDTO = new NewRestaurantUserDTO();
 		restaurantUserDTO.setRestaurantId(r.getId());
 		restaurantUserDTO.setUserId(restaurantDto.getOwnerId());
-		RestaurantUser owner = restaurantUserService.registerRestaurantUser(restaurantUserDTO);
+		RestaurantUser owner = restaurantUserService.registerRestaurantUser(restaurantUserDTO,restaurant);
 		RestaurantRole rRole = new RestaurantRole();
 		rRole.setName("ROLE_OWNER");
 		rRole.setRestaurant(getReference(r.getId()));
