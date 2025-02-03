@@ -51,5 +51,15 @@ public class AdminUserRestaurantController {
         return new GenericResponse("Restaurant user removed successfully");
     }*/
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Change restaurant owner", description = "Changes the owner of a restaurant")
+    @ApiResponse(responseCode = "200", description = "Restaurant owner changed successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
+    @ApiResponse(responseCode = "400", description = "Invalid request")
+    @PutMapping("/restaurant/{idRestaurant}/changeOwner/{idOldOwner}/{idNewOwner}")
+    public GenericResponse changeRestaurantOwner(@PathVariable Long idRestaurant, @PathVariable Long idOldOwner, @PathVariable Long idNewOwner) {
+        restaurantUserService.changeRestaurantOwner(idRestaurant, idOldOwner, idNewOwner);
+        return new GenericResponse("Restaurant owner changed successfully");
+    }
+
     
 }

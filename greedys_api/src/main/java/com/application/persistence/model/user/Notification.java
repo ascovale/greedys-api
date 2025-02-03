@@ -17,13 +17,10 @@ import com.application.persistence.model.reservation.Reservation;
 @Entity
 @Table(name = "notification")
 public class Notification {
-	// ENUM('CREATION', 'CONFIRM', 'MODIFICATION', 'DELETED', 'REQUEST',
-	// 'NEW_REVIEW', 'NEW_COMMENT', 'REVIEW_MODIFY', 'NOT_SEATED', 'SEATED')
 	public enum Type {
 		NEW_RESERVATION, REQUEST_RESERVATION, NO_SHOW, SEATED, UNSEATED, CANCEL, CONFIRMED, ALTERED, ACCEPTED, REJECTED
 	};
 
-	// ?? ERRORE STA QUI
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;

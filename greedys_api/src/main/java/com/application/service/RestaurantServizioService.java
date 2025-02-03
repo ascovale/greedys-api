@@ -19,6 +19,4 @@ public class RestaurantServizioService{
 	public List<com.application.persistence.model.reservation.Service> getServices(Long idRestaurant, LocalDate date) {
 		return restaurantServiceDAO.getServices(idRestaurant);//, date);
 	}
-
-
 }

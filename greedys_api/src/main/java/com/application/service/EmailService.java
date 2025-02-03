@@ -82,4 +82,33 @@ public class EmailService {
         }
     }
 
+    //TODO il link per rimuovere ristorante è sbagliato da sistemare
+    // Creare link per rimuovere ristorante lato flutterApp
+    private SimpleMailMessage constructRestaurantAssociationConfirmationMessage(RestaurantUser restaurantUser) {
+        final String recipientAddress = restaurantUser.getUser().getEmail();
+        final String subject = "Conferma associazione con ristorante";
+        final String message = "Ciao " + restaurantUser.getUser().getName() + ",\n\n" +
+                "Sei stato associato al ristorante " + restaurantUser.getRestaurant().getName() + ".\n" +
+                "Se non desideri essere associato a questo ristorante, clicca sul seguente link per rimuovere l'associazione:\n" +
+                "http://example.com/removeAssociation?userId=" + restaurantUser.getUser().getId() + "&restaurantId=" + restaurantUser.getRestaurant().getId() + "\n\n" +
+                "Grazie,\nIl team di supporto";
+        final SimpleMailMessage email = new SimpleMailMessage();
+        email.setTo(recipientAddress);
+        email.setSubject(subject);
+        email.setText(message);
+        email.setFrom(env.getProperty("support.email"));
+        return email;
+    }
+
+    @Async
+    public void sendRestaurantAssociationConfirmationEmail(RestaurantUser restaurantUser) {
+        try {
+            final SimpleMailMessage email = constructRestaurantAssociationConfirmationMessage(restaurantUser);
+            mailSender.send(email);
+        } catch (Exception e) {
+            // Log the exception and handle it accordingly
+            System.err.println("Failed to send restaurant association confirmation email: " + e.getMessage());
+        }
+    }
+
 }
