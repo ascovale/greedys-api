@@ -1,9 +1,5 @@
 package com.application.service;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.env.Environment;
@@ -16,19 +12,13 @@ import com.application.persistence.model.restaurant.RestaurantNotification;
 import com.application.persistence.model.restaurant.RestaurantUser;
 import com.application.persistence.model.user.Notification;
 import com.application.service.utils.NotificatioUtils;
-import com.application.web.dto.get.RestaurantUserDTO;
 
-//TODO: non dovrebbe essere proprio una service però è utile per dividere gli scopi
-//TODO tutte le volte che si 
 @Service
 public class EmailService {
 
     @Autowired
     @Qualifier("getUserMailSender")
     private JavaMailSender mailSender;
-
-    @Autowired
-    private RestaurantService restaurantService;
 
     @Autowired
     private Environment env;
@@ -49,7 +39,7 @@ public class EmailService {
     }
 
     @Async
-    public void sendNotification(Notification notification) {
+    public void sendEmailNotification(Notification notification) {
         try {
             final SimpleMailMessage email = constructNotificationMessage(notification);
             mailSender.send(email);
@@ -77,10 +67,15 @@ public class EmailService {
     }
 
     @Async
-    public void sendRestaurantNotification(RestaurantNotification notification) {
+    public void sendEmailNotification(RestaurantNotification notification) {
         try {
-            final SimpleMailMessage email = constructRestaurantNotificationMessage(notification);
-            mailSender.send(email);
+            RestaurantUser user = notification.getRestaurantUser();
+            if (user.getUserOptions().getNotificationPreferences().get(notification.getType())) {
+                final SimpleMailMessage email = constructRestaurantNotificationMessage(notification);
+                mailSender.send(email);
+            } else {
+                System.out.println("User " + user.getUser().getEmail() + " has disabled notifications for " + notification.getType());
+            }
         } catch (Exception e) {
             // Log the exception and handle it accordingly
             System.err.println("Failed to send restaurant email: " + e.getMessage());

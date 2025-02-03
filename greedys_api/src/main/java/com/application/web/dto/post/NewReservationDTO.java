@@ -6,8 +6,6 @@ import java.time.LocalDate;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import com.application.persistence.model.reservation.ClientInfo;
-import com.application.persistence.model.reservation.Reservation;
-import com.application.persistence.model.reservation.Slot;
 
 public class NewReservationDTO {
 	

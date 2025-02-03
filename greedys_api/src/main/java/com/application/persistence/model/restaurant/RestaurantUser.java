@@ -25,6 +25,8 @@ public class RestaurantUser {
     private User user;
     @OneToOne
     private RestaurantRole role;
+    @OneToOne
+    private RestaurantUserOptions options;
 
     private Boolean accepted = false;
     private Boolean rejected = false;
@@ -89,6 +91,10 @@ public class RestaurantUser {
 
     public Long getId() {
         return id;
+    }
+
+    public RestaurantUserOptions getUserOptions() {
+        return options;
     }
     
 }

@@ -48,7 +48,6 @@ public class ImageController {
 
 	@GetMapping("/listImages")
 	public String listUploadedFiles(Model model, Principal principal) throws Exception {
-
 		if (principal == null) {
 			return "redirect:/find";
 		}

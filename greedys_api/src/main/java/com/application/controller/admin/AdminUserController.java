@@ -92,27 +92,4 @@ public class AdminUserController {
         return new GenericResponse("Permissions removed successfully");
     }*/
 
-
-
-    
-
-    // TODO creare altre classi controller per la gestione
-    // Aggiungere ad un ristorante le opzioni ricevi email e ricevi notifiche
-    // Aggiungere dei ruoli ad esempio OWNER, MANAGER, WAITER, CHEF
-    //aggiungere note e allergie ad una prenotazione
-    //aggiungere icone per le allergie
-    // Aggiungere la possibilità di bloccare un utente
-    // Aggiungere la possibilità di bloccare un ristorante
-    // Rivedere come aggiungere immagini
-    // PreAutorize perfezionare aggiungendo le query nel security service
-    // Ritornare la lista di notifiche deve essere un pageable
-    // Tutte quante devono ritornare un pageable quando si tratta di dati visibilii
-    // Creare le notifiche per l'admin quando viene aggiunto un ristorante cosi che
-    // abilita un ristorante dopo che ha verificato i vari dati forniti
-    // disabilita un utente di un ristorante
-    // cambia password all'OWNER 
-    // rimuovi recensioni successivamente
-    // Creare la recensione interna ed esterna
-    // voto del recensore
-    // sia del ristorante sia del pubblico che ne da credibilità
 }

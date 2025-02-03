@@ -2,16 +2,15 @@ package com.application.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.ui.Model;
 
 import com.application.persistence.model.reservation.Reservation;
+import com.application.persistence.model.reservation.Service;
 import com.application.persistence.model.restaurant.Restaurant;
 import com.application.persistence.model.restaurant.RestaurantUser;
 import com.application.persistence.model.user.User;
-import com.application.persistence.model.reservation.Service;
 
 @org.springframework.stereotype.Service
 public class SecurityService {
@@ -129,6 +128,22 @@ public class SecurityService {
             throw new IllegalStateException("Illegal principal type");
     }
 
+    @Transactional
+    public boolean isRestaurantUser(Long idRestaurantUser) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof User) {
+            User user = ((User) principal);
+            RestaurantUser restaurantUser = user.getRestaurantUser();
+            if (restaurantUser != null && restaurantUser.getId().equals(idRestaurantUser)) {
+                return true;
+            }
+        } else {
+            throw new IllegalStateException("Illegal principal type");
+        }
+        return false;
+    }
+    
     @Transactional
     public boolean hasUserRestaurantServicePermission(Long idService) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

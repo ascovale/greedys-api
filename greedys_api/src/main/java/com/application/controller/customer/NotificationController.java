@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.service.FirebaseService;
+import com.application.service.NotificationService;
 import com.application.service.UserFcmTokenService;
 import com.application.web.dto.post.UserFcmTokenDTO;
 
@@ -22,6 +24,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 @RestController
 @RequestMapping("/user/notification")
 @SecurityRequirement(name = "bearerAuth")
@@ -30,40 +35,57 @@ public class NotificationController {
 
     private final UserFcmTokenService userFcmTokenService;
     private final FirebaseService firebaseService;
-    public NotificationController(UserFcmTokenService userFcmTokenService, FirebaseService firebaseService) {
+    private final NotificationService notificationService;
+
+    public NotificationController(UserFcmTokenService userFcmTokenService, FirebaseService firebaseService, NotificationService notificationService) {
         this.userFcmTokenService = userFcmTokenService;
         this.firebaseService = firebaseService;
+        this.notificationService = notificationService;
     }
-    
+
+    /*
     @Operation(summary = "Get notifications for index page", description = "Returns notifications for the index page")
     @GetMapping("/index")
     public ResponseEntity<String> getNotifications() {
         return ResponseEntity.ok().body("Index page");
     }
-
+    
     @Operation(summary = "Get notifications for homepage", description = "Returns notifications for the homepage")
     @GetMapping("/homepage")
     public ResponseEntity<String> getHomepageNotifications() {
         return ResponseEntity.ok().body("Homepage");
     }
-
+    
     @Operation(summary = "Get notification list", description = "Returns the list of notifications")
     @GetMapping("/list")
     public ResponseEntity<String> getNotificationList() {
         return ResponseEntity.ok().body("Notification list page");
+    }*/
+    
+    @Operation(summary = "Get unread notifications", description = "Returns a pageable list of unread notifications")
+    @GetMapping("/unread")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<Page<String>> getUnreadNotifications(Pageable pageable) {
+        Page<String> unreadNotifications = notificationService.getUnreadNotifications(pageable);
+        return ResponseEntity.ok().body(unreadNotifications);
     }
 
-    @Operation(summary = "Get notifications for notification4 page", description = "Returns notifications for the notification4 page")
-    @GetMapping("/page4")
-    public ResponseEntity<String> getNotifications4() {
-        return ResponseEntity.ok().body("Notification 4 page");
+    @PreAuthorize("hasRole('USER')")
+    @Operation(summary = "Get all notifications", description = "Returns a pageable list of all notifications")
+    @GetMapping("/all")
+    public ResponseEntity<Page<String>> getAllNotifications(Pageable pageable) {
+        Page<String> allNotifications = notificationService.getAllNotifications(pageable);
+        return ResponseEntity.ok().body(allNotifications);
     }
 
-    @Operation(summary = "Get notifications for notification2 page", description = "Returns notifications for the notification2 page")
-    @GetMapping("/page2")
-    public ResponseEntity<String> getNotifications2() {
-        return ResponseEntity.ok().body("Notification 2 page");
+    @PreAuthorize("hasRole('USER')")
+    @Operation(summary = "Set notification as read", description = "Sets the notification with the given ID as the given read boolean")
+    @PutMapping("/read")
+    public ResponseEntity<Void> setNotificationAsRead(@RequestParam Long notificationId,@RequestParam Boolean read) {
+        notificationService.setNotificationAsRead(notificationId, read);
+        return ResponseEntity.ok().build();
     }
+
 
     @Operation(summary = "Register a user's FCM token", description = "Registers a user's FCM token")
     @PostMapping("/token")

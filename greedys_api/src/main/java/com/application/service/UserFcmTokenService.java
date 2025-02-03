@@ -1,7 +1,7 @@
 package com.application.service;
 
-import java.util.List;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 
@@ -9,10 +9,10 @@ import com.application.persistence.dao.user.UserFcmTokenDAO;
 import com.application.persistence.model.user.User;
 import com.application.persistence.model.user.UserFcmToken;
 import com.application.web.dto.post.UserFcmTokenDTO;
-
-import jakarta.persistence.EntityManager;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
+
+import jakarta.persistence.EntityManager;
 
 @Service
 public class UserFcmTokenService {
@@ -75,4 +75,6 @@ public class UserFcmTokenService {
             return null;
         }
     }
+
+    
 }

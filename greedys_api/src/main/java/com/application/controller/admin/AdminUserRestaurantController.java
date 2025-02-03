@@ -29,6 +29,7 @@ public class AdminUserRestaurantController {
         this.restaurantUserService = restaurantUserService;
     }
 
+    // TODO BLOCK UNBLOCK Potrebbero essere uguali a deleted e undeleted
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Block restaurant user", description = "Blocks a restaurant user by their ID")
     @ApiResponse(responseCode = "200", description = "Restaurant user blocked successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
@@ -38,6 +39,7 @@ public class AdminUserRestaurantController {
         restaurantUserService.blockRestaurantUser(idRestaurantUser);
         return new GenericResponse("Restaurant user blocked successfully");
     }
+
     /* 
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Remove restaurant user", description = "Removes a restaurant user by their ID")
@@ -49,13 +51,5 @@ public class AdminUserRestaurantController {
         return new GenericResponse("Restaurant user removed successfully");
     }*/
 
-    // TODO creare altre classi controller per la gestione
-    // Creare le notifiche per l'admin quando viene aggiunto un ristorante cosi che
-    // abilita un ristorante dopo che ha verificato i vari dati forniti
-    // disabilita un utente di un ristorante
-    // cambia password ad un ristorante
-    // rimuovi recensioni successivamente
-    // Creare la recensione interna ed esterna
-    // voto del recensore
-    // sia del ristorante sia del pubblico che ne da credibilità
+    
 }

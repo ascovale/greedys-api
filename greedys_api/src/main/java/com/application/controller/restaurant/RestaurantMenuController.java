@@ -27,6 +27,8 @@ import java.util.Collection;
 
 @RestController
 public class RestaurantMenuController {
+    //TODO scrivere bene percorsi
+    //aggiungere PreAuthorize su tutti i metodi
 
     private final RestaurantMenuService restaurantMenuService;
 

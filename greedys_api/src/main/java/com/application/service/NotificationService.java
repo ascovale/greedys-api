@@ -3,6 +3,8 @@ package com.application.service;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -80,4 +82,23 @@ public class NotificationService {
         }
     }
 
+    @Transactional
+    public void setNotificationAsRead(Long notificationId, Boolean read) {
+        Optional<Notification> notificationOpt = notificationDAO.findById(notificationId);
+        if (notificationOpt.isPresent()) {
+            Notification notification = notificationOpt.get();
+            notification.setUnopened(!read);
+            notificationDAO.save(notification);
+        }
+    }
+
+    @Transactional
+    public Page<String> getUnreadNotifications(Pageable pageable) {
+        return notificationDAO.findUnreadNotifications(pageable);
+    }
+
+    public Page<String> getAllNotifications(Pageable pageable) {
+    
+    return notificationDAO.findAllNotifications(pageable);
+    }
 }

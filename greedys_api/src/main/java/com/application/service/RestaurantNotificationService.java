@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.application.persistence.dao.restaurant.RestaurantNotificationDAO;
@@ -18,11 +20,13 @@ import jakarta.transaction.Transactional;
 public class RestaurantNotificationService {
 	private final RestaurantNotificationDAO restaurantNotificationDAO;
 	private final FirebaseService firebaseService;
+	private final EmailService emailService;
 
 	public RestaurantNotificationService(RestaurantNotificationDAO restaurantNotificationDAO,
-			FirebaseService firebaseService) {
+			FirebaseService firebaseService,EmailService emailService) {
 		this.restaurantNotificationDAO = restaurantNotificationDAO;
 		this.firebaseService = firebaseService;
+		this.emailService = emailService;
 	}
 
 	@Transactional
@@ -35,6 +39,7 @@ public class RestaurantNotificationService {
 			notification.setOpened(false);
 			restaurantNotificationDAO.save(notification);
 			firebaseService.sendFirebaseNotification(notification);
+			emailService.sendEmailNotification(notification);
 		}
 	}
 
@@ -62,6 +67,23 @@ public class RestaurantNotificationService {
 	public void deleteReservationNotification(Reservation reservation) {
 		Restaurant restaurant = reservation.getRestaurant();
 		createNotificationsForRestaurant(restaurant, RestaurantNotification.Type.REQUEST);
+	}
+
+	public Page<RestaurantNotification> getUnreadNotifications(Pageable pageable) {
+		return restaurantNotificationDAO.findByOpenedFalse(pageable);
+
+	}
+
+	public void setNotificationAsRead(Long notificationId, Boolean read) {
+		RestaurantNotification notification = restaurantNotificationDAO.findById(notificationId)
+				.orElseThrow(() -> new IllegalArgumentException("Notification not found"));
+		notification.setOpened(read);
+		restaurantNotificationDAO.save(notification);
+
+	}
+
+	public Page<RestaurantNotification> getAllNotifications(Pageable pageable) {
+		return restaurantNotificationDAO.findAll(pageable);
 	}
 
 }
