@@ -93,11 +93,11 @@ public class NotificationService {
     }
 
     @Transactional
-    public Page<String> getUnreadNotifications(Pageable pageable) {
+    public Page<Notification> getUnreadNotifications(Pageable pageable) {
         return notificationDAO.findUnreadNotifications(pageable);
     }
 
-    public Page<String> getAllNotifications(Pageable pageable) {
+    public Page<Notification> getAllNotifications(Pageable pageable) {
     
     return notificationDAO.findAllNotifications(pageable);
     }

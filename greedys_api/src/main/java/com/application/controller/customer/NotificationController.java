@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.application.persistence.model.user.Notification;
 import com.application.service.FirebaseService;
 import com.application.service.NotificationService;
 import com.application.service.UserFcmTokenService;
@@ -65,16 +66,16 @@ public class NotificationController {
     @Operation(summary = "Get unread notifications", description = "Returns a pageable list of unread notifications")
     @GetMapping("/unread")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Page<String>> getUnreadNotifications(Pageable pageable) {
-        Page<String> unreadNotifications = notificationService.getUnreadNotifications(pageable);
+    public ResponseEntity<Page<Notification>> getUnreadNotifications(Pageable pageable) {
+        Page<Notification> unreadNotifications = notificationService.getUnreadNotifications(pageable);
         return ResponseEntity.ok().body(unreadNotifications);
     }
 
     @PreAuthorize("hasRole('USER')")
     @Operation(summary = "Get all notifications", description = "Returns a pageable list of all notifications")
     @GetMapping("/all")
-    public ResponseEntity<Page<String>> getAllNotifications(Pageable pageable) {
-        Page<String> allNotifications = notificationService.getAllNotifications(pageable);
+    public ResponseEntity<Page<Notification>> getAllNotifications(Pageable pageable) {
+        Page<Notification> allNotifications = notificationService.getAllNotifications(pageable);
         return ResponseEntity.ok().body(allNotifications);
     }
 
