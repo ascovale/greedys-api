@@ -17,5 +17,5 @@ public interface NotificationDAO extends JpaRepository<Notification, Long>{
 
     Page<Notification> findByUserAndUnopenedTrue(User user, Pageable pageable);
 
-	public Page<Notification> findAllNotifications(Pageable pageable);
+    public Page<Notification> findAllByUser(User user, Pageable pageable);
 }

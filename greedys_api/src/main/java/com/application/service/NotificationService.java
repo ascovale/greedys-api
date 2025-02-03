@@ -98,7 +98,7 @@ public class NotificationService {
     }
 
     public Page<Notification> getAllNotifications(Pageable pageable) {
-    
-    return notificationDAO.findAllNotifications(pageable);
+    // VERIFICARE CHE UTENTE SIA ATTIVO
+        return notificationDAO.findAllByUser(getCurrentUser(), pageable);
     }
 }
