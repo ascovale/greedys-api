@@ -30,6 +30,18 @@ public class RestaurantNotification {
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "restaurantuser_id")
 	private RestaurantUser restaurantUser;
+	private Integer toReadNotification=0;
+	@Column(name = "n_type")
+	private Type type;
+	
+
+	public Integer getToReadNotification() {
+		return toReadNotification;
+	}
+
+	public void setToReadNotification(Integer toReadNotification) {
+		this.toReadNotification = toReadNotification;
+	}
 
 	public RestaurantUser getRestaurantUser() {
 		return restaurantUser;
@@ -38,10 +50,6 @@ public class RestaurantNotification {
 	public void setRestaurantUser(RestaurantUser restaurantUser) {
 		this.restaurantUser = restaurantUser;
 	}
-
-	@Column(name = "n_type")
-	private Type type;
-	
 
 	public RestaurantNotification() {
 		super();

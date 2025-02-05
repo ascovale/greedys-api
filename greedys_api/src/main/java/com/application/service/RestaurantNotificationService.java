@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.application.persistence.dao.restaurant.RestaurantNotificationDAO;
+import com.application.persistence.dao.restaurant.RestaurantUserDAO;
 import com.application.persistence.model.reservation.Reservation;
 import com.application.persistence.model.restaurant.Restaurant;
 import com.application.persistence.model.restaurant.RestaurantNotification;
@@ -18,12 +19,14 @@ import jakarta.transaction.Transactional;
 
 @Service
 public class RestaurantNotificationService {
+	private final RestaurantUserDAO restaurantUserDAO;
 	private final RestaurantNotificationDAO restaurantNotificationDAO;
 	private final FirebaseService firebaseService;
 	private final EmailService emailService;
 
-	public RestaurantNotificationService(RestaurantNotificationDAO restaurantNotificationDAO,
-			FirebaseService firebaseService,EmailService emailService) {
+	public RestaurantNotificationService(RestaurantUserDAO restaurantUserDAO, RestaurantNotificationDAO restaurantNotificationDAO,
+			FirebaseService firebaseService, EmailService emailService) {
+		this.restaurantUserDAO = restaurantUserDAO;
 		this.restaurantNotificationDAO = restaurantNotificationDAO;
 		this.firebaseService = firebaseService;
 		this.emailService = emailService;
@@ -86,4 +89,14 @@ public class RestaurantNotificationService {
 		return restaurantNotificationDAO.findAll(pageable);
 	}
 
+	public Integer countNotification(RestaurantUser restaurantUser) {
+        RestaurantUser user = restaurantUserDAO.findById(restaurantUser.getId()).get();    
+        return user.getToReadNotification();
+    }
+
+	@Transactional
+    public void readNotification(RestaurantUser user) {
+        user.setToReadNotification(0);
+        restaurantUserDAO.save(user);    
+    }
 }

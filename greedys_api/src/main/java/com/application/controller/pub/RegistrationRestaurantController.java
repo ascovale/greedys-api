@@ -3,7 +3,6 @@ package com.application.controller.pub;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,7 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.application.service.RestaurantService;
 import com.application.service.RestaurantUserService;
-import com.application.service.UserService;
 import com.application.web.dto.get.RestaurantDTO;
 import com.application.web.dto.post.NewRestaurantDTO;
 import com.application.web.dto.post.NewRestaurantUserDTO;
@@ -38,13 +36,7 @@ public class RegistrationRestaurantController {
     private RestaurantService restaurantService;
 
     @Autowired
-    private UserService userService;
-
-    @Autowired
     private RestaurantUserService restaurantUserService;
-
-    @Autowired
-    private ApplicationEventPublisher eventPublisher;
 
     // Restaurant Registration
 

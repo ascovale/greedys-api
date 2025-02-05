@@ -33,6 +33,16 @@ public class RestaurantUser {
     private Boolean blocked = false;
     private Boolean deleted = false;
 
+    private Integer toReadNotification = 0;
+
+    public Integer getToReadNotification() {
+        return toReadNotification;
+    }
+
+    public void setToReadNotification(Integer toReadNotification) {
+        this.toReadNotification = toReadNotification;
+    }
+
     public Boolean getDeleted() {
         return deleted;
     }

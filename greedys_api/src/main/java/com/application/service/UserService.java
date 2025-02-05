@@ -30,7 +30,6 @@ import com.application.persistence.model.user.PasswordResetToken;
 import com.application.persistence.model.user.User;
 import com.application.persistence.model.user.VerificationToken;
 import com.application.web.dto.AllergyDTO;
-import com.application.web.dto.RestaurantCategoryDTO;
 import com.application.web.dto.get.RestaurantDTO;
 import com.application.web.dto.get.UserDTO;
 import com.application.web.dto.post.NewUserDTO;

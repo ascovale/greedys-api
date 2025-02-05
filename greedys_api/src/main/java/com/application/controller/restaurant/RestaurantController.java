@@ -121,11 +121,9 @@ public class RestaurantController {
 				}
 				else if (end != null){
 					throw new IllegalArgumentException("end cannot be null if start is not null");
-
 				}
 				else {
 					reservations = reservationService.getPendingReservations(idRestaurant);
-
 				}
 				return reservations;
 	}
@@ -159,11 +157,6 @@ public class RestaurantController {
         restaurantUserService.acceptUser(idRestaurant);
         return new GenericResponse("success");
     }
-/* 
-	@RequestMapping(value = "/secured/agenda", method = RequestMethod.GET)
-	public String agenda() {
-		return "agenda";
-	} */
 
 	@GetMapping(value = "/{idRestaurant}/services")
 	@Operation(summary = "Get services of a restaurant", description = "Ottieni i servizi di un ristorante")

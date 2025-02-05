@@ -3,9 +3,6 @@ package com.application.service;
 import java.util.Collection;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,7 +11,6 @@ import com.application.persistence.dao.restaurant.RestaurantUserDAO;
 import com.application.persistence.model.restaurant.Restaurant;
 import com.application.persistence.model.restaurant.RestaurantRole;
 import com.application.persistence.model.restaurant.RestaurantUser;
-import com.application.persistence.model.user.User;
 import com.application.web.dto.get.RestaurantUserDTO;
 import com.application.web.dto.post.NewRestaurantUserDTO;
 
@@ -66,15 +62,6 @@ public class RestaurantUserService {
 
     public void removeRestaurantUser(Long idRestaurantUser) {
         ruDAO.deleteById(idRestaurantUser);
-    }
-
-    private User getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
-            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-            return userService.findUserByEmail(userDetails.getUsername());
-        }
-        return null;
     }
 
     public void changeRestaurantOwner(Long idRestaurant, Long idOldOwner, Long idNewOwner) {

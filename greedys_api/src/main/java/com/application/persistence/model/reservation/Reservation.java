@@ -2,7 +2,12 @@ package com.application.persistence.model.reservation;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
+
+import org.springframework.format.annotation.DateTimeFormat;
+
+import com.application.persistence.model.restaurant.Restaurant;
+import com.application.persistence.model.restaurant.RestaurantUser;
+import com.application.persistence.model.user.User;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -15,12 +20,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
-
-import org.springframework.format.annotation.DateTimeFormat;
-
-import com.application.persistence.model.restaurant.Restaurant;
-import com.application.persistence.model.restaurant.RestaurantUser;
-import com.application.persistence.model.user.User;
 
 @Entity
 @Table(name = "reservation")

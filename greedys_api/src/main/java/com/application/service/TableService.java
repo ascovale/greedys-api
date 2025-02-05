@@ -1,6 +1,8 @@
 package com.application.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.Collection;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 
 import com.application.persistence.dao.restaurant.TableDAO;
@@ -8,9 +10,6 @@ import com.application.persistence.model.restaurant.Room;
 import com.application.persistence.model.restaurant.Table;
 import com.application.web.dto.get.TableDTO;
 import com.application.web.dto.post.NewTableDTO;
-
-import java.util.Collection;
-import java.util.stream.Collectors;
 
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;

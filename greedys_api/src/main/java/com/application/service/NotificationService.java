@@ -32,9 +32,11 @@ public class NotificationService {
     public Notification createReservationNotification(Reservation reservation,Type type) {
         User user = getCurrentUser();
         Notification notification = new Notification();
-        notification.setClientUser(user); 
+        notification.setClientUser(user);
+        user.setToReadNotification(user.getToReadNotification() + 1);
         notification.setReservation(reservation);
         notification.setType(type);
+        userDAO.save(user);
         notificationDAO.save(notification);
         firebaseService.sendFirebaseNotification(notification);
         return notification;
@@ -58,12 +60,12 @@ public class NotificationService {
     
     @Transactional
     public void readNotification(User currentUser) {
-        User user = userDAO.findById(currentUser.getId()).get();
-        user.setToReadNotification((long) 0);
+        User user = getCurrentUser();
+        user.setToReadNotification(0);
         userDAO.save(user);    
     }
     
-    public long countNotification(User currentUser) {
+    public Integer countNotification(User currentUser) {
         User user = userDAO.findById(currentUser.getId()).get();    
         return user.getToReadNotification();
     }
@@ -98,7 +100,10 @@ public class NotificationService {
     }
 
     public Page<Notification> getAllNotifications(Pageable pageable) {
-    // VERIFICARE CHE UTENTE SIA ATTIVO
+    User currentUser = getCurrentUser();
+    if (!currentUser.isEnabled()) {
+        throw new IllegalStateException("User is not enabled");
+    }
         return notificationDAO.findAllByUser(getCurrentUser(), pageable);
     }
 }

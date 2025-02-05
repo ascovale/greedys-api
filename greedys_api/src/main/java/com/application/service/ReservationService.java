@@ -158,6 +158,7 @@ public class ReservationService {
         reservation.setSlot(entityManager.getReference(Slot.class, dTO.getIdSlot()));
         reservation.setRejected(false);
         reservation.setAccepted(false);
+        reservation.setRestaurant(restaurant);
         reservation.setNoShow(false);
         reservation.setCreationDate(LocalDate.now());
         restaurantNotificationService.createNotificationsForRestaurant(reservation.getRestaurant(),

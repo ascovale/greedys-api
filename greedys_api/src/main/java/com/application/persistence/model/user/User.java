@@ -50,7 +50,12 @@ public class User implements UserDetails {
 	private RestaurantUser restaurantUser;
 	private Boolean blooked = false;
 	private Boolean deleted = false;
+	private Integer toReadNotification = 0;
 	
+	public void setToReadNotification(Integer toReadNotification) {
+		this.toReadNotification = toReadNotification;
+	}
+
 	public Boolean getDeleted() {
 		return deleted;
 	}
@@ -191,18 +196,11 @@ public class User implements UserDetails {
 
 	@Override
 	public String getUsername() {
-		// TODO Auto-generated method stub
 		return email;
 	}
 
-	public long getToReadNotification() {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'getToReadNotification'");
-	}
-
-	public void setToReadNotification(long l) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'setToReadNotification'");
+	public Integer getToReadNotification() {
+		return toReadNotification;
 	}
 
 	@Override
