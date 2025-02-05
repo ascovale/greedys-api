@@ -3,7 +3,6 @@ package com.application.controller.restaurant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,8 +11,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.application.persistence.model.restaurant.Restaurant;
-import com.application.persistence.model.user.User;
 import com.application.service.ReservationService;
 import com.application.web.dto.post.restaurant.RestaurantNewReservationDTO;
 
@@ -142,6 +139,7 @@ public class ReservationRestaurantController {
 		reservationService.markReservationSeated(idRestaurant, reservationId, seated);
 		return ResponseEntity.ok().build();
 	}
+	
 	/**
 	 * Accepts a reservation modification request by its ID.
 	 *
@@ -161,18 +159,6 @@ public class ReservationRestaurantController {
 		reservationService.restaurantAcceptReservatioModifyRequest(reservationId);
 		return ResponseEntity.ok().build();
 	}
-	/**
-	 * Retrieves the current restaurant from the security context.
-	 *
-	 * @return the current restaurant
-	 */
-	private Restaurant getCurrentRestaurant() {
-		Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-		if (principal instanceof User) {
-			return ((User) principal).getRestaurantUser().getRestaurant();
-		} else {
-			System.out.println("Questo non dovrebbe succedere");
-			return null;
-		}
-	}
+
+
 }

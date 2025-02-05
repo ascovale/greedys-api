@@ -3,13 +3,18 @@ package com.application.persistence.dao.user;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.application.persistence.model.reservation.Reservation;
+import com.application.persistence.model.user.Notification;
+import com.application.persistence.model.user.User;
 import com.application.web.dto.get.ReservationDTO;
 
 
@@ -181,5 +186,20 @@ public interface ReservationDAO extends JpaRepository<Reservation, Long> {
 	Collection<Reservation> findByUserAndAccepted(Long userId);
 
 	Collection<Reservation> findBySlot_Id(Long slotId);
+
+	// TODO VERIFICARE CHE NON SIA CANCELLATA
+	@Query(value = """
+			SELECT r FROM Reservation r
+			WHERE r.restaurant.id = :restaurant_id
+				AND r.date BETWEEN :start AND :end
+				AND r.accepted = True
+			ORDER BY r.date, r.slot.start
+			""")
+	Page<Reservation> findByRestaurantAndDateBetweenAndAccepted(
+			@Param("restaurant_id") Long restaurantId, 
+			@Param("start") LocalDate start, 
+			@Param("end") LocalDate end, 
+			Pageable pageable);
+    
 
 }

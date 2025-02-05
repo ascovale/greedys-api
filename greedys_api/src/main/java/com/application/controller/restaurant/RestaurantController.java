@@ -4,6 +4,9 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -97,6 +100,29 @@ public class RestaurantController {
 		return reservations;
 	}
 
+
+	@Operation(summary = "Get all reservations of a restaurant with pagination", description = "Ottieni tutte le prenotazioni di un ristorante con paginazione")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Operazione riuscita", 
+					 content = @Content(mediaType = "application/json",
+									array = @ArraySchema(
+										schema = @Schema(implementation = ReservationDTO.class)))),
+		@ApiResponse(responseCode = "404", description = "Ristorante non trovato")
+	})
+	@PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant) or hasRole('ADMIN')")
+	@GetMapping(value = "{idRestaurant}/reservation/pageable")
+	public ResponseEntity<Page<ReservationDTO>> getReservationsPageable(
+				@PathVariable Long idRestaurant,
+				@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
+				@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end,
+				@RequestParam int page,
+				@RequestParam int size) {
+		Pageable pageable = PageRequest.of(page, size);
+		Page<ReservationDTO> reservations = reservationService.getReservationsPageable(idRestaurant, start, end, pageable);
+		return new ResponseEntity<>(reservations, HttpStatus.OK);
+	}
+
+	//TODO PAGEABLE
 	@Operation(summary = "Get all pending reservations of a restaurant", description = "Ottieni tutte le prenotazioni in attesa di un ristorante")
 	@ApiResponses(value = {
 		@ApiResponse(responseCode = "200", description = "Operazione riuscita", 
@@ -270,12 +296,4 @@ public class RestaurantController {
 		List<String> types = restaurantService.getRestaurantTypesNames(idRestaurant);
 		return new ResponseEntity<>(types, HttpStatus.OK);
 	}
-
-	//TODO Add type of restaurant
-	//TODO Add types of restaurant
-	//TODO Remove type of restaurant
-	//TODO Remove list of type of restaurant
-	//TODO AddMenu
-	//TODO Update Menu
-	//creare i relativi DTO
 }

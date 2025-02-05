@@ -40,6 +40,8 @@ public class RestaurantNotificationService {
 			notification.setRestaurantUser(restaurantUser);
 			notification.setType(type);
 			notification.setOpened(false);
+			restaurantUser.setToReadNotification(restaurantUser.getToReadNotification() + 1);
+			restaurantUserDAO.save(restaurantUser);
 			restaurantNotificationDAO.save(notification);
 			firebaseService.sendFirebaseNotification(notification);
 			emailService.sendEmailNotification(notification);
@@ -55,6 +57,8 @@ public class RestaurantNotificationService {
 			notification.setRestaurantUser(restaurantUser);
 			notification.setType(RestaurantNotification.Type.REQUEST);
 			notification.setOpened(false);
+			restaurantUser.setToReadNotification(restaurantUser.getToReadNotification() + 1);
+			restaurantUserDAO.save(restaurantUser);
 			restaurantNotificationDAO.save(notification);
 			notifications.add(notification);
 			firebaseService.sendFirebaseNotification(notification);
@@ -99,4 +103,20 @@ public class RestaurantNotificationService {
         user.setToReadNotification(0);
         restaurantUserDAO.save(user);    
     }
+
+    public RestaurantNotification getRestaurantNotification(Long notificationId) {
+	return restaurantNotificationDAO.findById(notificationId)
+		.orElseThrow(() -> new IllegalArgumentException("Notification not found"));
+	}
+
+    public void setAllNotificationsAsRead(Long idRestaurantUser) {
+        RestaurantUser user = restaurantUserDAO.findById(idRestaurantUser).get();
+		user.setToReadNotification(0);
+		restaurantUserDAO.save(user);
+	}
+
+    public Long getUnreadNotificationsCount(Long idRestaurantUser) {
+		RestaurantUser user = restaurantUserDAO.findById(idRestaurantUser).get();
+		return user.getToReadNotification().longValue();
+	}
 }
