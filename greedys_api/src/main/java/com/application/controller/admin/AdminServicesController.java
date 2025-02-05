@@ -30,7 +30,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Tag(name = "Admin Service", description = "Controller per la gestione dei servizi offerti dai ristoranti")
+@Tag(name = "Admin Services", description = "Controller per la gestione dei servizi offerti dai ristoranti")
 @RestController
 @RequestMapping("/admin/service")
 @SecurityRequirement(name = "bearerAuth")
@@ -49,7 +49,7 @@ public class AdminServicesController {
             @ApiResponse(responseCode = "400", description = "Invalid input data"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @PostMapping("/")
+    @PostMapping("/new_service")
     public ResponseEntity<GenericResponse> newService(@RequestBody AdminNewServiceDTO servicesDto) {
         System.out.println("<<<   Controller Service   >>>");
         System.out.println("<<<   name: " + servicesDto.getName());
@@ -64,7 +64,7 @@ public class AdminServicesController {
             @ApiResponse(responseCode = "400", description = "Invalid service ID"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @DeleteMapping("/")
+    @DeleteMapping("/delete_service")
     public GenericResponse deleteService(@RequestParam Long serviceId) {
         System.out.println("<<<   Controller Service   >>>");
         System.out.println("<<<   serviceId: " + serviceId);
@@ -92,14 +92,14 @@ public class AdminServicesController {
             @ApiResponse(responseCode = "404", description = "Service not found"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @GetMapping("/{serviceId}/slot")
+    @GetMapping("/{serviceId}/slots")
     @ResponseBody
     public Collection<SlotDTO> getSlots(@PathVariable(value = "id") long serviceId) {
         return slotService.findByService_Id(serviceId);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/types")
+    @GetMapping("/service_types")
     @Operation(summary = "Get all service types", description = "Retrieve all service types.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Service types retrieved successfully"),
@@ -116,7 +116,7 @@ public class AdminServicesController {
         @ApiResponse(responseCode = "400", description = "Invalid input data"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @PostMapping("/type")
+    @PostMapping("/new_service_type")
     public ResponseEntity<GenericResponse> newServiceType(@RequestBody String serviceTypeString) {
         serviceService.newServiceType(serviceTypeString);
         return ResponseEntity.ok(new GenericResponse("success"));

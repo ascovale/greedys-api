@@ -31,7 +31,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "Service", description = "Controller per la gestione dei servizi offerti dai ristoranti")
 @RestController
-@RequestMapping("/restaurant/service")
+@RequestMapping("/restaurant")
 @SecurityRequirement(name = "bearerAuth")
 public class RestaurantServicesController {
 
@@ -47,7 +47,7 @@ public class RestaurantServicesController {
         @ApiResponse(responseCode = "400", description = "Invalid input data"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @PostMapping("/{idRestaurant}/new_service")
+    @PostMapping("/{idRestaurant}/service/new_service")
     public ResponseEntity<GenericResponse> newService(@PathVariable Long idRestaurant,@RequestBody RestaurantNewServiceDTO servicesDto) {
         System.out.println("<<<   Controller Service   >>>");
         System.out.println("<<<   name: " + servicesDto.getName());
@@ -62,7 +62,7 @@ public class RestaurantServicesController {
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant) && @securityService.hasServicePermission(#serviceId)")
-    @DeleteMapping("/{idRestaurant}/delete_service")
+    @DeleteMapping("/{idRestaurant}/service/delete_service")
     public GenericResponse deleteService(@PathVariable Long idRestaurant, @RequestParam Long serviceId) {
         System.out.println("<<<   Controller Service   >>>");
         System.out.println("<<<   serviceId: " + serviceId);
@@ -77,7 +77,7 @@ public class RestaurantServicesController {
         @ApiResponse(responseCode = "404", description = "Service not found"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @GetMapping("/{idRestaurant}/getService/{serviceId}")
+    @GetMapping("/{idRestaurant}/service/{serviceId}")
     public ResponseEntity<ServiceDTO> getServiceById(@PathVariable Long idRestaurant, @PathVariable Long id) {
         ServiceDTO service = serviceService.findById(id);
         return ResponseEntity.ok(service);
@@ -90,7 +90,7 @@ public class RestaurantServicesController {
         @ApiResponse(responseCode = "404", description = "Service not found"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @GetMapping("/{idRestaurant}/getServiceSlot/{serviceId}")
+    @GetMapping("/{idRestaurant}/service/{serviceId}/slots")
     @ResponseBody
     public Collection<SlotDTO> getSlots(@PathVariable Long idRestaurant,@PathVariable(value = "id") long serviceId) {
         return slotService.findByService_Id(serviceId);

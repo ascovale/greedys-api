@@ -1,41 +1,48 @@
-package com.application.persistence.model.restaurant;
+package com.application.persistence.model.user;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-
-import java.util.HashMap;
 import java.util.Map;
 
 import com.application.persistence.model.restaurant.RestaurantNotification.Type;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+
 
 @Entity
-@Table(name = "restaurant_user_options")
-public class RestaurantUserOptions {
-
+@Table(name = "user_options")
+public class UserOptions {
     @jakarta.persistence.Id
     @jakarta.persistence.GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
     private Long id;
     
     @jakarta.persistence.ElementCollection
-    @jakarta.persistence.CollectionTable(name = "restaurant_user_wa_notification_preferences", joinColumns = @jakarta.persistence.JoinColumn(name = "restaurant_user_options_id"))
+    @jakarta.persistence.CollectionTable(name = "user_email_notification_preferences", joinColumns = @jakarta.persistence.JoinColumn(name = "user_options_id"))
     @jakarta.persistence.MapKeyColumn(name = "notification_type")
     @jakarta.persistence.Column(name = "enabled")
-    private Map<com.application.persistence.model.user.Notification.Type, Boolean> WAnotificationPreferences = new HashMap<>();
- 
-    @jakarta.persistence.ElementCollection
-    @jakarta.persistence.CollectionTable(name = "restaurant_user_notification_preferences", joinColumns = @jakarta.persistence.JoinColumn(name = "restaurant_user_options_id"))
-    @jakarta.persistence.MapKeyColumn(name = "notification_type")
-    @jakarta.persistence.Column(name = "enabled")
-    private Map<Type, Boolean> notificationPreferences = new HashMap<>();
+    private Map<Type, Boolean> emailNotificationPreferences;
     
-    public Map<com.application.persistence.model.user.Notification.Type, Boolean> getWAnotificationPreferences() {
-        return WAnotificationPreferences;
+    @jakarta.persistence.ElementCollection
+    @jakarta.persistence.CollectionTable(name = "user_notification_preferences", joinColumns = @jakarta.persistence.JoinColumn(name = "restaurant_user_options_id"))
+    @jakarta.persistence.MapKeyColumn(name = "notification_type")
+    @jakarta.persistence.Column(name = "enabled")
+    private Map<Type, Boolean> notificationPreferences;
+
+    public Map<Type, Boolean> getEmailNotificationPreferences() {
+        return emailNotificationPreferences;
     }
 
-    public void setWAnotificationPreferences(Map<com.application.persistence.model.user.Notification.Type, Boolean> WAnotificationPreferences) {
-        this.WAnotificationPreferences = WAnotificationPreferences;
+    public void setEmailNotificationPreferences(Map<Type, Boolean> emailNotificationPreferences) {
+        this.emailNotificationPreferences = emailNotificationPreferences;
     }
+
+    public void addEmailNotificationPreference(Type type, Boolean enabled) {
+        this.emailNotificationPreferences.put(type, enabled);
+    }
+
+    public void removeEmailNotificationPreference(Type type) {
+        this.emailNotificationPreferences.remove(type);
+    }
+
     public Long getId() {
         return id;
     }

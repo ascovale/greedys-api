@@ -8,6 +8,10 @@ import java.util.stream.Collectors;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.application.persistence.model.reservation.Reservation;
+import com.application.persistence.model.restaurant.Restaurant;
+import com.application.persistence.model.restaurant.RestaurantUser;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -20,10 +24,6 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-
-import com.application.persistence.model.reservation.Reservation;
-import com.application.persistence.model.restaurant.Restaurant;
-import com.application.persistence.model.restaurant.RestaurantUser;
 
 @Entity
 @Table(name = "user")
@@ -51,7 +51,17 @@ public class User implements UserDetails {
 	private Boolean blooked = false;
 	private Boolean deleted = false;
 	private Integer toReadNotification = 0;
+	@OneToOne
+    private UserOptions options;
 	
+	public UserOptions getOptions() {
+		return options;
+	}
+
+	public void setOptions(UserOptions options) {
+		this.options = options;
+	}
+
 	public void setToReadNotification(Integer toReadNotification) {
 		this.toReadNotification = toReadNotification;
 	}
