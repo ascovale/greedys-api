@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -106,6 +107,46 @@ public class AdminServicesController {
     })
     public Collection<ServiceTypeDto> getServiceTypes() {
         return serviceService.getServiceTypes();
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Create a new service type", description = "This method creates a new service type in the system.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Service type created successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid input data"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @PostMapping("/type")
+    public ResponseEntity<GenericResponse> newServiceType(@RequestBody String serviceTypeString) {
+        serviceService.newServiceType(serviceTypeString);
+        return ResponseEntity.ok(new GenericResponse("success"));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Update a service type", description = "This method updates an existing service type.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Service type updated successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid input data"),
+        @ApiResponse(responseCode = "404", description = "Service type not found"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @PutMapping("/type/{typeId}")
+    public ResponseEntity<GenericResponse> updateServiceType(@PathVariable Long typeId, @RequestBody String serviceTypeString) {
+        serviceService.updateServiceType(typeId, serviceTypeString);
+        return ResponseEntity.ok(new GenericResponse("success"));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Delete a service type", description = "This method deletes a service type by its ID.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Service type deleted successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid service type ID"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @DeleteMapping("/type/{typeId}")
+    public ResponseEntity<GenericResponse> deleteServiceType(@PathVariable Long typeId) {
+        serviceService.deleteServiceType(typeId);
+        return ResponseEntity.ok(new GenericResponse("success"));
     }
 
 }

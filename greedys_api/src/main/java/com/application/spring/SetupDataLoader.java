@@ -34,7 +34,6 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
     private PasswordEncoder passwordEncoder;
 	
     // API
-
     @Override
     @Transactional
     public void onApplicationEvent(final ContextRefreshedEvent event) {
@@ -62,7 +61,6 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 
     @Transactional
     private final ServiceType ucreateServiceIfNotFound(String name) {
-
         ServiceType serviceType = serviceTypeDAO.findByName(name);
         if (serviceType != null) {
             serviceType = new ServiceType(name);
@@ -82,8 +80,6 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
         return privilege;
     }
 	
-   
-  
     private Role ucreateRoleIfNotFound(String name, List<Privilege> privileges) {
     	Role role = roleDAO.findByName(name);
         if (role == null) {

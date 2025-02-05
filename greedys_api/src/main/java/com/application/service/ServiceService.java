@@ -217,8 +217,6 @@ public class ServiceService {
 		}
 	}
 
-	
-
 	private User getCurrentUser() {
 		Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		if (principal instanceof User) {
@@ -242,6 +240,24 @@ public class ServiceService {
 			serviceTypes.addAll(service.getServiceType());
 		}
 		return serviceTypes.stream().map(ServiceTypeDto::new).toList();
+	}
+
+    public void newServiceType(String serviceTypeString) {
+			ServiceType serviceType = new ServiceType();
+			serviceType.setName(serviceTypeString);
+			serviceTypeDAO.save(serviceType);
+	}
+
+	public void updateServiceType(Long typeId, String serviceTypeString) {
+		ServiceType serviceType = serviceTypeDAO.findById(typeId).orElseThrow(() -> new IllegalArgumentException("Service type not found"));
+		serviceType.setName(serviceTypeString);
+		serviceTypeDAO.save(serviceType);
+	}
+
+	public void deleteServiceType(Long typeId) {
+		ServiceType serviceType = serviceTypeDAO.findById(typeId).orElseThrow(() -> new IllegalArgumentException("Service type not found"));
+		serviceType.setDeleted(true);
+		serviceTypeDAO.save(serviceType);
 	}
 
 	
