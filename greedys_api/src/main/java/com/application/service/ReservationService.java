@@ -110,7 +110,9 @@ public class ReservationService {
             reservation.setUser(user);
             customerNotificationService.createReservationNotification(reservation, Type.NEW_RESERVATION);
         }
-        return reservationDAO.save(reservation);
+        reservation = reservationDAO.save(reservation);
+
+        return reservation;
     }
 
     @Transactional

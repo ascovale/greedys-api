@@ -32,9 +32,6 @@ public class RestaurantNotification {
 	private RestaurantUser restaurantUser;
 	@Column(name = "n_type")
 	private Type type;
-	
-
-	
 
 	public RestaurantUser getRestaurantUser() {
 		return restaurantUser;

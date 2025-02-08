@@ -20,14 +20,6 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-
-/*import com.application.persistence.model.CompanyReservation;
-@NamedNativeQuery(name = "Restaurant.findBySearchTermNamedNative",
-query="SELECT * FROM Eestaurant r WHERE " +
-        "LOWER(r.name) LIKE LOWER(CONCAT('%',:searchTerm, '%'))" +
-        "ORDER BY t.name ASC",
-resultClass = Restaurant.class
-)*/
 @NamedQuery(name = "Restaurant.findBySearchTermNamed", query = "SELECT t FROM Restaurant t WHERE "
 		+ "LOWER(t.name) LIKE LOWER(CONCAT('%', :searchTerm, '%'))" + "ORDER BY t.name ASC")
 @Entity
@@ -68,7 +60,36 @@ public class Restaurant {
 	@JoinTable(name = "restaurant_has_restaurant_type", joinColumns = @JoinColumn(name = "restaurant_id"), inverseJoinColumns = @JoinColumn(name = "restaurant_type_id"))
 	private List<RestaurantCategory> restaurantTypes;
 	private Boolean deleted = false;
-	
+	private Boolean waNotification=false; // manda un messaggio whatsapp
+	private Boolean telegramNotification=false;
+
+	@Column(name = "wa_notification_time_advance", columnDefinition = "integer default 30")
+	private Integer messageNotificationTimeAdvance = 30;
+
+
+	public Integer getWaNotificationTimeAdvance() {
+		return messageNotificationTimeAdvance;
+	}
+
+	public void setWaNotificationTimeAdvance(Integer waNotificationTimeAdvance) {
+		this.messageNotificationTimeAdvance = waNotificationTimeAdvance;
+	}
+
+	public Boolean getTelegramNotification() {
+		return telegramNotification;
+	}
+
+	public void setTelegramNotification(Boolean telegramNotification) {
+		this.telegramNotification = telegramNotification;
+	}
+
+	public Boolean getWaNotification() {
+		return waNotification;
+	}
+
+	public void setWaNotification(Boolean waNotification) {
+		this.waNotification = waNotification;
+	}
 
 	public void setDeleted(Boolean deleted) {
 		this.deleted = deleted;
