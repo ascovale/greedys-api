@@ -106,4 +106,9 @@ public class NotificationService {
     }
         return notificationDAO.findAllByUser(getCurrentUser(), pageable);
     }
+
+    public void sendCustomerNotification(String title, String body, Long idCustomer) {
+		firebaseService.sendFirebaseCustomerNotification(title, body, idCustomer);
+	}
+
 }
