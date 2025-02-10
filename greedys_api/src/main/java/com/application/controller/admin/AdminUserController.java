@@ -2,6 +2,7 @@ package com.application.controller.admin;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -46,7 +47,7 @@ public class AdminUserController {
     @Operation(summary = "Delete allergy", description = "Deletes an allergy by its ID")
     @ApiResponse(responseCode = "200", description = "Allergy deleted successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
-    @PutMapping("/allergy/deleteAllergy/{idAllergy}")
+    @DeleteMapping("/allergy/deleteAllergy/{idAllergy}")
     public GenericResponse deleteAllergy(@PathVariable Long idAllergy) {
         userService.deleteAllergy(idAllergy);
         return new GenericResponse("Allergy deleted successfully");
