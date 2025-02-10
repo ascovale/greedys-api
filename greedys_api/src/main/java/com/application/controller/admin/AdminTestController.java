@@ -22,7 +22,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RequestMapping("/admin/restaurant")
 @RestController
 @SecurityRequirement(name = "bearerAuth")
-@Tag(name = "Admin Email Tester", description = "Admin management APIs for the Restaurant")
+@Tag(name = "Admin Tester", description = "Admin management APIs for the Restaurant")
 public class AdminTestController {
     private EmailService emailService;
     private NotificationService notificationService;
