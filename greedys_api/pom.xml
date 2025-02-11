@@ -275,6 +275,12 @@
             <version>2.12.1</version>
         </dependency>
 
+        <!-- Ensure OpenAPI generator dependency is included -->
+        <dependency>
+            <groupId>org.openapitools</groupId>
+            <artifactId>openapi-generator-cli</artifactId>
+            <version>6.0.0</version> <!-- Use the latest stable version -->
+        </dependency>
 
     </dependencies>
     <build>
