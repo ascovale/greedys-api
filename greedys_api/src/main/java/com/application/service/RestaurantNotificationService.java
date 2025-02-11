@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.application.persistence.dao.restaurant.RestaurantDAO;
 import com.application.persistence.dao.restaurant.RestaurantNotificationDAO;
 import com.application.persistence.dao.restaurant.RestaurantUserDAO;
 import com.application.persistence.model.reservation.Reservation;
@@ -20,16 +21,18 @@ import jakarta.transaction.Transactional;
 @Service
 public class RestaurantNotificationService {
 	private final RestaurantUserDAO restaurantUserDAO;
+	private final RestaurantDAO restaurantDAO;
 	private final RestaurantNotificationDAO restaurantNotificationDAO;
 	private final FirebaseService firebaseService;
 	private final EmailService emailService;
 
 	public RestaurantNotificationService(RestaurantUserDAO restaurantUserDAO, RestaurantNotificationDAO restaurantNotificationDAO,
-			FirebaseService firebaseService, EmailService emailService) {
+			FirebaseService firebaseService, EmailService emailService,RestaurantDAO restaurantDAO) {
 		this.restaurantUserDAO = restaurantUserDAO;
 		this.restaurantNotificationDAO = restaurantNotificationDAO;
 		this.firebaseService = firebaseService;
 		this.emailService = emailService;
+		this.restaurantDAO = restaurantDAO;
 	}
 
 	@Transactional
@@ -118,5 +121,17 @@ public class RestaurantNotificationService {
     public Long getUnreadNotificationsCount(Long idRestaurantUser) {
 		RestaurantUser user = restaurantUserDAO.findById(idRestaurantUser).get();
 		return user.getToReadNotification().longValue();
+	}
+
+    public void sendRestaurantNotification(String title, String body, Long idRestaurantUser) {
+		firebaseService.sendFirebaseRestaurantNotification(title, body, idRestaurantUser);
+	}
+	public void sendRestaurantNotificationToAllUsers(String title, String body, Long idRestaurant) {
+		Restaurant restaurant = restaurantDAO.findById(idRestaurant)
+				.orElseThrow(() -> new IllegalArgumentException("Restaurant not found"));
+		Collection<RestaurantUser> restaurantUsers = restaurant.getRestaurantUsers();
+		for (RestaurantUser restaurantUser : restaurantUsers) {
+			firebaseService.sendFirebaseRestaurantNotification(title, body, restaurantUser.getId());
+		}
 	}
 }

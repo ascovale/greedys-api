@@ -31,7 +31,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "Service", description = "Controller per la gestione dei servizi offerti dai ristoranti")
 @RestController
-@RequestMapping("/restaurant/service")
+@RequestMapping("/restaurant")
 @SecurityRequirement(name = "bearerAuth")
 public class RestaurantServicesController {
 
@@ -47,7 +47,7 @@ public class RestaurantServicesController {
         @ApiResponse(responseCode = "400", description = "Invalid input data"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @PostMapping("/{idRestaurant}/new_service")
+    @PostMapping("/{idRestaurant}/service/new_service")
     public ResponseEntity<GenericResponse> newService(@PathVariable Long idRestaurant,@RequestBody RestaurantNewServiceDTO servicesDto) {
         System.out.println("<<<   Controller Service   >>>");
         System.out.println("<<<   name: " + servicesDto.getName());
@@ -62,7 +62,7 @@ public class RestaurantServicesController {
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant) && @securityService.hasServicePermission(#serviceId)")
-    @DeleteMapping("/{idRestaurant}/delete_service")
+    @DeleteMapping("/{idRestaurant}/service/delete_service")
     public GenericResponse deleteService(@PathVariable Long idRestaurant, @RequestParam Long serviceId) {
         System.out.println("<<<   Controller Service   >>>");
         System.out.println("<<<   serviceId: " + serviceId);

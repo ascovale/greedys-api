@@ -2,6 +2,7 @@ package com.application.controller.admin;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -43,12 +44,13 @@ public class AdminRestaurantController {
         restaurantService.createRestaurantCategory(restaurantCategoryDto);
         return new GenericResponse("Category created successfully");
     }
+    //TODO verificare che non lo cancello effettivamente dal db
 
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Delete category", description = "Deletes a category by its ID")
     @ApiResponse(responseCode = "200", description = "Category deleted successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
-    @PutMapping("/deleteRestaurantCategory/{idCategory}")
+    @DeleteMapping("/deleteRestaurantCategory/{idCategory}")
     public GenericResponse deleteCategory(@PathVariable Long idCategory) {
         restaurantService.deleteRestaurantCategory(idCategory);
         return new GenericResponse("Category deleted successfully");
@@ -113,12 +115,12 @@ public class AdminRestaurantController {
         restaurantService.changeRestaurantEmail(idRestaurant, newEmail);
         return new GenericResponse("Restaurant email changed successfully");
     }
-
+    //TODO Verificare che nei PreAuthorize ROLE RESTAURANT USER verifichi che il ristorante sia marchiato come cancellato
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Mark restaurant as deleted", description = "Marks a restaurant as deleted similar to disable by its ID")
     @ApiResponse(responseCode = "200", description = "Restaurant marked as deleted successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
-    @PutMapping("/{idRestaurant}/markAsDeleted")
+    @DeleteMapping("/{idRestaurant}/markAsDeleted")
     public GenericResponse markRestaurantAsDeleted(@PathVariable Long idRestaurant) {
         restaurantService.markRestaurantAsDeleted(idRestaurant);
         return new GenericResponse("Restaurant marked as deleted successfully");

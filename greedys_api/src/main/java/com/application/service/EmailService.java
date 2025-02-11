@@ -111,4 +111,13 @@ public class EmailService {
         }
     }
 
+    public void sendEmail(String email, String subject, String content) {
+        final SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(email);
+        message.setSubject(subject);
+        message.setText(content);
+        message.setFrom(env.getProperty("support.email"));
+        mailSender.send(message);
+    }   
+
 }
