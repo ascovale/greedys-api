@@ -54,8 +54,8 @@ public class ReservationRestaurantController {
 	})
 	@PostMapping("/{idRestaurant}/new_reservation")
 	@PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant)")
-	public ResponseEntity<?> createReservation(@RequestBody RestaurantNewReservationDTO DTO) {
-		reservationService.createRestaurantReservation(DTO);
+	public ResponseEntity<?> createReservation(@PathVariable Long idRestaurant, @RequestBody RestaurantNewReservationDTO dto) {
+		reservationService.createRestaurantReservation(dto);
 		return ResponseEntity.ok().build();
 	}
 
