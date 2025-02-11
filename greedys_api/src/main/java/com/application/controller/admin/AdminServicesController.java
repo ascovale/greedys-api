@@ -80,8 +80,8 @@ public class AdminServicesController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/{serviceId}/")
-    public ResponseEntity<ServiceDTO> getServiceById(@PathVariable Long id) {
-        ServiceDTO service = serviceService.findById(id);
+    public ResponseEntity<ServiceDTO> getServiceById(@PathVariable("serviceId") Long serviceId) {
+        ServiceDTO service = serviceService.findById(serviceId);
         return ResponseEntity.ok(service);
     }
 
@@ -93,8 +93,7 @@ public class AdminServicesController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/{serviceId}/slot")
-    @ResponseBody
-    public Collection<SlotDTO> getSlots(@PathVariable(value = "id") long serviceId) {
+    public Collection<SlotDTO> getSlots(@PathVariable("serviceId") long serviceId) {
         return slotService.findByService_Id(serviceId);
     }
 

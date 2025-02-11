@@ -50,22 +50,28 @@ public class ReservationService {
 
     @PersistenceContext
     private EntityManager entityManager;
-    @Autowired
-    private ReservationDAO reservationDAO;
-    @Autowired
-    private ReservationRequestDAO reservationRequestDAO;
-    @Autowired
-    private ReservationLogDAO reservationLogDAO;
-    @Autowired
-    private ServiceDAO serviceDAO;
-    @Autowired
-    private ClosedDayDAO closedDaysDAO;
-    @Autowired
-    private RestaurantNotificationService restaurantNotificationService;
-    @Autowired
-    private NotificationService customerNotificationService;
-    @Autowired
-    private RestaurantDAO restaurantDAO;
+    private final ReservationDAO reservationDAO;
+    private final ReservationRequestDAO reservationRequestDAO;
+    private final ReservationLogDAO reservationLogDAO;
+    private final ServiceDAO serviceDAO;
+    private final ClosedDayDAO closedDaysDAO;
+    private final RestaurantNotificationService restaurantNotificationService;
+    private final NotificationService customerNotificationService;
+    private final RestaurantDAO restaurantDAO;
+
+    public ReservationService(ReservationDAO reservationDAO, ReservationRequestDAO reservationRequestDAO, 
+                              ReservationLogDAO reservationLogDAO, ServiceDAO serviceDAO, ClosedDayDAO closedDaysDAO, 
+                              RestaurantNotificationService restaurantNotificationService, 
+                              NotificationService customerNotificationService, RestaurantDAO restaurantDAO) {
+        this.reservationDAO = reservationDAO;
+        this.reservationRequestDAO = reservationRequestDAO;
+        this.reservationLogDAO = reservationLogDAO;
+        this.serviceDAO = serviceDAO;
+        this.closedDaysDAO = closedDaysDAO;
+        this.restaurantNotificationService = restaurantNotificationService;
+        this.customerNotificationService = customerNotificationService;
+        this.restaurantDAO = restaurantDAO;
+    }
 
     @Transactional
     public void save(Reservation reservation) {

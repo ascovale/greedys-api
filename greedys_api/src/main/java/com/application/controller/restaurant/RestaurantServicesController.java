@@ -78,8 +78,8 @@ public class RestaurantServicesController {
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/{idRestaurant}/getService/{serviceId}")
-    public ResponseEntity<ServiceDTO> getServiceById(@PathVariable Long idRestaurant, @PathVariable Long id) {
-        ServiceDTO service = serviceService.findById(id);
+    public ResponseEntity<ServiceDTO> getServiceById(@PathVariable Long idRestaurant, @PathVariable Long serviceId) {
+        ServiceDTO service = serviceService.findById(serviceId);
         return ResponseEntity.ok(service);
     }
 
@@ -91,8 +91,7 @@ public class RestaurantServicesController {
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/{idRestaurant}/getServiceSlot/{serviceId}")
-    @ResponseBody
-    public Collection<SlotDTO> getSlots(@PathVariable Long idRestaurant,@PathVariable(value = "id") long serviceId) {
+    public Collection<SlotDTO> getSlots(@PathVariable Long idRestaurant,@PathVariable(value = "serviceId") long serviceId) {
         return slotService.findByService_Id(serviceId);
     }
 
