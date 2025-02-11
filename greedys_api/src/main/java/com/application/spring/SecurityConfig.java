@@ -57,8 +57,7 @@ public class SecurityConfig {
                                 "/register/**", "/v3/api-docs*/**", "/api/**",
                                 "/auth/**", "/restaurant/search*", "/restaurant/*/open-days*",
                                 "/restaurant/*/day-slots*", "/restaurant/*/services",
-                                "/reservation/**", "/error*", "/actuator/health")
-                        .permitAll()
+                                "/reservation/**", "/error*", "/actuator/health", "/public/**").permitAll()
                         .anyRequest().authenticated())
                 .oauth2Login(withDefaults()) // Enable OAuth2 authentication
                 .sessionManagement(management -> management
