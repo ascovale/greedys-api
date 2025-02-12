@@ -59,7 +59,7 @@ public class AuthController {
             @ApiResponse(responseCode = "401", description = "Autenticazione fallita", content = @Content(mediaType = "application/json"))
     })
     @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Richiesta di autenticazione", required = true, content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthRequestDTO.class)))
-    @PostMapping("/user")
+    @PostMapping(value = "/user", produces = "application/json")
     public ResponseEntity<AuthResponseDTO> createAuthenticationToken(@RequestBody AuthRequestDTO authenticationRequest)
             throws Exception {
         authenticationManager.authenticate(
