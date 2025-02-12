@@ -33,6 +33,7 @@ import org.thymeleaf.templatemode.TemplateMode;
 
 import com.application.controller.Validators.EmailValidator;
 import com.application.controller.Validators.PasswordMatchesValidator;
+import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 
 @Configuration
 @EnableAsync
@@ -101,6 +102,11 @@ public class MvcConfig implements WebMvcConfigurer, ApplicationContextAware {
         final LocaleChangeInterceptor localeChangeInterceptor = new LocaleChangeInterceptor();
         localeChangeInterceptor.setParamName("lang");
         registry.addInterceptor(localeChangeInterceptor);
+    }
+
+    @Override
+    public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
+        configurer.defaultContentType(org.springframework.http.MediaType.APPLICATION_JSON);
     }
 
     // beans
