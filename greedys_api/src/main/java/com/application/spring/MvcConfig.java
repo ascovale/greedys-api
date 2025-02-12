@@ -103,12 +103,7 @@ public class MvcConfig implements WebMvcConfigurer, ApplicationContextAware {
         localeChangeInterceptor.setParamName("lang");
         registry.addInterceptor(localeChangeInterceptor);
     }
-
-    @Override
-    public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
-        configurer.defaultContentType(org.springframework.http.MediaType.APPLICATION_JSON);
-    }
-
+    
     // beans
 
     @Bean(name = "myLocaleResolver")

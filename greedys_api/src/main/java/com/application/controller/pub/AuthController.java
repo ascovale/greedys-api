@@ -37,7 +37,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "Auth", description = "Controller per la gestione dell'autenticazione")
 @RestController
-@RequestMapping("/public/auth")
+@RequestMapping(value = "/public/auth", produces = "application/json")
 public class AuthController {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
