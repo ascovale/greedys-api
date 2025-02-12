@@ -55,10 +55,10 @@ public class AuthController {
     }
 
     @Operation(summary = "Crea un token di autenticazione", description = "Autentica un utente e restituisce un token JWT", responses = {
-            @ApiResponse(responseCode = "200", description = "Autenticazione riuscita", content = @Content(schema = @Schema(implementation = AuthResponseDTO.class))),
-            @ApiResponse(responseCode = "401", description = "Autenticazione fallita")
+            @ApiResponse(responseCode = "200", description = "Autenticazione riuscita", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthResponseDTO.class))),
+            @ApiResponse(responseCode = "401", description = "Autenticazione fallita", content = @Content(mediaType = "application/json"))
     })
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Richiesta di autenticazione", required = true, content = @Content(schema = @Schema(implementation = AuthRequestDTO.class)))
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Richiesta di autenticazione", required = true, content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthRequestDTO.class)))
     @PostMapping("/user")
     public ResponseEntity<AuthResponseDTO> createAuthenticationToken(@RequestBody AuthRequestDTO authenticationRequest)
             throws Exception {
@@ -74,10 +74,10 @@ public class AuthController {
     }
 
     @Operation(summary = "Autentica con Google", description = "Autentica un utente utilizzando un token di Google e restituisce un token JWT", responses = {
-            @ApiResponse(responseCode = "200", description = "Autenticazione riuscita", content = @Content(schema = @Schema(implementation = AuthResponseDTO.class))),
-            @ApiResponse(responseCode = "401", description = "Autenticazione fallita")
+            @ApiResponse(responseCode = "200", description = "Autenticazione riuscita", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthResponseDTO.class))),
+            @ApiResponse(responseCode = "401", description = "Autenticazione fallita", content = @Content(mediaType = "application/json"))
     })
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Richiesta di autenticazione con Google", required = true, content = @Content(schema = @Schema(implementation = AuthRequestGoogleDTO.class)))
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Richiesta di autenticazione con Google", required = true, content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthRequestGoogleDTO.class)))
     @PostMapping("/google")
     public ResponseEntity<AuthResponseDTO> authenticateWithGoogle(@RequestBody AuthRequestGoogleDTO authRequest)
             throws Exception {
