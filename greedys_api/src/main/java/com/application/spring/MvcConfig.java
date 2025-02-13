@@ -34,7 +34,6 @@ import org.thymeleaf.templatemode.TemplateMode;
 import com.application.controller.Validators.EmailValidator;
 import com.application.controller.Validators.PasswordMatchesValidator;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
-import org.springframework.http.MediaType;
 
 @Configuration
 @EnableAsync
@@ -70,16 +69,6 @@ public class MvcConfig implements WebMvcConfigurer, ApplicationContextAware {
         registry.addResourceHandler("/swagger-ui/**")
                 .addResourceLocations("classpath:/META-INF/resources/webjars/");
     }
-
-    @Override
-    public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
-        configurer
-            .favorParameter(false)           // Non usare parametri per il content-type
-            .useRegisteredExtensionsOnly(true)       // Usa solo estensioni registrate
-            .ignoreAcceptHeader(true)        // Ignora l'header Accept (usa il default)
-            .defaultContentType(MediaType.APPLICATION_JSON); // Imposta JSON come default
-    }
-
 
     @Bean
     SpringResourceTemplateResolver templateResolver(){
