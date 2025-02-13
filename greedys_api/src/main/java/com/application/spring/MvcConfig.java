@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ResourceBundleMessageSource;
+import org.springframework.http.MediaType;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -69,6 +70,17 @@ public class MvcConfig implements WebMvcConfigurer, ApplicationContextAware {
         registry.addResourceHandler("/swagger-ui/**")
                 .addResourceLocations("classpath:/META-INF/resources/webjars/");
     }
+
+    @Override
+    public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
+        configurer
+            .favorParameter(false)           // Non usare parametri per il content-type
+            .useRegisteredExtensionsOnly(true)       // Usa solo estensioni registrate
+            .ignoreAcceptHeader(true)        // Ignora l'header Accept (usa il default)
+            .defaultContentType(MediaType.APPLICATION_JSON); // Imposta JSON come default
+    }
+
+
 
     @Bean
     SpringResourceTemplateResolver templateResolver(){
