@@ -63,7 +63,7 @@ publish:
     - apt-get install -y nodejs
     - npm install -g @openapitools/openapi-generator-cli
     - echo "Fetching OpenAPI specification from spring-app..."
-    - curl -o openapi.yaml https://api.greedys.it/v3/api-docs.yaml
+    - curl -o openapi.spec https://api.greedys.it/v3/api-docs
     - echo "Setting up GIT_ASKPASS to use PAT..."
     - echo "echo \$PAT" > /tmp/git-askpass.sh
     - chmod +x /tmp/git-askpass.sh
@@ -75,7 +75,7 @@ publish:
     - git config user.email "ci-bot@greedys.com"
     - git config user.name "Greedys CI Bot"
     - echo "Generating Dart client library with Dio from OpenAPI specification..."
-    - openapi-generator-cli generate -i ../openapi.yaml -g dart-dio -o .
+    - openapi-generator-cli generate -i ../openapi.spec -g dart-dio -o .
     - echo "Committing and pushing changes to Dart client library repository..."
     - git add .
     - git commit -m "Update Dart client library with latest API changes"
