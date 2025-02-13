@@ -38,7 +38,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "Restaurant", description = "Controller per la gestione dei ristoranti")
 @RestController
-@RequestMapping("/public/restaurant")
 @SecurityRequirement(name = "bearerAuth")
 public class PublicRestaurantController {
 
