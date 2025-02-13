@@ -39,8 +39,7 @@ public class SecurityConfig {
     private final UserDetailsService userDetailsService;
     private final JwtRequestFilter jwtRequestFilter;
 
-    public SecurityConfig(UserDetailsService userDetailsService, JwtRequestFilter jwtRequestFilter,
-            DataSource dataSource) {
+    public SecurityConfig(UserDetailsService userDetailsService, JwtRequestFilter jwtRequestFilter, DataSource dataSource) {
         this.userDetailsService = userDetailsService;
         this.jwtRequestFilter = jwtRequestFilter;
     }
