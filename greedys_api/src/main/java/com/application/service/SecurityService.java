@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.application.persistence.dao.restaurant.RestaurantUserDAO;
 import com.application.persistence.model.reservation.Reservation;
@@ -13,6 +15,8 @@ import com.application.persistence.model.user.Customer;
 
 @org.springframework.stereotype.Service
 public class SecurityService {
+    private static final Logger logger = LoggerFactory.getLogger(SecurityService.class);
+
     @Autowired
     ReservationService reservationService;
     @Autowired
@@ -40,6 +44,10 @@ public class SecurityService {
     @Transactional
     public boolean isUserAdmin(@AuthenticationPrincipal UserDetails userDetails) {
         return userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+    public boolean hasUserPermissionOnReservation(Long idReservation, @AuthenticationPrincipal User user) {
+        logger.debug("Checking user permission on reservation with id: {}", idReservation);
+        Reservation reservation = reservationService.findById(idReservation);
+        return hasUserPermissionOnReservation(reservation, user);
     }
 
     @Transactional
