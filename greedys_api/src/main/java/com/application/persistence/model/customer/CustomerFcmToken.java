@@ -1,4 +1,4 @@
-package com.application.persistence.model.user;
+package com.application.persistence.model.customer;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;

@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.application.persistence.model.user.Customer;
+import com.application.persistence.model.customer.Customer;
 import com.application.security.jwt.JwtUtil;
 import com.application.service.CustomerService;
 import com.application.web.dto.AuthRequestDTO;

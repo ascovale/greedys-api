@@ -3,7 +3,7 @@ package com.application.persistence.model.restaurant.user;
 
 import java.time.LocalDateTime;
 
-import com.application.persistence.model.user.Customer;
+import com.application.persistence.model.customer.Customer;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

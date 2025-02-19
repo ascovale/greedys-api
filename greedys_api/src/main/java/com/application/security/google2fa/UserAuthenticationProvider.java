@@ -8,7 +8,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 
 import com.application.persistence.dao.customer.CustomerDAO;
-import com.application.persistence.model.user.Customer;
+import com.application.persistence.model.customer.Customer;
 
 //@Component
 public class UserAuthenticationProvider extends DaoAuthenticationProvider {

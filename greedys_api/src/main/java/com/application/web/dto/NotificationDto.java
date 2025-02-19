@@ -4,8 +4,8 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.application.persistence.model.user.Notification;
-import com.application.persistence.model.user.Notification.Type;
+import com.application.persistence.model.customer.Notification;
+import com.application.persistence.model.customer.Notification.Type;
 
 public class NotificationDto {
 	

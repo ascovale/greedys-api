@@ -8,10 +8,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.application.persistence.dao.restaurant.RestaurantUserDAO;
+import com.application.persistence.model.customer.Customer;
 import com.application.persistence.model.reservation.Reservation;
 import com.application.persistence.model.restaurant.Restaurant;
 import com.application.persistence.model.restaurant.user.RestaurantUser;
-import com.application.persistence.model.user.Customer;
 
 @org.springframework.stereotype.Service
 public class SecurityService {

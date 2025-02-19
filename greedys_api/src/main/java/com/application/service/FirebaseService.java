@@ -17,11 +17,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.application.persistence.dao.restaurant.RestaurantUserDAO;
+import com.application.persistence.model.customer.Customer;
+import com.application.persistence.model.customer.CustomerFcmToken;
+import com.application.persistence.model.customer.Notification;
 import com.application.persistence.model.restaurant.user.RestaurantNotification;
 import com.application.persistence.model.restaurant.user.RestaurantUser;
-import com.application.persistence.model.user.Notification;
-import com.application.persistence.model.user.Customer;
-import com.application.persistence.model.user.CustomerFcmToken;
 import com.application.service.utils.NotificatioUtils;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.auth.FirebaseAuth;

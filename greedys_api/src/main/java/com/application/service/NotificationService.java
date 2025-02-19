@@ -11,10 +11,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.application.persistence.dao.customer.CustomerDAO;
 import com.application.persistence.dao.customer.NotificationDAO;
+import com.application.persistence.model.customer.Customer;
+import com.application.persistence.model.customer.Notification;
+import com.application.persistence.model.customer.Notification.Type;
 import com.application.persistence.model.reservation.Reservation;
-import com.application.persistence.model.user.Notification;
-import com.application.persistence.model.user.Notification.Type;
-import com.application.persistence.model.user.Customer;
 import com.application.web.dto.NotificationDto;
 
 @Service

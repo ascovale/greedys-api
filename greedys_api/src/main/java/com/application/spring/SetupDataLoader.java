@@ -15,9 +15,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.application.persistence.dao.customer.PrivilegeDAO;
 import com.application.persistence.dao.customer.RoleDAO;
 import com.application.persistence.dao.restaurant.ServiceTypeDAO;
+import com.application.persistence.model.customer.Privilege;
+import com.application.persistence.model.customer.Role;
 import com.application.persistence.model.reservation.ServiceType;
-import com.application.persistence.model.user.Privilege;
-import com.application.persistence.model.user.Role;
 
 @Component
 public class SetupDataLoader implements ApplicationListener<ContextRefreshedEvent> {

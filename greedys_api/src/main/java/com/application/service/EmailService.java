@@ -8,9 +8,9 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import com.application.persistence.model.customer.Notification;
 import com.application.persistence.model.restaurant.user.RestaurantNotification;
 import com.application.persistence.model.restaurant.user.RestaurantUser;
-import com.application.persistence.model.user.Notification;
 import com.application.service.utils.NotificatioUtils;
 
 @Service

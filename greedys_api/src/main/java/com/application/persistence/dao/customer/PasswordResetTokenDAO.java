@@ -8,8 +8,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import com.application.persistence.model.user.PasswordResetToken;
-import com.application.persistence.model.user.Customer;
+import com.application.persistence.model.customer.Customer;
+import com.application.persistence.model.customer.PasswordResetToken;
 
 @Repository
 public interface PasswordResetTokenDAO extends JpaRepository<PasswordResetToken, Long> {

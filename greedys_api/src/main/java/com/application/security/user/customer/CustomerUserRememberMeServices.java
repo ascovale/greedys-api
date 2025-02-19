@@ -21,7 +21,7 @@ import org.springframework.security.web.authentication.rememberme.PersistentToke
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 
 import com.application.persistence.dao.customer.CustomerDAO;
-import com.application.persistence.model.user.Customer;
+import com.application.persistence.model.customer.Customer;
 @Qualifier("customerUserRememberMeServices")
 public class CustomerUserRememberMeServices extends PersistentTokenBasedRememberMeServices {
 

@@ -3,8 +3,8 @@ package com.application.service.utils;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.application.persistence.model.customer.Notification.Type;
 import com.application.persistence.model.restaurant.user.RestaurantNotification;
-import com.application.persistence.model.user.Notification.Type;
 
 public class NotificatioUtils { 
     public static final Map<Type, NotificationTemplate> USER_TEMPLATES = new HashMap<>() {{

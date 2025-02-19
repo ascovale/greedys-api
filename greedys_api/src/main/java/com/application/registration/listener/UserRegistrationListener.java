@@ -12,7 +12,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
 
 import com.application.service.CustomerService;
-import com.application.persistence.model.user.Customer;
+import com.application.persistence.model.customer.Customer;
 import com.application.registration.UserOnRegistrationCompleteEvent;
 
 @Component

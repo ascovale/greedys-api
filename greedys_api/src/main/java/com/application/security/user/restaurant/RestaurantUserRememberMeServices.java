@@ -18,8 +18,8 @@ import org.springframework.security.web.authentication.rememberme.PersistentToke
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 
 import com.application.persistence.dao.restaurant.RestaurantUserDAO;
+import com.application.persistence.model.customer.Customer;
 import com.application.persistence.model.restaurant.user.RestaurantUser;
-import com.application.persistence.model.user.Customer;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

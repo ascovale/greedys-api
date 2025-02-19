@@ -1,46 +1,65 @@
-package com.application.persistence.model.user;
-
+package com.application.persistence.model.customer;
 
 import java.time.LocalDateTime;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 
 @Entity
-public class PasswordResetToken {
+@Table(name = "verification_token")
+public class VerificationToken {
 
     private static final int EXPIRATION = 60 * 24;
-
-    @Id
+	@Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private String token;
     @OneToOne(targetEntity = Customer.class, fetch = FetchType.EAGER)
-    @JoinColumn(nullable = false, name = "user_id")
+    @JoinColumn(nullable = false, name = "user_id", referencedColumnName = "id",
+    foreignKey =@ForeignKey(name="FK_VERIFY_USER"))
     private Customer user;
     private LocalDateTime expiryDate;
 
-	public PasswordResetToken() {
+    public VerificationToken() {
         super();
     }
 
-    public PasswordResetToken(final String token) {
+    public VerificationToken(final String token) {
         super();
+
         this.token = token;
         this.expiryDate = calculateExpiryDate(EXPIRATION);
     }
 
-    public PasswordResetToken(final String token, final Customer user) {
+    public VerificationToken(final String token, final Customer companyUser) {
         super();
+
         this.token = token;
-        this.user = user;
+        this.user = companyUser;
         this.expiryDate = calculateExpiryDate(EXPIRATION);
     }
+
+    public Customer getUser() {
+		return user;
+	}
+
+	public void setUser(Customer user) {
+		this.user = user;
+	}
+
+	public static int getExpiration() {
+		return EXPIRATION;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
 
     public Long getId() {
         return id;
@@ -52,14 +71,6 @@ public class PasswordResetToken {
 
     public void setToken(final String token) {
         this.token = token;
-    }
-
-    public Customer getuser() {
-        return user;
-    }
-
-    public void setuser(final Customer user) {
-        this.user = user;
     }
 
     public LocalDateTime getExpiryDate() {
@@ -75,7 +86,6 @@ public class PasswordResetToken {
         return expiryDateTime;
     }
 
-
     public void updateToken(final String token) {
         this.token = token;
         this.expiryDate = calculateExpiryDate(EXPIRATION);
@@ -83,24 +93,7 @@ public class PasswordResetToken {
 
     //
 
-    public static int getExpiration() {
-		return EXPIRATION;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
-
-    public Customer getUser() {
-		return user;
-	}
-
-	public void setUser(Customer user) {
-		this.user = user;
-	}
-
-
-	@Override
+    @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
@@ -121,7 +114,7 @@ public class PasswordResetToken {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final PasswordResetToken other = (PasswordResetToken) obj;
+        final VerificationToken other = (VerificationToken) obj;
         if (expiryDate == null) {
             if (other.expiryDate != null) {
                 return false;

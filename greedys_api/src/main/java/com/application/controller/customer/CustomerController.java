@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.application.persistence.model.user.Customer;
+import com.application.persistence.model.customer.Customer;
 import com.application.security.user.ISecurityUserService;
 import com.application.service.CustomerService;
 import com.application.service.ReservationService;

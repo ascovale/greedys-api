@@ -12,9 +12,9 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import com.application.persistence.model.user.PasswordResetToken;
 import com.application.persistence.dao.customer.PasswordResetTokenDAO;
-import com.application.persistence.model.user.Customer;
+import com.application.persistence.model.customer.Customer;
+import com.application.persistence.model.customer.PasswordResetToken;
 import com.application.security.user.ISecurityUserService;
 
 @Service

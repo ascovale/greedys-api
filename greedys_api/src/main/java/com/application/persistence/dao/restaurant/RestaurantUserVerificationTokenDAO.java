@@ -7,8 +7,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import com.application.persistence.model.customer.Customer;
 import com.application.persistence.model.restaurant.user.RestaurantUserVerificationToken;
-import com.application.persistence.model.user.Customer;
 @Repository
 public interface RestaurantUserVerificationTokenDAO extends JpaRepository<RestaurantUserVerificationToken, Long> {
 

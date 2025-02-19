@@ -14,10 +14,10 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.application.persistence.model.user.Privilege;
-import com.application.persistence.model.user.Role;
 import com.application.persistence.dao.customer.CustomerDAO;
-import com.application.persistence.model.user.Customer;
+import com.application.persistence.model.customer.Customer;
+import com.application.persistence.model.customer.Privilege;
+import com.application.persistence.model.customer.Role;
 import com.application.security.LoginAttemptService;
 
 @Service("customerUserDetailsService")

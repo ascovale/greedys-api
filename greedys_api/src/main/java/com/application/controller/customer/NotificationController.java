@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.application.persistence.model.user.Notification;
+import com.application.persistence.model.customer.Notification;
 import com.application.service.FirebaseService;
 import com.application.service.NotificationService;
 import com.application.service.UserFcmTokenService;

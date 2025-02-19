@@ -4,7 +4,7 @@ import java.util.Locale;
 
 import org.springframework.context.ApplicationEvent;
 
-import com.application.persistence.model.user.Customer;
+import com.application.persistence.model.customer.Customer;
 
 @SuppressWarnings("serial")
 public class UserOnRegistrationCompleteEvent extends ApplicationEvent {

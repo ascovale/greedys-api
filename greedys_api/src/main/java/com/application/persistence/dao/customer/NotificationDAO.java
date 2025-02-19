@@ -7,8 +7,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.application.persistence.model.user.Customer;
-import com.application.persistence.model.user.Notification;
+import com.application.persistence.model.customer.Customer;
+import com.application.persistence.model.customer.Notification;
 
 @Repository
 public interface NotificationDAO extends JpaRepository<Notification, Long>{

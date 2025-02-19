@@ -23,10 +23,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.application.persistence.model.customer.Customer;
 import com.application.persistence.model.restaurant.user.RestaurantPrivilege;
 import com.application.persistence.model.restaurant.user.RestaurantUser;
 import com.application.persistence.model.restaurant.user.RestaurantUserVerificationToken;
-import com.application.persistence.model.user.Customer;
 import com.application.service.RestaurantUserService;
 import com.application.web.util.GenericResponse;
 

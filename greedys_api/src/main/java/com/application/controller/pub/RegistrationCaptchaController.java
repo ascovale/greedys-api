@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.application.service.CustomerService;
 import com.application.captcha.ICaptchaService;
-import com.application.persistence.model.user.Customer;
+import com.application.persistence.model.customer.Customer;
 import com.application.registration.UserOnRegistrationCompleteEvent;
 import com.application.web.dto.post.NewUserDTO;
 import com.application.web.util.GenericResponse;

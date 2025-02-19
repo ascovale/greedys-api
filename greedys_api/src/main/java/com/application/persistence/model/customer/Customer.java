@@ -1,4 +1,4 @@
-package com.application.persistence.model.user;
+package com.application.persistence.model.customer;
 
 import java.util.Collection;
 import java.util.List;
@@ -41,7 +41,7 @@ public class Customer implements UserDetails {
 	@ManyToMany
 	@JoinTable(name = "user_has_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
 	private Collection<Role> roles;
-	@OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
+	@OneToMany(mappedBy = "customer", fetch = FetchType.EAGER)
 	private List<RestaurantUser> restaurantUsers;
 	private Boolean blooked = false;
 	private Boolean deleted = false;
@@ -58,11 +58,11 @@ public class Customer implements UserDetails {
 		this.restaurantUsers = restaurantUsers;
 	}
 
-	public CustomerOptions getOptions() {
+	public CustomerOptions getCustomerOptions() {
 		return options;
 	}
 
-	public void setOptions(CustomerOptions options) {
+	public void setCustomerOptions(CustomerOptions options) {
 		this.options = options;
 	}
 

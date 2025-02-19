@@ -4,8 +4,8 @@ import java.time.LocalDate;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
+import com.application.persistence.model.customer.Customer;
 import com.application.persistence.model.restaurant.user.RestaurantUser;
-import com.application.persistence.model.user.Customer;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

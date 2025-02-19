@@ -9,7 +9,7 @@ import org.springframework.security.web.WebAttributes;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
-import com.application.persistence.model.user.Customer;
+import com.application.persistence.model.customer.Customer;
 import com.application.web.dto.get.UserDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 

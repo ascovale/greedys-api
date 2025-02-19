@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Size;
 
 import com.application.controller.Validators.PasswordMatches;
 import com.application.controller.Validators.ValidEmail;
-import com.application.persistence.model.user.Customer;
+import com.application.persistence.model.customer.Customer;
 
 @PasswordMatches
 public class UserDTO {

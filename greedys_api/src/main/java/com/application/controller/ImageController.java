@@ -22,7 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.application.persistence.dao.customer.CustomerDAO;
-import com.application.persistence.model.user.Customer;
+import com.application.persistence.model.customer.Customer;
 
 @Controller
 public class ImageController {
