@@ -20,6 +20,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -46,8 +47,8 @@ public class Customer implements UserDetails {
 	private Boolean blooked = false;
 	private Boolean deleted = false;
 	private Integer toReadNotification = 0;
-	@OneToMany
-    private CustomerOptions options;
+	@OneToOne(mappedBy = "customer", fetch = FetchType.EAGER)
+    private CustomerOptions customerOptions;
 
 
 	public List<RestaurantUser> getRestaurantUsers() {
@@ -59,11 +60,11 @@ public class Customer implements UserDetails {
 	}
 
 	public CustomerOptions getCustomerOptions() {
-		return options;
+		return customerOptions;
 	}
 
 	public void setCustomerOptions(CustomerOptions options) {
-		this.options = options;
+		this.customerOptions = options;
 	}
 
 	public void setToReadNotification(Integer toReadNotification) {
