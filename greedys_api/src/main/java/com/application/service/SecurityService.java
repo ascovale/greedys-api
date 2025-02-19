@@ -40,16 +40,6 @@ public class SecurityService {
         }
         return false;
     }
-
-    @Transactional
-    public boolean isUserAdmin(@AuthenticationPrincipal UserDetails userDetails) {
-        return userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-    public boolean hasUserPermissionOnReservation(Long idReservation, @AuthenticationPrincipal User user) {
-        logger.debug("Checking user permission on reservation with id: {}", idReservation);
-        Reservation reservation = reservationService.findById(idReservation);
-        return hasUserPermissionOnReservation(reservation, user);
-    }
-
     @Transactional
     public boolean isRestaurantUser(Long idRestaurantUser, @AuthenticationPrincipal Customer user) {
         RestaurantUser restaurantUser = user.getRestaurantUsers().stream()
