@@ -30,7 +30,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 @RestController
-@RequestMapping("/user/notification")
+@RequestMapping("/customer/notification")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Notification", description = "Notification management APIs")
 public class NotificationController {

@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.application.service.UserService;
+import com.application.service.CustomerService;
 import com.application.web.util.GenericResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,17 +16,17 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.security.access.prepost.PreAuthorize;
 
-@RequestMapping("/user/allergy")
+@RequestMapping("/customer/allergy")
 @RestController
 public class AllergyController {
-    private final UserService userService;
+    private final CustomerService userService;
 
-    public AllergyController(UserService userService) {
+    public AllergyController(CustomerService userService) {
         this.userService = userService;
     }
 
     @PreAuthorize("hasRole('USER')")
-    @Operation(summary = "Add allergy to user", description = "Aggiunge un'allergia all'utente specificato tramite il suo ID")
+    @Operation(summary = "Add allergy to customer", description = "Aggiunge un'allergia all'utente specificato tramite il suo ID")
     @ApiResponse(responseCode = "200", description = "Allergia aggiunta con successo", 
                  content = @Content(mediaType = "application/json", 
                                     schema = @Schema(implementation = GenericResponse.class)))
@@ -38,7 +38,7 @@ public class AllergyController {
     }
 
     @PreAuthorize("hasRole('USER')")
-    @Operation(summary = "Remove allergy from user", description = "Rimuove un'allergia dall'utente specificato tramite il suo ID")
+    @Operation(summary = "Remove allergy from customer", description = "Rimuove un'allergia dall'utente specificato tramite il suo ID")
     @ApiResponse(responseCode = "200", description = "Allergia rimossa con successo", 
                  content = @Content(mediaType = "application/json", 
                                     schema = @Schema(implementation = GenericResponse.class)))

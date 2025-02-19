@@ -1,38 +1,38 @@
 // FILE: TestDataConfig.java
 package com.application.test;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 
+import com.application.mapper.Mapper.Weekday;
+import com.application.persistence.dao.customer.CustomerDAO;
 import com.application.persistence.dao.restaurant.RestaurantDAO;
 import com.application.persistence.dao.restaurant.RestaurantUserDAO;
 import com.application.persistence.dao.restaurant.ServiceDAO;
 import com.application.persistence.dao.restaurant.ServiceTypeDAO;
 import com.application.persistence.dao.restaurant.SlotDAO;
-import com.application.persistence.dao.user.UserDAO;
+import com.application.persistence.model.reservation.Service;
 import com.application.persistence.model.reservation.ServiceType;
 import com.application.persistence.model.reservation.Slot;
-import com.application.persistence.model.reservation.Service;
 import com.application.persistence.model.restaurant.Restaurant;
-import com.application.persistence.model.restaurant.RestaurantUser;
-import com.application.persistence.model.user.User;
-import com.application.service.UserService;
+import com.application.persistence.model.restaurant.user.RestaurantUser;
+import com.application.persistence.model.user.Customer;
+import com.application.service.CustomerService;
 import com.application.web.dto.post.NewUserDTO;
 
-import com.application.mapper.Mapper.Weekday;
-
 import jakarta.transaction.Transactional;
-
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 @Configuration
 public class TestDataConfig {
 
+	//TODO UNIRE QUESTA CLASSE CON SetupDataLoader.java
 	@Autowired
 	private RestaurantDAO restaurantDAO;
 	@Autowired
@@ -44,9 +44,9 @@ public class TestDataConfig {
 	@Autowired
 	private RestaurantUserDAO ruDAO;
 	@Autowired
-	private UserService userService;
+	private CustomerService userService;
 	@Autowired
-	private UserDAO userDAO;
+	private CustomerDAO userDAO;
 
 	@PostConstruct
 	public void init() {
@@ -92,13 +92,12 @@ public class TestDataConfig {
 			userDTO.setLastName("Di Michele");
 			userDTO.setPassword("Minosse100%");
 			userDTO.setEmail("info@lasoffittarenovatio.it");
-			User user= userService.registerNewUserAccount(userDTO);
+			Customer user= userService.registerNewUserAccount(userDTO);
 			user.setEnabled(true);
 			userDAO.save(user);
 
 			RestaurantUser ru = new RestaurantUser();
 			ru.setRestaurant(restaurant);
-			ru.setUser(user);
 			ruDAO.save(ru);
 		}
 	}

@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.application.persistence.model.Image;
 import com.application.persistence.model.reservation.Service;
+import com.application.persistence.model.restaurant.user.RestaurantUser;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;

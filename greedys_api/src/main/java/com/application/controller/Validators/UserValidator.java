@@ -1,7 +1,5 @@
 package com.application.controller.Validators;
 
-import jakarta.validation.constraints.NotNull;
-
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;

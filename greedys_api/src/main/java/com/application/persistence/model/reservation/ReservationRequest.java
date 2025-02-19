@@ -2,6 +2,11 @@ package com.application.persistence.model.reservation;
 
 import java.time.LocalDate;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
+import com.application.persistence.model.restaurant.user.RestaurantUser;
+import com.application.persistence.model.user.Customer;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -13,11 +18,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
-
-import org.springframework.format.annotation.DateTimeFormat;
-
-import com.application.persistence.model.restaurant.RestaurantUser;
-import com.application.persistence.model.user.User;
 
 @Entity
 @Table(name = "reservation_request")
@@ -38,7 +38,7 @@ public class ReservationRequest {
 	private ClientInfo user_info;
 	@ManyToOne(optional = true)
 	@JoinColumn(name = "user_id")
-	private User user;
+	private Customer user;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idslot")
 	private	Slot slot;
@@ -140,11 +140,11 @@ public class ReservationRequest {
 		this.restaurantUser = restaurantUser;
 	}
 
-	public User getUser() {
+	public Customer getUser() {
 		return user;
 	}
 
-	public void setUser(User user) {
+	public void setUser(Customer user) {
 		this.user = user;
 	}
 	

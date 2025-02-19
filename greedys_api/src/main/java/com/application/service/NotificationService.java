@@ -9,28 +9,28 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.application.persistence.dao.user.NotificationDAO;
-import com.application.persistence.dao.user.UserDAO;
+import com.application.persistence.dao.customer.CustomerDAO;
+import com.application.persistence.dao.customer.NotificationDAO;
 import com.application.persistence.model.reservation.Reservation;
 import com.application.persistence.model.user.Notification;
 import com.application.persistence.model.user.Notification.Type;
-import com.application.persistence.model.user.User;
+import com.application.persistence.model.user.Customer;
 import com.application.web.dto.NotificationDto;
 
 @Service
 public class NotificationService {
     private final NotificationDAO notificationDAO;
-    private final UserDAO userDAO;
+    private final CustomerDAO userDAO;
     private final FirebaseService firebaseService;
 
-    public NotificationService(NotificationDAO notificationDAO, UserDAO userDAO, FirebaseService firebaseService) {
+    public NotificationService(NotificationDAO notificationDAO, CustomerDAO userDAO, FirebaseService firebaseService) {
         this.notificationDAO = notificationDAO;
         this.userDAO = userDAO;
         this.firebaseService = firebaseService;
     }
 
     public Notification createReservationNotification(Reservation reservation,Type type) {
-        User user = getCurrentUser();
+        Customer user = getCurrentUser();
         Notification notification = new Notification();
         notification.setClientUser(user);
         user.setToReadNotification(user.getToReadNotification() + 1);
@@ -42,7 +42,7 @@ public class NotificationService {
         return notification;
     }
   
-    public List<NotificationDto> findByUser(User user) {
+    public List<NotificationDto> findByUser(Customer user) {
         List<Notification> notifications = notificationDAO.findByUser(user);
         return NotificationDto.toDto(notifications);
     }
@@ -59,14 +59,14 @@ public class NotificationService {
     }
     
     @Transactional
-    public void readNotification(User currentUser) {
-        User user = getCurrentUser();
+    public void readNotification(Customer currentUser) {
+        Customer user = getCurrentUser();
         user.setToReadNotification(0);
         userDAO.save(user);    
     }
     
-    public Integer countNotification(User currentUser) {
-        User user = userDAO.findById(currentUser.getId()).get();    
+    public Integer countNotification(Customer currentUser) {
+        Customer user = userDAO.findById(currentUser.getId()).get();    
         return user.getToReadNotification();
     }
     
@@ -74,10 +74,10 @@ public class NotificationService {
         notificationDAO.deleteById(idNotification);
     }
 
-    protected User getCurrentUser() {
+    protected Customer getCurrentUser() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (principal instanceof User) {
-            return ((User) principal);
+        if (principal instanceof Customer) {
+            return ((Customer) principal);
         } else {
             System.out.println("Questo non dovrebbe succedere");
             return null;
@@ -100,7 +100,7 @@ public class NotificationService {
     }
 
     public Page<Notification> getAllNotifications(Pageable pageable) {
-    User currentUser = getCurrentUser();
+    Customer currentUser = getCurrentUser();
     if (!currentUser.isEnabled()) {
         throw new IllegalStateException("User is not enabled");
     }

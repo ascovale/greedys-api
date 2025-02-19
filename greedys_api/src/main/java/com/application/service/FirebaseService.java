@@ -17,11 +17,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.application.persistence.dao.restaurant.RestaurantUserDAO;
-import com.application.persistence.model.restaurant.RestaurantNotification;
-import com.application.persistence.model.restaurant.RestaurantUser;
+import com.application.persistence.model.restaurant.user.RestaurantNotification;
+import com.application.persistence.model.restaurant.user.RestaurantUser;
 import com.application.persistence.model.user.Notification;
-import com.application.persistence.model.user.User;
-import com.application.persistence.model.user.UserFcmToken;
+import com.application.persistence.model.user.Customer;
+import com.application.persistence.model.user.CustomerFcmToken;
 import com.application.service.utils.NotificatioUtils;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.auth.FirebaseAuth;
@@ -60,9 +60,9 @@ public class FirebaseService {
 
     @Async
     public void sendFirebaseNotification(Notification notification) {
-        User user = notification.getClientUser();
-        List<UserFcmToken> tokens = userFcmTokenService.getTokensByUserId(user.getId());
-        for (UserFcmToken token : tokens) {
+        Customer user = notification.getClientUser();
+        List<CustomerFcmToken> tokens = userFcmTokenService.getTokensByUserId(user.getId());
+        for (CustomerFcmToken token : tokens) {
             try {
                 googleCredentials.refreshIfExpired();
                 String accessToken = googleCredentials.getAccessToken().getTokenValue();
@@ -105,9 +105,9 @@ public class FirebaseService {
     
     @Async
     public void sendFirebaseNotification(RestaurantNotification notification) {
-        User user = notification.getRestaurantUser().getUser();
-        List<UserFcmToken> tokens = userFcmTokenService.getTokensByUserId(user.getId());
-        for (UserFcmToken token : tokens) {
+        RestaurantUser user = notification.getRestaurantUser();
+        List<CustomerFcmToken> tokens = userFcmTokenService.getTokensByUserId(user.getId());
+        for (CustomerFcmToken token : tokens) {
             try {
                 googleCredentials.refreshIfExpired();
                 String accessToken = googleCredentials.getAccessToken().getTokenValue();
@@ -147,17 +147,17 @@ public class FirebaseService {
     }
 
     public Optional<String> getOldTokenIfPresent(String deviceId) {
-        UserFcmToken token = userFcmTokenService.getTokenByDeviceId(deviceId);
+        CustomerFcmToken token = userFcmTokenService.getTokenByDeviceId(deviceId);
         return Optional.of(token.getFcmToken());
     }
     @Async
     public void sendFirebaseRestaurantNotification(String title, String body, Long idRestaurantUser) {
         RestaurantUser restaurantUser = restaurantUserDAO.findById(idRestaurantUser)
             .orElseThrow(() -> new RuntimeException("RestaurantUser not found with id: " + idRestaurantUser));
-        User user = restaurantUser.getUser();
+        RestaurantUser user = restaurantUser;
         Long idUser = user.getId();
-        List<UserFcmToken> tokens = userFcmTokenService.getTokensByUserId(idUser);
-        for (UserFcmToken token : tokens) {
+        List<CustomerFcmToken> tokens = userFcmTokenService.getTokensByUserId(idUser);
+        for (CustomerFcmToken token : tokens) {
             try {
                 googleCredentials.refreshIfExpired();
                 String accessToken = googleCredentials.getAccessToken().getTokenValue();
@@ -196,8 +196,8 @@ public class FirebaseService {
 
     @Async
     public void sendFirebaseCustomerNotification(String title, String body, Long idUser) {
-        List<UserFcmToken> tokens = userFcmTokenService.getTokensByUserId(idUser);
-        for (UserFcmToken token : tokens) {
+        List<CustomerFcmToken> tokens = userFcmTokenService.getTokensByUserId(idUser);
+        for (CustomerFcmToken token : tokens) {
             try {
                 googleCredentials.refreshIfExpired();
                 String accessToken = googleCredentials.getAccessToken().getTokenValue();

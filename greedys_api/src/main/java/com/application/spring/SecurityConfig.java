@@ -1,9 +1,8 @@
 package com.application.spring;
 
-import static org.springframework.security.config.Customizer.withDefaults;
-
 import javax.sql.DataSource;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -28,7 +27,8 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.application.security.jwt.JwtRequestFilter;
-import com.application.security.user.UserRememberMeServices;
+import com.application.security.user.customer.CustomerUserRememberMeServices;
+import com.application.security.user.restaurant.RestaurantUserRememberMeServices;
 
 @Configuration
 @EnableWebSecurity
@@ -36,33 +36,66 @@ import com.application.security.user.UserRememberMeServices;
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
-    private final UserDetailsService userDetailsService;
-    private final JwtRequestFilter jwtRequestFilter;
+    private final UserDetailsService restaurantUserDetailsService;
+    private final UserDetailsService customerUserDetailsService;
+    private final JwtRequestFilter restaurantJwtRequestFilter;
+    private final JwtRequestFilter customerJwtRequestFilter;
 
-    public SecurityConfig(UserDetailsService userDetailsService, JwtRequestFilter jwtRequestFilter,
+    public SecurityConfig(
+            @Qualifier("restaurantUserDetailsService") UserDetailsService restaurantUserDetailsService,
+            @Qualifier("customerUserDetailsService") UserDetailsService customerUserDetailsService,
+            @Qualifier("customerJwtRequestFilter") JwtRequestFilter customerJwtRequestFilter,
+            @Qualifier("restaurantJwtRequestFilter") JwtRequestFilter restaurantJwtRequestFilter,
             DataSource dataSource) {
-        this.userDetailsService = userDetailsService;
-        this.jwtRequestFilter = jwtRequestFilter;
+        this.restaurantUserDetailsService = restaurantUserDetailsService;
+        this.customerUserDetailsService = customerUserDetailsService;
+        this.restaurantJwtRequestFilter = restaurantJwtRequestFilter;
+        this.customerJwtRequestFilter = customerJwtRequestFilter;
     }
 
     @Bean
-    SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain restaurantUserFilterChain(HttpSecurity http) throws Exception {
         http
-                .requiresChannel(channel -> channel
-                        .anyRequest().requiresSecure())
+                .securityMatcher("/restaurant_user/**")
+                .requiresChannel(channel -> channel.anyRequest().requiresSecure())
                 .csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Use the cors filter
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/doc**", "/swagger-ui/**",
+
+                        .requestMatchers(/* "/restaurant/public/**", "/restaurant_user/swagger-ui/**",
+                                "/restaurant_user/v3/api-docs**",*/
+                                /* "/restaurant_user/swagger-ui/**", "/restaurant_user/v3/api-docs**",*/
+                                "/doc**", "/swagger-ui/**",
                                 "/register/**", "/v3/api-docs*/**", "/api/**",
                                 "/auth/**", "/restaurant/search*", "/restaurant/*/open-days*",
                                 "/restaurant/*/day-slots*", "/restaurant/*/services",
-                                "/reservation/**", "/error*", "/actuator/health", "/public/**").permitAll()
+                                "/reservation/**", "/error*", "/actuator/health", "/public/**"
+                        )
+                        .permitAll().anyRequest().authenticated())
+                .sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(restaurantJwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+        return http.build();
+    }
+
+    @Bean
+    SecurityFilterChain customerFilterChain(HttpSecurity http) throws Exception {
+        http
+                .securityMatcher("/customer/**")
+                .requiresChannel(channel -> channel.anyRequest().requiresSecure())
+                .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .authorizeHttpRequests(authz -> authz
+                        .requestMatchers(/* "/customer/public/**", "/customer/swagger-ui/**", "/customer/v3/api-docs**",*/
+                        
+                                "/doc**", "/swagger-ui/**",
+                                "/register/**", "/v3/api-docs*/**", "/api/**",
+                                "/auth/**", "/restaurant/search*", "/restaurant/*/open-days*",
+                                "/restaurant/*/day-slots*", "/restaurant/*/services",
+                                "/reservation/**", "/error*", "/actuator/health", "/public/**")
+                        .permitAll()
                         .anyRequest().authenticated())
-                .oauth2Login(withDefaults()) // Enable OAuth2 authentication
-                .sessionManagement(management -> management
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+                .sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(customerJwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
@@ -81,9 +114,18 @@ public class SecurityConfig {
     }
 
     @Bean
-    AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
+    AuthenticationManager authenticationManager1(HttpSecurity http) throws Exception {
         AuthenticationManagerBuilder auth = http.getSharedObject(AuthenticationManagerBuilder.class);
-        auth.userDetailsService(userDetailsService)
+        auth.userDetailsService(restaurantUserDetailsService)
+                .passwordEncoder(passwordEncoder());
+
+        return auth.build();
+    }
+
+    @Bean
+    AuthenticationManager authenticationManager2(HttpSecurity http) throws Exception {
+        AuthenticationManagerBuilder auth = http.getSharedObject(AuthenticationManagerBuilder.class);
+        auth.userDetailsService(customerUserDetailsService)
                 .passwordEncoder(passwordEncoder());
 
         return auth.build();
@@ -99,9 +141,16 @@ public class SecurityConfig {
         return new SessionRegistryImpl();
     }
 
-    @Bean(name = "userRememberMe")
-    RememberMeServices rememberMeServices() {
-        return new UserRememberMeServices("theKey", userDetailsService, new InMemoryTokenRepositoryImpl());
+    @Bean(name = "customerUserRememberMe")
+    RememberMeServices rememberMeServices1() {
+        return new CustomerUserRememberMeServices("theKey", customerUserDetailsService,
+                new InMemoryTokenRepositoryImpl());
+    }
+
+    @Bean(name = "restaurantUserRememberMe")
+    RememberMeServices rememberMeServices2() {
+        return new RestaurantUserRememberMeServices("theKey", restaurantUserDetailsService,
+                new InMemoryTokenRepositoryImpl());
     }
 
     @Bean

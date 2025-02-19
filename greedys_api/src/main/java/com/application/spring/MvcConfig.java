@@ -1,10 +1,10 @@
 package com.application.spring;
 
-import java.util.Locale;
-import java.util.Properties;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.io.IOException;
+import java.util.Locale;
+import java.util.Properties;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.ApplicationContext;
@@ -33,7 +33,6 @@ import org.thymeleaf.templatemode.TemplateMode;
 
 import com.application.controller.Validators.EmailValidator;
 import com.application.controller.Validators.PasswordMatchesValidator;
-import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 
 @Configuration
 @EnableAsync

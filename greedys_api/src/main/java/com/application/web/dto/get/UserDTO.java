@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Size;
 
 import com.application.controller.Validators.PasswordMatches;
 import com.application.controller.Validators.ValidEmail;
-import com.application.persistence.model.user.User;
+import com.application.persistence.model.user.Customer;
 
 @PasswordMatches
 public class UserDTO {
@@ -26,7 +26,7 @@ public class UserDTO {
     @NotNull
     private Long id;
 
-    public UserDTO(User user) {
+    public UserDTO(Customer user) {
         this.id = user.getId();
         this.firstName = user.getName();
         this.lastName = user.getSurname();

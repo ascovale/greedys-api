@@ -8,28 +8,29 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.application.persistence.dao.customer.ReservationDAO;
+import com.application.persistence.dao.customer.ReservationLogDAO;
+import com.application.persistence.dao.customer.ReservationRequestDAO;
 import com.application.persistence.dao.restaurant.ClosedDayDAO;
 import com.application.persistence.dao.restaurant.RestaurantDAO;
+import com.application.persistence.dao.restaurant.RestaurantUserDAO;
 import com.application.persistence.dao.restaurant.ServiceDAO;
-import com.application.persistence.dao.user.ReservationDAO;
-import com.application.persistence.dao.user.ReservationLogDAO;
-import com.application.persistence.dao.user.ReservationRequestDAO;
 import com.application.persistence.model.reservation.ClientInfo;
 import com.application.persistence.model.reservation.Reservation;
 import com.application.persistence.model.reservation.ReservationLog;
 import com.application.persistence.model.reservation.ReservationRequest;
 import com.application.persistence.model.reservation.Slot;
 import com.application.persistence.model.restaurant.Restaurant;
-import com.application.persistence.model.restaurant.RestaurantNotification;
+import com.application.persistence.model.restaurant.user.RestaurantNotification;
+import com.application.persistence.model.restaurant.user.RestaurantUser;
 import com.application.persistence.model.user.Notification.Type;
-import com.application.persistence.model.user.User;
+import com.application.persistence.model.user.Customer;
 import com.application.web.dto.get.ReservationDTO;
 import com.application.web.dto.post.NewReservationDTO;
 import com.application.web.dto.post.admin.AdminNewReservationDTO;
@@ -58,11 +59,13 @@ public class ReservationService {
     private final RestaurantNotificationService restaurantNotificationService;
     private final NotificationService customerNotificationService;
     private final RestaurantDAO restaurantDAO;
+    private RestaurantUserDAO restaurantUserDAO;
 
-    public ReservationService(ReservationDAO reservationDAO, ReservationRequestDAO reservationRequestDAO, 
-                              ReservationLogDAO reservationLogDAO, ServiceDAO serviceDAO, ClosedDayDAO closedDaysDAO, 
-                              RestaurantNotificationService restaurantNotificationService, 
-                              NotificationService customerNotificationService, RestaurantDAO restaurantDAO) {
+    public ReservationService(ReservationDAO reservationDAO, ReservationRequestDAO reservationRequestDAO,
+            ReservationLogDAO reservationLogDAO, ServiceDAO serviceDAO, ClosedDayDAO closedDaysDAO,
+            RestaurantNotificationService restaurantNotificationService,
+            NotificationService customerNotificationService, RestaurantDAO restaurantDAO,
+            RestaurantUserDAO restaurantUserDAO) {
         this.reservationDAO = reservationDAO;
         this.reservationRequestDAO = reservationRequestDAO;
         this.reservationLogDAO = reservationLogDAO;
@@ -71,6 +74,7 @@ public class ReservationService {
         this.restaurantNotificationService = restaurantNotificationService;
         this.customerNotificationService = customerNotificationService;
         this.restaurantDAO = restaurantDAO;
+        this.restaurantUserDAO = restaurantUserDAO;
     }
 
     @Transactional
@@ -112,7 +116,7 @@ public class ReservationService {
         if (reservationDto.isAnonymous()) {
             reservation.set_user_info(reservationDto.getClientUser());
         } else {
-            User user = entityManager.getReference(User.class, reservationDto.getUser_id());
+            Customer user = entityManager.getReference(Customer.class, reservationDto.getUser_id());
             reservation.setUser(user);
             customerNotificationService.createReservationNotification(reservation, Type.NEW_RESERVATION);
         }
@@ -173,7 +177,7 @@ public class ReservationService {
         reservation.setCreationDate(LocalDate.now());
         restaurantNotificationService.createNotificationsForRestaurant(reservation.getRestaurant(),
                 RestaurantNotification.Type.REQUEST);
-        User user = getCurrentUser();
+        Customer user = getCurrentUser();
         reservation.setCreator(getCurrentUser());
         reservation.setUser(user);
         user.getReservations().add(reservation);
@@ -275,7 +279,7 @@ public class ReservationService {
     }
 
     @Transactional
-    public void adminModifyReservation(Long oldReservationId, NewReservationDTO dTO, User currentUser) {
+    public void adminModifyReservation(Long oldReservationId, NewReservationDTO dTO, Customer currentUser) {
         Reservation reservation = reservationDAO.findById(oldReservationId)
                 .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
         reservationLogDAO.save(new ReservationLog(reservation, getCurrentUser()));
@@ -292,7 +296,7 @@ public class ReservationService {
     }
 
     @Transactional
-    public void restaurantModifyReservation(Long oldReservationId, NewReservationDTO dTO, User currentUser) {
+    public void restaurantModifyReservation(Long oldReservationId, NewReservationDTO dTO, Customer currentUser) {
         Reservation reservation = reservationDAO.findById(oldReservationId)
                 .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
         reservationLogDAO.save(new ReservationLog(reservation, getCurrentUser()));
@@ -308,7 +312,7 @@ public class ReservationService {
 
     @Transactional
     public void requestModifyReservation(Long oldReservationId, CustomerNewReservationDTO dTO) {
-        User currentUser = getCurrentUser();
+        Customer currentUser = getCurrentUser();
         Reservation reservation = reservationDAO.findById(oldReservationId)
                 .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
         ReservationRequest reservationRequest = new ReservationRequest();
@@ -475,10 +479,10 @@ public class ReservationService {
         return reservation;
     }
 
-    private User getCurrentUser() {
+    private Customer getCurrentUser() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (principal instanceof User) {
-            return ((User) principal);
+        if (principal instanceof Customer) {
+            return ((Customer) principal);
         } else {
             System.out.println("Questo non dovrebbe succedere");
             return null;
@@ -504,4 +508,71 @@ public class ReservationService {
         return reservationDAO.findByRestaurantAndDateBetweenAndAccepted(idRestaurant, start, end, pageable)
                 .map(ReservationDTO::new);
     }
+
+    public Collection<ReservationDTO> getReservationsFromRestaurantUser(Long idRestaurantUser, LocalDate start,
+            LocalDate end) {
+        RestaurantUser ruser = restaurantUserDAO.findById(idRestaurantUser)
+                .orElseThrow(() -> new NoSuchElementException("Restaurant user not found"));
+        return getReservations(ruser.getRestaurant().getId(), start, end);
+
+    }
+
+    public Collection<ReservationDTO> getAcceptedReservationsFromRestaurantUser(Long idRestaurantUser, LocalDate start,
+            LocalDate end) {
+        RestaurantUser ruser = restaurantUserDAO.findById(idRestaurantUser)
+                .orElseThrow(() -> new NoSuchElementException("Restaurant user not found"));
+        return getAcceptedReservations(ruser.getRestaurant().getId(), start, end);
+    }
+
+    public Page<ReservationDTO> getReservationsPageableFromRestaurantUser(Long idRestaurantUser, LocalDate start,
+            LocalDate end, Pageable pageable) {
+
+        RestaurantUser ruser = restaurantUserDAO.findById(idRestaurantUser)
+                .orElseThrow(() -> new NoSuchElementException("Restaurant user not found"));
+        return getReservationsPageable(ruser.getRestaurant().getId(), start, end, pageable);
+    }
+
+    public Collection<ReservationDTO> getPendingReservationsFromRestaurantUser(Long idRestaurantUser, LocalDate start,
+            LocalDate end) {
+        RestaurantUser ruser = restaurantUserDAO.findById(idRestaurantUser)
+                .orElseThrow(() -> new NoSuchElementException("Restaurant user not found"));
+        return getPendingReservations(ruser.getRestaurant().getId(), start, end);
+    }
+
+    public Collection<ReservationDTO> getPendingReservationsFromRestaurantUser(Long idRestaurantUser, LocalDate start) {
+        RestaurantUser ruser = restaurantUserDAO.findById(idRestaurantUser)
+                .orElseThrow(() -> new NoSuchElementException("Restaurant user not found"));
+        return getPendingReservations(ruser.getRestaurant().getId(), start);
+    }
+
+    public Collection<ReservationDTO> getPendingReservationsFromRestaurantUser(Long idRestaurantUser) {
+        RestaurantUser ruser = restaurantUserDAO.findById(idRestaurantUser)
+                .orElseThrow(() -> new NoSuchElementException("Restaurant user not found"));
+        return getPendingReservations(ruser.getRestaurant().getId());
+    }
+
+    public void markReservationAcceptedFromRestauantUser(Long idRestaurantUser, Long reservationId, Boolean accepted) {
+        RestaurantUser ruser = restaurantUserDAO.findById(idRestaurantUser)
+                .orElseThrow(() -> new NoSuchElementException("Restaurant user not found"));
+        markReservationAccepted(ruser.getRestaurant().getId(), reservationId, accepted);
+    }
+
+    public void markReservationSeatedFromRestauantUser(Long idRestaurantUser, Long reservationId, Boolean seated) {
+        RestaurantUser ruser = restaurantUserDAO.findById(idRestaurantUser)
+                .orElseThrow(() -> new NoSuchElementException("Restaurant user not found"));
+        markReservationSeated(ruser.getRestaurant().getId(), reservationId, seated);
+    }
+
+    public void markReservationNoShowFromRestauantUser(Long idRestaurantUser, Long reservationId, Boolean noShow) {
+        RestaurantUser ruser = restaurantUserDAO.findById(idRestaurantUser)
+                .orElseThrow(() -> new NoSuchElementException("Restaurant user not found"));
+        markReservationNoShow(ruser.getRestaurant().getId(), reservationId, noShow);
+    }
+
+    public void markReservationRejectedFromRestauantUser(Long idRestaurantUser, Long reservationId, Boolean rejected) {
+        RestaurantUser ruser = restaurantUserDAO.findById(idRestaurantUser)
+                .orElseThrow(() -> new NoSuchElementException("Restaurant user not found"));
+        markReservationRejected(ruser.getRestaurant().getId(), reservationId, rejected);
+    }
+
 }

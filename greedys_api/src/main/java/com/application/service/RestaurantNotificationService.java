@@ -13,8 +13,8 @@ import com.application.persistence.dao.restaurant.RestaurantNotificationDAO;
 import com.application.persistence.dao.restaurant.RestaurantUserDAO;
 import com.application.persistence.model.reservation.Reservation;
 import com.application.persistence.model.restaurant.Restaurant;
-import com.application.persistence.model.restaurant.RestaurantNotification;
-import com.application.persistence.model.restaurant.RestaurantUser;
+import com.application.persistence.model.restaurant.user.RestaurantNotification;
+import com.application.persistence.model.restaurant.user.RestaurantUser;
 
 import jakarta.transaction.Transactional;
 

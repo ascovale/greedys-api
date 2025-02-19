@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,27 +21,23 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.application.persistence.dao.ImageRepository;
-import com.application.persistence.dao.user.UserDAO;
-import com.application.persistence.model.Image;
-import com.application.persistence.model.user.User;
-import com.application.service.RestaurantService;
+import com.application.persistence.dao.customer.CustomerDAO;
+import com.application.persistence.model.user.Customer;
 
 @Controller
 public class ImageController {
 	@Autowired
-	private UserDAO userRepository;
-	@Autowired
-	private ImageRepository imageRepository;
-	@Autowired
-	private RestaurantService restaurantService;
+	private CustomerDAO userRepository;
+	//@Autowired
+	//private ImageRepository imageRepository;
+	
 	@Autowired
 	private Path rootLocation;    
 
-	public ImageController(UserDAO userRepository, Path rootLocation, ImageRepository imageRepository) {
+	public ImageController(CustomerDAO userRepository, Path rootLocation) { //, ImageRepository imageRepository) {
 		this.userRepository = userRepository;
 		this.rootLocation = rootLocation;
-		this.imageRepository = imageRepository;
+		//this.imageRepository = imageRepository;
 	}
 	
 
@@ -51,9 +46,9 @@ public class ImageController {
 		if (principal == null) {
 			return "redirect:/find";
 		}
-
-		User user = userRepository.findByEmail(principal.getName());
-		/*Questo codice va tutta in una service e va fatto transactional */
+		/* 
+		Customer user = userRepository.findByEmail(principal.getName());
+		Questo codice va tutta in una service e va fatto transactional */
 
 		/*List<String> stringss = user.getRestaurants().getRestaurantImages().stream()
 				.map(image -> this.rootLocation.resolve(image.getName()))
@@ -88,7 +83,7 @@ public class ImageController {
 		String uuid = UUID.randomUUID().toString();
 
 		String imagePath = this.rootLocation.resolve(uuid + ".jpg").toString();
-		Image image = new Image(imagePath);
+		//Image image = new Image(imagePath);
 		Files.copy(file.getInputStream(), this.rootLocation.resolve(imagePath));
 		//deve essere aggiunto al ristorante non all'utente
 		//restaurantService.addImage(getCurrentUser().getRestaurants(),image);
@@ -103,9 +98,9 @@ public class ImageController {
 	@GetMapping("/search")
 	public String findPhotos(@RequestParam String name, Model model)  {
 
-		User user;
+		//Customer user;
 		try {
-			user = userRepository.findByEmail(getCurrentUser().getEmail());
+			//user = userRepository.findByEmail(getCurrentUser().getEmail());
 		} catch (Exception e) {
 			return "redirect:/find";
 		}
@@ -128,12 +123,12 @@ public class ImageController {
 	@RequestMapping("/delete")
 	public String findPhotos(Principal principal, @RequestParam String text, String string) throws Exception {
 
-		User user = userRepository.findByEmail(principal.getName());
+		Customer user = userRepository.findByEmail(principal.getName());
 
 		text = text.substring(text.lastIndexOf("/"));
 		text = this.rootLocation + text;
 
-		Image image = imageRepository.findByName(text);
+		//Image image = imageRepository.findByName(text);
 
 		//user.getRestaurants().getRestaurantImages().remove(image);
 
@@ -142,14 +137,14 @@ public class ImageController {
 		return "redirect:/";
 
 	}
-	
-	private User getCurrentUser() {
+	/* 
+	private Customer getCurrentUser() {
 		Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-		if (principal instanceof User) {
-			return ((User) principal);
+		if (principal instanceof Customer) {
+			return ((Customer) principal);
 		} else {
 			System.out.println("Questo non dovrebbe succedere");
 			return null;
 		}
-	}
+	}*/
 }

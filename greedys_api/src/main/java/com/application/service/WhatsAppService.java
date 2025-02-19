@@ -5,7 +5,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.application.persistence.model.user.Notification;
-import com.application.persistence.model.user.User;
+import com.application.persistence.model.user.Customer;
 import com.application.spring.TwilioConfig;
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.type.PhoneNumber;
@@ -26,7 +26,7 @@ public class WhatsAppService {
     }
 
     public void sendWhatsAppMessage(Notification notification) {
-        String phoneNumber = notification.getClientUser().getNumero_di_telefono();
+        String phoneNumber = notification.getClientUser().getPhoneNumber();
         String message = notification.getText();
         sendWhatsAppMessage(phoneNumber, message);
     }
@@ -37,10 +37,10 @@ public class WhatsAppService {
         } else {
             throw new IllegalStateException("Utente non autenticato");
         }*/
-    protected User getCurrentUser() {
+    protected Customer getCurrentUser() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (principal instanceof User) {
-            return ((User) principal);
+        if (principal instanceof Customer) {
+            return ((Customer) principal);
         } else {
             System.out.println("Questo non dovrebbe succedere");
             return null;

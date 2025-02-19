@@ -18,8 +18,9 @@ public class ReCaptchaAttemptService {
     public ReCaptchaAttemptService() {
         super();
         attemptsCache = CacheBuilder.newBuilder().expireAfterWrite(4, TimeUnit.HOURS).build(new CacheLoader<String, Integer>() {
+            @SuppressWarnings("null")
             @Override
-            public Integer load(final @Nonnull String key) {
+            public Integer load(@Nonnull final String key) {
                 return 0;
             }
         });

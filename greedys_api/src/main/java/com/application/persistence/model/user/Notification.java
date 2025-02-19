@@ -28,7 +28,7 @@ public class Notification {
 	private Type type;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "iduser")
-	private User user;
+	private Customer user;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idreservation")
 	private Reservation reservation;
@@ -54,11 +54,11 @@ public class Notification {
 		this.type = type;
 	}
 
-	public User getClientUser() {
+	public Customer getClientUser() {
 		return user;
 	}
 
-	public void setClientUser(User user) {
+	public void setClientUser(Customer user) {
 		this.user = user;
 	}
 

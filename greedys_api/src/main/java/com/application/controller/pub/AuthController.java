@@ -16,9 +16,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.application.persistence.model.user.User;
+import com.application.persistence.model.user.Customer;
 import com.application.security.jwt.JwtUtil;
-import com.application.service.UserService;
+import com.application.service.CustomerService;
 import com.application.web.dto.AuthRequestDTO;
 import com.application.web.dto.AuthRequestGoogleDTO;
 import com.application.web.dto.AuthResponseDTO;
@@ -39,16 +39,15 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping(value = "/public/auth", produces = "application/json")
 public class AuthController {
-
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     private AuthenticationManager authenticationManager;
     private JwtUtil jwtUtil;
-    private UserService userService;
+    private CustomerService userService;
 
     public AuthController(AuthenticationManager authenticationManager,
             JwtUtil jwtUtil,
-            UserService userService) {
+            CustomerService userService) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.userService = userService;
@@ -66,7 +65,7 @@ public class AuthController {
                 new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(),
                         authenticationRequest.getPassword()));
 
-        final User userDetails = userService.findUserByEmail(authenticationRequest.getUsername());
+        final Customer userDetails = userService.findUserByEmail(authenticationRequest.getUsername());
         final String jwt = jwtUtil.generateToken(userDetails);
         final AuthResponseDTO responseDTO = new AuthResponseDTO(jwt, new UserDTO(userDetails));
 
@@ -89,7 +88,7 @@ public class AuthController {
             String name = (String) idToken.getPayload().get("name");
             logger.warn("Google token verified. Email: {}, Name: {}", email, name);
             // quali dati vogliamo prendere da google?
-            User user = userService.findUserByEmail(email);
+            Customer user = userService.findUserByEmail(email);
             if (user == null) {
                 NewUserDTO accountDto = new NewUserDTO();
                 // devo verificare questa cosa

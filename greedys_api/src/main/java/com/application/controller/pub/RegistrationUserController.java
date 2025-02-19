@@ -19,7 +19,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,10 +28,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.persistence.model.user.Privilege;
-import com.application.persistence.model.user.User;
+import com.application.persistence.model.user.Customer;
 import com.application.persistence.model.user.VerificationToken;
 import com.application.registration.UserOnRegistrationCompleteEvent;
-import com.application.service.UserService;
+import com.application.service.CustomerService;
 import com.application.web.dto.post.NewUserDTO;
 import com.application.web.util.GenericResponse;
 
@@ -51,7 +50,7 @@ public class RegistrationUserController {
     private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
     @Autowired
-    private UserService userService;
+    private CustomerService userService;
 
     @Autowired
     private MessageSource messages;
@@ -83,7 +82,7 @@ public class RegistrationUserController {
     @PostMapping("/")
     public ResponseEntity<String> registerUserAccount(@Valid @RequestBody NewUserDTO accountDto, HttpServletRequest request) {
         try {
-            User user = userService.registerNewUserAccount(accountDto);
+            Customer user = userService.registerNewUserAccount(accountDto);
             eventPublisher.publishEvent(new UserOnRegistrationCompleteEvent(user, Locale.ITALIAN, getAppUrl(request)));
             return ResponseEntity.ok("User registered successfully");
         } catch (Exception e) {
@@ -97,7 +96,7 @@ public class RegistrationUserController {
         Locale locale = request.getLocale();
         final String result = userService.validateVerificationToken(token);
         if (result.equals("valid")) {
-            final User user = userService.getUser(token);
+            final Customer user = userService.getUser(token);
             // if (user.isUsing2FA()) {
             // model.addAttribute("qr", userService.generateQRUrl(user));
             // return "redirect:/qrcode.html?lang=" + locale.getLanguage();
@@ -147,13 +146,13 @@ public class RegistrationUserController {
     }*/
 
     @SuppressWarnings("unused")
-	private SimpleMailMessage constructResetTokenEmail(final String contextPath, final Locale locale, final String token, final User user) {
+	private SimpleMailMessage constructResetTokenEmail(final String contextPath, final Locale locale, final String token, final Customer user) {
         final String url = contextPath + "/user/changePassword?id=" + user.getId() + "&token=" + token;
         final String message = messages.getMessage("message.resetPassword", null, locale);
         return constructEmail("Reset Password", message + " \r\n" + url, user);
     }
 
-    private SimpleMailMessage constructEmail(String subject, String body, User user) {
+    private SimpleMailMessage constructEmail(String subject, String body, Customer user) {
         final SimpleMailMessage email = new SimpleMailMessage();
         email.setSubject(subject);
         email.setText(body);
@@ -181,7 +180,7 @@ public class RegistrationUserController {
     }
         */
 
-    public void authWithoutPassword(User user) {
+    public void authWithoutPassword(Customer user) {
         List<Privilege> privileges = user.getRoles().stream().map(role -> role.getPrivileges()).flatMap(list -> list.stream()).distinct().collect(Collectors.toList());
         List<GrantedAuthority> authorities = privileges.stream().map(p -> new SimpleGrantedAuthority(p.getName())).collect(Collectors.toList());
 
@@ -190,11 +189,7 @@ public class RegistrationUserController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 	
-	@GetMapping("/users")
-	public String listUsers(Model model){
-		model.addAttribute("users", userService.findAll());
-		return "users";
-	}
+
 
 
 }

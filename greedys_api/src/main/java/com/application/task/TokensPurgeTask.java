@@ -7,8 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.application.persistence.dao.user.PasswordResetTokenDAO;
-import com.application.persistence.dao.user.VerificationTokenDAO;
+import com.application.persistence.dao.customer.PasswordResetTokenDAO;
+import com.application.persistence.dao.customer.VerificationTokenDAO;
 
 @Service
 @Transactional

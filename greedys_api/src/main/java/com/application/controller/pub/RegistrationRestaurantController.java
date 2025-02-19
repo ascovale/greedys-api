@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.application.service.RestaurantService;
 import com.application.service.RestaurantUserService;
-import com.application.web.dto.get.RestaurantDTO;
 import com.application.web.dto.post.NewRestaurantDTO;
 import com.application.web.dto.post.NewRestaurantUserDTO;
 import com.application.web.dto.post.NewUserDTO;
@@ -50,7 +49,7 @@ public class RegistrationRestaurantController {
     public GenericResponse registerRestaurant(@RequestBody NewRestaurantDTO restaurantDto) {
         LOGGER.debug("Registering restaurant with information:", restaurantDto);
         System.out.println("Registering restaurant with information:" + restaurantDto.getName());
-        RestaurantDTO r = restaurantService.registerRestaurant(restaurantDto);
+        restaurantService.registerRestaurant(restaurantDto);
         return new GenericResponse("success");
     }
 
@@ -62,21 +61,10 @@ public class RegistrationRestaurantController {
     @PostMapping("/registerRestaurantAndUser")
     public GenericResponse registerRestaurantAndUser(@RequestBody NewRestaurantDTO restaurantDto,
             NewUserDTO accountDto, HttpServletRequest request) {
-                /* 
         LOGGER.debug("Registering restaurant with information:", restaurantDto);
-        System.out.println("Registering restaurant with information:" + restaurantDto.getName());
-        try {
-
-            //TODO dovrebbe chiamare restaurantService.registerRestaurantAndUser ...
-            User user = userService.registerNewUserAccount(accountDto);
-            eventPublisher.publishEvent(new UserOnRegistrationCompleteEvent(user, Locale.ITALIAN, getAppUrl(request)));
-            restaurantDto.setOwnerId(user.getId());
-            RestaurantDTO r = restaurantService.registerRestaurant(restaurantDto);
-            return new GenericResponse("success");
-        } catch (Exception e) {
-            return new GenericResponse("error", e.getMessage());
-        }*/
-        return new GenericResponse("error", "Not implemented");
+        
+        restaurantService.registerRestaurantAndUser(restaurantDto, accountDto);
+        return new GenericResponse("success");
 
     }
 

@@ -9,7 +9,7 @@ import org.springframework.security.web.WebAttributes;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
-import com.application.persistence.model.user.User;
+import com.application.persistence.model.user.Customer;
 import com.application.web.dto.get.UserDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -37,14 +37,14 @@ public class UserLoginAuthenticationSuccessHandler implements AuthenticationSucc
 
         // Qui puoi ottenere i dettagli dell'utente e convertirli in JSON
         // Ad esempio, supponendo che tu abbia un metodo getUserDetails che restituisce i dati dell'utente
-        UserDTO userDetails = new UserDTO((User) authentication.getPrincipal());
+        UserDTO userDetails = new UserDTO((Customer) authentication.getPrincipal());
         response.getWriter().write(objectMapper.writeValueAsString(userDetails));
 
         response.getWriter().flush();
     }
 
     private String getUserName(final Authentication authentication) {
-        return ((User) authentication.getPrincipal()).getName();
+        return ((Customer) authentication.getPrincipal()).getName();
     }
 
     private void addWelcomeCookie(final String user, final HttpServletResponse response) {

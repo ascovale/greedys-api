@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.application.mapper.Mapper.Weekday;
+import com.application.persistence.dao.restaurant.RestaurantUserDAO;
 import com.application.persistence.dao.restaurant.ServiceDAO;
 import com.application.persistence.dao.restaurant.SlotDAO;
 import com.application.persistence.model.reservation.Service;
@@ -25,6 +26,8 @@ public class SlotService {
 
     @Autowired
     private ServiceDAO serviceDao;
+    @Autowired
+    private RestaurantUserDAO restaurantUserDao;
 
     public Set<Weekday> getAvailableDays(Long idService) {
         return slotDAO.findByService_Id(idService).stream()
@@ -47,7 +50,8 @@ public class SlotService {
     }
 
     @Transactional
-    public void addSlot(Long idRestaurant, RestaurantNewSlotDTO slotDto) {
+    public void addSlot(Long idRestaurantUser, RestaurantNewSlotDTO slotDto) {
+        Long idRestaurant = restaurantUserDao.findById(idRestaurantUser).get().getRestaurant().getId();
         Service service = serviceDao.findById(slotDto.getServiceId()).get();
         if (service == null) {
             throw new IllegalArgumentException("Service not found.");

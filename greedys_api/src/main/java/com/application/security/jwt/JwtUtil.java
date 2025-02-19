@@ -17,7 +17,7 @@ import java.util.function.Function;
 
 @Component
 public class JwtUtil {
-
+    //TODO differenziare il restaurant user secret e il customer user secret anche la chiave
     @Value("${jwt.secret}")
     private String secret;
 

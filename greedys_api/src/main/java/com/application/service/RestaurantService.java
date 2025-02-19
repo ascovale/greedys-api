@@ -20,13 +20,12 @@ import com.application.persistence.dao.restaurant.RestaurantUserDAO;
 import com.application.persistence.model.Image;
 import com.application.persistence.model.restaurant.Restaurant;
 import com.application.persistence.model.restaurant.RestaurantCategory;
-import com.application.persistence.model.restaurant.RestaurantRole;
-import com.application.persistence.model.restaurant.RestaurantUser;
+import com.application.persistence.model.restaurant.user.RestaurantRole;
+import com.application.persistence.model.restaurant.user.RestaurantUser;
 import com.application.web.dto.RestaurantCategoryDTO;
 import com.application.web.dto.RestaurantFullDetailsDto;
 import com.application.web.dto.RestaurantImageDto;
 import com.application.web.dto.get.RestaurantDTO;
-import com.application.web.dto.get.RestaurantUserDTO;
 import com.application.web.dto.get.ServiceDTO;
 import com.application.web.dto.get.SlotDTO;
 import com.application.web.dto.post.NewRestaurantDTO;
@@ -147,12 +146,6 @@ public class RestaurantService {
 	public Collection<String> getOpenDays(Long idRestaurant, LocalDate start, LocalDate end) {
 		return rDAO.findOpenDaysInRange(idRestaurant, start, end).stream()
 				.map(object -> (String) object)
-				.collect(Collectors.toList());
-	}
-
-	public Collection<RestaurantUserDTO> getRestaurantUsers(Long id) {
-		return ruDAO.findByRestaurantId(id).stream()
-				.map(r -> new RestaurantUserDTO(r))
 				.collect(Collectors.toList());
 	}
 

@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.application.service.UserService;
+import com.application.service.CustomerService;
 import com.application.captcha.ICaptchaService;
-import com.application.persistence.model.user.User;
+import com.application.persistence.model.user.Customer;
 import com.application.registration.UserOnRegistrationCompleteEvent;
 import com.application.web.dto.post.NewUserDTO;
 import com.application.web.util.GenericResponse;
@@ -24,7 +24,7 @@ public class RegistrationCaptchaController {
     private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
     @Autowired
-    private UserService userService;
+    private CustomerService userService;
 
     @Autowired
     private ICaptchaService captchaService;
@@ -47,7 +47,7 @@ public class RegistrationCaptchaController {
 
         LOGGER.debug("Registering user account with information: {}", accountDto);
 
-        final User registered = userService.registerNewUserAccount(accountDto);
+        final Customer registered = userService.registerNewUserAccount(accountDto);
         eventPublisher.publishEvent(new UserOnRegistrationCompleteEvent(registered, request.getLocale(), getAppUrl(request)));
         return new GenericResponse("success");
     }

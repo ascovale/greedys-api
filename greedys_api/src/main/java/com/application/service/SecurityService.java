@@ -5,11 +5,11 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.application.persistence.dao.restaurant.RestaurantUserDAO;
 import com.application.persistence.model.reservation.Reservation;
-import com.application.persistence.model.reservation.Service;
 import com.application.persistence.model.restaurant.Restaurant;
-import com.application.persistence.model.restaurant.RestaurantUser;
-import com.application.persistence.model.user.User;
+import com.application.persistence.model.restaurant.user.RestaurantUser;
+import com.application.persistence.model.user.Customer;
 
 @org.springframework.stereotype.Service
 public class SecurityService {
@@ -18,42 +18,23 @@ public class SecurityService {
     @Autowired
     RestaurantService restaurantService;
     @Autowired
+    RestaurantUserDAO restaurantUserDAO;
+    @Autowired
     ServiceService serviceService;
 
-    @Transactional
-    public boolean hasUserPermissionOnReservation(Long idReservation, @AuthenticationPrincipal User user) {
-        Reservation reservation = reservationService.findById(idReservation);
-        return hasUserPermissionOnReservation(reservation, user);
-    }
 
     @Transactional
-    public boolean hasUserPermissionOnReservation(Reservation reservation, @AuthenticationPrincipal User user) {
-        if (reservation.getUser().equals(user)) {
-            return true;
-        }
-        return false;
-    }
-
-    @Transactional
-    public boolean hasRestaurantUserPermissionOnReservation(Reservation reservation, @AuthenticationPrincipal User user) {
-        if (user.getRestaurantUser() != null) {
-            RestaurantUser restaurantUser = user.getRestaurantUser();
-            Restaurant restaurant = reservation.getRestaurant();
-            if (restaurant != null) {
-                for (RestaurantUser ruser : restaurant.getRestaurantUsers()) {
-                    if (ruser.equals(restaurantUser))
-                        return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    @Transactional
-    public boolean hasPermissionOnReservation(Long reservationId, @AuthenticationPrincipal User user) {
+    public boolean hasPermissionOnReservation(Long restaurantUserId, Long reservationId) {
         Reservation reservation = reservationService.findById(reservationId);
-        return hasUserPermissionOnReservation(reservation, user) || hasRestaurantUserPermissionOnReservation(reservation, user)
-                || isUserAdmin(user);
+        if (reservation == null) {
+            throw new IllegalArgumentException("Reservation not found");
+        }
+        RestaurantUser restaurantUser = restaurantUserDAO.findById(restaurantUserId).orElse(null);
+        if (restaurantUser != null) {
+            Restaurant restaurant = restaurantUser.getRestaurant();
+            return restaurant.equals(reservation.getRestaurant());
+        }
+        return false;
     }
 
     @Transactional
@@ -62,50 +43,57 @@ public class SecurityService {
     }
 
     @Transactional
-    public boolean hasRestaurantUserPermissionOnRestaurantWithId(Long idRestaurant, @AuthenticationPrincipal User user) {
-        Restaurant restaurant = restaurantService.findById(idRestaurant);
-        if (restaurant == null || restaurant.getDeleted()) {
-            return false;
+    public boolean isRestaurantUser(Long idRestaurantUser, @AuthenticationPrincipal Customer user) {
+        RestaurantUser restaurantUser = user.getRestaurantUsers().stream()
+                .filter(ru -> ru.getId().equals(idRestaurantUser))
+                .findFirst().orElse(null);
+        if (restaurantUser != null && restaurantUser.getId().equals(idRestaurantUser)) {
+            return true;
         }
-        if (user.getDeleted()) {
-            return false;
-        }
-        if (user.getRestaurantUser() != null) {
-            RestaurantUser restaurantUser = user.getRestaurantUser();
-            if (restaurant != null) {
-                for (RestaurantUser ruser : restaurant.getRestaurantUsers()) {
-                    if (ruser.getAccepted() && !ruser.getBlocked() && !ruser.getDeleted()) {
-                        if (ruser.equals(restaurantUser))
-                            return true;
-                    }
-                }
+        return false;
+    }
+
+    @Transactional
+    public boolean existsRestaurantUserWithId(Long idRestaurantUser, @AuthenticationPrincipal Customer user) {
+        RestaurantUser restaurantUser = restaurantUserDAO.findById(idRestaurantUser).get();
+        for (RestaurantUser ru : user.getRestaurantUsers()) {
+            if (ru.equals(restaurantUser)) {
+                return true;
             }
         }
         return false;
     }
 
     @Transactional
-    public boolean isRestaurantUser(Long idRestaurantUser, @AuthenticationPrincipal User user) {
-        RestaurantUser restaurantUser = user.getRestaurantUser();
-        if (restaurantUser != null && restaurantUser.getId().equals(idRestaurantUser)) {
-            return true;
-        }
-        return false;
-    }
-    
-    @Transactional
-    public boolean hasUserRestaurantServicePermission(Long idService, @AuthenticationPrincipal User user) {
-        Service service =  serviceService.getById(idService);
-        if (service == null) {
-            throw new IllegalArgumentException("Service not found with id: " + idService);
-        }
-        if (user.getRestaurantUser() != null) {
-            RestaurantUser restaurantUser = user.getRestaurantUser();
-            Restaurant restaurant = restaurantUser.getRestaurant();
-            if (restaurant != null && !restaurant.getDeleted()) {
-                if(restaurant.getServices().contains(service)) return true;
+    public boolean hasRestaurantUserRole(Long idRestaurantUser, String roleName, @AuthenticationPrincipal Customer user) {
+        RestaurantUser restaurantUser = restaurantUserDAO.findById(idRestaurantUser).get();
+        if (restaurantUser != null) {
+            if (restaurantUser.hasRestaurantRole(roleName)) {
+                return true;
             }
         }
         return false;
     }
+
+    @Transactional
+    public boolean isRestaurantUserPermission(Long idRestaurantUser, @AuthenticationPrincipal Customer user) {
+        RestaurantUser restaurantUser = restaurantUserDAO.findById(idRestaurantUser).orElse(null);
+        if (restaurantUser != null) {
+            return user.getRestaurantUsers().stream()
+                    .anyMatch(ru -> ru.equals(restaurantUser) && ru.getStatus().equals(RestaurantUser.Status.ENABLED));
+        }
+        return false;
+    }
+
+    @Transactional
+    public boolean hasRestaurantUserPermission(Long idRestaurantUser, String permission, @AuthenticationPrincipal Customer user) {
+        RestaurantUser restaurantUser = restaurantUserDAO.findById(idRestaurantUser).orElse(null);
+        if (restaurantUser != null) {
+            return user.getRestaurantUsers().stream()
+                    .anyMatch(ru -> ru.equals(restaurantUser) && ru.getPrivileges().stream().anyMatch(privilege -> privilege.getName().equals(permission)) && ru.getStatus().equals(RestaurantUser.Status.ENABLED));
+        }
+        //qua potrei prenderei i ruoli del ristorante e vedere quali ha oppure prendere quelli dell'utente
+        return false;
+    }
+
 }

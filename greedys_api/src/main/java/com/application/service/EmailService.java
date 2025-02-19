@@ -8,8 +8,8 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import com.application.persistence.model.restaurant.RestaurantNotification;
-import com.application.persistence.model.restaurant.RestaurantUser;
+import com.application.persistence.model.restaurant.user.RestaurantNotification;
+import com.application.persistence.model.restaurant.user.RestaurantUser;
 import com.application.persistence.model.user.Notification;
 import com.application.service.utils.NotificatioUtils;
 
@@ -51,7 +51,7 @@ public class EmailService {
 
     private SimpleMailMessage constructRestaurantNotificationMessage(RestaurantNotification notification) {
         RestaurantUser user = notification.getRestaurantUser();
-        final String recipientAddress = user.getUser().getEmail();
+        final String recipientAddress = user.getEmail();
         final String subject = NotificatioUtils.getRestaurantTemplates().get(notification.getType()).getTitle()
                 + "   "
                 + notification.getId().toString();
@@ -74,7 +74,7 @@ public class EmailService {
                 final SimpleMailMessage email = constructRestaurantNotificationMessage(notification);
                 mailSender.send(email);
             } else {
-                System.out.println("User " + user.getUser().getEmail() + " has disabled notifications for " + notification.getType());
+                System.out.println("User " + user.getEmail() + " has disabled notifications for " + notification.getType());
             }
         } catch (Exception e) {
             // Log the exception and handle it accordingly
@@ -85,12 +85,12 @@ public class EmailService {
     //TODO il link per rimuovere ristorante è sbagliato da sistemare
     // Creare link per rimuovere ristorante lato flutterApp
     private SimpleMailMessage constructRestaurantAssociationConfirmationMessage(RestaurantUser restaurantUser) {
-        final String recipientAddress = restaurantUser.getUser().getEmail();
+        final String recipientAddress = restaurantUser.getEmail();
         final String subject = "Conferma associazione con ristorante";
-        final String message = "Ciao " + restaurantUser.getUser().getName() + ",\n\n" +
+        final String message = "Ciao " + ",\n\n" +
                 "Sei stato associato al ristorante " + restaurantUser.getRestaurant().getName() + ".\n" +
                 "Se non desideri essere associato a questo ristorante, clicca sul seguente link per rimuovere l'associazione:\n" +
-                "http://example.com/removeAssociation?userId=" + restaurantUser.getUser().getId() + "&restaurantId=" + restaurantUser.getRestaurant().getId() + "\n\n" +
+                "http://example.com/removeAssociation?userId=" + restaurantUser.getId() + "&restaurantId=" + restaurantUser.getRestaurant().getId() + "\n\n" +
                 "Grazie,\nIl team di supporto";
         final SimpleMailMessage email = new SimpleMailMessage();
         email.setTo(recipientAddress);

@@ -7,18 +7,18 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 
-import com.application.persistence.dao.user.UserDAO;
-import com.application.persistence.model.user.User;
+import com.application.persistence.dao.customer.CustomerDAO;
+import com.application.persistence.model.user.Customer;
 
 //@Component
 public class UserAuthenticationProvider extends DaoAuthenticationProvider {
 
     @Autowired
-    private UserDAO userRepository;
+    private CustomerDAO userRepository;
 
     @Override
     public Authentication authenticate(Authentication auth) throws AuthenticationException {
-        final User user = userRepository.findByEmail(auth.getName());
+        final Customer user = userRepository.findByEmail(auth.getName());
         if ((user == null)) {
             throw new BadCredentialsException("Invalid username or password");
         }

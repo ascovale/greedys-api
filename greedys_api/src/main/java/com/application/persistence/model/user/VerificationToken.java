@@ -20,10 +20,10 @@ public class VerificationToken {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private String token;
-    @OneToOne(targetEntity = User.class, fetch = FetchType.EAGER)
+    @OneToOne(targetEntity = Customer.class, fetch = FetchType.EAGER)
     @JoinColumn(nullable = false, name = "user_id", referencedColumnName = "id",
     foreignKey =@ForeignKey(name="FK_VERIFY_USER"))
-    private User user;
+    private Customer user;
     private LocalDateTime expiryDate;
 
     public VerificationToken() {
@@ -37,7 +37,7 @@ public class VerificationToken {
         this.expiryDate = calculateExpiryDate(EXPIRATION);
     }
 
-    public VerificationToken(final String token, final User companyUser) {
+    public VerificationToken(final String token, final Customer companyUser) {
         super();
 
         this.token = token;
@@ -45,11 +45,11 @@ public class VerificationToken {
         this.expiryDate = calculateExpiryDate(EXPIRATION);
     }
 
-    public User getUser() {
+    public Customer getUser() {
 		return user;
 	}
 
-	public void setUser(User user) {
+	public void setUser(Customer user) {
 		this.user = user;
 	}
 

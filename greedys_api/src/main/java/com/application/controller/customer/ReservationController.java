@@ -26,7 +26,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  * reservation lists, and managing the calendar.
  */
 @Controller
-@RequestMapping("/user/reservation")
+@RequestMapping("/customer/reservation")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Reservation", description = "APIs for managing reservations")
 public class ReservationController {

@@ -6,8 +6,8 @@ import java.time.LocalDateTime;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import com.application.persistence.model.restaurant.Restaurant;
-import com.application.persistence.model.restaurant.RestaurantUser;
-import com.application.persistence.model.user.User;
+import com.application.persistence.model.restaurant.user.RestaurantUser;
+import com.application.persistence.model.user.Customer;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -39,7 +39,7 @@ public class Reservation {
 	private ClientInfo user_info;
 	@ManyToOne(optional = true)
 	@JoinColumn(name = "user_id")
-	private User user;
+	private Customer user;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idslot")
 	private	Slot slot;
@@ -57,28 +57,28 @@ public class Reservation {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idrestaurant_user")
  	private RestaurantUser restaurantUser;
-	private User creator;
-	private User rejectUser;
-	private User cancelUser;
+	private Customer creator;
+	private Customer rejectUser;
+	private Customer cancelUser;
 
 
-	public User getCancelUser() {
+	public Customer getCancelUser() {
 		return cancelUser;
 	}
 
-	public void setCancelUser(User cancelUser) {
+	public void setCancelUser(Customer cancelUser) {
 		this.cancelUser = cancelUser;
 	}
 
-	public User getRejectUser() {
+	public Customer getRejectUser() {
 		return rejectUser;
 	}
 
-	public void setRejectUser(User rejectUser) {
+	public void setRejectUser(Customer rejectUser) {
 		this.rejectUser = rejectUser;
 	}
 
-	public User getCreator() {
+	public Customer getCreator() {
 		return creator;
 	}
 
@@ -217,11 +217,11 @@ public class Reservation {
 	public Restaurant getRestaurant() {
 		return restaurant;
 	}
-	public User getUser() {
+	public Customer getUser() {
 		return user;
 	}
 
-	public void setUser(User user) {
+	public void setUser(Customer user) {
 		this.user = user;
 	}
 
@@ -266,7 +266,7 @@ public class Reservation {
 		return dateTime.isAfter(noShowDeadline);
 	}
 
-    public void setCreator(User creator) {
+    public void setCreator(Customer creator) {
 		this.creator = creator;
 	}
 

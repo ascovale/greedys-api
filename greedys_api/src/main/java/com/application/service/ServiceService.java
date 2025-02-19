@@ -1,8 +1,8 @@
 package com.application.service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -12,16 +12,19 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.application.mapper.Mapper.Weekday;
+import com.application.persistence.dao.customer.ReservationDAO;
+import com.application.persistence.dao.restaurant.RestaurantDAO;
+import com.application.persistence.dao.restaurant.RestaurantUserDAO;
 import com.application.persistence.dao.restaurant.ServiceDAO;
 import com.application.persistence.dao.restaurant.ServiceTypeDAO;
 import com.application.persistence.dao.restaurant.SlotDAO;
-import com.application.persistence.dao.user.ReservationDAO;
 import com.application.persistence.model.reservation.Reservation;
 import com.application.persistence.model.reservation.Service;
 import com.application.persistence.model.reservation.ServiceType;
 import com.application.persistence.model.reservation.Slot;
 import com.application.persistence.model.restaurant.Restaurant;
-import com.application.persistence.model.user.User;
+import com.application.persistence.model.restaurant.user.RestaurantUser;
+import com.application.persistence.model.user.Customer;
 import com.application.web.dto.ServiceDto;
 import com.application.web.dto.ServiceSlotsDto;
 import com.application.web.dto.ServiceTypeDto;
@@ -47,6 +50,13 @@ public class ServiceService {
 	SlotDAO slotDAO;
 	@PersistenceContext
 	private EntityManager entityManager;
+
+	@Autowired
+	private RestaurantDAO rDAO;
+
+
+	@Autowired
+	private RestaurantUserDAO restaurantUserDAO;
 
 	@Autowired
 	RestaurantService rService;
@@ -130,7 +140,8 @@ public class ServiceService {
 		return serviceTypeDAO.findAll().stream().map(ServiceTypeDto::new).toList();
 	}
 
-	public List<ServiceSlotsDto> getServiceSlots(Long idRestaurant, LocalDate date) {
+	public List<ServiceSlotsDto> getServiceSlots(Long idRestaurantUser, LocalDate date) {
+		Long idRestaurant = restaurantUserDAO.findById(idRestaurantUser).get().getRestaurant().getId();
 		List<Service> services = serviceDAO.findServicesByRestaurant(idRestaurant);
 		List<ServiceSlotsDto> servicesSlotsDto = new ArrayList<ServiceSlotsDto>();
 		for (Service service : services) {
@@ -217,24 +228,25 @@ public class ServiceService {
 		}
 	}
 
-	private User getCurrentUser() {
+	private Customer getCurrentUser() {
 		Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-		if (principal instanceof User) {
-			return ((User) principal);
+		if (principal instanceof Customer) {
+			return ((Customer) principal);
 		} else {
 			System.out.println("Questo non dovrebbe succedere");
 			return null;
 		}
 	}
 	
-
-	//TODO inefficientissimo creare query
+	//TODO Da migliorare efficienza fare query
 	@Transactional
-    public Collection<ServiceTypeDto> getServiceTypes(Long idRestaurant) {
-		Restaurant restaurant = rService.findById(idRestaurant);
-		if (restaurant == null) {
+    public Collection<ServiceTypeDto> getServiceTypes(Long idRestaurantUser) {
+		RestaurantUser restaurantUser = restaurantUserDAO.findById(idRestaurantUser).orElseThrow(() -> new IllegalArgumentException("Restaurant user not found"));
+		if (restaurantUser.getRestaurant() == null) {
 			throw new IllegalArgumentException("Restaurant not found");
 		}
+		Restaurant restaurant = rDAO.findById(restaurantUser.getRestaurant().getId()).orElseThrow(() -> new IllegalArgumentException("Restaurant not found"));
+		
 		Set<ServiceType> serviceTypes = new HashSet<>();
 		for (Service service : restaurant.getServices()) {
 			serviceTypes.addAll(service.getServiceType());

@@ -11,14 +11,14 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
 
-import com.application.service.UserService;
-import com.application.persistence.model.user.User;
+import com.application.service.CustomerService;
+import com.application.persistence.model.user.Customer;
 import com.application.registration.UserOnRegistrationCompleteEvent;
 
 @Component
 public class UserRegistrationListener implements ApplicationListener<UserOnRegistrationCompleteEvent> {
 	@Autowired
-	private UserService service;
+	private CustomerService service;
 
 	@Autowired
 	private MessageSource messages;
@@ -38,14 +38,14 @@ public class UserRegistrationListener implements ApplicationListener<UserOnRegis
 	}
 
 	private void confirmRegistration(final UserOnRegistrationCompleteEvent event) {
-		final User user = event.getUser();
+		final Customer user = event.getUser();
 		final String token = UUID.randomUUID().toString();
 		service.createVerificationTokenForUser(user, token);
 		final SimpleMailMessage email = constructEmailMessage(event, user, token);
 		mailSender.send(email);
 	}
 
-	private final SimpleMailMessage constructEmailMessage(final UserOnRegistrationCompleteEvent event, final User user,
+	private final SimpleMailMessage constructEmailMessage(final UserOnRegistrationCompleteEvent event, final Customer user,
 			final String token) {
 		System.out.println("Prova inviare");
 		final String recipientAddress = user.getEmail();

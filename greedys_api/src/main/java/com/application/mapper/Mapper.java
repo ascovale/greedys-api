@@ -10,7 +10,7 @@ import org.springframework.data.domain.Pageable;
 import com.application.persistence.model.reservation.Service;
 import com.application.persistence.model.restaurant.Restaurant;
 import com.application.persistence.model.restaurant.RestaurantImage;
-import com.application.persistence.model.user.User;
+import com.application.persistence.model.user.Customer;
 import com.application.web.dto.RestaurantFullDetailsDto;
 import com.application.web.dto.RestaurantImageDto;
 import com.application.web.dto.ServiceDto;
@@ -64,7 +64,7 @@ public class Mapper {
         return dto;
     }
     
-    public static UserDTO toDTO(User r) {
+    public static UserDTO toDTO(Customer r) {
         UserDTO dto = new UserDTO(r);
         return dto;
     }

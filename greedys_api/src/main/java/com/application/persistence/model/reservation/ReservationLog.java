@@ -4,8 +4,8 @@ import java.time.LocalDate;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
-import com.application.persistence.model.restaurant.RestaurantUser;
-import com.application.persistence.model.user.User;
+import com.application.persistence.model.restaurant.user.RestaurantUser;
+import com.application.persistence.model.user.Customer;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -45,7 +45,7 @@ public class ReservationLog {
 
 	@ManyToOne(optional = true)
 	@JoinColumn(name = "user_id")
-	private User user;
+	private Customer user;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idslot")
 	private Slot slot;
@@ -58,23 +58,23 @@ public class ReservationLog {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idreservation", referencedColumnName = "id")
 	private Reservation reservation;
-	private User logCreator;
+	private Customer logCreator;
 	//TODO AGGIUNGERE ORARIO DI REQUEST RESERVATION e altri dati
 	
 	
 
-	public User getLogCreator() {
+	public Customer getLogCreator() {
 		return logCreator;
 	}
 
-	public void setLogCreator(User logCreator) {
+	public void setLogCreator(Customer logCreator) {
 		this.logCreator = logCreator;
 	}
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	private com.application.persistence.model.restaurant.Table table;
 
-	public ReservationLog(Reservation reservation,User logCreator) {
+	public ReservationLog(Reservation reservation,Customer logCreator) {
 		this.reservation = reservation;
 		this.date = reservation.getDate();
 		this.creationDate = reservation.getCreationDate();
@@ -89,7 +89,7 @@ public class ReservationLog {
 		this.logCreator = user;
 	}
 
-	public ReservationLog(Reservation reservation2, User currentUser, ReservationRequest reservationRequest) {
+	public ReservationLog(Reservation reservation2, Customer currentUser, ReservationRequest reservationRequest) {
 		this(reservation2, currentUser);
 		//TODO AGGIUNGERE ORARIO DI REQUEST RESERVATION e altri dati
 
@@ -178,11 +178,11 @@ public class ReservationLog {
 		this.restaurantUser = restaurantUser;
 	}
 
-	public User getUser() {
+	public Customer getUser() {
 		return user;
 	}
 
-	public void setUser(User user) {
+	public void setUser(Customer user) {
 		this.user = user;
 	}
 
