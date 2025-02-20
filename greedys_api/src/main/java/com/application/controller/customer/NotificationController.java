@@ -2,6 +2,9 @@ package com.application.controller.customer;
 
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,9 +18,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.persistence.model.customer.Notification;
+import com.application.service.CustomerFcmTokenService;
 import com.application.service.FirebaseService;
 import com.application.service.NotificationService;
-import com.application.service.UserFcmTokenService;
 import com.application.web.dto.post.UserFcmTokenDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,9 +28,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 
 @RestController
 @RequestMapping("/customer/notification")
@@ -35,13 +35,13 @@ import org.springframework.data.domain.Pageable;
 @Tag(name = "Notification", description = "Notification management APIs")
 public class NotificationController {
 
-    private final UserFcmTokenService userFcmTokenService;
+    private final CustomerFcmTokenService customerFcmTokenRepository;
     private final FirebaseService firebaseService;
     private final NotificationService notificationService;
 
-    public NotificationController(UserFcmTokenService userFcmTokenService, FirebaseService firebaseService,
+    public NotificationController(CustomerFcmTokenService customerFcmTokenRepository, FirebaseService firebaseService,
             NotificationService notificationService) {
-        this.userFcmTokenService = userFcmTokenService;
+        this.customerFcmTokenRepository = customerFcmTokenRepository;
         this.firebaseService = firebaseService;
         this.notificationService = notificationService;
     }
@@ -104,7 +104,7 @@ public class NotificationController {
     @PostMapping("/token")
     public ResponseEntity<Void> registerUserFcmToken(
             @RequestBody UserFcmTokenDTO userFcmToken) {
-        userFcmTokenService.saveUserFcmToken(userFcmToken);
+        customerFcmTokenRepository.saveUserFcmToken(userFcmToken);
         return ResponseEntity.ok().build();
     }
 
@@ -113,7 +113,7 @@ public class NotificationController {
     public ResponseEntity<Void> updateUserFcmToken(
             @RequestParam String oldToken,
             @RequestBody UserFcmTokenDTO newToken) {
-        userFcmTokenService.updateUserFcmToken(oldToken, newToken);
+        customerFcmTokenRepository.updateUserFcmToken(oldToken, newToken);
         return ResponseEntity.ok().build();
     }
 
@@ -121,7 +121,7 @@ public class NotificationController {
     @GetMapping("/token/present")
     public ResponseEntity<String> isDeviceTokenPresent(
             @RequestParam String deviceId) {
-        boolean isPresent = userFcmTokenService.isDeviceTokenPresent(deviceId);
+        boolean isPresent = customerFcmTokenRepository.isDeviceTokenPresent(deviceId);
         if (isPresent) {
             Optional<String> oldToken = firebaseService.getOldTokenIfPresent(deviceId);
             if (oldToken.isPresent()) {
@@ -138,7 +138,7 @@ public class NotificationController {
     @GetMapping("/token/verify")
     public ResponseEntity<String> verifyToken(
             @RequestParam String deviceId) {
-        String status = userFcmTokenService.verifyTokenByDeviceId(deviceId);
+        String status = customerFcmTokenRepository.verifyTokenByDeviceId(deviceId);
         switch (status) {
             case "OK":
                 return ResponseEntity.ok().body("OK");

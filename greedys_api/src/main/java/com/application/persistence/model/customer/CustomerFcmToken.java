@@ -1,7 +1,14 @@
 package com.application.persistence.model.customer;
 
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
 @Entity
 public class CustomerFcmToken {
@@ -11,7 +18,7 @@ public class CustomerFcmToken {
 
     @ManyToOne
     @JoinColumn(nullable = false)
-    private Customer user;
+    private Customer customer;
 
     @Column(nullable = false)
     private String fcmToken;
@@ -26,8 +33,8 @@ public class CustomerFcmToken {
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public Customer getUser() { return user; }
-    public void setUser(Customer user) { this.user = user; }
+    public Customer getCustomer() { return customer; }
+    public void setCustomer(Customer customer) { this.customer = customer; }
 
     public String getFcmToken() { return fcmToken; }
     public void setFcmToken(String fcmToken) { this.fcmToken = fcmToken; }

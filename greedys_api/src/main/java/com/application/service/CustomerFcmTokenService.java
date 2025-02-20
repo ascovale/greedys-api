@@ -15,48 +15,48 @@ import com.google.firebase.auth.FirebaseToken;
 import jakarta.persistence.EntityManager;
 
 @Service
-public class UserFcmTokenService {
-    private final CustomerFcmTokenDAO userFcmTokenRepository;
+public class CustomerFcmTokenService {
+    private final CustomerFcmTokenDAO customerFcmTokenRepository;
     private final EntityManager entityManager;
 
-    public UserFcmTokenService(CustomerFcmTokenDAO userFcmTokenRepository, EntityManager entityManager) {
-        this.userFcmTokenRepository = userFcmTokenRepository;
+    public CustomerFcmTokenService(CustomerFcmTokenDAO customerFcmTokenRepository, EntityManager entityManager) {
+        this.customerFcmTokenRepository = customerFcmTokenRepository;
         this.entityManager = entityManager;
     }
 
     public void saveUserFcmToken(UserFcmTokenDTO userFcmTokenDTO) {
         CustomerFcmToken userFcmToken = new CustomerFcmToken();
-        userFcmToken.setUser(entityManager.getReference(Customer.class, userFcmTokenDTO.getUserId()));
+        userFcmToken.setCustomer(entityManager.getReference(Customer.class, userFcmTokenDTO.getUserId()));
         userFcmToken.setFcmToken(userFcmTokenDTO.getFcmToken());
         userFcmToken.setCreatedAt(userFcmTokenDTO.getCreatedAt() != null ? userFcmTokenDTO.getCreatedAt() : LocalDateTime.now());
         userFcmToken.setDeviceId(userFcmTokenDTO.getDeviceId());
-        userFcmTokenRepository.save(userFcmToken);
+        customerFcmTokenRepository.save(userFcmToken);
     }
 
     public CustomerFcmToken updateUserFcmToken(String oldToken, UserFcmTokenDTO newToken) {
-        CustomerFcmToken existingToken = userFcmTokenRepository.findByFcmTokenAndCustomerId(oldToken, newToken.getUserId());
+        CustomerFcmToken existingToken = customerFcmTokenRepository.findByFcmTokenAndCustomerId(oldToken, newToken.getUserId());
         if (existingToken != null) {
             existingToken.setFcmToken(newToken.getFcmToken());
-            return userFcmTokenRepository.save(existingToken);
+            return customerFcmTokenRepository.save(existingToken);
         } else {
             throw new RuntimeException("UserFcmToken not found for user");
         }
     }
 
     public List<CustomerFcmToken> getTokensByCustomerId(Long id) {
-        return userFcmTokenRepository.findByCustomerId(id);
+        return customerFcmTokenRepository.findByCustomerId(id);
     }
 
     public CustomerFcmToken getTokenByDeviceId(String deviceId) {
-        return userFcmTokenRepository.findByDeviceId(deviceId);
+        return customerFcmTokenRepository.findByDeviceId(deviceId);
     }
 
     public boolean isDeviceTokenPresent(String deviceId) {
-        return userFcmTokenRepository.existsByDeviceId(deviceId);
+        return customerFcmTokenRepository.existsByDeviceId(deviceId);
     }
 
     public String verifyTokenByDeviceId(String deviceId) {
-        CustomerFcmToken userFcmToken = userFcmTokenRepository.findByDeviceId(deviceId);
+        CustomerFcmToken userFcmToken = customerFcmTokenRepository.findByDeviceId(deviceId);
         if (userFcmToken == null) {
             return "NOT FOUND";
         }

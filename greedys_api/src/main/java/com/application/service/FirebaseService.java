@@ -33,13 +33,13 @@ public class FirebaseService {
     public static final String SECURED_CHAT_SPECIFIC_USER = "/secured/user/queue/specific-user";
     private static final String FIREBASE_API_URL = "https://fcm.googleapis.com/v1/projects/YOUR_PROJECT_ID/messages:send";
     private GoogleCredentials googleCredentials;
-    private final UserFcmTokenService userFcmTokenService;
+    private final CustomerFcmTokenService customerFcmTokenService;
     private RestaurantUserDAO restaurantUserDAO;
 
-    public FirebaseService(UserFcmTokenService userFcmTokenService,RestaurantUserDAO restaurantUserDAO)
+    public FirebaseService(CustomerFcmTokenService customerFcmTokenService,RestaurantUserDAO restaurantUserDAO)
      {
         this.restaurantUserDAO = restaurantUserDAO;
-        this.userFcmTokenService = userFcmTokenService;
+        this.customerFcmTokenService = customerFcmTokenService;
         try {
             this.googleCredentials = GoogleCredentials.fromStream(new FileInputStream("/run/secrets/service_account"))
                     .createScoped("https://www.googleapis.com/auth/cloud-platform");
@@ -61,7 +61,7 @@ public class FirebaseService {
     @Async
     public void sendFirebaseNotification(Notification notification) {
         Customer user = notification.getClientUser();
-        List<CustomerFcmToken> tokens = userFcmTokenService.getTokensByCustomerId(user.getId());
+        List<CustomerFcmToken> tokens = customerFcmTokenService.getTokensByCustomerId(user.getId());
         for (CustomerFcmToken token : tokens) {
             try {
                 googleCredentials.refreshIfExpired();
@@ -106,7 +106,7 @@ public class FirebaseService {
     @Async
     public void sendFirebaseNotification(RestaurantNotification notification) {
         RestaurantUser user = notification.getRestaurantUser();
-        List<CustomerFcmToken> tokens = userFcmTokenService.getTokensByCustomerId(user.getId());
+        List<CustomerFcmToken> tokens = customerFcmTokenService.getTokensByCustomerId(user.getId());
         for (CustomerFcmToken token : tokens) {
             try {
                 googleCredentials.refreshIfExpired();
@@ -147,7 +147,7 @@ public class FirebaseService {
     }
 
     public Optional<String> getOldTokenIfPresent(String deviceId) {
-        CustomerFcmToken token = userFcmTokenService.getTokenByDeviceId(deviceId);
+        CustomerFcmToken token = customerFcmTokenService.getTokenByDeviceId(deviceId);
         return Optional.of(token.getFcmToken());
     }
     @Async
@@ -156,7 +156,7 @@ public class FirebaseService {
             .orElseThrow(() -> new RuntimeException("RestaurantUser not found with id: " + idRestaurantUser));
         RestaurantUser user = restaurantUser;
         Long idUser = user.getId();
-        List<CustomerFcmToken> tokens = userFcmTokenService.getTokensByCustomerId(idUser);
+        List<CustomerFcmToken> tokens = customerFcmTokenService.getTokensByCustomerId(idUser);
         for (CustomerFcmToken token : tokens) {
             try {
                 googleCredentials.refreshIfExpired();
@@ -196,7 +196,7 @@ public class FirebaseService {
 
     @Async
     public void sendFirebaseCustomerNotification(String title, String body, Long idUser) {
-        List<CustomerFcmToken> tokens = userFcmTokenService.getTokensByCustomerId(idUser);
+        List<CustomerFcmToken> tokens = customerFcmTokenService.getTokensByCustomerId(idUser);
         for (CustomerFcmToken token : tokens) {
             try {
                 googleCredentials.refreshIfExpired();
