@@ -16,7 +16,7 @@ public interface PasswordResetTokenDAO extends JpaRepository<PasswordResetToken,
 
     PasswordResetToken findByToken(String token);
 
-    PasswordResetToken findByUser(Customer user);
+    PasswordResetToken findByCustomer(Customer customer);
 
     Stream<PasswordResetToken> findAllByExpiryDateLessThan(LocalDate now);
 

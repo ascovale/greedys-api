@@ -18,7 +18,7 @@ import com.application.web.dto.get.ReservationDTO;
 
 @Repository
 public interface ReservationDAO extends JpaRepository<Reservation, Long> {
-	List<ReservationDTO> findAllByUser_id(Long user_id);
+	List<ReservationDTO> findAllByCustomer_id(Long customer_id);
 
 	@Query(value = "SELECT day FROM "
 					+ "(SELECT day "
@@ -160,27 +160,27 @@ public interface ReservationDAO extends JpaRepository<Reservation, Long> {
 
 	@Query(value = """
 			SELECT r FROM Reservation r
-			WHERE r.user.id = :userId
+			WHERE r.customer.id = :customerId
 				ORDER BY r.date, r.slot.start
 			""")
-	Collection<Reservation> findByUser(Long userId);
+	Collection<Reservation> findByCustomer(Long customerId);
 
 	@Query(value = """
 			SELECT r FROM Reservation r
-			WHERE r.user.id = :userId
+			WHERE r.customer.id = :customerId
 				AND r.accepted = False
 				AND r.rejected = False
 				ORDER BY r.date, r.slot.start
 			""")
-	Collection<Reservation> findByUserAndPending(Long userId);
+	Collection<Reservation> findByCustomerAndPending(Long customerId);
 
 	@Query(value = """
 			SELECT r FROM Reservation r
-			WHERE r.user.id = :userId
+			WHERE r.customer.id = :customerId
 				AND r.accepted = True
 				ORDER BY r.date, r.slot.start
 			""")
-	Collection<Reservation> findByUserAndAccepted(Long userId);
+	Collection<Reservation> findByCustomerAndAccepted(Long customerId);
 
 	Collection<Reservation> findBySlot_Id(Long slotId);
 

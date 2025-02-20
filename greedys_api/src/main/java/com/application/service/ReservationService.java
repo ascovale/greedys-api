@@ -226,18 +226,18 @@ public class ReservationService {
                 .map(ReservationDTO::new).collect(Collectors.toList());
     }
 
-    public Collection<ReservationDTO> findAllUserReservations(Long userId) {
-        return reservationDAO.findByUser(userId).stream()
+    public Collection<ReservationDTO> findAllUserReservations(Long customerId) {
+        return reservationDAO.findByCustomer(customerId).stream()
                 .map(ReservationDTO::new).collect(Collectors.toList());
     }
 
-    public Collection<ReservationDTO> findAcceptedUserReservations(Long userId) {
-        return reservationDAO.findByUserAndAccepted(userId).stream()
+    public Collection<ReservationDTO> findAcceptedCustomerReservations(Long customerId) {
+        return reservationDAO.findByCustomerAndAccepted(customerId).stream()
                 .map(ReservationDTO::new).collect(Collectors.toList());
     }
 
-    public Collection<ReservationDTO> findPendingUserReservations(Long userId) {
-        return reservationDAO.findByUserAndPending(userId).stream()
+    public Collection<ReservationDTO> findPendingCustomerReservations(Long customerId) {
+        return reservationDAO.findByCustomerAndPending(customerId).stream()
                 .map(ReservationDTO::new).collect(Collectors.toList());
     }
 

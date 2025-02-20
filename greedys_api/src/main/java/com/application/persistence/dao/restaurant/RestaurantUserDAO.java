@@ -22,8 +22,9 @@ public interface RestaurantUserDAO extends JpaRepository<RestaurantUser, Long>{
 
     Collection<RestaurantUser> findByRestaurantId(Long id);
 
-    Optional<RestaurantUser> findByRestaurantAndUser(Restaurant restaurant, Customer user);
+    Optional<RestaurantUser> findByRestaurantAndRestaurantUser(Restaurant restaurant, RestaurantUser restaurantUser);
 
     RestaurantUser findByEmail(String email);
+
 
 } 

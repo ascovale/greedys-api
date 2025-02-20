@@ -13,9 +13,9 @@ public interface RestaurantUserFcmTokenDAO extends JpaRepository<RestaurantUserF
 
     RestaurantUserFcmToken findByFcmToken(String oldToken);
 
-    RestaurantUserFcmToken findByFcmTokenAndUserId(String oldToken, Long userId);
+    RestaurantUserFcmToken findByFcmTokenAndRestaurantUserId(String oldToken, Long restaurantUserId);
 
-    List<RestaurantUserFcmToken> findByUserId(Long id);
+    List<RestaurantUserFcmToken> findByRestaurantUserId(Long id);
 
     boolean existsByDeviceId(String deviceId);
 

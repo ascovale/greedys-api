@@ -5,36 +5,36 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.application.persistence.dao.customer.CustomerFcmTokenDAO;
-import com.application.persistence.model.customer.Customer;
-import com.application.persistence.model.customer.CustomerFcmToken;
+import com.application.persistence.dao.restaurant.RestaurantUserFcmTokenDAO;
+import com.application.persistence.model.restaurant.user.RestaurantUserFcmToken;
 import com.application.web.dto.post.UserFcmTokenDTO;
+import com.application.persistence.model.restaurant.user.RestaurantUser;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
 
 import jakarta.persistence.EntityManager;
 
 @Service
-public class UserFcmTokenService {
-    private final CustomerFcmTokenDAO userFcmTokenRepository;
+public class RestaurantUserFcmTokenService {
+    private final RestaurantUserFcmTokenDAO userFcmTokenRepository;
     private final EntityManager entityManager;
 
-    public UserFcmTokenService(CustomerFcmTokenDAO userFcmTokenRepository, EntityManager entityManager) {
+    public RestaurantUserFcmTokenService(RestaurantUserFcmTokenDAO userFcmTokenRepository, EntityManager entityManager) {
         this.userFcmTokenRepository = userFcmTokenRepository;
         this.entityManager = entityManager;
     }
 
     public void saveUserFcmToken(UserFcmTokenDTO userFcmTokenDTO) {
-        CustomerFcmToken userFcmToken = new CustomerFcmToken();
-        userFcmToken.setUser(entityManager.getReference(Customer.class, userFcmTokenDTO.getUserId()));
+        RestaurantUserFcmToken userFcmToken = new RestaurantUserFcmToken();
+        userFcmToken.setUser(entityManager.getReference(RestaurantUser.class, userFcmTokenDTO.getUserId()));
         userFcmToken.setFcmToken(userFcmTokenDTO.getFcmToken());
         userFcmToken.setCreatedAt(userFcmTokenDTO.getCreatedAt() != null ? userFcmTokenDTO.getCreatedAt() : LocalDateTime.now());
         userFcmToken.setDeviceId(userFcmTokenDTO.getDeviceId());
         userFcmTokenRepository.save(userFcmToken);
     }
 
-    public CustomerFcmToken updateUserFcmToken(String oldToken, UserFcmTokenDTO newToken) {
-        CustomerFcmToken existingToken = userFcmTokenRepository.findByFcmTokenAndCustomerId(oldToken, newToken.getUserId());
+    public RestaurantUserFcmToken updateUserFcmToken(String oldToken, UserFcmTokenDTO newToken) {
+        RestaurantUserFcmToken existingToken = userFcmTokenRepository.findByFcmTokenAndRestaurantUserId(oldToken, newToken.getUserId());
         if (existingToken != null) {
             existingToken.setFcmToken(newToken.getFcmToken());
             return userFcmTokenRepository.save(existingToken);
@@ -43,11 +43,11 @@ public class UserFcmTokenService {
         }
     }
 
-    public List<CustomerFcmToken> getTokensByCustomerId(Long id) {
-        return userFcmTokenRepository.findByCustomerId(id);
+    public List<RestaurantUserFcmToken> getTokensByRestaurantUserId(Long id) {
+        return userFcmTokenRepository.findByRestaurantUserId(id);
     }
 
-    public CustomerFcmToken getTokenByDeviceId(String deviceId) {
+    public RestaurantUserFcmToken getTokenByDeviceId(String deviceId) {
         return userFcmTokenRepository.findByDeviceId(deviceId);
     }
 
@@ -56,7 +56,7 @@ public class UserFcmTokenService {
     }
 
     public String verifyTokenByDeviceId(String deviceId) {
-        CustomerFcmToken userFcmToken = userFcmTokenRepository.findByDeviceId(deviceId);
+        RestaurantUserFcmToken userFcmToken = userFcmTokenRepository.findByDeviceId(deviceId);
         if (userFcmToken == null) {
             return "NOT FOUND";
         }

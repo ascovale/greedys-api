@@ -104,7 +104,7 @@ public class NotificationService {
     if (!currentUser.isEnabled()) {
         throw new IllegalStateException("User is not enabled");
     }
-        return notificationDAO.findAllByUser(getCurrentUser(), pageable);
+        return notificationDAO.findAllByCustomer(getCurrentUser(), pageable);
     }
 
     public void sendCustomerNotification(String title, String body, Long idCustomer) {

@@ -13,9 +13,9 @@ public interface CustomerFcmTokenDAO extends JpaRepository<CustomerFcmToken, Lon
 
     CustomerFcmToken findByFcmToken(String oldToken);
 
-    CustomerFcmToken findByFcmTokenAndUserId(String oldToken, Long userId);
+    CustomerFcmToken findByFcmTokenAndCustomerId(String oldToken, Long customerId);
 
-    List<CustomerFcmToken> findByUserId(Long id);
+    List<CustomerFcmToken> findByCustomerId(Long customerId);
 
     boolean existsByDeviceId(String deviceId);
 

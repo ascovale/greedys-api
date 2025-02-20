@@ -111,11 +111,11 @@ public class CustomerService {
 	}
 
 	public void deleteUser(final Customer user) {
-		final VerificationToken verificationToken = tokenDAO.findByUser(user);
+		final VerificationToken verificationToken = tokenDAO.findByCustomer(user);
 		if (verificationToken != null) {
 			tokenDAO.delete(verificationToken);
 		}
-		final PasswordResetToken passwordToken = passwordTokenRepository.findByUser(user);
+		final PasswordResetToken passwordToken = passwordTokenRepository.findByCustomer(user);
 		if (passwordToken != null) {
 			passwordTokenRepository.delete(passwordToken);
 		}

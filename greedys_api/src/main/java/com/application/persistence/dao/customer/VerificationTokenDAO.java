@@ -14,7 +14,7 @@ public interface VerificationTokenDAO extends JpaRepository<VerificationToken, L
 
     VerificationToken findByToken(String token);
 
-    VerificationToken findByUser(Customer user);
+    VerificationToken findByCustomer(Customer customer);
 
     Stream<VerificationToken> findAllByExpiryDateLessThan(LocalDate now);
 

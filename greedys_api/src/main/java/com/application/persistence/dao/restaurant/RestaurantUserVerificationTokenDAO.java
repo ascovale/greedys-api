@@ -7,14 +7,14 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import com.application.persistence.model.customer.Customer;
+import com.application.persistence.model.restaurant.user.RestaurantUser;
 import com.application.persistence.model.restaurant.user.RestaurantUserVerificationToken;
 @Repository
 public interface RestaurantUserVerificationTokenDAO extends JpaRepository<RestaurantUserVerificationToken, Long> {
 
     RestaurantUserVerificationToken findByToken(String token);
 
-    RestaurantUserVerificationToken findByUser(Customer user);
+    RestaurantUserVerificationToken findByUser(RestaurantUser restaurantUser);
 
     Stream<RestaurantUserVerificationToken> findAllByExpiryDateLessThan(LocalDate now);
 

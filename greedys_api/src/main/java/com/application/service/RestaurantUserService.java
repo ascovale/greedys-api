@@ -121,26 +121,18 @@ public class RestaurantUserService {
         return ru;
     }
 
-    public RestaurantUserDTO addRestaurantUserRole(Long idRestaurantUser, Long idUser, String string) {
+    public RestaurantUserDTO addRestaurantUserRole(Long idRestaurantUser, String string) {
         RestaurantUser ru = ruDAO.findById(idRestaurantUser)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid restaurant user ID: " + idRestaurantUser));
         Restaurant restaurant = ru.getRestaurant();
-        Customer user = uDAO.findById(idUser)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid user ID: " + idUser));
-
-        if (ruDAO.findByRestaurantAndUser(restaurant, user).isPresent()) {
-            throw new IllegalArgumentException("User already associated with this restaurant");
+        if (ru.getRoles().stream().anyMatch(role -> role.getName().equals(string))) {
+            throw new IllegalArgumentException("User already has the role: " + string);
         }
-
+        RestaurantRole role = rrDAO.findByName(string);
+        ru.addRole(role);
+        
         RestaurantUser newRestaurantUser = new RestaurantUser();
         newRestaurantUser.setRestaurant(restaurant);
-        RestaurantRole role = rrDAO.findByName(string);
-        if (role == null) {
-            throw new IllegalArgumentException("Invalid role name: " + string);
-        }
-        // TODO verificare se è corretto
-        newRestaurantUser.addRole(role);
-        newRestaurantUser.addRole(new RestaurantRole(string));
         ruDAO.save(newRestaurantUser);
 
         return new RestaurantUserDTO(newRestaurantUser);
