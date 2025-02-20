@@ -43,7 +43,7 @@ public class NotificationService {
     }
   
     public List<NotificationDto> findByUser(Customer user) {
-        List<Notification> notifications = notificationDAO.findByUser(user);
+        List<Notification> notifications = notificationDAO.findByCustomer(user);
         return NotificationDto.toDto(notifications);
     }
 

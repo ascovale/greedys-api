@@ -13,7 +13,7 @@ import com.application.persistence.model.customer.Notification;
 @Repository
 public interface NotificationDAO extends JpaRepository<Notification, Long>{
 	//@Query("SELECT * FROM Notification n WHERE n.iduser = ?1")
-	public List<Notification> findByUser(Customer User);
+	public List<Notification> findByCustomer(Customer customer);
 
     Page<Notification> findByUserAndUnopenedTrue(Customer customer, Pageable pageable);
 
