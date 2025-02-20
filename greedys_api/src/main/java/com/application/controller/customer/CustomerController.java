@@ -52,8 +52,8 @@ public class CustomerController {
     private final MessageSource messages;
     private final ISecurityUserService securityUserService;
 
-    public CustomerController(@Qualifier("customerSecurityService")CustomerService userService, ReservationService reservationService,
-            MessageSource messages, ISecurityUserService securityUserService) {
+    public CustomerController(CustomerService userService, ReservationService reservationService,
+            MessageSource messages, @Qualifier("customerSecurityService")ISecurityUserService securityUserService) {
         this.userService = userService;
         this.reservationService = reservationService;
         this.messages = messages;
