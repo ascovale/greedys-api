@@ -37,8 +37,8 @@ public class ReservationRequest {
 	private LocalDate creationDate;
 	private ClientInfo user_info;
 	@ManyToOne(optional = true)
-	@JoinColumn(name = "user_id")
-	private Customer user;
+	@JoinColumn(name = "customer_id")
+	private Customer customer;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idslot")
 	private	Slot slot;
@@ -73,11 +73,11 @@ public class ReservationRequest {
 		this.user_info = user_info;
 	}
 
-	public Long get_user_id() {
-		if (user == null) {
+	public Long getCustomerId() {
+		if (customer == null) {
 			throw new IllegalArgumentException("User id is null, the reservation is anonymous.");
 		}
-		return user.getId();
+		return customer.getId();
 	}
 
 	public LocalDate getCreationDate() {
@@ -140,12 +140,12 @@ public class ReservationRequest {
 		this.restaurantUser = restaurantUser;
 	}
 
-	public Customer getUser() {
-		return user;
+	public Customer getCustomer() {
+		return customer;
 	}
 
-	public void setUser(Customer user) {
-		this.user = user;
+	public void setCustomer(Customer customer) {
+		this.customer = customer;
 	}
 	
 	public Reservation getReservation() {

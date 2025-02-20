@@ -117,7 +117,7 @@ public class ReservationService {
             reservation.set_user_info(reservationDto.getClientUser());
         } else {
             Customer user = entityManager.getReference(Customer.class, reservationDto.getUser_id());
-            reservation.setUser(user);
+            reservation.setCustomer(user);
             customerNotificationService.createReservationNotification(reservation, Type.NEW_RESERVATION);
         }
         reservation = reservationDAO.save(reservation);
@@ -179,7 +179,7 @@ public class ReservationService {
                 RestaurantNotification.Type.REQUEST);
         Customer user = getCurrentUser();
         reservation.setCreator(getCurrentUser());
-        reservation.setUser(user);
+        reservation.setCustomer(user);
         user.getReservations().add(reservation);
         return reservationDAO.save(reservation);
     }
@@ -321,7 +321,7 @@ public class ReservationService {
         reservationRequest.setNotes(dTO.getNotes());
         reservationRequest.setDate(dTO.getReservationDay());
         reservationRequest.setSlot(entityManager.getReference(Slot.class, dTO.getIdSlot()));
-        reservationRequest.setUser(currentUser);
+        reservationRequest.setCustomer(currentUser);
         reservationRequest.setCreationDate(LocalDate.now());
         reservationRequest.setReservation(reservation);
         restaurantNotificationService.createNotificationsForRestaurant(reservation.getRestaurant(),
@@ -494,7 +494,7 @@ public class ReservationService {
                 .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
         reservationLogDAO.save(new ReservationLog(reservation, getCurrentUser()));
         // TODO scrivere il codice per dire se è stata creata o collegata dall'utente
-        reservation.setUser(null);
+        reservation.setCustomer(null);
         ClientInfo anonymousClientInfo = new ClientInfo("Anonymous", null, null);
         reservation.set_user_info(anonymousClientInfo);
         reservationDAO.save(reservation);
