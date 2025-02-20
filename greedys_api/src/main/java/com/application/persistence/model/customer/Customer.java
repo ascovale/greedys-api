@@ -36,7 +36,7 @@ public class Customer implements UserDetails {
 	private String password;
 	private boolean enabled;
 	private String phoneNumber;
-	@OneToMany(fetch = FetchType.LAZY, mappedBy = "user")
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "costumer")
 	private Set<Reservation> reservations;
 	@ManyToMany
 	@JoinTable(name = "user_has_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
