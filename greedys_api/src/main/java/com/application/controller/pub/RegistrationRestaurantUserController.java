@@ -34,7 +34,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
-@RequestMapping("/public/register/user")
+@RequestMapping("/public/register/restaurant_user")
 public class RegistrationRestaurantUserController {
     private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
