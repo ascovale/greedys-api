@@ -96,7 +96,7 @@ public class NotificationService {
 
     @Transactional
     public Page<Notification> getUnreadNotifications(Pageable pageable) {
-        return notificationDAO.findByUserAndUnopenedTrue(getCurrentUser(), pageable);
+        return notificationDAO.findByCustomerAndUnopenedTrue(getCurrentUser(), pageable);
     }
     //TODO da testare
     public Page<Notification> getAllNotifications(Pageable pageable) {
