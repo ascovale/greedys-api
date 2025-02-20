@@ -82,7 +82,7 @@ public class RestaurantController {
 			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ReservationDTO.class)))),
 			@ApiResponse(responseCode = "404", description = "Ristorante non trovato")
 	})
-	@GetMapping(value = "{idRestaurantUser}/reservation/accepted")
+	@GetMapping(value = "/reservation/accepted")
 	public Collection<ReservationDTO> getAcceptedReservations(
 			@PathVariable Long idRestaurantUser,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
@@ -97,7 +97,7 @@ public class RestaurantController {
 			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ReservationDTO.class)))),
 			@ApiResponse(responseCode = "404", description = "Ristorante non trovato")
 	})
-	@GetMapping(value = "{idRestaurantUser}/reservation/pageable")
+	@GetMapping(value = "/reservation/pageable")
 	public ResponseEntity<Page<ReservationDTO>> getReservationsPageable(
 			@PathVariable Long idRestaurantUser,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
@@ -116,7 +116,7 @@ public class RestaurantController {
 			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ReservationDTO.class)))),
 			@ApiResponse(responseCode = "404", description = "Ristorante non trovato")
 	})
-	@GetMapping(value = "{idRestaurantUser}/reservation/pending")
+	@GetMapping(value = "/reservation/pending")
 	public Collection<ReservationDTO> getPendingReservations(
 			@PathVariable Long idRestaurantUser,
 			@RequestParam(required = false) LocalDate start,
@@ -137,7 +137,7 @@ public class RestaurantController {
 
 	// questo metodo forse dovrebbe essere public tranne che questo può vedere anche
 	// quelli disabilitati
-	@GetMapping(value = "/{idRestaurantUser}/services")
+	@GetMapping(value = "/services")
 	@Operation(summary = "Get services of a restaurant", description = "Ottieni i servizi di un ristorante")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ServiceDTO.class)))),
@@ -150,7 +150,7 @@ public class RestaurantController {
 	}
 
 	/* -- === *** ROOMS AND TABLES *** === --- */
-	@GetMapping(value = "/{idRestaurant}/rooms")
+	@GetMapping(value = "/rooms")
 	@Operation(summary = "Get rooms of a restaurant", description = "Ottieni le sale di un ristorante")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = RoomDTO.class)))),
@@ -162,7 +162,7 @@ public class RestaurantController {
 		return new ResponseEntity<>(rooms, HttpStatus.OK);
 	}
 
-	@GetMapping(value = "/{idRestaurant}/room/{roomId}/tables")
+	@GetMapping(value = "/room/{roomId}/tables")
 	@Operation(summary = "Get tables of a room", description = "Ottieni i tavoli di una sala")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = TableDTO.class)))),
@@ -174,7 +174,7 @@ public class RestaurantController {
 		return new ResponseEntity<>(tables, HttpStatus.OK);
 	}
 
-	@PostMapping(value = "/{idRestaurant}/room")
+	@PostMapping(value = "/room")
 	@Operation(summary = "Add a room to a restaurant", description = "Aggiungi una sala a un ristorante")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class))),
@@ -187,7 +187,7 @@ public class RestaurantController {
 		return new GenericResponse("success");
 	}
 
-	@PostMapping(value = "/{idRestaurant}/table")
+	@PostMapping(value = "/table")
 	@Operation(summary = "Add a table to a room", description = "Aggiungi un tavolo a una sala")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class))),
