@@ -289,7 +289,7 @@ public class RestaurantUserService {
             return TOKEN_INVALID;
         }
 
-        final RestaurantUser user = verificationToken.getUser();
+        final RestaurantUser user = verificationToken.getRestaurantUser();
         final LocalDateTime now = LocalDateTime.now();
         if (verificationToken.getExpiryDate().isBefore(now)) {
             tokenDAO.delete(verificationToken);
@@ -305,7 +305,7 @@ public class RestaurantUserService {
     public RestaurantUser getRestaurantUser(final String verificationToken) {
 		final RestaurantUserVerificationToken token = tokenDAO.findByToken(verificationToken);
 		if (token != null) {
-			return token.getUser();
+			return token.getRestaurantUser();
 		}
 		return null;
 	}

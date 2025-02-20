@@ -148,7 +148,7 @@ public class CustomerService {
 	}
 
 	public Customer getUserByPasswordResetToken(final String token) {
-		return passwordTokenRepository.findByToken(token).getUser();
+		return passwordTokenRepository.findByToken(token).getCustomer();
 	}
 
 	public Optional<Customer> getUserByID(final long id) {

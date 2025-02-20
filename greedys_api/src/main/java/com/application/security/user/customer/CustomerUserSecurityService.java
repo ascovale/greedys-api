@@ -29,7 +29,7 @@ public class CustomerUserSecurityService implements ISecurityUserService {
     @Override
     public String validatePasswordResetToken(long id, String token) {
         final PasswordResetToken passToken = passwordTokenRepository.findByToken(token);
-        if ((passToken == null) || (passToken.getUser().getId() != id)) {
+        if ((passToken == null) || (passToken.getCustomer().getId() != id)) {
             return "invalidToken";
         }
         final LocalDateTime now = LocalDateTime.now();
@@ -37,7 +37,7 @@ public class CustomerUserSecurityService implements ISecurityUserService {
             return "expired";
         }
 
-        final Customer user = passToken.getUser();
+        final Customer user = passToken.getCustomer();
         final Authentication auth = new UsernamePasswordAuthenticationToken(user, null, Arrays.asList(new SimpleGrantedAuthority("CHANGE_PASSWORD_PRIVILEGE")));
         SecurityContextHolder.getContext().setAuthentication(auth);
         return null;
