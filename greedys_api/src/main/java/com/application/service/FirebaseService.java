@@ -60,7 +60,7 @@ public class FirebaseService {
 
     @Async
     public void sendFirebaseNotification(Notification notification) {
-        Customer user = notification.getClientUser();
+        Customer user = notification.getCustomer();
         List<CustomerFcmToken> tokens = customerFcmTokenService.getTokensByCustomerId(user.getId());
         for (CustomerFcmToken token : tokens) {
             try {

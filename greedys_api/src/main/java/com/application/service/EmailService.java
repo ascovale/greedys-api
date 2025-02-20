@@ -24,7 +24,7 @@ public class EmailService {
     private Environment env;
 
     private SimpleMailMessage constructNotificationMessage(Notification notification) {
-        final String recipientAddress = notification.getClientUser().getEmail();
+        final String recipientAddress = notification.getCustomer().getEmail();
 
         notification.getType().toString();
         final String subject = NotificatioUtils.getUserTemplates().get(notification.getType()).getTitle() + "   "

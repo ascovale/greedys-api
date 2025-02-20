@@ -86,7 +86,7 @@ public class NotificationDto {
 			list.add(new NotificationDto(
 					n.getId(),
 					n.getType(),
-					n.getClientUser().getId(), 
+					n.getCustomer().getId(), 
 					null,//n.getReservation().getId(),
 					n.getUnopened(), 
 					n.getText(),
@@ -100,7 +100,7 @@ public class NotificationDto {
 		return new NotificationDto(
 					n.getId(),
 					n.getType(),
-					n.getClientUser().getId(), 
+					n.getCustomer().getId(), 
 					null,//n.getReservation().getId(),
 					n.getUnopened(), 
 					n.getText(),

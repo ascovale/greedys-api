@@ -26,7 +26,7 @@ public class WhatsAppService {
     }
 
     public void sendWhatsAppMessage(Notification notification) {
-        String phoneNumber = notification.getClientUser().getPhoneNumber();
+        String phoneNumber = notification.getCustomer().getPhoneNumber();
         String message = notification.getText();
         sendWhatsAppMessage(phoneNumber, message);
     }

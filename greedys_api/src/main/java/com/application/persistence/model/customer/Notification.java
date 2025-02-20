@@ -2,6 +2,8 @@ package com.application.persistence.model.customer;
 
 import java.sql.Timestamp;
 
+import com.application.persistence.model.reservation.Reservation;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -11,8 +13,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-
-import com.application.persistence.model.reservation.Reservation;
 
 @Entity
 @Table(name = "notification")
@@ -27,8 +27,8 @@ public class Notification {
 	@Column(name = "n_type")
 	private Type type;
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "iduser")
-	private Customer user;
+	@JoinColumn(name = "idcustomer")
+	private Customer customer;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idreservation")
 	private Reservation reservation;
@@ -54,12 +54,12 @@ public class Notification {
 		this.type = type;
 	}
 
-	public Customer getClientUser() {
-		return user;
+	public Customer getCustomer() {
+		return customer;
 	}
 
-	public void setClientUser(Customer user) {
-		this.user = user;
+	public void setCustomer(Customer customer) {
+		this.customer = customer;
 	}
 
 	public Reservation getReservation() {

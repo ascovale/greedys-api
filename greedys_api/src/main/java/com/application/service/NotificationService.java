@@ -32,7 +32,7 @@ public class NotificationService {
     public Notification createReservationNotification(Reservation reservation,Type type) {
         Customer user = getCurrentUser();
         Notification notification = new Notification();
-        notification.setClientUser(user);
+        notification.setCustomer(user);
         user.setToReadNotification(user.getToReadNotification() + 1);
         notification.setReservation(reservation);
         notification.setType(type);
