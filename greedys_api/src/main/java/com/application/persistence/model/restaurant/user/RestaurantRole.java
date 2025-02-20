@@ -25,11 +25,10 @@ public class RestaurantRole {
     private Long id;
     private String name;
     @ManyToOne
-    @JoinColumn(name = "id_restaurant")
     private Restaurant restaurant;
-	@OneToMany(mappedBy = "roles")
+	@ManyToMany
     private Collection<RestaurantUser> users;
-    @ManyToMany
+    @ManyToMany(mappedBy = "roles")
     @JoinTable(name = 	"restaurant_privilege_has_restaurant_role", 
     	joinColumns = @JoinColumn(name = "restaurant_role_id"), 
     	inverseJoinColumns = @JoinColumn(name = "restaurant_privilege_id")
