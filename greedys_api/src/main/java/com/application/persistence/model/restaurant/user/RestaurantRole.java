@@ -28,7 +28,7 @@ public class RestaurantRole {
     private Restaurant restaurant;
 	@ManyToMany
     private Collection<RestaurantUser> users;
-    @ManyToMany(mappedBy = "roles")
+    @ManyToMany
     @JoinTable(name = 	"restaurant_privilege_has_restaurant_role", 
     	joinColumns = @JoinColumn(name = "restaurant_role_id"), 
     	inverseJoinColumns = @JoinColumn(name = "restaurant_privilege_id")
