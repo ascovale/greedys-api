@@ -13,7 +13,6 @@ import com.application.persistence.model.customer.Customer;
 import com.application.web.dto.get.UserDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -42,7 +41,7 @@ public class UserLoginAuthenticationSuccessHandler implements AuthenticationSucc
 
         response.getWriter().flush();
     }
-
+/* 
     private String getUserName(final Authentication authentication) {
         return ((Customer) authentication.getPrincipal()).getName();
     }
@@ -58,7 +57,7 @@ public class UserLoginAuthenticationSuccessHandler implements AuthenticationSucc
         welcomeCookie.setMaxAge(60 * 60 * 24 * 30); // 30 days
         return welcomeCookie;
     }
-
+*/
     protected void clearAuthenticationAttributes(final HttpServletRequest request) {
         final HttpSession session = request.getSession(false);
         if (session == null) {

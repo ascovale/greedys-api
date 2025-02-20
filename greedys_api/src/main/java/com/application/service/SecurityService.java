@@ -1,7 +1,5 @@
 package com.application.service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,7 +12,6 @@ import com.application.persistence.model.restaurant.user.RestaurantUser;
 
 @org.springframework.stereotype.Service
 public class SecurityService {
-    private static final Logger logger = LoggerFactory.getLogger(SecurityService.class);
 
     @Autowired
     ReservationService reservationService;
