@@ -23,7 +23,7 @@ public class VerificationToken {
     @OneToOne(targetEntity = Customer.class, fetch = FetchType.EAGER)
     @JoinColumn(nullable = false, name = "user_id", referencedColumnName = "id",
     foreignKey =@ForeignKey(name="FK_VERIFY_USER"))
-    private Customer user;
+    private Customer customer;
     private LocalDateTime expiryDate;
 
     public VerificationToken() {
@@ -37,20 +37,20 @@ public class VerificationToken {
         this.expiryDate = calculateExpiryDate(EXPIRATION);
     }
 
-    public VerificationToken(final String token, final Customer companyUser) {
+    public VerificationToken(final String token, final Customer customer) {
         super();
 
         this.token = token;
-        this.user = companyUser;
+        this.customer = customer;
         this.expiryDate = calculateExpiryDate(EXPIRATION);
     }
 
-    public Customer getUser() {
-		return user;
+    public Customer getCustomer() {
+		return customer;
 	}
 
-	public void setUser(Customer user) {
-		this.user = user;
+	public void setCustomer(Customer customer) {
+		this.customer = customer;
 	}
 
 	public static int getExpiration() {
@@ -99,7 +99,7 @@ public class VerificationToken {
         int result = 1;
         result = prime * result + ((expiryDate == null) ? 0 : expiryDate.hashCode());
         result = prime * result + ((token == null) ? 0 : token.hashCode());
-        result = prime * result + ((user == null) ? 0 : user.hashCode());
+        result = prime * result + ((customer == null) ? 0 : customer.hashCode());
         return result;
     }
 
@@ -129,11 +129,11 @@ public class VerificationToken {
         } else if (!token.equals(other.token)) {
             return false;
         }
-        if (user == null) {
-            if (other.user != null) {
+        if (customer == null) {
+            if (other.customer != null) {
                 return false;
             }
-        } else if (!user.equals(other.user)) {
+        } else if (!customer.equals(other.customer)) {
             return false;
         }
         return true;

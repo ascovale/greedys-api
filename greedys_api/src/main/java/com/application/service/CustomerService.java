@@ -97,7 +97,7 @@ public class CustomerService {
 	public Customer getUser(final String verificationToken) {
 		final VerificationToken token = tokenDAO.findByToken(verificationToken);
 		if (token != null) {
-			return token.getUser();
+			return token.getCustomer();
 		}
 		return null;
 	}
@@ -171,7 +171,7 @@ public class CustomerService {
 			return TOKEN_INVALID;
 		}
 
-		final Customer user = verificationToken.getUser();
+		final Customer user = verificationToken.getCustomer();
 		final LocalDateTime now = LocalDateTime.now();
 		if (verificationToken.getExpiryDate().isBefore(now)) {
 			tokenDAO.delete(verificationToken);
