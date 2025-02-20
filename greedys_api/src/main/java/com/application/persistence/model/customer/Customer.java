@@ -47,7 +47,7 @@ public class Customer implements UserDetails {
 	private Boolean blooked = false;
 	private Boolean deleted = false;
 	private Integer toReadNotification = 0;
-	@OneToOne(mappedBy = "customer", fetch = FetchType.EAGER)
+	@OneToOne
     private CustomerOptions customerOptions;
 
 
