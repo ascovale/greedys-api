@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Locale;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.MessageSource;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -51,7 +52,7 @@ public class CustomerController {
     private final MessageSource messages;
     private final ISecurityUserService securityUserService;
 
-    public CustomerController(CustomerService userService, ReservationService reservationService,
+    public CustomerController(@Qualifier("customerUserSecurityService")CustomerService userService, ReservationService reservationService,
             MessageSource messages, ISecurityUserService securityUserService) {
         this.userService = userService;
         this.reservationService = reservationService;
