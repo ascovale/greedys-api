@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -45,7 +46,7 @@ public class AuthController {
     private JwtUtil jwtUtil;
     private CustomerService userService;
 
-    public AuthController(AuthenticationManager authenticationManager,
+    public AuthController(@Qualifier("customerAuthenticationManager")AuthenticationManager authenticationManager,
             JwtUtil jwtUtil,
             CustomerService userService) {
         this.authenticationManager = authenticationManager;
