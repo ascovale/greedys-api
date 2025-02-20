@@ -25,8 +25,8 @@ public class RestaurantUserVerificationToken {
     private String token;
     @OneToOne(targetEntity = Customer.class, fetch = FetchType.EAGER)
     @JoinColumn(nullable = false, name = "user_id", referencedColumnName = "id",
-    foreignKey =@ForeignKey(name="FK_VERIFY_USER"))
-    private RestaurantUser user;
+    foreignKey =@ForeignKey(name="FK_VERIFY_RESTAURANTUSER"))
+    private RestaurantUser restaurantUser;
     private LocalDateTime expiryDate;
 
     public RestaurantUserVerificationToken() {
@@ -44,16 +44,16 @@ public class RestaurantUserVerificationToken {
         super();
 
         this.token = token;
-        this.user = restaurantUser;
+        this.restaurantUser = restaurantUser;
         this.expiryDate = calculateExpiryDate(EXPIRATION);
     }
 
-    public RestaurantUser getUser() {
-		return user;
+    public RestaurantUser getRestaurantUser() {
+		return restaurantUser;
 	}
 
-	public void setUser(RestaurantUser user) {
-		this.user = user;
+	public void setUser(RestaurantUser restaurantUser) {
+		this.restaurantUser = restaurantUser;
 	}
 
 	public static int getExpiration() {
@@ -94,15 +94,13 @@ public class RestaurantUserVerificationToken {
         this.expiryDate = calculateExpiryDate(EXPIRATION);
     }
 
-    //
-
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((expiryDate == null) ? 0 : expiryDate.hashCode());
         result = prime * result + ((token == null) ? 0 : token.hashCode());
-        result = prime * result + ((user == null) ? 0 : user.hashCode());
+        result = prime * result + ((restaurantUser == null) ? 0 : restaurantUser.hashCode());
         return result;
     }
 
@@ -132,11 +130,11 @@ public class RestaurantUserVerificationToken {
         } else if (!token.equals(other.token)) {
             return false;
         }
-        if (user == null) {
-            if (other.user != null) {
+        if (restaurantUser == null) {
+            if (other.restaurantUser != null) {
                 return false;
             }
-        } else if (!user.equals(other.user)) {
+        } else if (!restaurantUser.equals(other.restaurantUser)) {
             return false;
         }
         return true;

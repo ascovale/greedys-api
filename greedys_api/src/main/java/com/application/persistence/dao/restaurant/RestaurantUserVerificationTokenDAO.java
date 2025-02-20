@@ -14,8 +14,8 @@ public interface RestaurantUserVerificationTokenDAO extends JpaRepository<Restau
 
     RestaurantUserVerificationToken findByToken(String token);
 
-    RestaurantUserVerificationToken findByUser(RestaurantUser restaurantUser);
-
+    RestaurantUserVerificationToken findByRestaurantUser(RestaurantUser restaurantUser);
+    
     Stream<RestaurantUserVerificationToken> findAllByExpiryDateLessThan(LocalDate now);
 
     void deleteByExpiryDateLessThan(LocalDate now);
