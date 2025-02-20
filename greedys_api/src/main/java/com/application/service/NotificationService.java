@@ -73,7 +73,7 @@ public class NotificationService {
     public void deleteNotification(long idNotification) {
         notificationDAO.deleteById(idNotification);
     }
-
+    //getCurrentUser() è un metodo che ritorna l'utente corrente
     protected Customer getCurrentUser() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (principal instanceof Customer) {
