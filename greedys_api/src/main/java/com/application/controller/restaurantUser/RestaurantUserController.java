@@ -24,16 +24,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "RestaurantUser", description = "Controller per la gestione degli utenti di un ristorante")
 @RestController
 @RequestMapping("/restaurant-user/{idRestaurantUser}/user")
-//@PreAuthorize("@securityService.isRestaurantUserPermission(#idRestaurantUser)")
 @SecurityRequirement(name = "bearerAuth")
 public class RestaurantUserController {
     private final RestaurantUserService restaurantUserService;
-        //TODO Aggiungere  @Qualifier("restaurantSecurityService")
-        //TODO e tutta la parte di accesso del restaurantUser
-        //TODO Aggiungere entità MultirestaurantOwner
-        //TODO cercare tutti gli user della pagina e rimuovere 
-        // ad esempio se aggiungo un ruolo devo avere un idRestaurantUser che non esiste quindi dobbiamo passare una mail l'utente ricevuto la mail crea un account
-        // domanda fare che un restaurantUser può avere più ristoranti chiamiamo questa entità 
 
     public RestaurantUserController(RestaurantUserService restaurantUserService) {
         this.restaurantUserService = restaurantUserService;
@@ -50,7 +43,7 @@ public class RestaurantUserController {
             @PathVariable Long idUser) {
         RestaurantUserDTO updatedUser = restaurantUserService.addRestaurantUserRole(idRestaurantUser,
                 "ROLE_MANAGER");
-        return new ResponseEntity<RestaurantUserDTO>(updatedUser, HttpStatus.OK);
+        return new ResponseEntity<>(updatedUser, HttpStatus.OK);
     }
 
     @Operation(summary = "Add a restaurant user as chef", description = "Aggiungi un utente di un ristorante come chef")
@@ -64,7 +57,7 @@ public class RestaurantUserController {
             @PathVariable Long idUser) {
         RestaurantUserDTO updatedUser = restaurantUserService.addRestaurantUserRole(idRestaurantUser,
                 "ROLE_CHEF");
-        return new ResponseEntity<RestaurantUserDTO>(updatedUser, HttpStatus.OK);
+        return new ResponseEntity<>(updatedUser, HttpStatus.OK);
     }
 
     @Operation(summary = "Add a restaurant user as waiter", description = "Aggiungi un utente di un ristorante come cameriere")
@@ -76,8 +69,9 @@ public class RestaurantUserController {
     @PostMapping(value = "/add-waiter/{idUser}")
     public ResponseEntity<RestaurantUserDTO> addRestaurantUserAsWaiter(@PathVariable Long idRestaurantUser,
             @PathVariable Long idUser) {
-        RestaurantUserDTO updatedUser = restaurantUserService.addRestaurantUserRole(idRestaurantUser,"ROLE_WAITER");
-        return new ResponseEntity<RestaurantUserDTO>(updatedUser, HttpStatus.OK);
+        RestaurantUserDTO updatedUser = restaurantUserService.addRestaurantUserRole(idRestaurantUser,
+                "ROLE_WAITER");
+        return new ResponseEntity<>(updatedUser, HttpStatus.OK);
     }
 
     @Operation(summary = "Add a restaurant user as viewer", description = "Aggiungi un utente di un ristorante come visualizzatore")
@@ -86,11 +80,12 @@ public class RestaurantUserController {
             @ApiResponse(responseCode = "404", description = "Utente o ristorante non trovato")
     })
     @PreAuthorize("@securityService.hasRestaurantUserPrivilege(#idRestaurantUser, 'PRIVILEGE_ADD_VIEWER')")
-    @PostMapping(value = "/add-viewer/")
-    public ResponseEntity<RestaurantUserDTO> addRestaurantUserAsViewer(@PathVariable Long idRestaurantUser) {
+    @PostMapping(value = "/add-viewer/{idUser}")
+    public ResponseEntity<RestaurantUserDTO> addRestaurantUserAsViewer(@PathVariable Long idRestaurantUser,
+            @PathVariable Long idUser) {
         RestaurantUserDTO updatedUser = restaurantUserService.addRestaurantUserRole(idRestaurantUser,
                 "ROLE_VIEWER");
-        return new ResponseEntity<RestaurantUserDTO>(updatedUser, HttpStatus.OK);
+        return new ResponseEntity<>(updatedUser, HttpStatus.OK);
     }
 
     @Operation(summary = "Disable a restaurant user", description = "Disabilita un utente di un ristorante")
@@ -115,7 +110,7 @@ public class RestaurantUserController {
             @PathVariable Long idUser) {
         RestaurantUserDTO updatedUser = restaurantUserService.changeRestaurantUserRole(idRestaurantUser, idUser,
                 "ROLE_CHEF");
-        return new ResponseEntity<RestaurantUserDTO>(updatedUser, HttpStatus.OK);
+        return new ResponseEntity<>(updatedUser, HttpStatus.OK);
     }
 
     @Operation(summary = "Change a restaurant user role to waiter", description = "Cambia il ruolo di un utente di un ristorante a cameriere")
@@ -129,7 +124,7 @@ public class RestaurantUserController {
             @PathVariable Long idUser) {
         RestaurantUserDTO updatedUser = restaurantUserService.changeRestaurantUserRole(idRestaurantUser, idUser,
                 "ROLE_WAITER");
-        return new ResponseEntity<RestaurantUserDTO>(updatedUser, HttpStatus.OK);
+        return new ResponseEntity<>(updatedUser, HttpStatus.OK);
     }
 
     @Operation(summary = "Change a restaurant user role to viewer", description = "Cambia il ruolo di un utente di un ristorante a visualizzatore")
@@ -143,7 +138,7 @@ public class RestaurantUserController {
             @PathVariable Long idUser) {
         RestaurantUserDTO updatedUser = restaurantUserService.changeRestaurantUserRole(idRestaurantUser, idUser,
                 "ROLE_VIEWER");
-        return new ResponseEntity<RestaurantUserDTO>(updatedUser, HttpStatus.OK);
+        return new ResponseEntity<>(updatedUser, HttpStatus.OK);
     }
 
     @Operation(summary = "Change a restaurant user role to manager", description = "Cambia il ruolo di un utente di un ristorante a manager")
@@ -157,6 +152,6 @@ public class RestaurantUserController {
             @PathVariable Long idUser) {
         RestaurantUserDTO updatedUser = restaurantUserService.changeRestaurantUserRole(idRestaurantUser, idUser,
                 "ROLE_MANAGER");
-        return new ResponseEntity<RestaurantUserDTO>(updatedUser, HttpStatus.OK);
+        return new ResponseEntity<>(updatedUser, HttpStatus.OK);
     }
 }
