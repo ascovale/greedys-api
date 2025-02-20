@@ -73,7 +73,9 @@ public class SecurityConfig {
                         )
                         .permitAll().requestMatchers("/restaurant_user/**").authenticated())
                 .sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(restaurantJwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(restaurantJwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
+                .authenticationManager(authenticationManager);
+
         return http.build();
     }
 
@@ -95,7 +97,10 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers("/customer/**").authenticated())
                 .sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(customerJwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(customerJwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
+
+                .authenticationManager(authenticationManager);
+
         return http.build();
     }
 
