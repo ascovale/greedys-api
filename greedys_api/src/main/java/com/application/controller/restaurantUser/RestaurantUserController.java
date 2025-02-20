@@ -28,6 +28,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "bearerAuth")
 public class RestaurantUserController {
     private final RestaurantUserService restaurantUserService;
+        //TODO Aggiungere  @Qualifier("restaurantSecurityService")
+        //TODO e tutta la parte di accesso del restaurantUser
         //TODO Aggiungere entità MultirestaurantOwner
         //TODO cercare tutti gli user della pagina e rimuovere 
         // ad esempio se aggiungo un ruolo devo avere un idRestaurantUser che non esiste quindi dobbiamo passare una mail l'utente ricevuto la mail crea un account

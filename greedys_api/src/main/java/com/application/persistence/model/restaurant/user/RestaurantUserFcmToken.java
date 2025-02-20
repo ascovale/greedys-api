@@ -18,7 +18,7 @@ public class RestaurantUserFcmToken {
 
     @ManyToOne
     @JoinColumn(nullable = false)
-    private RestaurantUser user;
+    private RestaurantUser restaurantUser;
 
     @Column(nullable = false)
     private String fcmToken;
@@ -33,8 +33,8 @@ public class RestaurantUserFcmToken {
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public RestaurantUser getUser() { return user; }
-    public void setUser(RestaurantUser user) { this.user = user; }
+    public RestaurantUser getRestaurantUser() { return restaurantUser; }
+    public void setUser(RestaurantUser restaurantUser) { this.restaurantUser = restaurantUser; }
 
     public String getFcmToken() { return fcmToken; }
     public void setFcmToken(String fcmToken) { this.fcmToken = fcmToken; }
