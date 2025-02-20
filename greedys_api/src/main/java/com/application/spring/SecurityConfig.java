@@ -54,7 +54,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    SecurityFilterChain restaurantUserFilterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain restaurantUserFilterChain(HttpSecurity http, @Qualifier("restaurantAuthenticationManager") AuthenticationManager authenticationManager) throws Exception {
         http
                 .securityMatcher("/restaurant_user/**")
                 .requiresChannel(channel -> channel.anyRequest().requiresSecure())
@@ -71,14 +71,14 @@ public class SecurityConfig {
                                 "/restaurant/*/day-slots*", "/restaurant/*/services",
                                 "/reservation/**", "/error*", "/actuator/health", "/public/**"
                         )
-                        .permitAll().anyRequest().authenticated())
+                        .permitAll().requestMatchers("/restaurant_user/**").authenticated())
                 .sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(restaurantJwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
     @Bean
-    SecurityFilterChain customerFilterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain customerFilterChain(HttpSecurity http, @Qualifier("customerAuthenticationManager") AuthenticationManager authenticationManager) throws Exception {
         http
                 .securityMatcher("/customer/**")
                 .requiresChannel(channel -> channel.anyRequest().requiresSecure())
@@ -93,7 +93,7 @@ public class SecurityConfig {
                                 "/restaurant/*/day-slots*", "/restaurant/*/services",
                                 "/reservation/**", "/error*", "/actuator/health", "/public/**")
                         .permitAll()
-                        .anyRequest().authenticated())
+                        .requestMatchers("/customer/**").authenticated())
                 .sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(customerJwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
@@ -114,7 +114,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    AuthenticationManager authenticationManager1(HttpSecurity http) throws Exception {
+    @Qualifier("restaurantAuthenticationManager")
+    AuthenticationManager restaurantAuthenticationManager(HttpSecurity http) throws Exception {
         AuthenticationManagerBuilder auth = http.getSharedObject(AuthenticationManagerBuilder.class);
         auth.userDetailsService(restaurantUserDetailsService)
                 .passwordEncoder(passwordEncoder());
@@ -123,7 +124,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    AuthenticationManager authenticationManager2(HttpSecurity http) throws Exception {
+    @Qualifier("customerAuthenticationManager")
+    AuthenticationManager customerAuthenticationManager(HttpSecurity http) throws Exception {
         AuthenticationManagerBuilder auth = http.getSharedObject(AuthenticationManagerBuilder.class);
         auth.userDetailsService(customerUserDetailsService)
                 .passwordEncoder(passwordEncoder());

@@ -9,13 +9,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.application.persistence.dao.customer.CustomerDAO;
 import com.application.persistence.dao.restaurant.RestaurantDAO;
 import com.application.persistence.dao.restaurant.RestaurantPrivilegeDAO;
 import com.application.persistence.dao.restaurant.RestaurantRoleDAO;
 import com.application.persistence.dao.restaurant.RestaurantUserDAO;
 import com.application.persistence.dao.restaurant.RestaurantUserVerificationTokenDAO;
-import com.application.persistence.model.customer.Customer;
 import com.application.persistence.model.restaurant.Restaurant;
 import com.application.persistence.model.restaurant.user.RestaurantPrivilege;
 import com.application.persistence.model.restaurant.user.RestaurantRole;
@@ -27,7 +25,10 @@ import com.application.web.dto.post.NewRestaurantUserDTO;
 @Service
 @Transactional
 public class RestaurantUserService {
-
+    // TODO Aggiungere vedere utente
+    // TODO Vedere prenotazioni per un ristorante
+    // TODO Vedere prenotazioni per un utente
+    
     public static final String TOKEN_INVALID = "invalidToken";
     public static final String TOKEN_EXPIRED = "expired";
     public static final String TOKEN_VALID = "valid";
@@ -42,8 +43,6 @@ public class RestaurantUserService {
     private EmailService emailService;
     @Autowired
     private RestaurantUserDAO ruDAO;
-    @Autowired
-    private CustomerDAO uDAO;
     @Autowired
     private RestaurantDAO restaurantDAO;
     @Autowired
