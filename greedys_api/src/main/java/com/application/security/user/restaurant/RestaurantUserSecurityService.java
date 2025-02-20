@@ -19,7 +19,7 @@ import com.application.security.user.ISecurityUserService;
 
 @Service
 @Transactional
-@Qualifier("restaurantUserSecurityUserService")
+@Qualifier("restaurantUserSecurityService")
 public class RestaurantUserSecurityService implements ISecurityUserService {
 
     @Autowired

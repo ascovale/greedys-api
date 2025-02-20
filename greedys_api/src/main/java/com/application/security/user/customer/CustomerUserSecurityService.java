@@ -19,7 +19,7 @@ import com.application.security.user.ISecurityUserService;
 
 @Service
 @Transactional
-@Qualifier("customerSecurityUserService")
+@Qualifier("customerSecurityService")
 public class CustomerUserSecurityService implements ISecurityUserService {
 
     @Autowired
