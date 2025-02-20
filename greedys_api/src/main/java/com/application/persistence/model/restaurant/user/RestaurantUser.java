@@ -43,6 +43,16 @@ public class RestaurantUser {
 	private String password;
     private String email;
     private boolean enabled;
+    private boolean accepted;
+    
+
+    public boolean isAccepted() {
+        return accepted;
+    }
+
+    public void setAccepted(boolean accepted) {
+        this.accepted = accepted;
+    }
 
     public boolean isEnabled() {
         return enabled;
