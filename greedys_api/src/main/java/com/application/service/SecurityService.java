@@ -1,11 +1,10 @@
 package com.application.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.application.persistence.dao.restaurant.RestaurantUserDAO;
 import com.application.persistence.model.customer.Customer;
@@ -40,27 +39,7 @@ public class SecurityService {
         }
         return false;
     }
-    @Transactional
-    public boolean isRestaurantUser(Long idRestaurantUser, @AuthenticationPrincipal Customer user) {
-        RestaurantUser restaurantUser = user.getRestaurantUsers().stream()
-                .filter(ru -> ru.getId().equals(idRestaurantUser))
-                .findFirst().orElse(null);
-        if (restaurantUser != null && restaurantUser.getId().equals(idRestaurantUser)) {
-            return true;
-        }
-        return false;
-    }
 
-    @Transactional
-    public boolean existsRestaurantUserWithId(Long idRestaurantUser, @AuthenticationPrincipal Customer user) {
-        RestaurantUser restaurantUser = restaurantUserDAO.findById(idRestaurantUser).get();
-        for (RestaurantUser ru : user.getRestaurantUsers()) {
-            if (ru.equals(restaurantUser)) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     @Transactional
     public boolean hasRestaurantUserRole(Long idRestaurantUser, String roleName, @AuthenticationPrincipal Customer user) {
@@ -72,7 +51,7 @@ public class SecurityService {
         }
         return false;
     }
-
+/* 
     @Transactional
     public boolean isRestaurantUserPermission(Long idRestaurantUser, @AuthenticationPrincipal Customer user) {
         RestaurantUser restaurantUser = restaurantUserDAO.findById(idRestaurantUser).orElse(null);
@@ -92,6 +71,6 @@ public class SecurityService {
         }
         //qua potrei prenderei i ruoli del ristorante e vedere quali ha oppure prendere quelli dell'utente
         return false;
-    }
+    }*/
 
 }

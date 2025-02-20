@@ -22,7 +22,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/restaurant-user/{idRestaurantUser}/notification")
 @SecurityRequirement(name = "bearerAuth")
-@PreAuthorize("@securityService.isRestaurantUserPermission(#idRestaurantUser)")
+//@PreAuthorize("@securityService.isRestaurantUserPermission(#idRestaurantUser)")
 @Tag(name = "Restaurant Notification", description = "Restaurant Notification management APIs")
 public class RestaurantNotificationController {
 

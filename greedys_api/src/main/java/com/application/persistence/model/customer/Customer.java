@@ -8,7 +8,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.application.persistence.model.reservation.Reservation;
-import com.application.persistence.model.restaurant.user.RestaurantUser;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -42,22 +41,11 @@ public class Customer implements UserDetails {
 	@ManyToMany
 	@JoinTable(name = "user_has_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
 	private Collection<Role> roles;
-	@OneToMany(mappedBy = "customer", fetch = FetchType.EAGER)
-	private List<RestaurantUser> restaurantUsers;
 	private Boolean blooked = false;
 	private Boolean deleted = false;
 	private Integer toReadNotification = 0;
 	@OneToOne
     private CustomerOptions customerOptions;
-
-
-	public List<RestaurantUser> getRestaurantUsers() {
-		return restaurantUsers;
-	}
-
-	public void setRestaurantUsers(List<RestaurantUser> restaurantUsers) {
-		this.restaurantUsers = restaurantUsers;
-	}
 
 	public CustomerOptions getCustomerOptions() {
 		return customerOptions;

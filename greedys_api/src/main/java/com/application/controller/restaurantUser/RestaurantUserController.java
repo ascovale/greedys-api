@@ -24,7 +24,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "RestaurantUser", description = "Controller per la gestione degli utenti di un ristorante")
 @RestController
 @RequestMapping("/restaurant-user/{idRestaurantUser}/user")
-@PreAuthorize("@securityService.isRestaurantUserPermission(#idRestaurantUser)")
+//@PreAuthorize("@securityService.isRestaurantUserPermission(#idRestaurantUser)")
 @SecurityRequirement(name = "bearerAuth")
 public class RestaurantUserController {
     private final RestaurantUserService restaurantUserService;

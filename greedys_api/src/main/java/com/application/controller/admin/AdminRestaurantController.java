@@ -77,7 +77,7 @@ public class AdminRestaurantController {
                                         schema = @Schema(implementation = ReservationDTO.class)))),
         @ApiResponse(responseCode = "404", description = "Ristorante non trovato")
     })
-	@PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant) or hasRole('ADMIN')")
+	//@PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant) or hasRole('ADMIN')")
     @GetMapping(value = "{idRestaurant}/reservation")
 	public Collection<ReservationDTO> getReservations(
 				@PathVariable Long idRestaurant,
@@ -95,7 +95,7 @@ public class AdminRestaurantController {
 										schema = @Schema(implementation = ReservationDTO.class)))),
 		@ApiResponse(responseCode = "404", description = "Ristorante non trovato")
 	})
-	@PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant) or hasRole('ADMIN')")
+	//@PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant) or hasRole('ADMIN')")
 	@GetMapping(value = "{idRestaurant}/reservation/accepted")
 	public Collection<ReservationDTO> getAcceptedReservations(
 				@PathVariable Long idRestaurant,
@@ -114,7 +114,7 @@ public class AdminRestaurantController {
 										schema = @Schema(implementation = ReservationDTO.class)))),
 		@ApiResponse(responseCode = "404", description = "Ristorante non trovato")
 	})
-	@PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant) or hasRole('ADMIN')")
+	//@PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant) or hasRole('ADMIN')")
 	@GetMapping(value = "{idRestaurant}/reservation/pageable")
 	public ResponseEntity<Page<ReservationDTO>> getReservationsPageable(
 				@PathVariable Long idRestaurant,
@@ -136,7 +136,8 @@ public class AdminRestaurantController {
 										schema = @Schema(implementation = ReservationDTO.class)))),
 		@ApiResponse(responseCode = "404", description = "Ristorante non trovato")
 	})
-	@PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant) or hasRole('ADMIN')")
+	
+	//@PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant) or hasRole('ADMIN')")
 	@GetMapping(value = "{idRestaurant}/reservation/pending")
 	public Collection<ReservationDTO> getPendingReservations(
 				@PathVariable Long idRestaurant,
@@ -166,7 +167,7 @@ public class AdminRestaurantController {
                                         schema = @Schema(implementation = GenericResponse.class))),
         @ApiResponse(responseCode = "404", description = "Ristorante o utente non trovato")
     })
-	@PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant) or hasRole('ADMIN')")
+	//@PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant) or hasRole('ADMIN')")
     @PostMapping("{idRestaurant}/user/accept")
     public GenericResponse acceptUser(@PathVariable Long idRestaurant) {
 		//TODO : verificare che venga messo chi è l'utente ad accettare la prenotazione
@@ -184,7 +185,7 @@ public class AdminRestaurantController {
 		@ApiResponse(responseCode = "404", description = "Ristorante non trovato"),
 		@ApiResponse(responseCode = "400", description = "Richiesta non valida")
 	})
-	@PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant) or hasRole('ADMIN')")
+	//@PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant) or hasRole('ADMIN')")
 	public ResponseEntity<Collection<ServiceDTO>> getServices(@PathVariable Long idRestaurant){
 		Collection<ServiceDTO> services = restaurantService.getServices(idRestaurant);
 		return new ResponseEntity<>(services, HttpStatus.OK);
@@ -202,7 +203,7 @@ public class AdminRestaurantController {
 		@ApiResponse(responseCode = "404", description = "Ristorante non trovato"),
 		@ApiResponse(responseCode = "400", description = "Richiesta non valida")
 	})
-	@PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant) or hasRole('ADMIN')")
+	//@PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant) or hasRole('ADMIN')")
 	public ResponseEntity<Collection<RoomDTO>> getRooms(@PathVariable Long idRestaurant){
 		Collection<RoomDTO> rooms = roomService.findByRestaurant(idRestaurant);
 		return new ResponseEntity<>(rooms, HttpStatus.OK);
@@ -218,7 +219,7 @@ public class AdminRestaurantController {
 		@ApiResponse(responseCode = "404", description = "Ristorante o sala non trovato"),
 		@ApiResponse(responseCode = "400", description = "Richiesta non valida")
 	})
-	@PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant) or hasRole('ADMIN')")
+	//@PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant) or hasRole('ADMIN')")
 	public ResponseEntity<Collection<TableDTO>> getTables(@PathVariable Long idRestaurant, @PathVariable Long roomId){
 		Collection<TableDTO> tables = tableService.findByRoom(roomId);
 		return new ResponseEntity<>(tables, HttpStatus.OK);
@@ -233,7 +234,7 @@ public class AdminRestaurantController {
 		@ApiResponse(responseCode = "404", description = "Ristorante non trovato"),
 		@ApiResponse(responseCode = "400", description = "Richiesta non valida")
 	})
-	@PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant) or hasRole('ADMIN')")
+	//@PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant) or hasRole('ADMIN')")
 	public GenericResponse addRoom(@PathVariable Long idRestaurant, @RequestBody NewRoomDTO roomDto){
 		//TODO: sistemare idRestaurant
 		roomService.createRoom(roomDto);
@@ -249,7 +250,7 @@ public class AdminRestaurantController {
 		@ApiResponse(responseCode = "404", description = "Ristorante o sala non trovato"),
 		@ApiResponse(responseCode = "400", description = "Richiesta non valida")
 	})
-	@PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant) or hasRole('ADMIN')")
+	//@PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant) or hasRole('ADMIN')")
 	public GenericResponse addTable(@PathVariable Long idRestaurant, @RequestParam NewTableDTO tableDto){
 		//TODO: sistemare idRestaurant
 		tableService.createTable(tableDto);
@@ -264,7 +265,7 @@ public class AdminRestaurantController {
 		@ApiResponse(responseCode = "404", description = "Ristorante non trovato"),
 		@ApiResponse(responseCode = "400", description = "Richiesta non valida")
 	})
-	@PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant) or hasRole('ADMIN')")
+	//@PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant) or hasRole('ADMIN')")
 	@PostMapping(value = "{idRestaurant}/no-show-time-limit")
 	public GenericResponse setNoShowTimeLimit(@PathVariable Long idRestaurant, @RequestParam int minutes) {
 		restaurantService.setNoShowTimeLimit(idRestaurant, minutes);
@@ -281,7 +282,7 @@ public class AdminRestaurantController {
 		@ApiResponse(responseCode = "404", description = "Ristorante non trovato"),
 		@ApiResponse(responseCode = "400", description = "Richiesta non valida")
 	})
-	@PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant) or hasRole('ADMIN')")
+	//@PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant) or hasRole('ADMIN')")
 	public ResponseEntity<Collection<String>> getRestaurantTypesNames(@PathVariable Long idRestaurant) {
 		List<String> types = restaurantService.getRestaurantTypesNames(idRestaurant);
 		return new ResponseEntity<>(types, HttpStatus.OK);
