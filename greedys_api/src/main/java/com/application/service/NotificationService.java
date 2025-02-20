@@ -98,7 +98,7 @@ public class NotificationService {
     public Page<Notification> getUnreadNotifications(Pageable pageable) {
         return notificationDAO.findByUserAndUnopenedTrue(getCurrentUser(), pageable);
     }
-
+    //TODO da testare
     public Page<Notification> getAllNotifications(Pageable pageable) {
     Customer currentUser = getCurrentUser();
     if (!currentUser.isEnabled()) {
