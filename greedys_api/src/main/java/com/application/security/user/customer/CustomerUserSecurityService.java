@@ -1,16 +1,16 @@
 package com.application.security.user.customer;
 
-import java.util.Arrays;
 import java.time.LocalDateTime;
-
-import org.springframework.transaction.annotation.Transactional;
+import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.application.persistence.dao.customer.PasswordResetTokenDAO;
 import com.application.persistence.model.customer.Customer;
@@ -19,6 +19,7 @@ import com.application.security.user.ISecurityUserService;
 
 @Service
 @Transactional
+@Qualifier("customerSecurityUserService")
 public class CustomerUserSecurityService implements ISecurityUserService {
 
     @Autowired

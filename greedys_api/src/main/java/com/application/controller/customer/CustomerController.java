@@ -52,7 +52,7 @@ public class CustomerController {
     private final MessageSource messages;
     private final ISecurityUserService securityUserService;
 
-    public CustomerController(@Qualifier("customerUserSecurityService")CustomerService userService, ReservationService reservationService,
+    public CustomerController(@Qualifier("customerSecurityService")CustomerService userService, ReservationService reservationService,
             MessageSource messages, ISecurityUserService securityUserService) {
         this.userService = userService;
         this.reservationService = reservationService;
