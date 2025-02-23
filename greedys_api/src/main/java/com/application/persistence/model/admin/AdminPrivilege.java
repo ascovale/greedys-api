@@ -1,4 +1,4 @@
-package com.application.persistence.model.customer;
+package com.application.persistence.model.admin;
 
 import java.util.Collection;
 
@@ -6,37 +6,28 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 
-@Entity
-@Table(name = "role")
-public class Role {
 
+@Entity
+@Table(name = "admin_privilege")
+public class AdminPrivilege {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private String name;
+    @ManyToMany(mappedBy = "privileges")
+    private Collection<AdminRole> adminRoles;
 
-    @ManyToMany
-    @JoinTable(name = 	"role_has_privilege", 
-    	joinColumns = @JoinColumn(name = "role_id"), 
-    	inverseJoinColumns = @JoinColumn(name = "privilege_id")
-    )	
-    private Collection<Privilege> privileges;
-
-    public Role() {
+    public AdminPrivilege() {
         super();
     }
 
-    public Role(final String name) {
+    public AdminPrivilege(final String name) {
         super();
         this.name = name;
     }
-
-    //
 
     public Long getId() {
         return id;
@@ -54,9 +45,12 @@ public class Role {
         this.name = name;
     }
 
+    public Collection<AdminRole> getAdminRoles() {
+		return adminRoles;
+	}
 
-	public Collection<Privilege> getPrivileges() {
-		return privileges;
+	public void setRoles(Collection<AdminRole> adminRoles) {
+		this.adminRoles = adminRoles;
 	}
 
 	@Override
@@ -68,30 +62,26 @@ public class Role {
     }
 
     @Override
-    public boolean equals(final Object obj) {
-        if (this == obj) {
+    public boolean equals(Object obj) {
+        if (this == obj)
             return true;
-        }
-        if (obj == null) {
+        if (obj == null)
             return false;
-        }
-        if (getClass() != obj.getClass()) {
+        if (getClass() != obj.getClass())
             return false;
-        }
-        final Role role = (Role) obj;
-        if (!role.equals(role.name)) {
+        AdminPrivilege other = (AdminPrivilege) obj;
+        if (name == null) {
+            if (other.name != null)
+                return false;
+        } else if (!name.equals(other.name))
             return false;
-        }
         return true;
     }
 
     @Override
     public String toString() {
         final StringBuilder builder = new StringBuilder();
-        builder.append("Role [name=").append(name).append("]").append("[id=").append(id).append("]");
+        builder.append("Privilege [name=").append(name).append("]").append("[id=").append(id).append("]");
         return builder.toString();
     }
-    public void setPrivileges(Collection<Privilege> privileges) {
-		this.privileges = privileges;
-	}
 }

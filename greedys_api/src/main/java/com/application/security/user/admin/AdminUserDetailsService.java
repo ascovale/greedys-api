@@ -1,4 +1,4 @@
-package com.application.security.user.restaurant;
+package com.application.security.user.admin;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -12,24 +12,24 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.application.persistence.dao.restaurant.RestaurantUserDAO;
-import com.application.persistence.model.restaurant.user.RestaurantPrivilege;
-import com.application.persistence.model.restaurant.user.RestaurantRole;
-import com.application.persistence.model.restaurant.user.RestaurantUser;
+import com.application.persistence.dao.admin.AdminDAO;
+import com.application.persistence.model.admin.Admin;
+import com.application.persistence.model.admin.AdminPrivilege;
+import com.application.persistence.model.admin.AdminRole;
 import com.application.security.LoginAttemptService;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-@Service("restaurantUserDetailsService")
+@Service("adminUserDetailsService")
 @Transactional
-public class RestaurantUserDetailsService implements UserDetailsService {
-    
-    private final RestaurantUserDAO userService;
+public class AdminUserDetailsService implements UserDetailsService {
+
+    private final AdminDAO adminDAO;
     private final LoginAttemptService loginAttemptService;
     private final HttpServletRequest request;
 
-    public RestaurantUserDetailsService(RestaurantUserDAO userDAO, LoginAttemptService loginAttemptService, HttpServletRequest request) {
-        this.userService = userDAO;
+    public AdminUserDetailsService(AdminDAO adminDAO, LoginAttemptService loginAttemptService, HttpServletRequest request) {
+        this.adminDAO = adminDAO;
         this.loginAttemptService = loginAttemptService;
         this.request = request;
     }
@@ -41,32 +41,32 @@ public class RestaurantUserDetailsService implements UserDetailsService {
             throw new RuntimeException("blocked");
         }
         try {
-            final RestaurantUser user = userService.findByEmail(email);
-            if (user == null) {
+            final Admin admin = adminDAO.findByEmail(email);
+            if (admin == null) {
                 throw new UsernameNotFoundException("No user found with username: " + email);
             }
-            return new org.springframework.security.core.userdetails.User(user.getEmail(), 
-                                                                          user.getPassword(), 
-                                                                          user.isEnabled(), 
+            return new org.springframework.security.core.userdetails.User(admin.getEmail(), 
+            admin.getPassword(), 
+                                                                          admin.isEnabled(), 
                                                                           true, 
                                                                           true, 
                                                                           true, 
-                                                                          getAuthorities(user.getRestaurantRoles()));
+                                                                          getAuthorities(admin.getAdminRoles()));
         } catch (final Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    private final Collection<? extends GrantedAuthority> getAuthorities(final Collection<RestaurantRole> roles) {
+    private final Collection<? extends GrantedAuthority> getAuthorities(final Collection<AdminRole> roles) {
         return getGrantedAuthorities(getPrivileges(roles));
     }
 
-    private final List<String> getPrivileges(final Collection<RestaurantRole> roles) {
+    private final List<String> getPrivileges(final Collection<AdminRole> roles) {
         final List<String> privileges = new ArrayList<String>();
 
-        for (final RestaurantRole role : roles) {
+        for (final AdminRole role : roles) {
             privileges.add(role.getName());
-            for (final RestaurantPrivilege item : role.getRestaurantPrivileges()) {
+            for (final AdminPrivilege item : role.getAdminPrivileges()) {
                 privileges.add(item.getName());
             }
         }
@@ -89,4 +89,5 @@ public class RestaurantUserDetailsService implements UserDetailsService {
         }
         return xfHeader.split(",")[0];
     }
+
 }

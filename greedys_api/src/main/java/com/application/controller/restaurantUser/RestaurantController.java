@@ -41,7 +41,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "Restaurant", description = "Controller per la gestione dei ristoranti")
 @RestController
-@RequestMapping("/restaurant-user/{idRestaurantUser}/restaurant")
+@RequestMapping("/restaurant_user/{idRestaurantUser}/restaurant")
 //@PreAuthorize("@securityService.isRestaurantUserPermission(#idRestaurantUser)")
 @SecurityRequirement(name = "bearerAuth")
 public class RestaurantController {
@@ -60,8 +60,8 @@ public class RestaurantController {
 		this.tableService = tableService;
 	}
 
-	// TODO fare che se un ristorante è blocked allora tutti i suoi utenti sono
-	// disabled
+	// TODO verificare come prima cosa lo stato del ristorante
+	// e dei relativi dei restaurantUser
 	@Operation(summary = "Get all reservations of a restaurant", description = "Ottieni tutte le prenotazioni di un ristorante")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ReservationDTO.class)))),
@@ -72,8 +72,7 @@ public class RestaurantController {
 			@PathVariable Long idRestaurantUser,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end) {
-		Collection<ReservationDTO> reservations = reservationService.getReservationsFromRestaurantUser(idRestaurantUser,
-				start, end);
+		Collection<ReservationDTO> reservations = reservationService.getRestaurantReservations(start, end);
 		return reservations;
 	}
 

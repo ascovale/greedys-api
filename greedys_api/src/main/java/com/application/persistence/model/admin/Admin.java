@@ -1,7 +1,6 @@
-package com.application.persistence.model.customer;
+package com.application.persistence.model.admin;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
 import org.springframework.security.core.GrantedAuthority;
@@ -19,12 +18,11 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "user")
-public class Customer implements UserDetails {
+@Table(name = "admin")
+public class Admin implements UserDetails {
 	@Id
 	@Column(unique = true, nullable = false)
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -40,20 +38,11 @@ public class Customer implements UserDetails {
 	private Set<Reservation> reservations;
 	@ManyToMany
 	@JoinTable(name = "user_has_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
-	private Collection<Role> roles;
+	private Collection<AdminRole> adminRoles;
 	private Boolean blooked = false;
 	private Boolean deleted = false;
 	private Integer toReadNotification = 0;
-	@OneToOne
-    private CustomerOptions customerOptions;
 
-	public CustomerOptions getCustomerOptions() {
-		return customerOptions;
-	}
-
-	public void setCustomerOptions(CustomerOptions options) {
-		this.customerOptions = options;
-	}
 
 	public void setToReadNotification(Integer toReadNotification) {
 		this.toReadNotification = toReadNotification;
@@ -75,17 +64,6 @@ public class Customer implements UserDetails {
 		this.blooked = blooked;
 	}
 
-	@ManyToMany
-	@JoinTable(name = "user_allergy", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "allergy_id"))
-	private List<Allergy> allergies;
-
-	public List<Allergy> getAllergies() {
-		return allergies;
-	}
-
-	public void setAllergies(List<Allergy> allergies) {
-		this.allergies = allergies;
-	}
 
 	public Set<Reservation> getReservations() {
 		return reservations;
@@ -102,6 +80,10 @@ public class Customer implements UserDetails {
 
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
+	}
+
+	public Collection<AdminRole> getAdminRoles() {
+		return adminRoles;
 	}
 
 	public String getName() {
@@ -145,12 +127,8 @@ public class Customer implements UserDetails {
 		this.password = password;
 	}
 
-	public Collection<Role> getRoles() {
-		return roles;
-	}
-
-	public void setRoles(Collection<Role> roles) {
-		this.roles = roles;
+	public void setAdminRoles(Collection<AdminRole> adminRoles) {
+		this.adminRoles = adminRoles;
 	}
 
 	@Override

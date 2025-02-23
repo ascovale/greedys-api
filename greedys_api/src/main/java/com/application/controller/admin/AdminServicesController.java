@@ -41,7 +41,7 @@ public class AdminServicesController {
     @Autowired
     private SlotService slotService;
 
-    @PreAuthorize("hasRole('ADMIN')")
+	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
     @Operation(summary = "Create a new service", description = "This method creates a new service in the system.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Service created successfully"),
@@ -56,7 +56,7 @@ public class AdminServicesController {
         return ResponseEntity.ok(new GenericResponse("success"));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
     @Operation(summary = "Delete a service", description = "This method deletes a service by its ID.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Service deleted successfully"),
@@ -71,7 +71,7 @@ public class AdminServicesController {
         return new GenericResponse("success");
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_READ')")
     @Operation(summary = "Get service by ID", description = "Retrieve a service by its ID.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Service retrieved successfully"),
@@ -84,7 +84,7 @@ public class AdminServicesController {
         return ResponseEntity.ok(service);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_READ')")
     @Operation(summary = "Get all slots of a service", description = "Retrieve all slots associated with a specific service by its ID.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Slots retrieved successfully"),
@@ -96,7 +96,7 @@ public class AdminServicesController {
         return slotService.findByService_Id(serviceId);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_READ')")
     @GetMapping("/service_types")
     @Operation(summary = "Get all service types", description = "Retrieve all service types.")
     @ApiResponses(value = {
@@ -107,7 +107,7 @@ public class AdminServicesController {
         return serviceService.getServiceTypes();
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
     @Operation(summary = "Create a new service type", description = "This method creates a new service type in the system.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Service type created successfully"),
@@ -120,7 +120,7 @@ public class AdminServicesController {
         return ResponseEntity.ok(new GenericResponse("success"));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
     @Operation(summary = "Update a service type", description = "This method updates an existing service type.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Service type updated successfully"),
@@ -134,7 +134,7 @@ public class AdminServicesController {
         return ResponseEntity.ok(new GenericResponse("success"));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
     @Operation(summary = "Delete a service type", description = "This method deletes a service type by its ID.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Service type deleted successfully"),

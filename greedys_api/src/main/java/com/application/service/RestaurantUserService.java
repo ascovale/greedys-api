@@ -103,7 +103,7 @@ public class RestaurantUserService {
         }
         oldOwner.setStatus(RestaurantUser.Status.DELETED);
         newOwner.setStatus(RestaurantUser.Status.ENABLED);
-        newOwner.addRole(new RestaurantRole("ROLE_OWNER"));
+        newOwner.addRestaurantRole(new RestaurantRole("ROLE_OWNER"));
         oldOwner.removeRole(ownerRole);
         ruDAO.save(oldOwner);
         ruDAO.save(newOwner);
@@ -124,11 +124,11 @@ public class RestaurantUserService {
         RestaurantUser ru = ruDAO.findById(idRestaurantUser)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid restaurant user ID: " + idRestaurantUser));
         Restaurant restaurant = ru.getRestaurant();
-        if (ru.getRoles().stream().anyMatch(role -> role.getName().equals(string))) {
+        if (ru.getRestaurantRoles().stream().anyMatch(role -> role.getName().equals(string))) {
             throw new IllegalArgumentException("User already has the role: " + string);
         }
         RestaurantRole role = rrDAO.findByName(string);
-        ru.addRole(role);
+        ru.addRestaurantRole(role);
         
         RestaurantUser newRestaurantUser = new RestaurantUser();
         newRestaurantUser.setRestaurant(restaurant);
@@ -147,13 +147,13 @@ public class RestaurantUserService {
         RestaurantUser ru = ruDAO.findById(idRestaurantUser)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid restaurant user ID: " + idRestaurantUser));
 
-        String roleNameWithoutPrefix = restaurantUserToDisable.getRoles().stream()
+        String roleNameWithoutPrefix = restaurantUserToDisable.getRestaurantRoles().stream()
                 .map(role -> role.getName().replace("ROLE_", ""))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("User does not have any roles"));
-        boolean hasPermission = ru.getRoles().stream()
-                .flatMap(role -> role.getPrivileges().stream())
-                .anyMatch(privilege -> privilege.getName().equals("PRIVILEGE_DISABLE_" + roleNameWithoutPrefix));
+        boolean hasPermission = ru.getRestaurantRoles().stream()
+            .flatMap(role -> role.getRestaurantPrivileges().stream())
+            .anyMatch(privilege -> privilege.getName().equals("PRIVILEGE_DISABLE_" + roleNameWithoutPrefix));
 
         if (!hasPermission) {
             throw new IllegalArgumentException("User does not have permission to disable this role");
@@ -166,7 +166,7 @@ public class RestaurantUserService {
     public RestaurantUserDTO changeRestaurantUserRole(Long idRestaurantUser, Long idUser, String string) {
         RestaurantUser ru = ruDAO.findById(idRestaurantUser)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid restaurant user ID: " + idRestaurantUser));
-        ru.addRole(new RestaurantRole(string));
+        ru.addRestaurantRole(new RestaurantRole(string));
         // non bisogna creare un nuovo ruolo bisogna mettere ruolo solo
         ruDAO.save(ru);
         return new RestaurantUserDTO(ru);
@@ -224,56 +224,56 @@ public class RestaurantUserService {
         RestaurantRole waiterRole = rrDAO.findByName("ROLE_WAITER");
         RestaurantRole viewerRole = rrDAO.findByName("ROLE_VIEWER");
 
-        ownerRole.addPrivilege(privilegeMap.get("PRIVILEGE_VIEW_USERS"));
-        ownerRole.addPrivilege(privilegeMap.get("PRIVILEGE_ADD_MANAGER"));
-        ownerRole.addPrivilege(privilegeMap.get("PRIVILEGE_ADD_CHEF"));
-        ownerRole.addPrivilege(privilegeMap.get("PRIVILEGE_ADD_WAITER"));
-        ownerRole.addPrivilege(privilegeMap.get("PRIVILEGE_ADD_VIEWER"));
-        ownerRole.addPrivilege(privilegeMap.get("PRIVILEGE_DISABLE_MANAGER"));
-        ownerRole.addPrivilege(privilegeMap.get("PRIVILEGE_DISABLE_CHEF"));
-        ownerRole.addPrivilege(privilegeMap.get("PRIVILEGE_DISABLE_WAITER"));
-        ownerRole.addPrivilege(privilegeMap.get("PRIVILEGE_DISABLE_VIEWER"));
-        ownerRole.addPrivilege(privilegeMap.get("PRIVILEGE_CHANGE_ROLE_TO_CHEF"));
-        ownerRole.addPrivilege(privilegeMap.get("PRIVILEGE_CHANGE_ROLE_TO_WAITER"));
-        ownerRole.addPrivilege(privilegeMap.get("PRIVILEGE_CHANGE_ROLE_TO_VIEWER"));
-        ownerRole.addPrivilege(privilegeMap.get("PRIVILEGE_CHANGE_ROLE_TO_MANAGER"));
-        ownerRole.addPrivilege(privilegeMap.get("PRIVILEGE_ADD_RESERVATION"));
-        ownerRole.addPrivilege(privilegeMap.get("PRIVILEGE_MODIFY_RESERVATION"));
-        ownerRole.addPrivilege(privilegeMap.get("PRIVILEGE_CANCEL_RESERVATION"));
-        ownerRole.addPrivilege(privilegeMap.get("PRIVILEGE_CHAT_WITH_CUSTOMERS"));
-        ownerRole.addPrivilege(privilegeMap.get("PRIVILEGE_GESTIONE_SERVIZI"));
+        ownerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_VIEW_USERS"));
+        ownerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_ADD_MANAGER"));
+        ownerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_ADD_CHEF"));
+        ownerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_ADD_WAITER"));
+        ownerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_ADD_VIEWER"));
+        ownerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_DISABLE_MANAGER"));
+        ownerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_DISABLE_CHEF"));
+        ownerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_DISABLE_WAITER"));
+        ownerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_DISABLE_VIEWER"));
+        ownerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_CHANGE_ROLE_TO_CHEF"));
+        ownerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_CHANGE_ROLE_TO_WAITER"));
+        ownerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_CHANGE_ROLE_TO_VIEWER"));
+        ownerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_CHANGE_ROLE_TO_MANAGER"));
+        ownerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_ADD_RESERVATION"));
+        ownerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_MODIFY_RESERVATION"));
+        ownerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_CANCEL_RESERVATION"));
+        ownerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_CHAT_WITH_CUSTOMERS"));
+        ownerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_GESTIONE_SERVIZI"));
 
-        managerRole.addPrivilege(privilegeMap.get("PRIVILEGE_VIEW_USERS"));
-        managerRole.addPrivilege(privilegeMap.get("PRIVILEGE_ADD_CHEF"));
-        managerRole.addPrivilege(privilegeMap.get("PRIVILEGE_ADD_WAITER"));
-        managerRole.addPrivilege(privilegeMap.get("PRIVILEGE_ADD_VIEWER"));
-        managerRole.addPrivilege(privilegeMap.get("PRIVILEGE_DISABLE_CHEF"));
-        managerRole.addPrivilege(privilegeMap.get("PRIVILEGE_DISABLE_WAITER"));
-        managerRole.addPrivilege(privilegeMap.get("PRIVILEGE_DISABLE_VIEWER"));
-        managerRole.addPrivilege(privilegeMap.get("PRIVILEGE_CHANGE_ROLE_TO_CHEF"));
-        managerRole.addPrivilege(privilegeMap.get("PRIVILEGE_CHANGE_ROLE_TO_WAITER"));
-        managerRole.addPrivilege(privilegeMap.get("PRIVILEGE_CHANGE_ROLE_TO_VIEWER"));
-        managerRole.addPrivilege(privilegeMap.get("PRIVILEGE_ADD_RESERVATION"));
-        managerRole.addPrivilege(privilegeMap.get("PRIVILEGE_MODIFY_RESERVATION"));
-        managerRole.addPrivilege(privilegeMap.get("PRIVILEGE_CANCEL_RESERVATION"));
-        managerRole.addPrivilege(privilegeMap.get("PRIVILEGE_CHAT_WITH_CUSTOMERS"));
-        managerRole.addPrivilege(privilegeMap.get("PRIVILEGE_GESTIONE_SERVIZI"));
+        managerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_VIEW_USERS"));
+        managerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_ADD_CHEF"));
+        managerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_ADD_WAITER"));
+        managerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_ADD_VIEWER"));
+        managerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_DISABLE_CHEF"));
+        managerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_DISABLE_WAITER"));
+        managerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_DISABLE_VIEWER"));
+        managerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_CHANGE_ROLE_TO_CHEF"));
+        managerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_CHANGE_ROLE_TO_WAITER"));
+        managerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_CHANGE_ROLE_TO_VIEWER"));
+        managerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_ADD_RESERVATION"));
+        managerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_MODIFY_RESERVATION"));
+        managerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_CANCEL_RESERVATION"));
+        managerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_CHAT_WITH_CUSTOMERS"));
+        managerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_GESTIONE_SERVIZI"));
 
-        chefRole.addPrivilege(privilegeMap.get("PRIVILEGE_VIEW_USERS"));
-        chefRole.addPrivilege(privilegeMap.get("PRIVILEGE_CHANGE_ROLE_TO_WAITER"));
-        chefRole.addPrivilege(privilegeMap.get("PRIVILEGE_CHANGE_ROLE_TO_VIEWER"));
-        chefRole.addPrivilege(privilegeMap.get("PRIVILEGE_ADD_RESERVATION"));
-        chefRole.addPrivilege(privilegeMap.get("PRIVILEGE_MODIFY_RESERVATION"));
-        chefRole.addPrivilege(privilegeMap.get("PRIVILEGE_CANCEL_RESERVATION"));
-        chefRole.addPrivilege(privilegeMap.get("PRIVILEGE_CHAT_WITH_CUSTOMERS"));
+        chefRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_VIEW_USERS"));
+        chefRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_CHANGE_ROLE_TO_WAITER"));
+        chefRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_CHANGE_ROLE_TO_VIEWER"));
+        chefRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_ADD_RESERVATION"));
+        chefRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_MODIFY_RESERVATION"));
+        chefRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_CANCEL_RESERVATION"));
+        chefRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_CHAT_WITH_CUSTOMERS"));
 
-        waiterRole.addPrivilege(privilegeMap.get("PRIVILEGE_VIEW_USERS"));
-        waiterRole.addPrivilege(privilegeMap.get("PRIVILEGE_ADD_RESERVATION"));
-        waiterRole.addPrivilege(privilegeMap.get("PRIVILEGE_MODIFY_RESERVATION"));
-        waiterRole.addPrivilege(privilegeMap.get("PRIVILEGE_CANCEL_RESERVATION"));
-        waiterRole.addPrivilege(privilegeMap.get("PRIVILEGE_CHAT_WITH_CUSTOMERS"));
+        waiterRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_VIEW_USERS"));
+        waiterRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_ADD_RESERVATION"));
+        waiterRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_MODIFY_RESERVATION"));
+        waiterRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_CANCEL_RESERVATION"));
+        waiterRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_CHAT_WITH_CUSTOMERS"));
 
-        viewerRole.addPrivilege(privilegeMap.get("PRIVILEGE_VIEW_USERS"));
+        viewerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_VIEW_USERS"));
 
         rrDAO.save(ownerRole);
         rrDAO.save(managerRole);

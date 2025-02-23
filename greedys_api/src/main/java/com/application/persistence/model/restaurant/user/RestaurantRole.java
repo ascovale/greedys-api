@@ -32,7 +32,7 @@ public class RestaurantRole {
     	joinColumns = @JoinColumn(name = "restaurant_role_id"), 
     	inverseJoinColumns = @JoinColumn(name = "restaurant_privilege_id")
     )	
-    private Collection<RestaurantPrivilege> privileges;
+    private Collection<RestaurantPrivilege> restaurantPrivileges;
 
     public RestaurantRole() {
         super();
@@ -77,12 +77,12 @@ public class RestaurantRole {
 		this.users = users;
 	}
 
-	public Collection<RestaurantPrivilege> getPrivileges() {
-		return privileges;
+	public Collection<RestaurantPrivilege> getRestaurantPrivileges() {
+		return restaurantPrivileges;
 	}
 
-	public void setRestaurantPrivileges(Collection<RestaurantPrivilege> privileges) {
-		this.privileges = privileges;
+	public void setRestaurantPrivileges(Collection<RestaurantPrivilege> restaurantPrivileges) {
+		this.restaurantPrivileges = restaurantPrivileges;
 	}
 
 	@Override
@@ -102,13 +102,13 @@ public class RestaurantRole {
         return builder.toString();
     }
     public void setPrivileges(Collection<RestaurantPrivilege> privileges) {
-		this.privileges = privileges;
+		this.restaurantPrivileges = privileges;
 	}
 
-    public void addPrivilege(RestaurantPrivilege rp) {
-        if (privileges == null) {
-            privileges = new ArrayList<>();
+    public void addRestaurantPrivilege(RestaurantPrivilege rp) {
+        if (restaurantPrivileges == null) {
+            restaurantPrivileges = new ArrayList<>();
         }
-        privileges.add(rp);
+        restaurantPrivileges.add(rp);
     }
 }

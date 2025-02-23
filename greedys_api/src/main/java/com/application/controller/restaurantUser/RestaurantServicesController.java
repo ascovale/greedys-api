@@ -1,6 +1,7 @@
 package com.application.controller.restaurantUser;
 
 import java.util.Collection;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -30,7 +31,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "Service", description = "Controller per la gestione dei servizi offerti dai ristoranti")
 @RestController
-@RequestMapping("/restaurant-user/{idRestaurantUser}/service")
+@RequestMapping("/restaurant_user/{idRestaurantUser}/service")
 //@PreAuthorize("@securityService.isRestaurantUserPermission(#idRestaurantUser)")
 @SecurityRequirement(name = "bearerAuth")
 public class RestaurantServicesController {

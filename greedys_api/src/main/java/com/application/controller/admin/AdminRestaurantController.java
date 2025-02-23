@@ -77,8 +77,8 @@ public class AdminRestaurantController {
                                         schema = @Schema(implementation = ReservationDTO.class)))),
         @ApiResponse(responseCode = "404", description = "Ristorante non trovato")
     })
-	//@PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant) or hasRole('ADMIN')")
-    @GetMapping(value = "{idRestaurant}/reservation")
+	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_RESTAURANT_READ')")
+	@GetMapping(value = "{idRestaurant}/reservation")
 	public Collection<ReservationDTO> getReservations(
 				@PathVariable Long idRestaurant,
 				@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
@@ -96,6 +96,7 @@ public class AdminRestaurantController {
 		@ApiResponse(responseCode = "404", description = "Ristorante non trovato")
 	})
 	//@PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant) or hasRole('ADMIN')")
+	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_RESTAURANT_READ')")
 	@GetMapping(value = "{idRestaurant}/reservation/accepted")
 	public Collection<ReservationDTO> getAcceptedReservations(
 				@PathVariable Long idRestaurant,
@@ -114,7 +115,7 @@ public class AdminRestaurantController {
 										schema = @Schema(implementation = ReservationDTO.class)))),
 		@ApiResponse(responseCode = "404", description = "Ristorante non trovato")
 	})
-	//@PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant) or hasRole('ADMIN')")
+	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_RESTAURANT_READ')")
 	@GetMapping(value = "{idRestaurant}/reservation/pageable")
 	public ResponseEntity<Page<ReservationDTO>> getReservationsPageable(
 				@PathVariable Long idRestaurant,
@@ -136,8 +137,7 @@ public class AdminRestaurantController {
 										schema = @Schema(implementation = ReservationDTO.class)))),
 		@ApiResponse(responseCode = "404", description = "Ristorante non trovato")
 	})
-	
-	//@PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant) or hasRole('ADMIN')")
+	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_RESTAURANT_READ')")
 	@GetMapping(value = "{idRestaurant}/reservation/pending")
 	public Collection<ReservationDTO> getPendingReservations(
 				@PathVariable Long idRestaurant,
@@ -167,8 +167,7 @@ public class AdminRestaurantController {
                                         schema = @Schema(implementation = GenericResponse.class))),
         @ApiResponse(responseCode = "404", description = "Ristorante o utente non trovato")
     })
-	//@PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant) or hasRole('ADMIN')")
-    @PostMapping("{idRestaurant}/user/accept")
+	@PostMapping("{idRestaurant}/user/accept")
     public GenericResponse acceptUser(@PathVariable Long idRestaurant) {
 		//TODO : verificare che venga messo chi è l'utente ad accettare la prenotazione
         restaurantUserService.acceptUser(idRestaurant);
@@ -185,7 +184,7 @@ public class AdminRestaurantController {
 		@ApiResponse(responseCode = "404", description = "Ristorante non trovato"),
 		@ApiResponse(responseCode = "400", description = "Richiesta non valida")
 	})
-	//@PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant) or hasRole('ADMIN')")
+	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_READ')")
 	public ResponseEntity<Collection<ServiceDTO>> getServices(@PathVariable Long idRestaurant){
 		Collection<ServiceDTO> services = restaurantService.getServices(idRestaurant);
 		return new ResponseEntity<>(services, HttpStatus.OK);
@@ -203,7 +202,7 @@ public class AdminRestaurantController {
 		@ApiResponse(responseCode = "404", description = "Ristorante non trovato"),
 		@ApiResponse(responseCode = "400", description = "Richiesta non valida")
 	})
-	//@PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant) or hasRole('ADMIN')")
+	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_READ')")
 	public ResponseEntity<Collection<RoomDTO>> getRooms(@PathVariable Long idRestaurant){
 		Collection<RoomDTO> rooms = roomService.findByRestaurant(idRestaurant);
 		return new ResponseEntity<>(rooms, HttpStatus.OK);
@@ -219,7 +218,7 @@ public class AdminRestaurantController {
 		@ApiResponse(responseCode = "404", description = "Ristorante o sala non trovato"),
 		@ApiResponse(responseCode = "400", description = "Richiesta non valida")
 	})
-	//@PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant) or hasRole('ADMIN')")
+	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_READ')")
 	public ResponseEntity<Collection<TableDTO>> getTables(@PathVariable Long idRestaurant, @PathVariable Long roomId){
 		Collection<TableDTO> tables = tableService.findByRoom(roomId);
 		return new ResponseEntity<>(tables, HttpStatus.OK);
@@ -234,7 +233,7 @@ public class AdminRestaurantController {
 		@ApiResponse(responseCode = "404", description = "Ristorante non trovato"),
 		@ApiResponse(responseCode = "400", description = "Richiesta non valida")
 	})
-	//@PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant) or hasRole('ADMIN')")
+	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
 	public GenericResponse addRoom(@PathVariable Long idRestaurant, @RequestBody NewRoomDTO roomDto){
 		//TODO: sistemare idRestaurant
 		roomService.createRoom(roomDto);
@@ -250,7 +249,7 @@ public class AdminRestaurantController {
 		@ApiResponse(responseCode = "404", description = "Ristorante o sala non trovato"),
 		@ApiResponse(responseCode = "400", description = "Richiesta non valida")
 	})
-	//@PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant) or hasRole('ADMIN')")
+	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
 	public GenericResponse addTable(@PathVariable Long idRestaurant, @RequestParam NewTableDTO tableDto){
 		//TODO: sistemare idRestaurant
 		tableService.createTable(tableDto);
@@ -265,7 +264,7 @@ public class AdminRestaurantController {
 		@ApiResponse(responseCode = "404", description = "Ristorante non trovato"),
 		@ApiResponse(responseCode = "400", description = "Richiesta non valida")
 	})
-	//@PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant) or hasRole('ADMIN')")
+	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
 	@PostMapping(value = "{idRestaurant}/no-show-time-limit")
 	public GenericResponse setNoShowTimeLimit(@PathVariable Long idRestaurant, @RequestParam int minutes) {
 		restaurantService.setNoShowTimeLimit(idRestaurant, minutes);
@@ -282,13 +281,13 @@ public class AdminRestaurantController {
 		@ApiResponse(responseCode = "404", description = "Ristorante non trovato"),
 		@ApiResponse(responseCode = "400", description = "Richiesta non valida")
 	})
-	//@PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant) or hasRole('ADMIN')")
+	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
 	public ResponseEntity<Collection<String>> getRestaurantTypesNames(@PathVariable Long idRestaurant) {
 		List<String> types = restaurantService.getRestaurantTypesNames(idRestaurant);
 		return new ResponseEntity<>(types, HttpStatus.OK);
 	}
 
-    @PreAuthorize("hasRole('ADMIN')")
+	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
     @Operation(summary = "Create category", description = "Creates a new category for the specified restaurant by its ID")
     @ApiResponse(responseCode = "200", description = "Category created successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
@@ -299,7 +298,7 @@ public class AdminRestaurantController {
     }
     //TODO verificare che non lo cancello effettivamente dal db
 
-    @PreAuthorize("hasRole('ADMIN')")
+	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
     @Operation(summary = "Delete category", description = "Deletes a category by its ID")
     @ApiResponse(responseCode = "200", description = "Category deleted successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
@@ -309,7 +308,7 @@ public class AdminRestaurantController {
         return new GenericResponse("Category deleted successfully");
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
     @Operation(summary = "Update category", description = "Updates an existing category by its ID")
     @ApiResponse(responseCode = "200", description = "Category updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
@@ -320,7 +319,7 @@ public class AdminRestaurantController {
         return new GenericResponse("Category updated successfully");
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
     @Operation(summary = "Enable restaurant", description = "Enables a restaurant by its primary email")
     @ApiResponse(responseCode = "200", description = "Restaurant enabled successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
@@ -349,8 +348,8 @@ public class AdminRestaurantController {
      * }
      */
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Create restaurant", description = "Creates a new restaurant")
+	 @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
+	 @Operation(summary = "Create restaurant", description = "Creates a new restaurant")
     @ApiResponse(responseCode = "200", description = "Restaurant created successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
     @PostMapping("/createRestaurant")
@@ -359,7 +358,7 @@ public class AdminRestaurantController {
         return new GenericResponse("Restaurant created successfully");
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
     @Operation(summary = "Change restaurant email", description = "Changes the email of a restaurant by its ID")
     @ApiResponse(responseCode = "200", description = "Restaurant email changed successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
@@ -368,15 +367,15 @@ public class AdminRestaurantController {
         restaurantService.changeRestaurantEmail(idRestaurant, newEmail);
         return new GenericResponse("Restaurant email changed successfully");
     }
-    //TODO Verificare che nei PreAuthorize ROLE RESTAURANT USER verifichi che il ristorante sia marchiato come cancellato
-    @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Mark restaurant as deleted", description = "Marks a restaurant as deleted similar to disable by its ID")
-    @ApiResponse(responseCode = "200", description = "Restaurant marked as deleted successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
-    @ApiResponse(responseCode = "400", description = "Invalid request")
-    @DeleteMapping("/{idRestaurant}/markAsDeleted")
-    public GenericResponse markRestaurantAsDeleted(@PathVariable Long idRestaurant) {
-        restaurantService.markRestaurantAsDeleted(idRestaurant);
-        return new GenericResponse("Restaurant marked as deleted successfully");
-    }
+	
+	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
+	@Operation(summary = "Mark restaurant as deleted", description = "Marks a restaurant as deleted similar to disable by its ID")
+	@ApiResponse(responseCode = "200", description = "Restaurant marked as deleted successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
+	@ApiResponse(responseCode = "400", description = "Invalid request")
+	@DeleteMapping("/{idRestaurant}/markAsDeleted")
+	public GenericResponse markRestaurantAsDeleted(@PathVariable Long idRestaurant, @RequestParam boolean deleted) {
+		restaurantService.setRestaurantDeleted(idRestaurant, deleted);
+		return new GenericResponse("Restaurant marked as deleted successfully");
+	}
 
 }

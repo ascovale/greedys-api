@@ -45,7 +45,7 @@ public class ReservationController {
 		return ResponseEntity.ok().build();
 	}
 
-	@PreAuthorize("@securityService.hasUserPermissionOnReservation(#oldReservationId)")
+	@PreAuthorize("@customerSecurityService.hasPermissionOnReservation(#reservationId)")
 	@Operation(summary = "The customer user deletes a reservation", description = "Endpoint to delete a reservation")
 	@ApiResponses(value = {
 		@ApiResponse(responseCode = "200", description = "Reservation deleted successfully"),
@@ -58,7 +58,7 @@ public class ReservationController {
 		return ResponseEntity.ok().build();
 	}
 
-	@PreAuthorize("@securityService.hasUserPermissionOnReservation(#oldReservationId)")
+	@PreAuthorize("@customerSecurityService.hasPermissionOnReservation(#oldReservationId)")
 	@Operation(summary = "The customer user requests a reservation modification", description = "Endpoint to request a reservation modification")
 	@ApiResponses(value = {
 		@ApiResponse(responseCode = "200", description = "Reservation modification requested successfully"),
@@ -71,7 +71,7 @@ public class ReservationController {
 		return ResponseEntity.ok().build();
 	}
 
-	@PreAuthorize("@securityService.hasUserPermissionOnReservation(#reservationId)")
+	@PreAuthorize("@customerSecurityService.hasPermissionOnReservation(#reservationId)")
 	@Operation(summary = "The customer user rejects a reservation", description = "Endpoint User reject a reservation created by the restaurant or admin")
 	@ApiResponses(value = {
 		@ApiResponse(responseCode = "200", description = "Reservation rejected successfully"),

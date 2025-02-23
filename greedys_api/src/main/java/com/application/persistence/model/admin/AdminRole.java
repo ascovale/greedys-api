@@ -1,4 +1,4 @@
-package com.application.persistence.model.customer;
+package com.application.persistence.model.admin;
 
 import java.util.Collection;
 
@@ -12,8 +12,8 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "role")
-public class Role {
+@Table(name = "admin_role")
+public class AdminRole {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -25,13 +25,13 @@ public class Role {
     	joinColumns = @JoinColumn(name = "role_id"), 
     	inverseJoinColumns = @JoinColumn(name = "privilege_id")
     )	
-    private Collection<Privilege> privileges;
+    private Collection<AdminPrivilege> adminPrivileges;
 
-    public Role() {
+    public AdminRole() {
         super();
     }
 
-    public Role(final String name) {
+    public AdminRole(final String name) {
         super();
         this.name = name;
     }
@@ -55,8 +55,12 @@ public class Role {
     }
 
 
-	public Collection<Privilege> getPrivileges() {
-		return privileges;
+	public Collection<AdminPrivilege> getAdminPrivileges() {
+		return adminPrivileges;
+	}
+
+	public void setAdminPrivileges(Collection<AdminPrivilege> adminPrivileges) {
+		this.adminPrivileges = adminPrivileges;
 	}
 
 	@Override
@@ -78,7 +82,7 @@ public class Role {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final Role role = (Role) obj;
+        final AdminRole role = (AdminRole) obj;
         if (!role.equals(role.name)) {
             return false;
         }
@@ -91,7 +95,5 @@ public class Role {
         builder.append("Role [name=").append(name).append("]").append("[id=").append(id).append("]");
         return builder.toString();
     }
-    public void setPrivileges(Collection<Privilege> privileges) {
-		this.privileges = privileges;
-	}
+
 }

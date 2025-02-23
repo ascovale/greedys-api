@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 
 import com.application.security.jwt.JwtRequestFilter;
 import com.application.security.jwt.JwtUtil;
+import com.application.security.user.admin.AdminUserDetailsService;
 import com.application.security.user.customer.CustomerUserDetailsService;
 import com.application.security.user.restaurant.RestaurantUserDetailsService;
 
@@ -22,5 +23,11 @@ public class JwtConfig {
     @Qualifier("restaurantJwtRequestFilter")
     JwtRequestFilter restaurantJwtRequestFilter(RestaurantUserDetailsService restaurantUserDetailsService, JwtUtil jwtUtil) {
         return new JwtRequestFilter(restaurantUserDetailsService, jwtUtil);
+    }
+
+    @Bean
+    @Qualifier("adminJwtRequestFilter")
+    JwtRequestFilter adminJwtRequestFilter(AdminUserDetailsService adminUserDetailsService, JwtUtil jwtUtil) {
+        return new JwtRequestFilter(adminUserDetailsService, jwtUtil);
     }
 }

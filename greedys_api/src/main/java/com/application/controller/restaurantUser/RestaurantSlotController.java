@@ -22,7 +22,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "Slot", description = "Controller per la gestione degli slot")
 @RestController
-@RequestMapping("/restaurant-user/{idRestaurantUser}/slot")
+@RequestMapping("/restaurant_user/{idRestaurantUser}/slot")
 //@PreAuthorize("@securityService.isRestaurantUserPermission(#idRestaurantUser)")
 @SecurityRequirement(name = "bearerAuth")
 public class RestaurantSlotController {

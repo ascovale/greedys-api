@@ -140,11 +140,12 @@ public class RegistrationRestaurantUserController {
     }
         */
 
-    public void authWithoutPassword(RestaurantUser user) {
-        List<RestaurantPrivilege> privileges = user.getRoles().stream().map(role -> role.getPrivileges()).flatMap(list -> list.stream()).distinct().collect(Collectors.toList());
+    public void authWithoutPassword(RestaurantUser restaurantUser) {
+        //TODO verificare questo metodo
+        List<RestaurantPrivilege> privileges = restaurantUser.getPrivileges().stream().collect(Collectors.toList());
         List<GrantedAuthority> authorities = privileges.stream().map(p -> new SimpleGrantedAuthority(p.getName())).collect(Collectors.toList());
 
-        Authentication authentication = new UsernamePasswordAuthenticationToken(user, null, authorities);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(restaurantUser, null, authorities);
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }

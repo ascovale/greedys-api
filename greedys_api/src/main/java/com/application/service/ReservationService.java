@@ -489,6 +489,16 @@ public class ReservationService {
         }
     }
 
+    private RestaurantUser getCurrentRestaurantUser() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof RestaurantUser) {
+            return ((RestaurantUser) principal);
+        } else {
+            System.out.println("Questo non dovrebbe succedere");
+            return null;
+        }
+    }
+
     public void rejectReservationCreatedByAdminOrRestaurant(Long reservationId) {
         Reservation reservation = reservationDAO.findById(reservationId)
                 .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
@@ -573,6 +583,30 @@ public class ReservationService {
         RestaurantUser ruser = restaurantUserDAO.findById(idRestaurantUser)
                 .orElseThrow(() -> new NoSuchElementException("Restaurant user not found"));
         markReservationRejected(ruser.getRestaurant().getId(), reservationId, rejected);
+    }
+
+    public ReservationDTO getReservation(Long reservationId) {
+        
+        Reservation reservation = reservationDAO.findById(reservationId).orElseThrow(() -> new NoSuchElementException("Reservation not found"));
+        return new ReservationDTO(reservation);
+    }
+
+    public List<ReservationDTO> getCustomerReservations(Long customerId) {
+        return reservationDAO.findByCustomer(customerId).stream()
+            .map(ReservationDTO::new)
+            .collect(Collectors.toList());
+    }
+
+    public Page<ReservationDTO> getCustomerReservationsPaginated(Long customerId, Pageable pageable) {
+        Page<Reservation> page = reservationDAO.findByCustomer(customerId, pageable);
+        return page.map(ReservationDTO::new);
+    }
+
+    public Collection<ReservationDTO> getRestaurantReservations(LocalDate start, LocalDate end) {
+        Restaurant restaurant = getCurrentRestaurantUser().getRestaurant();
+        return reservationDAO.findByRestaurantAndDateBetween(restaurant.getId(), start, end).stream()
+            .map(ReservationDTO::new)
+            .collect(Collectors.toList());
     }
 
 }

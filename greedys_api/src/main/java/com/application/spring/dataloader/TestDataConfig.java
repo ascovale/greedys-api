@@ -1,5 +1,5 @@
 // FILE: TestDataConfig.java
-package com.application.test;
+package com.application.spring.dataloader;
 
 import java.time.LocalDate;
 import java.time.LocalTime;

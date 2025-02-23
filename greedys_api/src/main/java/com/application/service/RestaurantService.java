@@ -222,9 +222,12 @@ public class RestaurantService {
 		throw new UnsupportedOperationException("Unimplemented method 'deleteRestaurantCategory'");
 	}
 
-	public void markRestaurantAsDeleted(Long idRestaurant) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'markRestaurantAsDeleted'");
-	}
+
+    public void setRestaurantDeleted(Long idRestaurant, boolean b) {
+		Restaurant restaurant = rDAO.findById(idRestaurant)
+			.orElseThrow(() -> new IllegalArgumentException("Invalid restaurant ID"));
+		restaurant.setDeleted(b);
+		rDAO.save(restaurant);
+    }
 
 }

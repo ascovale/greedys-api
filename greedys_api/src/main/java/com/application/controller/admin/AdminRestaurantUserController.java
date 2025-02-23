@@ -21,16 +21,15 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Admin RestaurantUser", description = "Admin management APIs for the RestaurantUser")
-public class AdminUserRestaurantController {
+public class AdminRestaurantUserController {
     private final RestaurantUserService restaurantUserService;
 
     @Autowired
-    public AdminUserRestaurantController(RestaurantUserService restaurantUserService) {
+    public AdminRestaurantUserController(RestaurantUserService restaurantUserService) {
         this.restaurantUserService = restaurantUserService;
     }
 
-    // TODO BLOCK UNBLOCK Potrebbero essere uguali a deleted e undeleted
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_USER_WRITE')")
     @Operation(summary = "Block restaurant user", description = "Blocks a restaurant user by their ID")
     @ApiResponse(responseCode = "200", description = "Restaurant user blocked successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
@@ -51,7 +50,7 @@ public class AdminUserRestaurantController {
         return new GenericResponse("Restaurant user removed successfully");
     }*/
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_USER_WRITE')")
     @Operation(summary = "Change restaurant owner", description = "Changes the owner of a restaurant")
     @ApiResponse(responseCode = "200", description = "Restaurant owner changed successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")

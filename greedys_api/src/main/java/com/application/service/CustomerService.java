@@ -8,6 +8,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -330,9 +332,24 @@ public class CustomerService {
     }
 
     public void reportRestaurantAbuse(Long restaurantId) {
-
+		// Assuming there is a ReportAbuseDAO and ReportAbuse entity
+		/*ReportAbuse report = new ReportAbuse();
+		report.setRestaurantId(restaurantId);
+		report.setUserId(getCurrentUser().getId());
+		report.setTimestamp(LocalDateTime.now());
+		reportAbuseDAO.save(report);*/
         // TODO Auto-generated method stub
 		//L'utente segnala qualche tipo di abuso nella recensione o altro
     }
+
+	@Transactional
+    public List<String> getAllergies(Long userId) {
+		Customer user = userDAO.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
+		return user.getAllergies().stream().map(Allergy::getName).collect(Collectors.toList());
+    }
+
+    public Page<UserDTO> findAll(PageRequest pageable) {
+		return userDAO.findAll(pageable).map(UserDTO::new);
+	}
 
 }

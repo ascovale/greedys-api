@@ -1,6 +1,8 @@
 package com.application.controller.admin;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -10,10 +12,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.service.CustomerService;
 import com.application.web.dto.AllergyDTO;
+import com.application.web.dto.get.UserDTO;
 import com.application.web.util.GenericResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,15 +31,15 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Admin User", description = "Admin management APIs for the User")
-public class AdminUserController {
+public class AdminCustomerController {
     private final CustomerService userService;
 
     @Autowired
-    public AdminUserController(CustomerService userService) {
+    public AdminCustomerController(CustomerService userService) {
         this.userService = userService;
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_WRITE')")
     @Operation(summary = "Create allergy", description = "Creates a new allergy for the specified user by their ID")
     @ApiResponse(responseCode = "200", description = "Allergy created successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
@@ -45,7 +49,7 @@ public class AdminUserController {
         return new GenericResponse("Allergy created successfully");
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_WRITE')")
     @Operation(summary = "Delete allergy", description = "Deletes an allergy by its ID")
     @ApiResponse(responseCode = "200", description = "Allergy deleted successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
@@ -55,7 +59,7 @@ public class AdminUserController {
         return new GenericResponse("Allergy deleted successfully");
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_WRITE')")
     @Operation(summary = "Modify allergy", description = "Modifies an existing allergy")
     @ApiResponse(responseCode = "200", description = "Allergy modified successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
@@ -65,7 +69,7 @@ public class AdminUserController {
         return new GenericResponse("Allergy modified successfully");
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_WRITE')")
     @Operation(summary = "Block user", description = "Blocks a user by their ID")
     @ApiResponse(responseCode = "200", description = "User blocked successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
@@ -75,7 +79,7 @@ public class AdminUserController {
         return new GenericResponse("User blocked successfully");
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_WRITE')")
     @Operation(summary = "Enable user", description = "Enables a user by their ID")
     @ApiResponse(responseCode = "200", description = "User enabled successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
@@ -103,11 +107,20 @@ public class AdminUserController {
      * return new GenericResponse("Permissions removed successfully");
      * }
      */
-
+    @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_READ')")
     @GetMapping("/customers")
     public String listUsers(Model model) {
         model.addAttribute("users", userService.findAll());
         return "users";
+    }
+    @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_READ')")
+    @Operation(summary = "List users with pagination", description = "Returns a paginated list of users")
+    @ApiResponse(responseCode = "200", description = "Users retrieved successfully", content = @Content(mediaType = "application/json"))
+    @ApiResponse(responseCode = "400", description = "Invalid request")
+    @GetMapping("/customers/page")
+    public Page<UserDTO> listUsersWithPagination(@RequestParam int page, @RequestParam int size) {
+        PageRequest pageable = PageRequest.of(page, size);
+        return userService.findAll(pageable);
     }
 
 }

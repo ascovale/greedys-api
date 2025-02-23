@@ -3,6 +3,7 @@ package com.application.persistence.dao.customer;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,7 +19,7 @@ import com.application.web.dto.get.ReservationDTO;
 
 @Repository
 public interface ReservationDAO extends JpaRepository<Reservation, Long> {
-	List<ReservationDTO> findAllByCustomer_id(Long customer_id);
+	List<ReservationDTO> findAllByCustomerId(Long customerId);
 
 	@Query(value = "SELECT day FROM "
 					+ "(SELECT day "
@@ -90,8 +91,6 @@ public interface ReservationDAO extends JpaRepository<Reservation, Long> {
 	@Query(value = "SELECT r FROM Reservation r WHERE r.idservice IN "
 			+ "(SELECT id FROM Service WHERE idrestaurant = :idrestaurant) AND r.date = :date AND r.status = 5")
 	List<Reservation> findDayReservationNoShow(@Param("idrestaurant") Long idrestaurant, @Param("
-
-
 	*/
 
 	@Query(value = """
@@ -138,7 +137,7 @@ public interface ReservationDAO extends JpaRepository<Reservation, Long> {
 				AND r.rejected = False
 				ORDER BY r.date, r.slot.start
 			""")
-    Collection<Reservation> findByRestaurantAndDateAndPending(Long restaurant_id, LocalDate start);
+	Collection<Reservation> findByRestaurantAndDateAndPending(Long restaurant_id, LocalDate start);
 
 	@Query(value = """
 			SELECT r FROM Reservation r
@@ -197,6 +196,14 @@ public interface ReservationDAO extends JpaRepository<Reservation, Long> {
 			@Param("start") LocalDate start, 
 			@Param("end") LocalDate end, 
 			Pageable pageable);
-    
 
+	
+	@Query(value = """
+			SELECT r FROM Reservation r
+			WHERE r.customer.id = :customerId
+				ORDER BY r.date, r.slot.start
+			""")
+	Page<Reservation> findByCustomer(@Param("customerId") Long customerId, Pageable pageable);
+
+    Optional<Reservation> findByRestaurantAndDateBetween(String string, Long id, LocalDate start, LocalDate end);
 }

@@ -32,7 +32,7 @@ public class RestaurantUser {
     private Restaurant restaurant;
     @ManyToMany
 	@JoinTable(name = "user_restaurant_has_role", joinColumns = @JoinColumn(name = "restaurant_user_id"), inverseJoinColumns = @JoinColumn(name = "restaurant_role_id"))
-	private Collection<RestaurantRole> roles;
+	private Collection<RestaurantRole> restaurantRoles;
     @OneToOne
     private RestaurantUserOptions options;
     @Enumerated(EnumType.STRING)
@@ -134,26 +134,26 @@ public class RestaurantUser {
         this.password = password;
     }
 
-    public Collection<RestaurantRole> getRoles() {
-        return roles;
+    public Collection<RestaurantRole> getRestaurantRoles() {
+        return restaurantRoles;
     }
 
-    public void setRoles(Collection<RestaurantRole> roles) {
-        this.roles = roles;
+    public void setRoles(Collection<RestaurantRole> restaurantRoles) {
+        this.restaurantRoles = restaurantRoles;
     }
 
-    public void addRole(RestaurantRole role) {
-        this.roles.add(role);
+    public void addRestaurantRole(RestaurantRole restaurantRoles) {
+        this.restaurantRoles.add(restaurantRoles);
     }
 
     public void removeRole(RestaurantRole role) {
-        this.roles.remove(role);
+        this.restaurantRoles.remove(role);
     }
 
     public boolean hasRestaurantRole(String string) {
         
-        for (RestaurantRole role : roles) {
-            if (role.getName().equals(string)) {
+        for (RestaurantRole restaurantRole : restaurantRoles) {
+            if (restaurantRole.getName().equals(string)) {
                 return true;
             }
         }
@@ -162,8 +162,8 @@ public class RestaurantUser {
 
     public List<RestaurantPrivilege> getPrivileges() {
         List<RestaurantPrivilege> privileges = new ArrayList<>();
-        for (RestaurantRole role : roles) {
-            privileges.addAll(role.getPrivileges());
+        for (RestaurantRole restaurantRole : restaurantRoles) {
+            privileges.addAll(restaurantRole.getRestaurantPrivileges());
         }
         return privileges;
     }

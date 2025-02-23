@@ -21,7 +21,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 @RestController
 @PreAuthorize("hasRole('ADMIN')")
-public class AdminWhatsAppController {
+public class AdminTestWhatsAppController {
     @Autowired
     private WhatsAppService whatsappService;
 

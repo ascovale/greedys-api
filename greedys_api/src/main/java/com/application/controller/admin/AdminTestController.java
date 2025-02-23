@@ -1,7 +1,6 @@
 package com.application.controller.admin;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,7 +34,6 @@ public class AdminTestController {
         this.restaurantNotificationService = restaurantNotificationService;
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Send test email", description = "Sends a test email with the specified subject and content")
     @ApiResponse(responseCode = "200", description = "Email sent successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
@@ -45,7 +43,6 @@ public class AdminTestController {
         return new GenericResponse("Email sent successfully");
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Send test notification to restaurant User", description = "Sends a test notification with the specified title and body to the specified restaurant user")
     @ApiResponse(responseCode = "200", description = "Notification sent successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
@@ -56,7 +53,6 @@ public class AdminTestController {
         return new GenericResponse("Notification sent successfully");
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Send test user notification", description = "Sends a test notification with the specified title and body to the specified user")
     @ApiResponse(responseCode = "200", description = "Notification sent successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
@@ -66,7 +62,6 @@ public class AdminTestController {
         return new GenericResponse("Notification sent successfully");
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Send test restaurant notification", description = "Sends a test notification with the specified title and body to the restaurant")
     @ApiResponse(responseCode = "200", description = "Notification sent successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
