@@ -51,7 +51,8 @@ public class PublicRestaurantController {
 		this.roomService = roomService;
 		this.tableService = tableService;
 	}
-
+	//TODO aggiungere if restaurant enabled and not deleted
+	//Miglior caso creare enum status per restaurant
 	@Operation(summary = "Get all restaurants", description = "Ottieni tutti i ristoranti")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = RestaurantDTO.class)))),

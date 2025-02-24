@@ -1,15 +1,15 @@
 package com.application.spring;
 
+import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springdoc.core.models.GroupedOpenApi;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
-import io.swagger.v3.oas.models.responses.ApiResponse;
 
 @Configuration
 public class SwaggerConfig {
@@ -21,9 +21,21 @@ public class SwaggerConfig {
                 .title("Greedys API")
                 .version("1.0")
                 .description("API for managing restaurant reservations"))
-                .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
+                .addSecurityItem(new SecurityRequirement().addList("adminBearerAuth"))
+                .addSecurityItem(new SecurityRequirement().addList("customerBearerAuth"))
+                .addSecurityItem(new SecurityRequirement().addList("restaurantBearerAuth"))
                 .components(new Components()
-                        .addSecuritySchemes("bearerAuth",
+                        .addSecuritySchemes("adminBearerAuth",
+                                new SecurityScheme()
+                                        .type(SecurityScheme.Type.HTTP)
+                                        .scheme("bearer")
+                                        .bearerFormat("JWT"))
+                        .addSecuritySchemes("customerBearerAuth",
+                                new SecurityScheme()
+                                        .type(SecurityScheme.Type.HTTP)
+                                        .scheme("bearer")
+                                        .bearerFormat("JWT"))
+                        .addSecuritySchemes("restaurantBearerAuth",
                                 new SecurityScheme()
                                         .type(SecurityScheme.Type.HTTP)
                                         .scheme("bearer")
@@ -35,7 +47,6 @@ public class SwaggerConfig {
                         .addResponses("500", new ApiResponse().description("Internal Server Error")));
     }
 
-    
     @Bean
     public GroupedOpenApi adminApi() {
         return GroupedOpenApi.builder()
@@ -45,7 +56,7 @@ public class SwaggerConfig {
     }
 
     @Bean
-    public GroupedOpenApi userApi() {
+    public GroupedOpenApi customerApi() {
         return GroupedOpenApi.builder()
                 .group("customer-api")
                 .pathsToMatch("/customer/**")
@@ -67,6 +78,4 @@ public class SwaggerConfig {
                 .pathsToMatch("/public/**","/register/**","/auth/**")
                 .build();
     }
-
-
 }

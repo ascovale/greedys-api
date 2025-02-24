@@ -206,9 +206,8 @@ public class ReservationService {
                 .map(ReservationDTO::new).collect(Collectors.toList());
     }
 
-    public Collection<ReservationDTO> getAcceptedReservations(Long restaurant_id, LocalDate start, LocalDate end) {
-        return reservationDAO.findByRestaurantAndDateBetweenAndAccepted(restaurant_id, start, end).stream()
-                .map(ReservationDTO::new).collect(Collectors.toList());
+    public Collection<ReservationDTO> getAcceptedReservations(LocalDate start, LocalDate end) {
+        return getAcceptedReservations(getCurrentRestaurantUser().getRestaurant().getId(), start, end);
     }
 
     public Collection<ReservationDTO> getPendingReservations(Long restaurant_id, LocalDate start) {
@@ -527,19 +526,10 @@ public class ReservationService {
 
     }
 
-    public Collection<ReservationDTO> getAcceptedReservationsFromRestaurantUser(Long idRestaurantUser, LocalDate start,
-            LocalDate end) {
-        RestaurantUser ruser = restaurantUserDAO.findById(idRestaurantUser)
-                .orElseThrow(() -> new NoSuchElementException("Restaurant user not found"));
-        return getAcceptedReservations(ruser.getRestaurant().getId(), start, end);
-    }
-
-    public Page<ReservationDTO> getReservationsPageableFromRestaurantUser(Long idRestaurantUser, LocalDate start,
+    public Page<ReservationDTO> getReservationsPageable(LocalDate start,
             LocalDate end, Pageable pageable) {
 
-        RestaurantUser ruser = restaurantUserDAO.findById(idRestaurantUser)
-                .orElseThrow(() -> new NoSuchElementException("Restaurant user not found"));
-        return getReservationsPageable(ruser.getRestaurant().getId(), start, end, pageable);
+        return getReservationsPageable(getCurrentRestaurantUser().getRestaurant().getId(), start, end, pageable);
     }
 
     public Collection<ReservationDTO> getPendingReservationsFromRestaurantUser(Long idRestaurantUser, LocalDate start,
@@ -586,15 +576,16 @@ public class ReservationService {
     }
 
     public ReservationDTO getReservation(Long reservationId) {
-        
-        Reservation reservation = reservationDAO.findById(reservationId).orElseThrow(() -> new NoSuchElementException("Reservation not found"));
+
+        Reservation reservation = reservationDAO.findById(reservationId)
+                .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
         return new ReservationDTO(reservation);
     }
 
     public List<ReservationDTO> getCustomerReservations(Long customerId) {
         return reservationDAO.findByCustomer(customerId).stream()
-            .map(ReservationDTO::new)
-            .collect(Collectors.toList());
+                .map(ReservationDTO::new)
+                .collect(Collectors.toList());
     }
 
     public Page<ReservationDTO> getCustomerReservationsPaginated(Long customerId, Pageable pageable) {
@@ -605,8 +596,21 @@ public class ReservationService {
     public Collection<ReservationDTO> getRestaurantReservations(LocalDate start, LocalDate end) {
         Restaurant restaurant = getCurrentRestaurantUser().getRestaurant();
         return reservationDAO.findByRestaurantAndDateBetween(restaurant.getId(), start, end).stream()
-            .map(ReservationDTO::new)
-            .collect(Collectors.toList());
+                .map(ReservationDTO::new)
+                .collect(Collectors.toList());
+    }
+
+    public Collection<ReservationDTO> getAcceptedReservations(Long idRestaurant, LocalDate start, LocalDate end) {
+        return reservationDAO.findByRestaurantAndDateBetweenAndAccepted(idRestaurant, start, end).stream()
+                .map(ReservationDTO::new).collect(Collectors.toList());
+    }
+
+    public Collection<ReservationDTO> getPendingReservations(LocalDate start, LocalDate end) {
+        return getPendingReservations(getCurrentRestaurantUser().getRestaurant().getId(), start, end);
+    }
+
+    public Collection<ReservationDTO> getPendingReservations(LocalDate start) {
+        return getPendingReservations(getCurrentRestaurantUser().getRestaurant().getId(), start);
     }
 
 }

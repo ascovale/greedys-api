@@ -226,7 +226,7 @@ public class RestaurantService {
     public void setRestaurantDeleted(Long idRestaurant, boolean b) {
 		Restaurant restaurant = rDAO.findById(idRestaurant)
 			.orElseThrow(() -> new IllegalArgumentException("Invalid restaurant ID"));
-		restaurant.setDeleted(b);
+		restaurant.setStatus(Restaurant.Status.DELETED);
 		rDAO.save(restaurant);
     }
 
