@@ -11,6 +11,8 @@ import com.application.persistence.model.restaurant.user.RestaurantUser;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -21,6 +23,7 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+
 @NamedQuery(name = "Restaurant.findBySearchTermNamed", query = "SELECT t FROM Restaurant t WHERE "
 		+ "LOWER(t.name) LIKE LOWER(CONCAT('%', :searchTerm, '%'))" + "ORDER BY t.name ASC")
 @Entity
@@ -60,13 +63,28 @@ public class Restaurant {
 	@ManyToMany
 	@JoinTable(name = "restaurant_has_restaurant_type", joinColumns = @JoinColumn(name = "restaurant_id"), inverseJoinColumns = @JoinColumn(name = "restaurant_type_id"))
 	private List<RestaurantCategory> restaurantTypes;
-	private Boolean deleted = false;
-	private Boolean waNotification=false; // manda un messaggio whatsapp
-	private Boolean telegramNotification=false;
+	private Boolean waNotification = false; // manda un messaggio whatsapp
+	private Boolean telegramNotification = false;
+	public enum Status {
+		ENABLED,
+		DISABLED,
+		DELETED
+	}
+
+	@Column(name = "status")
+	@Enumerated(EnumType.STRING)
+	private Status status;
+
+	public Status getStatus() {
+		return status;
+	}
+
+	public void setStatus(Status status) {
+		this.status = status;
+	}
 
 	@Column(name = "wa_notification_time_advance", columnDefinition = "integer default 30")
 	private Integer messageNotificationTimeAdvance = 30;
-
 
 	public Integer getWaNotificationTimeAdvance() {
 		return messageNotificationTimeAdvance;
@@ -90,10 +108,6 @@ public class Restaurant {
 
 	public void setWaNotification(Boolean waNotification) {
 		this.waNotification = waNotification;
-	}
-
-	public void setDeleted(Boolean deleted) {
-		this.deleted = deleted;
 	}
 
 	public List<RestaurantCategory> getRestaurantTypes() {
@@ -231,7 +245,6 @@ public class Restaurant {
 		this.noShowTimeLimit = noShowTimeLimit;
 	}
 
-    public boolean getDeleted() {
-		return this.deleted;   }
+
 
 }

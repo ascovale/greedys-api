@@ -87,7 +87,7 @@ public class RestaurantController {
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end) {
 		Collection<ReservationDTO> reservations = reservationService
-				.getAcceptedReservationsFromRestaurantUser(idRestaurantUser, start, end);
+				.getAcceptedReservations(start, end);
 		return reservations;
 	}
 
@@ -105,11 +105,10 @@ public class RestaurantController {
 			@RequestParam int size) {
 		Pageable pageable = PageRequest.of(page, size);
 		Page<ReservationDTO> reservations = reservationService
-				.getReservationsPageableFromRestaurantUser(idRestaurantUser, start, end, pageable);
+				.getReservationsPageable(start, end, pageable);
 		return new ResponseEntity<>(reservations, HttpStatus.OK);
 	}
 
-	// TODO PAGEABLE
 	@Operation(summary = "Get all pending reservations of a restaurant", description = "Ottieni tutte le prenotazioni in attesa di un ristorante")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ReservationDTO.class)))),
@@ -123,9 +122,9 @@ public class RestaurantController {
 
 		Collection<ReservationDTO> reservations;
 		if (end != null && start != null) {
-			reservations = reservationService.getPendingReservationsFromRestaurantUser(idRestaurantUser, start, end);
+			reservations = reservationService.getPendingReservations(start, end);
 		} else if (start != null) {
-			reservations = reservationService.getPendingReservationsFromRestaurantUser(idRestaurantUser, start);
+			reservations = reservationService.getPendingReservations(start);
 		} else if (end != null) {
 			throw new IllegalArgumentException("end cannot be null if start is not null");
 		} else {

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.application.persistence.dao.customer.ReservationDAO;
 import com.application.persistence.model.reservation.Reservation;
+import com.application.persistence.model.restaurant.Restaurant;
 import com.application.persistence.model.restaurant.user.RestaurantUser;
 
 @Service
@@ -28,6 +29,9 @@ public class RestaurantUserSecurityService {
 
         if (principal instanceof RestaurantUser) {
             restaurantUser = (RestaurantUser) principal;
+            if (!isRestaurantEnabled(restaurantUser)) {
+                return false;
+            }
         } else {
             return false;
         }
@@ -47,7 +51,35 @@ public class RestaurantUserSecurityService {
         if (!restaurantUser.isEnabled()) {
             return false;
         }
+        
         return true;
     }
 
+    public boolean isRestaurantEnabled(RestaurantUser restaurantUser) {
+        if (restaurantUser == null || restaurantUser.getRestaurant() == null) {
+            return false;
+        }
+        return restaurantUser.getRestaurant().getStatus() == Restaurant.Status.ENABLED;
+    }
+
+    public boolean isRestaurantEnabled() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return false;
+        }
+
+        Object principal = authentication.getPrincipal();
+        RestaurantUser restaurantUser = null;
+
+        if (principal instanceof RestaurantUser) {
+            restaurantUser = (RestaurantUser) principal;
+        } else {
+            return false;
+        }
+
+        if (restaurantUser.getRestaurant() == null) {
+            return false;
+        }
+        return restaurantUser.getRestaurant().getStatus() == Restaurant.Status.ENABLED;
+    }
 }
