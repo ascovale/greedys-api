@@ -27,19 +27,12 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-/**
- * The ReservationRestaurantController class is responsible for handling HTTP
- * requests related to reservations for the restaurant.
- * It contains methods for creating, accepting, rejecting, marking as no-show, and marking as seated reservations.
- */
+
 @Controller
 @RequestMapping({"/admin/reservation"})
 @SecurityRequirement(name = "bearerAuth")
-@Tag(name = "Reservation Admin", description = "APIs for managing reservations from the administrator")
+@Tag(name = "Reservation Admin", description = "APIs for managing reservations from the administrator end point")
 public class AdminReservationController {
-	//TODO scrivere tutti i permessi che hanno gli admin e ruoli
-	//TODO modificare tutti i preauthorize
-	//TODO Modificare tutti i DTO
 	private ReservationService reservationService;
 
 	@Autowired
@@ -47,13 +40,6 @@ public class AdminReservationController {
 		this.reservationService = reservationService;
 	}
 
-	/**
-	 * Creates a new reservation.
-	 *
-	 * @param idRestaurant the ID of the restaurant
-	 * @param DTO the data transfer object containing reservation details
-	 * @return ResponseEntity indicating the result of the operation
-	 */
 	@Operation(summary = "Create a new reservation", description = "Endpoint to create a new reservation")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Reservation created successfully"),
@@ -67,14 +53,6 @@ public class AdminReservationController {
 		return ResponseEntity.ok().build();
 	}
 
-	/**
-	 * Accepts a reservation by its ID.
-	 *
-	 * @param idRestaurant the ID of the restaurant
-	 * @param reservationId the ID of the reservation
-	 * @param accepted the acceptance status
-	 * @return ResponseEntity indicating the result of the operation
-	 */
 	@Operation(summary = "Accept a reservation", description = "Endpoint to accept a reservation by its ID")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Reservation accepted successfully"),
@@ -89,14 +67,6 @@ public class AdminReservationController {
 		return ResponseEntity.ok().build();
 	}
 
-	/**
-	 * Rejects a reservation by its ID.
-	 *
-	 * @param idRestaurant the ID of the restaurant
-	 * @param reservationId the ID of the reservation
-	 * @param rejected the rejection status
-	 * @return ResponseEntity indicating the result of the operation
-	 */
 	@Operation(summary = "Reject a reservation", description = "Endpoint to reject a reservation by its ID")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_WRITE')")
 	@PutMapping("/{reservationId}/reject")
@@ -105,14 +75,6 @@ public class AdminReservationController {
 		return ResponseEntity.ok().build();
 	}
 
-	/**
-	 * Marks a reservation as no show by its ID.
-	 *
-	 * @param idRestaurant the ID of the restaurant
-	 * @param reservationId the ID of the reservation
-	 * @param noShow the no-show status
-	 * @return ResponseEntity indicating the result of the operation
-	 */
 	@Operation(summary = "Mark a reservation as no show", description = "Endpoint to mark a reservation as no show by its ID")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Reservation marked as no show successfully"),
@@ -127,15 +89,6 @@ public class AdminReservationController {
 		return ResponseEntity.ok().build();
 	}
 
-
-	/**
-	 * Marks a reservation as seated by its ID.
-	 *
-	 * @param idRestaurant the ID of the restaurant
-	 * @param reservationId the ID of the reservation
-	 * @param seated the seated status
-	 * @return ResponseEntity indicating the result of the operation
-	 */
 	@Operation(summary = "Mark a reservation as seated", description = "Endpoint to mark a reservation as seated by its ID")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Reservation marked as seated successfully"),
@@ -149,12 +102,7 @@ public class AdminReservationController {
 		reservationService.adminMarkReservationSeated(reservationId, seated);
 		return ResponseEntity.ok().build();
 	}
-	/**
-	 * Delets a reservation by its ID.
-	 *
-	 * @param reservationId the ID of the reservation
-	 * @return ResponseEntity indicating the result of the operation
-	 */
+
 	@Operation(summary = "Delete a reservation", description = "Endpoint to delete a reservation by its ID")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Reservation deleted successfully"),
@@ -169,12 +117,6 @@ public class AdminReservationController {
 		return ResponseEntity.ok().build();
 	}
 
-	/**
-	 * Retrieves a reservation by its ID.
-	 *
-	 * @param reservationId the ID of the reservation
-	 * @return ResponseEntity containing the reservation DTO
-	 */
 	@Operation(summary = "Get a reservation", description = "Endpoint to get a reservation by its ID")
 	@ApiResponses(value = {
 		@ApiResponse(responseCode = "200", description = "Reservation retrieved successfully"),
@@ -193,12 +135,6 @@ public class AdminReservationController {
 		}
 	}
 
-	/**
-	 * Retrieves all reservations for a specific customer by their ID.
-	 *
-	 * @param customerId the ID of the customer
-	 * @return ResponseEntity containing the list of reservations
-	 */
 	@Operation(summary = "Get customer reservations", description = "Endpoint to get all reservations for a specific customer by their ID")
 	@ApiResponses(value = {
 		@ApiResponse(responseCode = "200", description = "Reservations retrieved successfully"),
@@ -217,13 +153,6 @@ public class AdminReservationController {
 		}
 	}
 
-	/**
-	 * Retrieves paginated reservations for a specific customer by their ID.
-	 *
-	 * @param customerId the ID of the customer
-	 * @param pageable the pagination information
-	 * @return ResponseEntity containing the paginated list of reservations
-	 */
 	@Operation(summary = "Get paginated customer reservations", description = "Endpoint to get paginated reservations for a specific customer by their ID")
 	@ApiResponses(value = {
 		@ApiResponse(responseCode = "200", description = "Reservations retrieved successfully"),

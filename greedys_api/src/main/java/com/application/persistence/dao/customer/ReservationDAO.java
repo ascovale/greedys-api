@@ -206,4 +206,12 @@ public interface ReservationDAO extends JpaRepository<Reservation, Long> {
 	Page<Reservation> findByCustomer(@Param("customerId") Long customerId, Pageable pageable);
 
     Optional<Reservation> findByRestaurantAndDateBetween(String string, Long id, LocalDate start, LocalDate end);
+
+    Page<Reservation> findByRestaurantAndDateBetweenAndPending(Long idRestaurant, LocalDate start, LocalDate end,
+            Pageable pageable);
+
+	Page<Reservation> findByRestaurantAndDateAndPending(Long idRestaurant, LocalDate start, Pageable pageable);
+
+	Page<Reservation> findByRestaurantIdAndPending(Long idRestaurant, Pageable pageable);
+
 }

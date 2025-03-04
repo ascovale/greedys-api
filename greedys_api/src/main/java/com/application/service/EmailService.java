@@ -118,6 +118,10 @@ public class EmailService {
         message.setText(content);
         message.setFrom(env.getProperty("support.email"));
         mailSender.send(message);
+    }
+
+    public void sendEmail(SimpleMailMessage constructResendVerificationTokenEmail) {
+        mailSender.send(constructResendVerificationTokenEmail);
     }   
 
 }

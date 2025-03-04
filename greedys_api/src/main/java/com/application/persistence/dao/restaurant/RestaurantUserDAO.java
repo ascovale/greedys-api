@@ -1,6 +1,7 @@
 package com.application.persistence.dao.restaurant;
 
 import java.util.Collection;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -15,11 +16,15 @@ public interface RestaurantUserDAO extends JpaRepository<RestaurantUser, Long>{
 
     @Modifying
     @Query("UPDATE RestaurantUser ru SET ru.accepted = true WHERE ru.id = :id")
-    void acceptUser(@Param("id") Long id);
+    void acceptRestaurantUser(@Param("id") Long id);
 
     Collection<RestaurantUser> findByRestaurantId(Long id);
 
     RestaurantUser findByEmail(String email);
 
+    @Query("SELECT COUNT(ru) > 1 FROM RestaurantUser ru WHERE ru.email = :email")
+    boolean isMultiRestaurantUser(@Param("email") String email);
+
+    Optional<RestaurantUser> findRestaurantUserByIdAndEmail(Long userId, String email);
 
 } 

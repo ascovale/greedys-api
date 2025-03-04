@@ -4,6 +4,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
 import com.application.persistence.model.restaurant.Restaurant;
 
 import jakarta.persistence.Column;
@@ -22,17 +26,17 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "restaurant_user")
-public class RestaurantUser {
+public class RestaurantUser implements UserDetails {
     @Id
-	@Column(unique = true, nullable = false)
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	private Long id;
+    @Column(unique = true, nullable = false)
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
     @ManyToOne(targetEntity = Restaurant.class)
     @JoinColumn(name = "restaurant_id")
     private Restaurant restaurant;
     @ManyToMany
-	@JoinTable(name = "user_restaurant_has_role", joinColumns = @JoinColumn(name = "restaurant_user_id"), inverseJoinColumns = @JoinColumn(name = "restaurant_role_id"))
-	private Collection<RestaurantRole> restaurantRoles;
+    @JoinTable(name = "user_restaurant_has_role", joinColumns = @JoinColumn(name = "restaurant_user_id"), inverseJoinColumns = @JoinColumn(name = "restaurant_role_id"))
+    private Collection<RestaurantRole> restaurantRoles;
     @OneToOne
     private RestaurantUserOptions options;
     @Enumerated(EnumType.STRING)
@@ -40,11 +44,10 @@ public class RestaurantUser {
     private Status status;
     private String phoneNumber;
     @Column(length = 60)
-	private String password;
+    private String password;
     private String email;
     private boolean enabled;
     private boolean accepted;
-    
 
     public boolean isAccepted() {
         return accepted;
@@ -69,7 +72,7 @@ public class RestaurantUser {
         DISABLED
     }
 
-	public String getEmail() {
+    public String getEmail() {
         return email;
     }
 
@@ -92,6 +95,7 @@ public class RestaurantUser {
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
+
     private Integer toReadNotification = 0;
 
     public Integer getToReadNotification() {
@@ -151,7 +155,7 @@ public class RestaurantUser {
     }
 
     public boolean hasRestaurantRole(String string) {
-        
+
         for (RestaurantRole restaurantRole : restaurantRoles) {
             if (restaurantRole.getName().equals(string)) {
                 return true;
@@ -166,5 +170,52 @@ public class RestaurantUser {
             privileges.addAll(restaurantRole.getRestaurantPrivileges());
         }
         return privileges;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return getGrantedAuthorities(getRestaurantPrivileges());
+    }
+
+    private final List<String> getRestaurantPrivileges() {
+        final List<String> privileges = new ArrayList<String>();
+
+        for (final RestaurantRole role : restaurantRoles) {
+            privileges.add(role.getName());
+            for (final RestaurantPrivilege item : role.getRestaurantPrivileges()) {
+                privileges.add(item.getName());
+            }
+        }
+
+        return privileges;
+    }
+
+    private final List<GrantedAuthority> getGrantedAuthorities(final List<String> privileges) {
+        final List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
+        for (final String privilege : privileges) {
+            authorities.add(new SimpleGrantedAuthority(privilege));
+        }
+        return authorities;
+    }
+
+    @Override
+    public String getUsername() {
+        return email;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return status != Status.DELETED;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return status != Status.BLOCKED;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        //TODO in futuro da cambiare se le credenziali scadono
+        return true;
     }
 }

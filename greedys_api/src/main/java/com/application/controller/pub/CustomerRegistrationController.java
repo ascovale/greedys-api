@@ -32,7 +32,8 @@ import com.application.persistence.model.customer.Privilege;
 import com.application.persistence.model.customer.VerificationToken;
 import com.application.registration.UserOnRegistrationCompleteEvent;
 import com.application.service.CustomerService;
-import com.application.web.dto.post.NewUserDTO;
+import com.application.service.EmailService;
+import com.application.web.dto.post.NewCustomerDTO;
 import com.application.web.util.GenericResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -45,8 +46,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/public/register/user")
-public class RegistrationUserController {
+@RequestMapping("/public/register/customer")
+public class CustomerRegistrationController {
     private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
     @Autowired
@@ -61,7 +62,10 @@ public class RegistrationUserController {
     @Autowired
     private Environment env;
 
-    public RegistrationUserController() {
+    @Autowired
+    private EmailService mailService;
+
+    public CustomerRegistrationController() {
         super();
     }
 
@@ -74,13 +78,13 @@ public class RegistrationUserController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Utente registrato con successo",
                      content = { @Content(mediaType = "application/json",
-                     schema = @Schema(implementation = NewUserDTO.class)) }),
+                     schema = @Schema(implementation = NewCustomerDTO.class)) }),
         @ApiResponse(responseCode = "400", description = "Richiesta non valida",
                      content = @Content),
         @ApiResponse(responseCode = "500", description = "Errore interno del server",
                      content = @Content) })
     @PostMapping("/")
-    public ResponseEntity<String> registerUserAccount(@Valid @RequestBody NewUserDTO accountDto, HttpServletRequest request) {
+    public ResponseEntity<String> registerUserAccount(@Valid @RequestBody NewCustomerDTO accountDto, HttpServletRequest request) {
         try {
             Customer user = userService.registerNewUserAccount(accountDto);
             eventPublisher.publishEvent(new UserOnRegistrationCompleteEvent(user, Locale.ITALIAN, getAppUrl(request)));
@@ -118,9 +122,8 @@ public class RegistrationUserController {
     @ResponseBody
     public GenericResponse resendRegistrationToken(final HttpServletRequest request, @RequestParam("token") final String existingToken) {
         final VerificationToken newToken = userService.generateNewVerificationToken(existingToken);
-		userService.getUser(newToken.getToken());
-        //TODO: rimettere l'invio della mail
-        //mailSender.send(constructResendVerificationTokenEmail(getAppUrl(request), request.getLocale(), newToken, user));
+		Customer customer = userService.getUser(newToken.getToken());
+        mailService.sendEmail(constructResendVerificationTokenEmail(getAppUrl(request), request.getLocale(), newToken, customer));
         return new GenericResponse(messages.getMessage("message.resendToken", null, request.getLocale()));
     }
 
@@ -136,14 +139,12 @@ public class RegistrationUserController {
         return null;
     }*/
 
-    // ============== NON-API ============
-/*
-    @SuppressWarnings("unused")
-	private SimpleMailMessage constructResendVerificationTokenEmail(final String contextPath, final Locale locale, final VerificationToken newToken, final User user) {
+
+	private SimpleMailMessage constructResendVerificationTokenEmail(final String contextPath, final Locale locale, final VerificationToken newToken, final Customer user) {
         final String confirmationUrl = contextPath + "/registrationConfirm.html?token=" + newToken.getToken();
         final String message = messages.getMessage("message.resendToken", null, locale);
         return constructEmail("Resend Registration Token", message + " \r\n" + confirmationUrl, user);
-    }*/
+    }
 
     @SuppressWarnings("unused")
 	private SimpleMailMessage constructResetTokenEmail(final String contextPath, final Locale locale, final String token, final Customer user) {

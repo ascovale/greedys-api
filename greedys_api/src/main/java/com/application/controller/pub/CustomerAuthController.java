@@ -24,7 +24,7 @@ import com.application.web.dto.AuthRequestDTO;
 import com.application.web.dto.AuthRequestGoogleDTO;
 import com.application.web.dto.AuthResponseDTO;
 import com.application.web.dto.get.UserDTO;
-import com.application.web.dto.post.NewUserDTO;
+import com.application.web.dto.post.NewCustomerDTO;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
@@ -39,14 +39,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "Auth", description = "Controller per la gestione dell'autenticazione")
 @RestController
 @RequestMapping(value = "/public/auth", produces = "application/json")
-public class AuthController {
-    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
+public class CustomerAuthController {
+    private static final Logger logger = LoggerFactory.getLogger(CustomerAuthController.class);
 
     private AuthenticationManager authenticationManager;
     private JwtUtil jwtUtil;
     private CustomerService userService;
 
-    public AuthController(@Qualifier("customerAuthenticationManager")AuthenticationManager authenticationManager,
+    public CustomerAuthController(@Qualifier("customerAuthenticationManager")AuthenticationManager authenticationManager,
             JwtUtil jwtUtil,
             CustomerService userService) {
         this.authenticationManager = authenticationManager;
@@ -91,7 +91,7 @@ public class AuthController {
             // quali dati vogliamo prendere da google?
             Customer user = userService.findUserByEmail(email);
             if (user == null) {
-                NewUserDTO accountDto = new NewUserDTO();
+                NewCustomerDTO accountDto = new NewCustomerDTO();
                 // devo verificare questa cosa
                 accountDto.setFirstName(name.split(" ")[0]);
                 accountDto.setLastName(name.split(" ")[1]);

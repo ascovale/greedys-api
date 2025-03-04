@@ -75,7 +75,7 @@ public class RestaurantController {
 		return reservations;
 	}
 
-	@PreAuthorize("@PreAuthorizeRestaurantUserSecurityService.isRestaurantEnabled(#idRestaurantUser)")
+	@PreAuthorize("RestaurantUserSecurityService.isRestaurantEnabled(#idRestaurantUser)")
 	@Operation(summary = "Get all accepted reservations of a restaurant", description = "Ottieni tutte le prenotazioni accettate di un ristorante")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ReservationDTO.class)))),
@@ -180,7 +180,6 @@ public class RestaurantController {
 			@ApiResponse(responseCode = "400", description = "Richiesta non valida")
 	})
 	public GenericResponse addRoom(@PathVariable Long idRestaurant, @RequestBody NewRoomDTO roomDto) {
-		// TODO: sistemare idRestaurant
 		roomService.createRoom(roomDto);
 		return new GenericResponse("success");
 	}
@@ -192,8 +191,7 @@ public class RestaurantController {
 			@ApiResponse(responseCode = "404", description = "Ristorante o sala non trovato"),
 			@ApiResponse(responseCode = "400", description = "Richiesta non valida")
 	})
-	public GenericResponse addTable(@PathVariable Long idRestaurant, @RequestParam NewTableDTO tableDto) {
-		// TODO: sistemare idRestaurant
+	public GenericResponse addTable(@RequestParam NewTableDTO tableDto) {
 		tableService.createTable(tableDto);
 		return new GenericResponse("success");
 	}
@@ -204,21 +202,21 @@ public class RestaurantController {
 			@ApiResponse(responseCode = "404", description = "Ristorante non trovato"),
 			@ApiResponse(responseCode = "400", description = "Richiesta non valida")
 	})
-	@PostMapping(value = "{idRestaurant}/no-show-time-limit")
+	@PostMapping(value = "/no-show-time-limit")
 	public GenericResponse setNoShowTimeLimit(@PathVariable Long idRestaurant, @RequestParam int minutes) {
 		restaurantService.setNoShowTimeLimit(idRestaurant, minutes);
 		return new GenericResponse("success");
 	}
 
-	@GetMapping(value = "{idRestaurant}/types")
+	@GetMapping(value = "/types")
 	@Operation(summary = "Get types of a restaurant", description = "Ottieni i tipi di un ristorante")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = String.class)))),
 			@ApiResponse(responseCode = "404", description = "Ristorante non trovato"),
 			@ApiResponse(responseCode = "400", description = "Richiesta non valida")
 	})
-	public ResponseEntity<Collection<String>> getRestaurantTypesNames(@PathVariable Long idRestaurant) {
-		List<String> types = restaurantService.getRestaurantTypesNames(idRestaurant);
+	public ResponseEntity<Collection<String>> getRestaurantTypesNames() {
+		List<String> types = restaurantService.getRestaurantTypesNames();
 		return new ResponseEntity<>(types, HttpStatus.OK);
 	}
 }

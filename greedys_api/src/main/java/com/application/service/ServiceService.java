@@ -38,7 +38,6 @@ import jakarta.persistence.PersistenceContext;
 
 @org.springframework.stereotype.Service
 public class ServiceService {
-	// TODO aggiungere tutti i controlli ristorante cancellato
 
 	@Autowired
 	ServiceDAO serviceDAO;
@@ -151,10 +150,16 @@ public class ServiceService {
 	}
 
 	public List<ServiceDto> getDayServices(Restaurant restaurant, LocalDate date) {
-		// TODO: Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'getDayServices'");
+		List<Service> services = serviceDAO.findServicesByRestaurant(restaurant.getId());
+		List<ServiceDto> servicesDto = new ArrayList<>();
+		for (Service service : services) {
+			if (service.getValidFrom().isBefore(date) && service.getValidTo().isAfter(date)) {
+				servicesDto.add(new ServiceDto(service));
+			}
+		}
+		return servicesDto;
 	}
-	// TODO Cambierei non può tornare direttamente i dto
+
 	public ServiceDTO findById(Long serviceId) {
 		return new ServiceDTO(serviceDAO.findById(serviceId).get());
 	}
@@ -238,10 +243,14 @@ public class ServiceService {
 		}
 	}
 	
-	//TODO Da migliorare efficienza fare query
+
 	@Transactional
-    public Collection<ServiceTypeDto> getServiceTypes(Long idRestaurantUser) {
-		RestaurantUser restaurantUser = restaurantUserDAO.findById(idRestaurantUser).orElseThrow(() -> new IllegalArgumentException("Restaurant user not found"));
+    public Collection<ServiceTypeDto> getServiceTypesFromRestaurantUser() {
+		Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		if (!(principal instanceof RestaurantUser)) {
+			throw new IllegalArgumentException("User is not a RestaurantUser");
+		}
+		RestaurantUser restaurantUser = (RestaurantUser) principal;
 		if (restaurantUser.getRestaurant() == null) {
 			throw new IllegalArgumentException("Restaurant not found");
 		}
@@ -270,6 +279,35 @@ public class ServiceService {
 		ServiceType serviceType = serviceTypeDAO.findById(typeId).orElseThrow(() -> new IllegalArgumentException("Service type not found"));
 		serviceType.setDeleted(true);
 		serviceTypeDAO.save(serviceType);
+	}
+
+	public void newService(RestaurantNewServiceDTO servicesDto) {
+		Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		if (!(principal instanceof RestaurantUser)) {
+			throw new IllegalArgumentException("User is not a RestaurantUser");
+		}
+		RestaurantUser restaurantUser = (RestaurantUser) principal;
+		Restaurant restaurant = restaurantUser.getRestaurant();
+		if (restaurant == null) {
+			throw new IllegalArgumentException("Restaurant not found");
+		}
+		
+		Service service = new Service();
+		service.setName(servicesDto.getName());
+		service.setRestaurant(restaurant);
+
+		if (servicesDto.getServiceType() != null) {
+			Set<ServiceType> serviceTypes = new HashSet<>();
+			serviceTypes.add(entityManager.getReference(ServiceType.class, servicesDto.getServiceType()));
+			service.setServiceTypes(serviceTypes);
+		} else {
+			service.setServiceTypes(null);
+		}
+
+		service.setValidFrom(servicesDto.getValidFrom());
+		service.setValidTo(servicesDto.getValidTo());
+		service.setActive(false);
+		serviceDAO.save(service);
 	}
 
 	

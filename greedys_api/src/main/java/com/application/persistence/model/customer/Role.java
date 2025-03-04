@@ -1,6 +1,7 @@
 package com.application.persistence.model.customer;
 
 import java.util.Collection;
+import java.util.List;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -79,7 +80,7 @@ public class Role {
             return false;
         }
         final Role role = (Role) obj;
-        if (!role.equals(role.name)) {
+        if (!name.equals(role.name)) {
             return false;
         }
         return true;
@@ -94,4 +95,9 @@ public class Role {
     public void setPrivileges(Collection<Privilege> privileges) {
 		this.privileges = privileges;
 	}
+
+    public List<Role> getPermissions() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getPermissions'");
+    }
 }

@@ -49,10 +49,10 @@ public class RestaurantServicesController {
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @PostMapping("/new_service")
-    public ResponseEntity<GenericResponse> newService(@PathVariable Long idRestaurantUser,@RequestBody RestaurantNewServiceDTO servicesDto) {
+    public ResponseEntity<GenericResponse> newService(@RequestBody RestaurantNewServiceDTO servicesDto) {
         System.out.println("<<<   Controller Service   >>>");
         System.out.println("<<<   name: " + servicesDto.getName());
-        serviceService.newService(idRestaurantUser,servicesDto);
+        serviceService.newService(servicesDto);
         return ResponseEntity.ok(new GenericResponse("success"));
     }
 
@@ -64,7 +64,7 @@ public class RestaurantServicesController {
     })
     @PreAuthorize("@securityService.hasRestaurantUserPrivilege(#idRestaurantUser, 'PRIVILEGE_GESTIONE_SERVIZI') && @securityService.hasServicePermission(#serviceId)")
     @DeleteMapping("/delete_service")
-    public GenericResponse deleteService(@PathVariable Long idRestaurantUser, @RequestParam Long serviceId) {
+    public GenericResponse deleteService(@RequestParam Long serviceId) {
         System.out.println("<<<   Controller Service   >>>");
         System.out.println("<<<   serviceId: " + serviceId);
         serviceService.deleteService(serviceId);
@@ -79,7 +79,7 @@ public class RestaurantServicesController {
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/getService/{serviceId}")
-    public ResponseEntity<ServiceDTO> getServiceById(@PathVariable Long idRestaurantUser, @PathVariable Long serviceId) {
+    public ResponseEntity<ServiceDTO> getServiceById(@PathVariable Long serviceId) {
         ServiceDTO service = serviceService.findById(serviceId);
         return ResponseEntity.ok(service);
     }
@@ -92,7 +92,7 @@ public class RestaurantServicesController {
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/getServiceSlot/{serviceId}")
-    public Collection<SlotDTO> getSlots(@PathVariable Long idRestaurantUser,@PathVariable(value = "serviceId") long serviceId) {
+    public Collection<SlotDTO> getSlots(@PathVariable(value = "serviceId") long serviceId) {
         return slotService.findByService_Id(serviceId);
     }
 
@@ -102,8 +102,8 @@ public class RestaurantServicesController {
         @ApiResponse(responseCode = "200", description = "Service types retrieved successfully"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    public Collection<ServiceTypeDto> getServiceTypes(@PathVariable Long idRestaurantUser) {
-        return serviceService.getServiceTypes(idRestaurantUser);
+    public Collection<ServiceTypeDto> getServiceTypes() {
+        return serviceService.getServiceTypesFromRestaurantUser();
     }
 
 }

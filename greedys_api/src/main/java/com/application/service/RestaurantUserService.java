@@ -6,6 +6,9 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,16 +22,14 @@ import com.application.persistence.model.restaurant.user.RestaurantPrivilege;
 import com.application.persistence.model.restaurant.user.RestaurantRole;
 import com.application.persistence.model.restaurant.user.RestaurantUser;
 import com.application.persistence.model.restaurant.user.RestaurantUserVerificationToken;
+import com.application.security.user.restaurant.RestaurantUserDetailsService;
 import com.application.web.dto.get.RestaurantUserDTO;
 import com.application.web.dto.post.NewRestaurantUserDTO;
 
 @Service
 @Transactional
 public class RestaurantUserService {
-    // TODO Aggiungere vedere utente
-    // TODO Vedere prenotazioni per un ristorante
-    // TODO Vedere prenotazioni per un utente
-    
+
     public static final String TOKEN_INVALID = "invalidToken";
     public static final String TOKEN_EXPIRED = "expired";
     public static final String TOKEN_VALID = "valid";
@@ -38,7 +39,8 @@ public class RestaurantUserService {
 
     @Autowired
     private RestaurantUserVerificationTokenDAO tokenDAO;
-
+    @Autowired
+    private RestaurantUserDetailsService userDetailsService;
     @Autowired
     private EmailService emailService;
     @Autowired
@@ -55,8 +57,7 @@ public class RestaurantUserService {
     // se già esiste, lo prendo, altrimenti lo creo
     // invio di email come se fosse utente normale
     public RestaurantUser registerRestaurantUser(NewRestaurantUserDTO restaurantUserDTO) {
-        System.out.println("Registering restaurant user with information:" + restaurantUserDTO.getRestaurantId() + " "
-                + restaurantUserDTO.getUserId());
+        System.out.println("Registering restaurant user with information:" + restaurantUserDTO.getRestaurantId() + " ");
         RestaurantUser ru = new RestaurantUser();
         Restaurant restaurant = restaurantDAO.findById(restaurantUserDTO.getRestaurantId())
                 .orElseThrow(() -> new IllegalArgumentException(
@@ -67,8 +68,8 @@ public class RestaurantUserService {
         return ru;
     }
 
-    public void acceptUser(Long id) {
-        ruDAO.acceptUser(id);
+    public void acceptRestaurantUser(Long id) {
+        ruDAO.acceptRestaurantUser(id);
     }
 
     public void blockRestaurantUser(Long idRestaurantUser) {
@@ -111,8 +112,7 @@ public class RestaurantUserService {
     }
 
     public RestaurantUser registerRestaurantUser(NewRestaurantUserDTO restaurantUserDTO, Restaurant restaurant) {
-        System.out.println("Registering restaurant user with information:" + restaurantUserDTO.getRestaurantId() + " "
-                + restaurantUserDTO.getUserId());
+        System.out.println("Registering restaurant user with information:" + restaurantUserDTO.getRestaurantId() + " ");
         RestaurantUser ru = new RestaurantUser();
         ru.setRestaurant(restaurant);
         ruDAO.save(ru);
@@ -129,7 +129,7 @@ public class RestaurantUserService {
         }
         RestaurantRole role = rrDAO.findByName(string);
         ru.addRestaurantRole(role);
-        
+
         RestaurantUser newRestaurantUser = new RestaurantUser();
         newRestaurantUser.setRestaurant(restaurant);
         ruDAO.save(newRestaurantUser);
@@ -152,8 +152,8 @@ public class RestaurantUserService {
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("User does not have any roles"));
         boolean hasPermission = ru.getRestaurantRoles().stream()
-            .flatMap(role -> role.getRestaurantPrivileges().stream())
-            .anyMatch(privilege -> privilege.getName().equals("PRIVILEGE_DISABLE_" + roleNameWithoutPrefix));
+                .flatMap(role -> role.getRestaurantPrivileges().stream())
+                .anyMatch(privilege -> privilege.getName().equals("PRIVILEGE_DISABLE_" + roleNameWithoutPrefix));
 
         if (!hasPermission) {
             throw new IllegalArgumentException("User does not have permission to disable this role");
@@ -302,17 +302,42 @@ public class RestaurantUserService {
     }
 
     public RestaurantUser getRestaurantUser(final String verificationToken) {
-		final RestaurantUserVerificationToken token = tokenDAO.findByToken(verificationToken);
-		if (token != null) {
-			return token.getRestaurantUser();
-		}
-		return null;
-	}
+        final RestaurantUserVerificationToken token = tokenDAO.findByToken(verificationToken);
+        if (token != null) {
+            return token.getRestaurantUser();
+        }
+        return null;
+    }
 
     public RestaurantUserVerificationToken generateNewVerificationToken(final String existingVerificationToken) {
-		RestaurantUserVerificationToken vToken = tokenDAO.findByToken(existingVerificationToken);
-		vToken.updateToken(UUID.randomUUID().toString());
-		vToken = tokenDAO.save(vToken);
-		return vToken;
+        RestaurantUserVerificationToken vToken = tokenDAO.findByToken(existingVerificationToken);
+        vToken.updateToken(UUID.randomUUID().toString());
+        vToken = tokenDAO.save(vToken);
+        return vToken;
     }
+
+    public void switchToRestaurantUser(Long restaurantUserId) {
+        UserDetails userDetails = userDetailsService.loadUserById(restaurantUserId);
+        if (userDetails == null) {
+            throw new UsernameNotFoundException("No user found with username: " + restaurantUserId.toString());
+        }
+        SecurityContextHolder.getContext().setAuthentication(
+                new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
+                        userDetails, userDetails.getPassword(), userDetails.getAuthorities()));
+    }
+
+    public void disconnectRestaurantUser(Long restaurantUserId) {
+        UserDetails userDetails = userDetailsService.loadSwitchUserById(restaurantUserId);
+        if (userDetails == null) {
+            throw new UsernameNotFoundException("No user found with username: " + restaurantUserId.toString());
+        }
+        SecurityContextHolder.getContext().setAuthentication(
+                new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
+                        userDetails, userDetails.getPassword(), userDetails.getAuthorities()));
+    }
+
+    public RestaurantUser findRestaurantUserByEmail(String userEmail) {
+        return ruDAO.findByEmail(userEmail);
+    }
+
 }

@@ -613,4 +613,19 @@ public class ReservationService {
         return getPendingReservations(getCurrentRestaurantUser().getRestaurant().getId(), start);
     }
 
+    public Page<ReservationDTO> getPendingReservationsPageable(Long idRestaurant, LocalDate start, LocalDate end,
+            Pageable pageable) {
+        return reservationDAO.findByRestaurantAndDateBetweenAndPending(idRestaurant, start, end, pageable)
+            .map(ReservationDTO::new);
+    }
+
+    public Page<ReservationDTO> getPendingReservationsPageable(Long idRestaurant, LocalDate start, Pageable pageable) {
+        return reservationDAO.findByRestaurantAndDateAndPending(idRestaurant, start, pageable)
+            .map(ReservationDTO::new);
+    }
+    public Page<ReservationDTO> getPendingReservationsPageable(Long idRestaurant, Pageable pageable) {
+        return reservationDAO.findByRestaurantIdAndPending(idRestaurant, pageable)
+            .map(ReservationDTO::new);
+    }
+
 }

@@ -8,6 +8,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.application.persistence.dao.customer.ReservationDAO;
+import com.application.persistence.dao.restaurant.RestaurantUserDAO;
 import com.application.persistence.model.reservation.Reservation;
 import com.application.persistence.model.restaurant.Restaurant;
 import com.application.persistence.model.restaurant.user.RestaurantUser;
@@ -17,6 +18,8 @@ public class RestaurantUserSecurityService {
 
     @Autowired 
     private ReservationDAO reservationRepository;
+    @Autowired 
+    private RestaurantUserDAO restaurantUserDAO;
     
     public boolean hasPermissionOnReservation(Long idReservation) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -81,5 +84,33 @@ public class RestaurantUserSecurityService {
             return false;
         }
         return restaurantUser.getRestaurant().getStatus() == Restaurant.Status.ENABLED;
+    }
+
+    public boolean hasRestaurantUserId(Long userId, String email) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return false;
+        }
+
+        Object principal = authentication.getPrincipal();
+        RestaurantUser restaurantUser = null;
+
+        if (principal instanceof RestaurantUser) {
+            restaurantUser = (RestaurantUser) principal;
+        } else {
+            return false;
+        }
+
+        if (!restaurantUser.isEnabled() || !isRestaurantEnabled(restaurantUser)) {
+            return false;
+        }
+
+        Optional<RestaurantUser> userOptional = restaurantUserDAO.findRestaurantUserByIdAndEmail(userId, email);
+        if (!userOptional.isPresent()) {
+            return false;
+        }
+
+        RestaurantUser foundUser = userOptional.get();
+        return foundUser.isEnabled() && isRestaurantEnabled(foundUser);
     }
 }

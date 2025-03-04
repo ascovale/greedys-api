@@ -1,8 +1,5 @@
 package com.application.controller.pub;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,12 +9,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.application.service.CustomerService;
 import com.application.captcha.ICaptchaService;
 import com.application.persistence.model.customer.Customer;
 import com.application.registration.UserOnRegistrationCompleteEvent;
-import com.application.web.dto.post.NewUserDTO;
+import com.application.service.CustomerService;
+import com.application.web.dto.post.NewCustomerDTO;
 import com.application.web.util.GenericResponse;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 
 @Controller
 public class RegistrationCaptchaController {
@@ -40,7 +40,7 @@ public class RegistrationCaptchaController {
 
     @RequestMapping(value = "/user/registrationCaptcha", method = RequestMethod.POST)
     @ResponseBody
-    public GenericResponse captchaRegisterUserAccount(@Valid final NewUserDTO accountDto, final HttpServletRequest request) {
+    public GenericResponse captchaRegisterUserAccount(@Valid final NewCustomerDTO accountDto, final HttpServletRequest request) {
 
         final String response = request.getParameter("g-recaptcha-response");
         captchaService.processResponse(response);

@@ -30,13 +30,7 @@ public class WhatsAppService {
         String message = notification.getText();
         sendWhatsAppMessage(phoneNumber, message);
     }
-    /* TODO modificare tutti i getCurrentUser in questo modo
-    
-    else if (principal instanceof UserDetails) {
-            return userRepository.findByUsername(((UserDetails) principal).getUsername());
-        } else {
-            throw new IllegalStateException("Utente non autenticato");
-        }*/
+  
     protected Customer getCurrentUser() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (principal instanceof Customer) {
