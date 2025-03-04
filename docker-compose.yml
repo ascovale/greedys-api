@@ -1,3 +1,5 @@
+version: '3.7'
+
 services:
   spring-app:
     image: registry.gitlab.com/psychoorange/greedys_api/spring-app:latest
@@ -56,6 +58,7 @@ services:
       timeout: 10s
       retries: 5
     secrets:
+      - rabbitmq_password
       - rabbitmq_config
     environment:
       RABBITMQ_CONFIG_FILE: /run/secrets/rabbitmq_config
