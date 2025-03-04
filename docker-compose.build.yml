@@ -78,3 +78,5 @@ secrets:
     external: true
   rabbitmq_password:
     external: true
+  rabbitmq_config:
+    external: true
