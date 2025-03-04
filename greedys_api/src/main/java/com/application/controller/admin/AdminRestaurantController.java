@@ -87,8 +87,6 @@ public class AdminRestaurantController {
 			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ReservationDTO.class)))),
 			@ApiResponse(responseCode = "404", description = "Ristorante non trovato")
 	})
-	// @PreAuthorize("@securityService.hasRestaurantUserPermissionOnRestaurantWithId(#idRestaurant)
-	// or hasRole('ADMIN')")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_RESTAURANT_READ')")
 	@GetMapping(value = "{idRestaurant}/reservation/accepted")
 	public Collection<ReservationDTO> getAcceptedReservations(
@@ -118,7 +116,6 @@ public class AdminRestaurantController {
 		return new ResponseEntity<>(reservations, HttpStatus.OK);
 	}
 
-	// TODO PAGEABLE
 	@Operation(summary = "Get all pending reservations of a restaurant", description = "Ottieni tutte le prenotazioni in attesa di un ristorante")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ReservationDTO.class)))),
@@ -144,15 +141,44 @@ public class AdminRestaurantController {
 		return reservations;
 	}
 
+	@Operation(summary = "Get all pending reservations of a restaurant with pagination", description = "Ottieni tutte le prenotazioni in attesa di un ristorante con paginazione")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ReservationDTO.class)))),
+		@ApiResponse(responseCode = "404", description = "Ristorante non trovato")
+	})
+	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_RESTAURANT_READ')")
+	@GetMapping(value = "{idRestaurant}/reservation/pending/pageable")
+	public ResponseEntity<Page<ReservationDTO>> getPendingReservationsPageable(
+		@PathVariable Long idRestaurant,
+		@RequestParam(required = false) LocalDate start,
+		@RequestParam(required = false) LocalDate end,
+		@RequestParam int page,
+		@RequestParam int size) {
+
+		Pageable pageable = PageRequest.of(page, size);
+		Page<ReservationDTO> reservations;
+
+		if (end != null && start != null) {
+		reservations = reservationService.getPendingReservationsPageable(idRestaurant, start, end, pageable);
+		} else if (start != null) {
+		reservations = reservationService.getPendingReservationsPageable(idRestaurant, start, pageable);
+		} else if (end != null) {
+		throw new IllegalArgumentException("end cannot be null if start is not null");
+		} else {
+		reservations = reservationService.getPendingReservationsPageable(idRestaurant, pageable);
+		}
+		return new ResponseEntity<>(reservations, HttpStatus.OK);
+	}
+
+
 	@Operation(summary = "Accept a user", description = "Accetta un utente per un ristorante specifico")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class))),
 			@ApiResponse(responseCode = "404", description = "Ristorante o utente non trovato")
 	})
-	@PostMapping("{idRestaurant}/user/accept")
-	public GenericResponse acceptUser(@PathVariable Long idRestaurant) {
-		// TODO : verificare che venga messo chi è l'utente ad accettare la prenotazione
-		restaurantUserService.acceptUser(idRestaurant);
+	@PostMapping("{idRestaurantUser}/user/accept")
+	public GenericResponse acceptUser(@PathVariable Long idRestaurantUser) {
+		restaurantUserService.acceptRestaurantUser(idRestaurantUser);
 		return new GenericResponse("success");
 	}
 
@@ -206,7 +232,6 @@ public class AdminRestaurantController {
 	})
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
 	public GenericResponse addRoom(@PathVariable Long idRestaurant, @RequestBody NewRoomDTO roomDto) {
-		// TODO: sistemare idRestaurant
 		roomService.createRoom(roomDto);
 		return new GenericResponse("success");
 	}
@@ -220,7 +245,6 @@ public class AdminRestaurantController {
 	})
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
 	public GenericResponse addTable(@PathVariable Long idRestaurant, @RequestParam NewTableDTO tableDto) {
-		// TODO: sistemare idRestaurant
 		tableService.createTable(tableDto);
 		return new GenericResponse("success");
 	}
@@ -260,7 +284,6 @@ public class AdminRestaurantController {
 		restaurantService.createRestaurantCategory(restaurantCategoryDto);
 		return new GenericResponse("Category created successfully");
 	}
-	// TODO verificare che non lo cancello effettivamente dal db
 
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
 	@Operation(summary = "Delete category", description = "Deletes a category by its ID")

@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.application.service.RestaurantService;
 import com.application.service.RestaurantUserService;
+import com.application.web.dto.post.NewCustomerDTO;
 import com.application.web.dto.post.NewRestaurantDTO;
 import com.application.web.dto.post.NewRestaurantUserDTO;
-import com.application.web.dto.post.NewUserDTO;
 import com.application.web.util.GenericResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,7 +28,7 @@ import jakarta.servlet.http.HttpServletRequest;
 @RestController
 @RequestMapping("/public/register/restaurant")
 @SecurityRequirement(name = "bearerAuth")
-public class RegistrationRestaurantController {
+public class RestaurantRegistrationController {
     private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
     @Autowired
@@ -60,7 +60,7 @@ public class RegistrationRestaurantController {
     })
     @PostMapping("/registerRestaurantAndUser")
     public GenericResponse registerRestaurantAndUser(@RequestBody NewRestaurantDTO restaurantDto,
-            NewUserDTO accountDto, HttpServletRequest request) {
+            NewCustomerDTO accountDto, HttpServletRequest request) {
         LOGGER.debug("Registering restaurant with information:", restaurantDto);
         
         restaurantService.registerRestaurantAndUser(restaurantDto, accountDto);

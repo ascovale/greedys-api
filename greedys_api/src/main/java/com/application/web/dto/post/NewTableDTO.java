@@ -1,6 +1,7 @@
 package com.application.web.dto.post;
 
 public class NewTableDTO {
+    private Long idRestaurant;
 
     private String name;
 
@@ -50,6 +51,14 @@ public class NewTableDTO {
 
     public Long getRoomId() {
         return roomId;
+    }
+
+    public void setIdRestaurant(Long idRestaurant) {
+        this.idRestaurant = idRestaurant;
+    }
+
+    public Long getIdRestaurant() {
+        return idRestaurant;
     }
     
 }

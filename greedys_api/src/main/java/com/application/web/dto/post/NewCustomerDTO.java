@@ -1,4 +1,3 @@
-
 package com.application.web.dto.post;
 
 import com.application.controller.Validators.ValidEmail;
@@ -7,7 +6,7 @@ import com.application.controller.Validators.ValidPassword;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-public class NewRestaurantUserDTO {
+public class NewCustomerDTO {
 
   @NotNull
     @Size(min = 1, message = "{Size.companyUserDto.firstName}")
@@ -80,29 +79,4 @@ public class NewRestaurantUserDTO {
     }
 
 
-
-
-    @NotNull
-    private Long restaurantId;
-   
-    public Long getRestaurantId() {
-        return restaurantId;
-    }
-
-    public void setRestaurantId(Long restaurantId) {
-        this.restaurantId = restaurantId;
-    }
-
-    public NewRestaurantUserDTO() {
-    }
-
-    public NewRestaurantUserDTO(String firstName, String lastName, String password, String matchingPassword, String email, Integer role, Long restaurantId) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.password = password;
-        this.matchingPassword = matchingPassword;
-        this.email = email;
-        this.role = role;
-        this.restaurantId = restaurantId;
-    }
 }

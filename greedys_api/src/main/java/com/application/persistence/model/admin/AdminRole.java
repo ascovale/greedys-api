@@ -79,11 +79,14 @@ public class AdminRole {
         if (obj == null) {
             return false;
         }
+        if (obj instanceof String) {
+            return name.equals(obj);
+        }
         if (getClass() != obj.getClass()) {
             return false;
         }
         final AdminRole role = (AdminRole) obj;
-        if (!role.equals(role.name)) {
+        if (!name.equals(role.name)) {
             return false;
         }
         return true;

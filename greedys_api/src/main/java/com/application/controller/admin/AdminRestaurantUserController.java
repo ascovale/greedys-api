@@ -2,6 +2,7 @@ package com.application.controller.admin;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,26 +40,31 @@ public class AdminRestaurantUserController {
         return new GenericResponse("Restaurant user blocked successfully");
     }
 
-    /* 
-    @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Remove restaurant user", description = "Removes a restaurant user by their ID")
-    @ApiResponse(responseCode = "200", description = "Restaurant user removed successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
-    @ApiResponse(responseCode = "400", description = "Invalid request")
-    @PutMapping("/restaurant/{idRestaurant}/removeUser")
-    public GenericResponse removeRestaurantUser(@PathVariable Long idRestaurantUser) {
-        restaurantUserService.removeRestaurantUser(idRestaurantUser);
-        return new GenericResponse("Restaurant user removed successfully");
-    }*/
-
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_USER_WRITE')")
     @Operation(summary = "Change restaurant owner", description = "Changes the owner of a restaurant")
     @ApiResponse(responseCode = "200", description = "Restaurant owner changed successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
     @PutMapping("/restaurant/{idRestaurant}/changeOwner/{idOldOwner}/{idNewOwner}")
-    public GenericResponse changeRestaurantOwner(@PathVariable Long idRestaurant, @PathVariable Long idOldOwner, @PathVariable Long idNewOwner) {
+    public GenericResponse changeRestaurantOwner(@PathVariable Long idRestaurant, @PathVariable Long idOldOwner,
+            @PathVariable Long idNewOwner) {
         restaurantUserService.changeRestaurantOwner(idRestaurant, idOldOwner, idNewOwner);
         return new GenericResponse("Restaurant owner changed successfully");
     }
 
-    
+    @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_SWITCH_TO_RESTAURANT_USER')")
+    @Operation(summary = "Switch to restaurant user", description = "Switches to restaurant user mode")
+    @ApiResponse(responseCode = "200", description = "Switched to restaurant user mode successfully")
+    @GetMapping("/admin/switchToRestaurantUser")
+    public String switchToRestaurantUser() {
+        return "redirect:/admin/home";
+    }
+
+    @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_SWITCH_TO_RESTAURANT_USER')")
+    @Operation(summary = "Exit restaurant user", description = "Exits the restaurant user mode and redirects to admin home")
+    @ApiResponse(responseCode = "200", description = "Exited restaurant user mode successfully")
+    @GetMapping("/admin/exitRestaurantUser")
+    public String exitRestaurantUser() {
+        return "redirect:/admin/home";
+    }
+
 }

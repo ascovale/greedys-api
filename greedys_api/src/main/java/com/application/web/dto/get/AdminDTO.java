@@ -2,13 +2,13 @@ package com.application.web.dto.get;
 
 import com.application.controller.Validators.PasswordMatches;
 import com.application.controller.Validators.ValidEmail;
-import com.application.persistence.model.customer.Customer;
+import com.application.persistence.model.admin.Admin;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 @PasswordMatches
-public class UserDTO {
+public class AdminDTO {
 
     @NotNull
     @Size(min = 1, message = "{Size.companyUserDto.firstName}")
@@ -26,14 +26,14 @@ public class UserDTO {
     @NotNull
     private Long id;
 
-    public UserDTO(Customer user) {
+    public AdminDTO(Admin user) {
         this.id = user.getId();
         this.firstName = user.getName();
         this.lastName = user.getSurname();
         this.email = user.getEmail();
     }
 
-    public UserDTO() {
+    public AdminDTO() {
         super();
     }
 

@@ -25,7 +25,7 @@ import com.application.persistence.model.reservation.Slot;
 import com.application.persistence.model.restaurant.Restaurant;
 import com.application.persistence.model.restaurant.user.RestaurantUser;
 import com.application.service.CustomerService;
-import com.application.web.dto.post.NewUserDTO;
+import com.application.web.dto.post.NewCustomerDTO;
 
 import jakarta.transaction.Transactional;
 
@@ -87,7 +87,7 @@ public class TestDataConfig {
 			serviceDAO.save(cena);
 			createSlotsForService(cena, LocalTime.of(17, 30), LocalTime.of(23, 0));
 
-			NewUserDTO userDTO = new NewUserDTO();
+			NewCustomerDTO userDTO = new NewCustomerDTO();
 			userDTO.setFirstName("Stefano");
 			userDTO.setLastName("Di Michele");
 			userDTO.setPassword("Minosse100%");

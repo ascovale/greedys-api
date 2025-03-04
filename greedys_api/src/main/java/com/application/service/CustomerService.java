@@ -19,16 +19,19 @@ import org.springframework.transaction.annotation.Transactional;
 import com.application.persistence.dao.customer.AllergyDAO;
 import com.application.persistence.dao.customer.CustomerDAO;
 import com.application.persistence.dao.customer.PasswordResetTokenDAO;
+import com.application.persistence.dao.customer.PrivilegeDAO;
 import com.application.persistence.dao.customer.RoleDAO;
 import com.application.persistence.dao.customer.VerificationTokenDAO;
 import com.application.persistence.model.Image;
 import com.application.persistence.model.customer.Allergy;
 import com.application.persistence.model.customer.Customer;
 import com.application.persistence.model.customer.PasswordResetToken;
+import com.application.persistence.model.customer.Privilege;
+import com.application.persistence.model.customer.Role;
 import com.application.persistence.model.customer.VerificationToken;
 import com.application.web.dto.AllergyDTO;
 import com.application.web.dto.get.UserDTO;
-import com.application.web.dto.post.NewUserDTO;
+import com.application.web.dto.post.NewCustomerDTO;
 import com.application.web.error.UserAlreadyExistException;
 
 import jakarta.persistence.EntityManager;
@@ -53,6 +56,7 @@ public class CustomerService {
 	private final SessionRegistry sessionRegistry;
 	private final EntityManager entityManager;
 	private final AllergyDAO allergyDAO;
+	private final PrivilegeDAO privilegeDAO;
 
 	public CustomerService(CustomerDAO userDAO, VerificationTokenDAO tokenDAO,
 			PasswordResetTokenDAO passwordTokenRepository,
@@ -60,7 +64,8 @@ public class CustomerService {
 			RoleDAO roleRepository,
 			@Qualifier("userSessionRegistry") SessionRegistry sessionRegistry,
 			EntityManager entityManager,
-			AllergyDAO allergyDAO) {
+			AllergyDAO allergyDAO,
+			PrivilegeDAO privilegeDAO) {
 		this.userDAO = userDAO;
 		this.tokenDAO = tokenDAO;
 		this.passwordTokenRepository = passwordTokenRepository;
@@ -68,8 +73,10 @@ public class CustomerService {
 		this.roleRepository = roleRepository;
 		this.sessionRegistry = sessionRegistry;
 		this.entityManager = entityManager;
+		this.privilegeDAO = privilegeDAO;
 		this.allergyDAO = allergyDAO;
 	}
+	
 
 	// API
 
@@ -78,7 +85,7 @@ public class CustomerService {
 		return new UserDTO(user);
 	}
 
-	public Customer registerNewUserAccount(final NewUserDTO accountDto) {
+	public Customer registerNewUserAccount(final NewCustomerDTO accountDto) {
 		if (emailExists(accountDto.getEmail())) {
 			throw new UserAlreadyExistException("There is an account with that email adress: " + accountDto.getEmail());
 		}
@@ -332,13 +339,14 @@ public class CustomerService {
     }
 
     public void reportRestaurantAbuse(Long restaurantId) {
+
 		// Assuming there is a ReportAbuseDAO and ReportAbuse entity
 		/*ReportAbuse report = new ReportAbuse();
 		report.setRestaurantId(restaurantId);
 		report.setUserId(getCurrentUser().getId());
 		report.setTimestamp(LocalDateTime.now());
 		reportAbuseDAO.save(report);*/
-        // TODO Auto-generated method stub
+        // TODO in futuro decidere cosa farà anche solo mandare una mail
 		//L'utente segnala qualche tipo di abuso nella recensione o altro
     }
 
@@ -351,5 +359,30 @@ public class CustomerService {
     public Page<UserDTO> findAll(PageRequest pageable) {
 		return userDAO.findAll(pageable).map(UserDTO::new);
 	}
+
+    public void addRoleToCustomer(Long customerId, String role) {
+		Customer customer = userDAO.findById(customerId).orElseThrow(() -> new EntityNotFoundException("Customer not found"));
+		customer.getRoles().add(roleRepository.findByName(role));
+		userDAO.save(customer);
+    }
+
+    public void removeRoleFromCustomer(Long customerId, String role) {
+		Customer customer = userDAO.findById(customerId).orElseThrow(() -> new EntityNotFoundException("Customer not found"));
+		customer.getRoles().remove(roleRepository.findByName(role));
+		userDAO.save(customer);
+    }
+
+    public void addPrivilegeToRole(String roleName, String privilegeName) {
+		Role role = roleRepository.findByName(roleName);
+		if (role == null) {
+			throw new EntityNotFoundException("Role not found");
+		}
+		Privilege privilege = privilegeDAO.findByName(privilegeName);
+		if (privilege == null) {
+			throw new EntityNotFoundException("Permission not found");
+		}
+		role.getPrivileges().add(privilege);
+		roleRepository.save(role);
+    }
 
 }

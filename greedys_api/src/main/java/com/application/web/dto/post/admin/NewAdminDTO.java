@@ -1,4 +1,4 @@
-package com.application.web.dto.post;
+package com.application.web.dto.post.admin;
 
 import com.application.controller.Validators.ValidEmail;
 import com.application.controller.Validators.ValidPassword;
@@ -6,7 +6,7 @@ import com.application.controller.Validators.ValidPassword;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-public class NewUserDTO {
+public class NewAdminDTO {
 
   @NotNull
     @Size(min = 1, message = "{Size.companyUserDto.firstName}")

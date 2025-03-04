@@ -26,7 +26,7 @@ public class AdminVerificationToken {
     @OneToOne(targetEntity = Customer.class, fetch = FetchType.EAGER)
     @JoinColumn(nullable = false, name = "user_id", referencedColumnName = "id",
     foreignKey =@ForeignKey(name="FK_VERIFY_USER"))
-    private Customer customer;
+    private Admin admin;
     private LocalDateTime expiryDate;
 
     public AdminVerificationToken() {
@@ -40,20 +40,20 @@ public class AdminVerificationToken {
         this.expiryDate = calculateExpiryDate(EXPIRATION);
     }
 
-    public AdminVerificationToken(final String token, final Customer customer) {
+    public AdminVerificationToken(final String token, final Admin admin) {
         super();
 
         this.token = token;
-        this.customer = customer;
+        this.admin = admin;
         this.expiryDate = calculateExpiryDate(EXPIRATION);
     }
 
-    public Customer getCustomer() {
-		return customer;
+    public Admin getAdmin() {
+		return admin;
 	}
 
-	public void setCustomer(Customer customer) {
-		this.customer = customer;
+	public void setAdmin(Admin admin) {
+		this.admin = admin;
 	}
 
 	public static int getExpiration() {
@@ -102,7 +102,7 @@ public class AdminVerificationToken {
         int result = 1;
         result = prime * result + ((expiryDate == null) ? 0 : expiryDate.hashCode());
         result = prime * result + ((token == null) ? 0 : token.hashCode());
-        result = prime * result + ((customer == null) ? 0 : customer.hashCode());
+        result = prime * result + ((admin == null) ? 0 : admin.hashCode());
         return result;
     }
 
@@ -132,11 +132,11 @@ public class AdminVerificationToken {
         } else if (!token.equals(other.token)) {
             return false;
         }
-        if (customer == null) {
-            if (other.customer != null) {
+        if (admin == null) {
+            if (other.admin != null) {
                 return false;
             }
-        } else if (!customer.equals(other.customer)) {
+        } else if (!admin.equals(other.admin)) {
             return false;
         }
         return true;
@@ -148,5 +148,6 @@ public class AdminVerificationToken {
         builder.append("Token [String=").append(token).append("]").append("[Expires").append(expiryDate).append("]");
         return builder.toString();
     }
+
 
 }

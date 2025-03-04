@@ -1,10 +1,12 @@
 package com.application.persistence.model.customer;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.application.persistence.model.reservation.Reservation;
@@ -46,6 +48,23 @@ public class Customer implements UserDetails {
 	private Integer toReadNotification = 0;
 	@OneToOne
     private CustomerOptions customerOptions;
+
+	public enum Status {
+        BLOCKED,
+        DELETED,
+        ENABLED,
+        DISABLED
+    }
+
+	private Status status;
+
+	public Status getStatus() {
+		return status;
+	}
+
+	public void setStatus(Status status) {
+		this.status = status;
+	}
 
 	public CustomerOptions getCustomerOptions() {
 		return customerOptions;
@@ -171,39 +190,55 @@ public class Customer implements UserDetails {
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'getAuthorities'");
-	}
+        return getGrantedAuthorities(getPrivileges());
+    }
 
-	@Override
-	public String getUsername() {
-		return email;
-	}
+    private final List<String> getPrivileges() {
+        final List<String> privileges = new ArrayList<String>();
+
+        for (final Role role : roles) {
+            privileges.add(role.getName());
+            for (final Privilege item : role.getPrivileges()) {
+                privileges.add(item.getName());
+            }
+        }
+        
+        return privileges;
+    }
+
+    private final List<GrantedAuthority> getGrantedAuthorities(final List<String> privileges) {
+        final List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
+        for (final String privilege : privileges) {
+            authorities.add(new SimpleGrantedAuthority(privilege));
+        }
+        return authorities;
+    }
+
 
 	public Integer getToReadNotification() {
 		return toReadNotification;
 	}
 
+	
+	@Override
+    public String getUsername() {
+        return email;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return status != Status.DELETED;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return status != Status.BLOCKED;
+    }
+
 	@Override
 	public boolean isCredentialsNonExpired() {
-		// TODO: Metodo richiesto quando ho aggiornato le dipendenze bisogna verificare
-		// come è necessario implementarlo
-		return true; // Implementa la logica appropriata per il tuo caso d'uso
-	}
+		//TODO in futuro da cambiare se le credenziali scadono
 
-	@Override
-	public boolean isAccountNonExpired() {
-		// TODO: Metodo richiesto quando ho aggiornato le dipendenze bisogna verificare
-		// come è necessario implementarlo
-		// Implementa la logica per verificare se l'account non è scaduto
-		return true;
-	}
-
-	@Override
-	public boolean isAccountNonLocked() {
-		// TODO: Metodo richiesto quando ho aggiornato le dipendenze bisogna verificare
-		// come è necessario implementarlo
-		// Implementa la logica per verificare se l'account non è bloccato
 		return true;
 	}
 

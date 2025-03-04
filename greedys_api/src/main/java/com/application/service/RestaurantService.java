@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,9 +29,9 @@ import com.application.web.dto.RestaurantImageDto;
 import com.application.web.dto.get.RestaurantDTO;
 import com.application.web.dto.get.ServiceDTO;
 import com.application.web.dto.get.SlotDTO;
+import com.application.web.dto.post.NewCustomerDTO;
 import com.application.web.dto.post.NewRestaurantDTO;
 import com.application.web.dto.post.NewRestaurantUserDTO;
-import com.application.web.dto.post.NewUserDTO;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -98,14 +99,13 @@ public class RestaurantService {
 		RestaurantDTO r = new RestaurantDTO(restaurant);
 		NewRestaurantUserDTO restaurantUserDTO = new NewRestaurantUserDTO();
 		restaurantUserDTO.setRestaurantId(r.getId());
-		restaurantUserDTO.setUserId(restaurantDto.getOwnerId());
 		RestaurantUser owner = restaurantUserService.registerRestaurantUser(restaurantUserDTO,restaurant);
 		RestaurantRole rRole = new RestaurantRole();
 		rRole.setName("ROLE_OWNER");
 		rRole.setRestaurant(getReference(r.getId()));
 		rRole.setUsers(Collections.singletonList(owner));
 		restaurantRoleDAO.save(rRole);
-		restaurantUserService.acceptUser(owner.getId());
+		restaurantUserService.acceptRestaurantUser(owner.getId());
 		return r;
 	}
 
@@ -126,7 +126,7 @@ public class RestaurantService {
 		rDAO.save(restaurant);
 	}
 
-	public RestaurantUser registerRestaurantAndUser(NewRestaurantDTO restaurantDto, NewUserDTO accountDto) {
+	public RestaurantUser registerRestaurantAndUser(NewRestaurantDTO restaurantDto, NewCustomerDTO accountDto) {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException("Unimplemented method 'markRestaurantAsDeleted'");
 
@@ -182,6 +182,17 @@ public class RestaurantService {
 				.collect(Collectors.toList());
 	}
 
+	public List<String> getRestaurantTypesNames() {
+		RestaurantUser restaurantUser = (RestaurantUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		if (restaurantUser != null) {
+			Restaurant restaurant = restaurantUser.getRestaurant();
+			return restaurant.getRestaurantTypes().stream()
+					.map(RestaurantCategory::getName)
+					.collect(Collectors.toList());
+		}
+		return Collections.emptyList();
+	}
+
 	@Transactional
 	public void createRestaurantCategory(RestaurantCategoryDTO restaurantCategoryDto) {
 		RestaurantCategory restaurantCategory = new RestaurantCategory();
@@ -194,32 +205,44 @@ public class RestaurantService {
 	public void deleteRestaurant(Long idRestaurant) {
 		Restaurant restaurant = rDAO.findById(idRestaurant)
 				.orElseThrow(() -> new IllegalArgumentException("Invalid restaurant ID"));
-		rDAO.delete(restaurant);
+		restaurant.setStatus(Restaurant.Status.DELETED);
+		rDAO.save(restaurant);
 	}
 
 	public void createRestaurant(RestaurantDTO restaurantDto) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'createRestaurant'");
+		Restaurant restaurant = new Restaurant();
+		restaurant.setName(restaurantDto.getName());
+		restaurant.setEmail(restaurantDto.getEmail());
+		restaurant.setAddress(restaurantDto.getAddress());
+		restaurant.setCreationDate(LocalDate.now());
+		restaurant.setpI(restaurantDto.getpi());
+		restaurant.setPostCode(restaurantDto.getPost_code());
+		rDAO.save(restaurant);
 	}
 
 	public void changeRestaurantEmail(Long idRestaurant, String newEmail) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'changeRestaurantEmail'");
+		Restaurant restaurant = rDAO.findById(idRestaurant)
+			.orElseThrow(() -> new IllegalArgumentException("Invalid restaurant ID"));
+		restaurant.setEmail(newEmail);
+		rDAO.save(restaurant);
 	}
 
 	public void enableRestaurant(Long idRestaurant) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'enableRestaurant'");
 	}
 
 	public void updateRestaurantCategory(Long idCategory, RestaurantCategoryDTO restaurantCategoryDto) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'updateRestaurantCategory'");
+		RestaurantCategory restaurantCategory = restaurantCategoryDAO.findById(idCategory)
+			.orElseThrow(() -> new IllegalArgumentException("Invalid category ID"));
+		restaurantCategory.setName(restaurantCategoryDto.getName());
+		restaurantCategory.setDescription(restaurantCategoryDto.getDescription());
+		restaurantCategoryDAO.save(restaurantCategory);
 	}
 
 	public void deleteRestaurantCategory(Long idCategory) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'deleteRestaurantCategory'");
+		RestaurantCategory restaurantCategory = restaurantCategoryDAO.findById(idCategory)
+			.orElseThrow(() -> new IllegalArgumentException("Invalid category ID"));
+		//restaurantCategory.setStatus(RestaurantCategory.Status.DELETED);
+		restaurantCategoryDAO.save(restaurantCategory);
 	}
 
 

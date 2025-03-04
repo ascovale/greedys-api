@@ -29,7 +29,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Tag(name = "Admin Services", description = "Controller per la gestione dei servizi offerti dai ristoranti")
+@Tag(name = "Admin Services", description = "Controller for managing services")
 @RestController
 @RequestMapping("/admin/service")
 @SecurityRequirement(name = "bearerAuth")
