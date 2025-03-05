@@ -1,5 +1,3 @@
-version: '3.7'
-
 services:
   spring-app:
     image: registry.gitlab.com/psychoorange/greedys_api/spring-app:latest
