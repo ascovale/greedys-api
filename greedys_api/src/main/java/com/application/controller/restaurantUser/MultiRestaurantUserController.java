@@ -22,14 +22,14 @@ public class MultiRestaurantUserController {
                 this.restaurantUserService = restaurantUserService;
         }
 
-        @PreAuthorize("hasAuthority('PRIVILEGE_SWITCH_TO_RESTAURANT_USER') and @restaurantUserSecurity.hasRestaurantUserId(authentication, #restaurantUserId)")
+        @PreAuthorize("hasAuthority('PRIVILEGE_SWITCH_TO_RESTAURANT_USER') and @securityRestaurantUserService.hasRestaurantUserId(authentication, #restaurantUserId)")
         @PostMapping("/switch_to_restaurant_user")
         public String switchUser(@RequestParam Long restaurantUserId) {
                 restaurantUserService.switchToRestaurantUser(restaurantUserId);
                 return "User switched to: " + restaurantUserId;
         }
 
-        @PreAuthorize("hasAuthority('PRIVILEGE_SWITCH_TO_RESTAURANT_USER') and @restaurantUserSecurity.hasRestaurantUserId(authentication, #restaurantUserId)")
+        @PreAuthorize("hasAuthority('PRIVILEGE_SWITCH_TO_RESTAURANT_USER') and @securityRestaurantUserService.hasRestaurantUserId(authentication, #restaurantUserId)")
         @PostMapping("/disconnect_restaurant_user")
         public String removeUser(@RequestParam Long restaurantUserId) {
                 restaurantUserService.disconnectRestaurantUser(restaurantUserId);

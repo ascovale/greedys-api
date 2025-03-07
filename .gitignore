@@ -1,3 +1,9 @@
 greedys_api/target/
 .vscode/settings.json
 .env
+
+# Ignora tutto il contenuto della cartella db_data
+db_data/*
+
+# Non ignorare la cartella db_data stessa
+!db_data/

@@ -26,7 +26,6 @@ public class RestaurantUserSecurityService implements ISecurityUserService {
     private RestaurantUserPasswordResetTokenDAO passwordTokenRepository;
 
     // API
-
     @Override
     public String validatePasswordResetToken(long id, String token) {
         final RestaurantUserPasswordResetToken passToken = passwordTokenRepository.findByToken(token);

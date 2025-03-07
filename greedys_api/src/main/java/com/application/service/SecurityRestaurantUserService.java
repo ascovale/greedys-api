@@ -13,8 +13,8 @@ import com.application.persistence.model.reservation.Reservation;
 import com.application.persistence.model.restaurant.Restaurant;
 import com.application.persistence.model.restaurant.user.RestaurantUser;
 
-@Service
-public class RestaurantUserSecurityService {
+@Service("securityRestaurantUserService")
+public class SecurityRestaurantUserService {
 
     @Autowired 
     private ReservationDAO reservationRepository;
@@ -28,7 +28,7 @@ public class RestaurantUserSecurityService {
         }
 
         Object principal = authentication.getPrincipal();
-        RestaurantUser restaurantUser =null;
+        RestaurantUser restaurantUser = null;
 
         if (principal instanceof RestaurantUser) {
             restaurantUser = (RestaurantUser) principal;
