@@ -75,7 +75,7 @@ public class RestaurantController {
 		return reservations;
 	}
 
-	@PreAuthorize("RestaurantUserSecurityService.isRestaurantEnabled(#idRestaurantUser)")
+	@PreAuthorize("securityRestaurantUserService.isRestaurantEnabled(#idRestaurantUser)")
 	@Operation(summary = "Get all accepted reservations of a restaurant", description = "Ottieni tutte le prenotazioni accettate di un ristorante")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ReservationDTO.class)))),
