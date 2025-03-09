@@ -2,9 +2,6 @@ package com.application.security.user.customer;
 
 import java.time.LocalDate;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
@@ -13,7 +10,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.core.authority.mapping.NullAuthoritiesMapper;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.security.web.authentication.rememberme.InMemoryTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentRememberMeToken;
@@ -22,6 +18,9 @@ import org.springframework.security.web.authentication.rememberme.PersistentToke
 
 import com.application.persistence.dao.customer.CustomerDAO;
 import com.application.persistence.model.customer.Customer;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 @Qualifier("customerUserRememberMeServices")
 public class CustomerUserRememberMeServices extends PersistentTokenBasedRememberMeServices {
 
@@ -33,7 +32,7 @@ public class CustomerUserRememberMeServices extends PersistentTokenBasedRemember
     private PersistentTokenRepository tokenRepository = new InMemoryTokenRepositoryImpl();
     private String key;
 
-    public CustomerUserRememberMeServices(String key, @Qualifier("customerUserDetailsService") UserDetailsService userDetailsService, PersistentTokenRepository tokenRepository) {
+    public CustomerUserRememberMeServices(String key, CustomerUserDetailsService userDetailsService, PersistentTokenRepository tokenRepository) {
         super(key, userDetailsService, tokenRepository);
         this.tokenRepository = tokenRepository;
         this.key = key;

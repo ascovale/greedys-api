@@ -17,7 +17,7 @@ public class AdminPrivilege {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private String name;
-    @ManyToMany(mappedBy = "privileges")
+    @ManyToMany(mappedBy = "adminPrivileges")
     private Collection<AdminRole> adminRoles;
 
     public AdminPrivilege() {

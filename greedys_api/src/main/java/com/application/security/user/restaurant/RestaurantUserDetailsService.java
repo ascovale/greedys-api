@@ -22,13 +22,13 @@ import jakarta.servlet.http.HttpServletRequest;
 @Transactional
 public class RestaurantUserDetailsService implements UserDetailsService {
 
-    private final RestaurantUserDAO userService;
+    private final RestaurantUserDAO restaurantUserDAO;
     private final LoginAttemptService loginAttemptService;
     private final HttpServletRequest request;
 
-    public RestaurantUserDetailsService(RestaurantUserDAO userDAO, LoginAttemptService loginAttemptService,
+    public RestaurantUserDetailsService(RestaurantUserDAO restaurantUserDAO, LoginAttemptService loginAttemptService,
             HttpServletRequest request) {
-        this.userService = userDAO;
+        this.restaurantUserDAO = restaurantUserDAO;
         this.loginAttemptService = loginAttemptService;
         this.request = request;
     }
@@ -41,7 +41,7 @@ public class RestaurantUserDetailsService implements UserDetailsService {
         }
         try {
             Collection<? extends GrantedAuthority> authorities;
-            final RestaurantUser user = userService.findByEmail(email);
+            final RestaurantUser user = restaurantUserDAO.findByEmail(email);
             if (user == null) {
                 throw new UsernameNotFoundException("No user found with username: " + email);
             } else if (isMultiRestaurantUser(email)) {
@@ -62,7 +62,7 @@ public class RestaurantUserDetailsService implements UserDetailsService {
 
     public UserDetails loadUserById(final Long restaurantUserId) throws UsernameNotFoundException {
         try {
-            final RestaurantUser user = userService.findById(restaurantUserId).get();
+            final RestaurantUser user = restaurantUserDAO.findById(restaurantUserId).get();
             if (user == null) {
                 throw new UsernameNotFoundException("No user found with ID: " + restaurantUserId);
             }
@@ -74,7 +74,7 @@ public class RestaurantUserDetailsService implements UserDetailsService {
     }
     public UserDetails loadSwitchUserById(final Long id) throws UsernameNotFoundException {
         try {
-            final RestaurantUser user = userService.findById(id).get();
+            final RestaurantUser user = restaurantUserDAO.findById(id).get();
             if (user == null) {
                 throw new UsernameNotFoundException("No user found with id: " + id);
             }
@@ -96,7 +96,7 @@ public class RestaurantUserDetailsService implements UserDetailsService {
     }
 
     private boolean isMultiRestaurantUser(String email) {
-        return userService.isMultiRestaurantUser(email);
+        return restaurantUserDAO.isMultiRestaurantUser(email);
     }
 
     private Collection<? extends GrantedAuthority> getSwitchUserAuthorities() {

@@ -15,7 +15,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -27,10 +26,15 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import com.application.security.jwt.JwtRequestFilter;
+import com.application.security.user.admin.AdminUserDetailsService;
 import com.application.security.user.admin.AdminUserRememberMeServices;
+import com.application.security.user.customer.CustomerUserDetailsService;
 import com.application.security.user.customer.CustomerUserRememberMeServices;
+import com.application.security.user.restaurant.RestaurantUserDetailsService;
 import com.application.security.user.restaurant.RestaurantUserRememberMeServices;
+import com.application.spring.requestfilter.AdminRequestFilter;
+import com.application.spring.requestfilter.CustomerRequestFilter;
+import com.application.spring.requestfilter.RestaurantUserRequestFilter;
 import com.application.spring.switchfilter.SwitchAdminToCustomerUserFilter;
 import com.application.spring.switchfilter.SwitchAdminToRestaurantUserFilter;
 
@@ -40,20 +44,20 @@ import com.application.spring.switchfilter.SwitchAdminToRestaurantUserFilter;
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
-        private final UserDetailsService restaurantUserDetailsService;
-        private final UserDetailsService customerUserDetailsService;
-        private final UserDetailsService adminUserDetailsService;
-        private final JwtRequestFilter restaurantJwtRequestFilter;
-        private final JwtRequestFilter customerJwtRequestFilter;
-        private final JwtRequestFilter adminJwtRequestFilter;
+        private final RestaurantUserDetailsService restaurantUserDetailsService;
+        private final CustomerUserDetailsService customerUserDetailsService;
+        private final AdminUserDetailsService adminUserDetailsService;
+        private final RestaurantUserRequestFilter restaurantJwtRequestFilter;
+        private final CustomerRequestFilter customerJwtRequestFilter;
+        private final AdminRequestFilter adminJwtRequestFilter;
 
         public SecurityConfig(
-                        @Qualifier("restaurantUserDetailsService") UserDetailsService restaurantUserDetailsService,
-                        @Qualifier("customerUserDetailsService") UserDetailsService customerUserDetailsService,
-                        @Qualifier("adminUserDetailsService") UserDetailsService adminUserDetailsService,
-                        @Qualifier("restaurantJwtRequestFilter") JwtRequestFilter restaurantJwtRequestFilter,
-                        @Qualifier("customerJwtRequestFilter") JwtRequestFilter customerJwtRequestFilter,
-                        @Qualifier("adminJwtRequestFilter") JwtRequestFilter adminJwtRequestFilter,
+                        RestaurantUserDetailsService restaurantUserDetailsService,
+                        CustomerUserDetailsService customerUserDetailsService,
+                        AdminUserDetailsService adminUserDetailsService,
+                        RestaurantUserRequestFilter restaurantJwtRequestFilter,
+                        CustomerRequestFilter customerJwtRequestFilter,
+                        AdminRequestFilter adminJwtRequestFilter,
                         DataSource dataSource) {
                 this.restaurantUserDetailsService = restaurantUserDetailsService;
                 this.customerUserDetailsService = customerUserDetailsService;
@@ -155,24 +159,25 @@ public class SecurityConfig {
                                 .sessionManagement(management -> management
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                                 .addFilterBefore(adminJwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
-                                .addFilterAfter(switchAdminToRestaurantUserFilter(), UsernamePasswordAuthenticationFilter.class)
-                                .addFilterAfter(switchAdminToCustomerUserFilter(), UsernamePasswordAuthenticationFilter.class)                
+                                .addFilterAfter(switchAdminToRestaurantUserFilter(),
+                                                UsernamePasswordAuthenticationFilter.class)
+                                .addFilterAfter(switchAdminToCustomerUserFilter(),
+                                                UsernamePasswordAuthenticationFilter.class)
                                 .authenticationManager(authenticationManager);
 
                 return http.build();
         }
 
-
         @Bean
         public SwitchAdminToRestaurantUserFilter switchAdminToRestaurantUserFilter() {
-            return new SwitchAdminToRestaurantUserFilter(restaurantUserDetailsService);
+                return new SwitchAdminToRestaurantUserFilter(restaurantUserDetailsService);
         }
-    
+
         @Bean
         public SwitchAdminToCustomerUserFilter switchAdminToCustomerUserFilter() {
-            return new SwitchAdminToCustomerUserFilter(customerUserDetailsService);
+                return new SwitchAdminToCustomerUserFilter(customerUserDetailsService);
         }
-    
+
         @Bean
         CorsConfigurationSource corsConfigurationSource() {
                 UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -242,7 +247,7 @@ public class SecurityConfig {
 
         @Bean(name = "adminUserRememberMe")
         RememberMeServices rememberMeServices() {
-                return new AdminUserRememberMeServices("theKey", restaurantUserDetailsService,
+                return new AdminUserRememberMeServices("theKey", adminUserDetailsService,
                                 new InMemoryTokenRepositoryImpl());
         }
 

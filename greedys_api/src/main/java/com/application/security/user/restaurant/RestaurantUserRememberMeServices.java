@@ -10,7 +10,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.core.authority.mapping.NullAuthoritiesMapper;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.security.web.authentication.rememberme.InMemoryTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentRememberMeToken;
@@ -35,7 +34,7 @@ public class RestaurantUserRememberMeServices extends PersistentTokenBasedRememb
     private PersistentTokenRepository tokenRepository = new InMemoryTokenRepositoryImpl();
     private String key;
 
-    public RestaurantUserRememberMeServices(String key, @Qualifier("restaurantUserDetailsService") UserDetailsService restaurantUserDetailsService, PersistentTokenRepository tokenRepository) {
+    public RestaurantUserRememberMeServices(String key, RestaurantUserDetailsService restaurantUserDetailsService, PersistentTokenRepository tokenRepository) {
         super(key, restaurantUserDetailsService, tokenRepository);
         this.tokenRepository = tokenRepository;
         this.key = key;

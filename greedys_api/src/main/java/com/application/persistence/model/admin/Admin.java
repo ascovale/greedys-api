@@ -3,24 +3,19 @@ package com.application.persistence.model.admin;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import com.application.persistence.model.reservation.Reservation;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
@@ -37,12 +32,10 @@ public class Admin implements UserDetails {
 	private String password;
 	private boolean enabled;
 	private String phoneNumber;
-	@OneToMany(fetch = FetchType.LAZY, mappedBy = "customer")
-	private Set<Reservation> reservations;
 	@ManyToMany
-	@JoinTable(name = "user_has_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
+	@JoinTable(name = "admin_has_role", joinColumns = @JoinColumn(name = "admin_id"), inverseJoinColumns = @JoinColumn(name = "admin_role_id"))
 	private Collection<AdminRole> adminRoles;
-	private Boolean blooked = false;
+	private Boolean bloked = false;
 	private Boolean deleted = false;
 	private Integer toReadNotification = 0;
 	
@@ -74,22 +67,15 @@ public class Admin implements UserDetails {
 		this.deleted = deleted;
 	}
 
-	public Boolean getBlooked() {
-		return blooked;
+	public Boolean getBloked() {
+		return bloked;
 	}
 
-	public void setIsBlooked(Boolean blooked) {
-		this.blooked = blooked;
+	public void setIsBloked(Boolean bloked) {
+		this.bloked = bloked;
 	}
 
 
-	public Set<Reservation> getReservations() {
-		return reservations;
-	}
-
-	public void setReservations(Set<Reservation> reservations) {
-		this.reservations = reservations;
-	}
 
 	@Override
 	public boolean isEnabled() {

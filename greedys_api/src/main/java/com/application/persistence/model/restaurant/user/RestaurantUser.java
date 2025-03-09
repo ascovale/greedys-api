@@ -35,7 +35,7 @@ public class RestaurantUser implements UserDetails {
     @JoinColumn(name = "restaurant_id")
     private Restaurant restaurant;
     @ManyToMany
-    @JoinTable(name = "user_restaurant_has_role", joinColumns = @JoinColumn(name = "restaurant_user_id"), inverseJoinColumns = @JoinColumn(name = "restaurant_role_id"))
+    @JoinTable(name = "restaurant_user_has_role", joinColumns = @JoinColumn(name = "restaurant_user_id"), inverseJoinColumns = @JoinColumn(name = "restaurant_role_id"))
     private Collection<RestaurantRole> restaurantRoles;
     @OneToOne
     private RestaurantUserOptions options;

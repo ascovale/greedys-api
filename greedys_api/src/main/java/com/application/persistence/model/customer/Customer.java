@@ -25,7 +25,7 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "user")
+@Table(name = "customer")
 public class Customer implements UserDetails {
 	@Id
 	@Column(unique = true, nullable = false)
@@ -41,7 +41,7 @@ public class Customer implements UserDetails {
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "customer")
 	private Set<Reservation> reservations;
 	@ManyToMany
-	@JoinTable(name = "user_has_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
+	@JoinTable(name = "customer_has_role", joinColumns = @JoinColumn(name = "customer_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
 	private Collection<Role> roles;
 	private Boolean blooked = false;
 	private Boolean deleted = false;

@@ -17,8 +17,8 @@ public class RestaurantPrivilege {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private String name;
-    @ManyToMany(mappedBy = "privileges")
-    private Collection<RestaurantRole> roles;
+    @ManyToMany(mappedBy = "restaurantPrivileges")
+    private Collection<RestaurantRole> restaurantRoles;
 
     public RestaurantPrivilege() {
         super();
@@ -46,11 +46,11 @@ public class RestaurantPrivilege {
     }
 
     public Collection<RestaurantRole> getRoles() {
-		return roles;
+		return restaurantRoles;
 	}
 
-	public void setRoles(Collection<RestaurantRole> roles) {
-		this.roles = roles;
+	public void setRestaurantRoles(Collection<RestaurantRole> restaurantRoles) {
+		this.restaurantRoles = restaurantRoles;
 	}
 
 	@Override
