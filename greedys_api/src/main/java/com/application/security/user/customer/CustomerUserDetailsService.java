@@ -16,12 +16,12 @@ import jakarta.servlet.http.HttpServletRequest;
 @Transactional
 public class CustomerUserDetailsService implements UserDetailsService {
 
-    private final CustomerDAO userService;
+    private final CustomerDAO custumerDAO;
     private final LoginAttemptService loginAttemptService;
     private final HttpServletRequest request;
 
-    public CustomerUserDetailsService(CustomerDAO userDAO, LoginAttemptService loginAttemptService, HttpServletRequest request) {
-        this.userService = userDAO;
+    public CustomerUserDetailsService(CustomerDAO custumerDAO, LoginAttemptService loginAttemptService, HttpServletRequest request) {
+        this.custumerDAO = custumerDAO;
         this.loginAttemptService = loginAttemptService;
         this.request = request;
     }
@@ -33,7 +33,7 @@ public class CustomerUserDetailsService implements UserDetailsService {
             throw new RuntimeException("blocked");
         }
         try {
-            final Customer customer = userService.findByEmail(email);
+            final Customer customer = custumerDAO.findByEmail(email);
             if (customer == null) {
                 throw new UsernameNotFoundException("No user found with username: " + email);
             }

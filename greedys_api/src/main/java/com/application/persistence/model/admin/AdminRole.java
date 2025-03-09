@@ -21,9 +21,9 @@ public class AdminRole {
     private String name;
 
     @ManyToMany
-    @JoinTable(name = 	"role_has_privilege", 
-    	joinColumns = @JoinColumn(name = "role_id"), 
-    	inverseJoinColumns = @JoinColumn(name = "privilege_id")
+    @JoinTable(name = "admin_role_has_admin_privilege", 
+    	joinColumns = @JoinColumn(name = "admin_role_id"), 
+    	inverseJoinColumns = @JoinColumn(name = "admin_privilege_id")
     )	
     private Collection<AdminPrivilege> adminPrivileges;
 
