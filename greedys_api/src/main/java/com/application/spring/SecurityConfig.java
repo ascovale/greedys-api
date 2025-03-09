@@ -223,7 +223,8 @@ public class SecurityConfig {
                 return auth.build();
         }
 
-        @Bean(name = "userEncoder")
+        @Bean
+        @Primary
         PasswordEncoder passwordEncoder() {
                 return new BCryptPasswordEncoder();
         }

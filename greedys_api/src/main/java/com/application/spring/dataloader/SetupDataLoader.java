@@ -38,7 +38,6 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
     @Autowired
     private AdminPrivilegeDAO adminPrivilegeDAO;
     @Autowired
-    @Qualifier("userEncoder")
     private PasswordEncoder passwordEncoder;
 
     // API

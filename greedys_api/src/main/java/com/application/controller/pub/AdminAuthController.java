@@ -32,7 +32,7 @@ public class AdminAuthController {
     private JwtUtil jwtUtil;
     private AdminService adminService;
 
-    public AdminAuthController(@Qualifier("AdminAuthenticationManager") AuthenticationManager authenticationManager,
+    public AdminAuthController(@Qualifier("adminAuthenticationManager") AuthenticationManager authenticationManager,
             JwtUtil jwtUtil,
             AdminService adminService) {
         this.authenticationManager = authenticationManager;
