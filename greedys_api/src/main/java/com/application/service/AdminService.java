@@ -50,9 +50,9 @@ public class AdminService {
 
 	public AdminService(AdminDAO adminDAO, AdminVerificationTokenDAO tokenDAO,
 	AdminPasswordResetTokenDAO passwordTokenRepository,
-			@Qualifier("adminEncoder") PasswordEncoder passwordEncoder,
+			PasswordEncoder passwordEncoder,
 			AdminRoleDAO roleRepository,
-			@Qualifier("adminSessionRegistry") SessionRegistry sessionRegistry,
+			SessionRegistry sessionRegistry,
 			EntityManager entityManager
 			) {
 		this.adminDAO = adminDAO;

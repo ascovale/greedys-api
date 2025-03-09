@@ -60,9 +60,9 @@ public class CustomerService {
 
 	public CustomerService(CustomerDAO userDAO, VerificationTokenDAO tokenDAO,
 			PasswordResetTokenDAO passwordTokenRepository,
-			@Qualifier("userEncoder") PasswordEncoder passwordEncoder,
+			PasswordEncoder passwordEncoder,
 			RoleDAO roleRepository,
-			@Qualifier("userSessionRegistry") SessionRegistry sessionRegistry,
+			SessionRegistry sessionRegistry,
 			EntityManager entityManager,
 			AllergyDAO allergyDAO,
 			PrivilegeDAO privilegeDAO) {

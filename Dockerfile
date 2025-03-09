@@ -12,11 +12,20 @@ RUN mvn clean install
 # Fase di Runtime con JDK Slim
 FROM openjdk:19-jdk-slim
 
+# Installazione di netcat
+RUN apt-get update && apt-get install -y netcat
+
+
+# Copia dello script wait-for-it.sh nel container
+COPY wait-for-it.sh /wait-for-it.sh
+RUN chmod +x /wait-for-it.sh
+
 # Copia del JAR costruito dalla fase di build
 COPY --from=builder /app/greedys_api/target/*.jar /app.jar
+
 
 # Esposizione della porta dell'applicazione
 EXPOSE 8443
 
-# Configurazione dell'entrypoint per avviare l'applicazione
-ENTRYPOINT ["java", "-jar", "/app.jar"]
+# Configurazione dell'entrypoint per avviare l'applicazione dopo aver atteso la connessione al database
+ENTRYPOINT ["/wait-for-it.sh", "db", "3306", "--", "java", "-jar", "/app.jar"]
