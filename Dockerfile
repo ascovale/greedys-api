@@ -28,4 +28,4 @@ COPY --from=builder /app/greedys_api/target/*.jar /app.jar
 EXPOSE 8443
 
 # Configurazione dell'entrypoint per avviare l'applicazione dopo aver atteso la connessione al database
-ENTRYPOINT ["/wait-for-it.sh", "db", "3306", "--", "java", "-jar", "/app.jar"]
+ENTRYPOINT "java", "-jar", "/app.jar"]
