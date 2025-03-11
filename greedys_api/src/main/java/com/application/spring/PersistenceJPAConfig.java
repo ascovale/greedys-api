@@ -1,4 +1,5 @@
 package com.application.spring;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -38,12 +39,37 @@ public class PersistenceJPAConfig {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return DataSourceBuilder.create()
+        
+        DataSource dataSource = DataSourceBuilder.create()
                 .url(env.getProperty("spring.datasource.url"))
                 .username(env.getProperty("spring.datasource.username"))
                 .password(dbPassword)
                 .driverClassName(env.getProperty("spring.datasource.driverClassName"))
                 .build();
+        
+        // Attende che il DB sia disponibile
+        int attempts = 10; // Numero massimo di tentativi
+        while (attempts > 0) {
+            try {
+                dataSource.getConnection().close();
+                System.out.println("Database disponibile.");
+                break;
+            } catch (Exception ex) {
+                attempts--;
+                System.out.println("Database non ancora disponibile. Riprovo tra 5 secondi... Tentativi rimasti: " + attempts);
+                try {
+                    Thread.sleep(5000); // Attende 5 secondi prima di riprovare
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw new IllegalStateException("Thread interrotto mentre si attende il DB.", ie);
+                }
+            }
+        }
+        if (attempts == 0) {
+            throw new IllegalStateException("Database non disponibile dopo molteplici tentativi.");
+        }
+        
+        return dataSource;
     }
 
     @Bean
@@ -63,7 +89,6 @@ public class PersistenceJPAConfig {
     public PlatformTransactionManager transactionManager(EntityManagerFactory emf) {
         JpaTransactionManager transactionManager = new JpaTransactionManager();
         transactionManager.setEntityManagerFactory(emf);
-
         return transactionManager;
     }
 
