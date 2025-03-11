@@ -19,7 +19,6 @@ services:
       - email_password
       - rabbitmq_password
       - service_account
-    restart: "no"
 
   db:
     image: mysql:8.0
