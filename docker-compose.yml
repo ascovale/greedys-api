@@ -29,6 +29,8 @@ services:
       - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
+      - ./initdb.d:/docker-entrypoint-initdb.d
+
     networks:
       - app-network
     healthcheck:
