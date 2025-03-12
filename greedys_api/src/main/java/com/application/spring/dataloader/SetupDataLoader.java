@@ -5,13 +5,13 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.application.persistence.dao.SetupConfigDAO;
 import com.application.persistence.dao.admin.AdminPrivilegeDAO;
 import com.application.persistence.dao.admin.AdminRoleDAO;
 import com.application.persistence.dao.customer.PrivilegeDAO;
@@ -22,6 +22,7 @@ import com.application.persistence.model.admin.AdminRole;
 import com.application.persistence.model.customer.Privilege;
 import com.application.persistence.model.customer.Role;
 import com.application.persistence.model.reservation.ServiceType;
+import com.application.persistence.model.systemconfig.SetupConfig;
 
 @Component
 public class SetupDataLoader implements ApplicationListener<ContextRefreshedEvent> {
@@ -39,12 +40,18 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
     private AdminPrivilegeDAO adminPrivilegeDAO;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    
+    @Autowired
+    private SetupConfigDAO setupConfigDAO;
+
 
     // API
     @Override
     @Transactional
     public void onApplicationEvent(final ContextRefreshedEvent event) {
-        if (alreadySetup) {
+        SetupConfig setupConfig = setupConfigDAO.findById(1L).orElse(new SetupConfig());
+        if (setupConfig.isAlreadySetup()) {
+            System.out.println("    >>>  ---   Setup already executed  ---  <<< ");
             return;
         }
 
@@ -74,15 +81,15 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
                 adminRestaurantRead, adminRestaurantWrite,
                 adminCustomerRead, adminCustomerWrite));
 
-        ucreateAdminRoleIfNotFound("ROLE_SUPER_ADMIN", adminPrivileges);
-        ucreateAdminRoleIfNotFound("ROLE_ADMIN_MANAGER", Arrays.asList(
+        ucreateAdminRoleIfNotFound("ROLE_SUPER_ADMIN", new ArrayList<>(adminPrivileges));
+        ucreateAdminRoleIfNotFound("ROLE_ADMIN_MANAGER", new ArrayList<>(Arrays.asList(
                 adminReservationCustomerRead, adminReservationRestaurantRead,
                 adminRestaurantUserRead, adminRestaurantRead,
-                adminCustomerRead));
-        ucreateAdminRoleIfNotFound("ROLE_ADMIN_EDITOR", Arrays.asList(
+                adminCustomerRead)));
+        ucreateAdminRoleIfNotFound("ROLE_ADMIN_EDITOR", new ArrayList<>(Arrays.asList(
                 adminReservationCustomerWrite, adminReservationRestaurantWrite,
                 adminRestaurantUserWrite, adminRestaurantWrite,
-                adminCustomerWrite));
+                adminCustomerWrite)));
 
         // == CUSTOMER: create initial customer privileges
         final Privilege ureadPrivilege = ucreatePrivilegeIfNotFound("READ_PRIVILEGE");
@@ -94,27 +101,30 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
                 Arrays.asList(ureadPrivilege, uwritePrivilege, upasswordPrivilege));
         final List<Privilege> userPrivileges = new ArrayList<Privilege>(
                 Arrays.asList(ureadPrivilege, upasswordPrivilege));
-        ucreateRoleIfNotFound("ROLE_PREMIUM_USER", uadminPrivileges);
-        ucreateRoleIfNotFound("ROLE_USER", userPrivileges);
+        ucreateRoleIfNotFound("ROLE_PREMIUM_USER", new ArrayList<>(uadminPrivileges));
+        ucreateRoleIfNotFound("ROLE_USER", new ArrayList<>(userPrivileges));
 
         // == I RESTAURANT ROLE SONO RELATIVI AD UN RISTORANTE QUINDI POSSONO ESSERE
         // GESTITI DALL'UTENTE E VENGONO GENERATI QUANDO VIENE CREATO UN RISTORANTE
-        /* 
-        final List<Privilege> restaurantPrivileges = new ArrayList<Privilege>(
-                Arrays.asList(ureadPrivilege, uwritePrivilege));
-
-        ucreateRestaurantRoleIfNotFound("ROLE_OWNER", restaurantPrivileges);
-        ucreateRestaurantRoleIfNotFound("ROLE_MANAGER", restaurantPrivileges);
-        ucreateRestaurantRoleIfNotFound("ROLE_VIEWER", restaurantPrivileges);
-        ucreateRestaurantRoleIfNotFound("ROLE_CHEF", restaurantPrivileges);
-        ucreateRestaurantRoleIfNotFound("ROLE_WAITER", restaurantPrivileges);*/
+        /*
+         * final List<Privilege> restaurantPrivileges = new ArrayList<Privilege>(
+         * Arrays.asList(ureadPrivilege, uwritePrivilege));
+         * 
+         * ucreateRestaurantRoleIfNotFound("ROLE_OWNER", restaurantPrivileges);
+         * ucreateRestaurantRoleIfNotFound("ROLE_MANAGER", restaurantPrivileges);
+         * ucreateRestaurantRoleIfNotFound("ROLE_VIEWER", restaurantPrivileges);
+         * ucreateRestaurantRoleIfNotFound("ROLE_CHEF", restaurantPrivileges);
+         * ucreateRestaurantRoleIfNotFound("ROLE_WAITER", restaurantPrivileges);
+         */
         // == create initial companyUser
         // createUserIfNotFound("test@test.com", "Test", "Test", "test", new
         // ArrayList<RoleCompany>(Arrays.asList(adminRole)));
 
         // create defautlt service types
-        //ucreateServiceIfNotFound("MENU");
-        alreadySetup = true;
+        // ucreateServiceIfNotFound("MENU");
+        setupConfig.setId(1L);
+        setupConfig.setAlreadySetup(true);
+        setupConfigDAO.save(setupConfig);
     }
 
     @Transactional
@@ -167,14 +177,16 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
         role = adminRoleDAO.save(role);
         return role;
     }
-    /* 
-    private Role ucreateRestaurantRoleIfNotFound(String name, List<Privilege> privileges) {
-        Role role = roleDAO.findByName(name);
-        if (role == null) {
-            role = new Role(name);
-        }
-        role.setPrivileges(privileges);
-        role = roleDAO.save(role);
-        return role;
-    }*/
+    /*
+     * private Role ucreateRestaurantRoleIfNotFound(String name, List<Privilege>
+     * privileges) {
+     * Role role = roleDAO.findByName(name);
+     * if (role == null) {
+     * role = new Role(name);
+     * }
+     * role.setPrivileges(privileges);
+     * role = roleDAO.save(role);
+     * return role;
+     * }
+     */
 }
