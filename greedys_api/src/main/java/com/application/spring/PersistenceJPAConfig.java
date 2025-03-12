@@ -58,7 +58,7 @@ public class PersistenceJPAConfig {
                 attempts--;
                 System.out.println("Database non ancora disponibile. Riprovo tra 5 secondi... Tentativi rimasti: " + attempts);
                 try {
-                    Thread.sleep(15000); // Attende 5 secondi prima di riprovare
+                    Thread.sleep(5000); // Attende 5 secondi prima di riprovare
                 } catch (InterruptedException ie) {
                     Thread.currentThread().interrupt();
                     throw new IllegalStateException("Thread interrotto mentre si attende il DB.", ie);
