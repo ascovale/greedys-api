@@ -45,6 +45,8 @@ import jakarta.validation.Valid;
 @RequestMapping("/customer")
 @SecurityRequirement(name = "bearerAuth")
 public class CustomerController {
+    //TODO Verificare i metodi del controller in particolare Delete User 
+    // customer getReservation e così via
 
     private final CustomerService userService;
     private final ReservationService reservationService;
