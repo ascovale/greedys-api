@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -52,8 +53,8 @@ public class ReservationController {
 		@ApiResponse(responseCode = "400", description = "Invalid input", content = @Content),
 		@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
 	})
-	@PostMapping("/delete")
-	public ResponseEntity<?> deleteReservation(@RequestBody Long reservationId) {
+	@PostMapping("/{reservationId}/delete")
+	public ResponseEntity<?> deleteReservation(@PathVariable Long reservationId) {
 		reservationService.customerDeleteReservation(reservationId);
 		return ResponseEntity.ok().build();
 	}
@@ -65,9 +66,9 @@ public class ReservationController {
 		@ApiResponse(responseCode = "400", description = "Invalid input", content = @Content),
 		@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
 	})
-	@PostMapping("/request-modify")
-	public ResponseEntity<?> requestModifyReservation(@RequestBody Long oldReservationId,@RequestBody CustomerNewReservationDTO DTO) {
-		reservationService.requestModifyReservation(oldReservationId,DTO);
+	@PostMapping("/{reservationId}/request-modify")
+	public ResponseEntity<?> requestModifyReservation(@PathVariable Long reservationId,@RequestBody CustomerNewReservationDTO DTO) {
+		reservationService.requestModifyReservation(reservationId,DTO);
 		return ResponseEntity.ok().build();
 	}
 
@@ -78,8 +79,8 @@ public class ReservationController {
 		@ApiResponse(responseCode = "400", description = "Invalid input", content = @Content),
 		@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
 	})
-	@PutMapping("/reject")
-	public ResponseEntity<?> rejectReservationCreatedByAdminOrRestaurant(@RequestBody Long reservationId) {
+	@PutMapping("/{reservationId}/reject")
+	public ResponseEntity<?> rejectReservationCreatedByAdminOrRestaurant(@PathVariable Long reservationId) {
 		reservationService.rejectReservationCreatedByAdminOrRestaurant(reservationId);
 		return ResponseEntity.ok().build();
 	}
