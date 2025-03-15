@@ -20,7 +20,7 @@ public class SwaggerConfig {
                 .info(new Info()
                 .title("Greedys API")
                 .version("1.0")
-                .description("API for managing restaurant reservations"))c
+                .description("API for managing restaurant reservations"))
                 .components(new Components()
                         .addSecuritySchemes("adminBearerAuth",
                                 new SecurityScheme()
