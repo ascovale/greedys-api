@@ -45,9 +45,6 @@ import jakarta.validation.Valid;
 @RequestMapping("/customer")
 @SecurityRequirement(name = "bearerAuth")
 public class CustomerController {
-    //TODO Verificare i metodi del controller in particolare Delete User 
-    // customer getReservation e così via
-
     private final CustomerService userService;
     private final ReservationService reservationService;
     private final MessageSource messages;
@@ -83,9 +80,9 @@ public class CustomerController {
     @Operation(summary = "Get user by id", description = "Recupera un utente specifico tramite il suo ID")
     @ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserDTO.class)))
     @ApiResponse(responseCode = "404", description = "Utente non trovato")
-    @GetMapping("/{id}")
-    public UserDTO getUser(@PathVariable Long id) {
-        return userService.findById(id);
+    @GetMapping("/getRestaurantUser")
+    public UserDTO getUser() {
+        return userService.findById(getUserId());
     }
 
     // ------------------- Password Management ----------------------------- //
