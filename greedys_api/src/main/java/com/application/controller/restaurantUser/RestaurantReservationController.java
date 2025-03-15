@@ -29,7 +29,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Controller
 @SecurityRequirement(name = "bearerAuth")
 //@PreAuthorize("@securityService.isRestaurantUserPermission(#idRestaurantUser)")
-@RequestMapping("/restaurant_user/{idRestaurantUser}/reservation")
+@RequestMapping("/restaurant_user/reservation")
 @Tag(name = "Reservation Restaurant", description = "APIs for managing reservations from the restaurant")
 public class RestaurantReservationController {
 
