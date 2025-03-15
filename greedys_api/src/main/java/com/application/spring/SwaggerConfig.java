@@ -20,10 +20,7 @@ public class SwaggerConfig {
                 .info(new Info()
                 .title("Greedys API")
                 .version("1.0")
-                .description("API for managing restaurant reservations"))
-                .addSecurityItem(new SecurityRequirement().addList("adminBearerAuth"))
-                .addSecurityItem(new SecurityRequirement().addList("customerBearerAuth"))
-                .addSecurityItem(new SecurityRequirement().addList("restaurantBearerAuth"))
+                .description("API for managing restaurant reservations"))c
                 .components(new Components()
                         .addSecuritySchemes("adminBearerAuth",
                                 new SecurityScheme()
@@ -52,6 +49,7 @@ public class SwaggerConfig {
         return GroupedOpenApi.builder()
                 .group("admin-api")
                 .pathsToMatch("/admin/**")
+                .addOpenApiCustomizer(openApi -> openApi.addSecurityItem(new SecurityRequirement().addList("adminBearerAuth")))
                 .build();
     }
 
@@ -59,7 +57,8 @@ public class SwaggerConfig {
     public GroupedOpenApi customerApi() {
         return GroupedOpenApi.builder()
                 .group("customer-api")
-                .pathsToMatch("/customer/**")
+                .pathsToMatch("/customer/**") 
+                .addOpenApiCustomizer(openApi -> openApi.addSecurityItem(new SecurityRequirement().addList("customerBearerAuth")))
                 .build();
     }
 
@@ -68,6 +67,7 @@ public class SwaggerConfig {
         return GroupedOpenApi.builder()
                 .group("restaurant-api")
                 .pathsToMatch("/restaurant_user/**")
+                .addOpenApiCustomizer(openApi -> openApi.addSecurityItem(new SecurityRequirement().addList("restaurantBearerAuth")))
                 .build();
     }
 
