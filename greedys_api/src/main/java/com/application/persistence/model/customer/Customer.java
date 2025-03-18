@@ -43,8 +43,6 @@ public class Customer implements UserDetails {
 	@ManyToMany
 	@JoinTable(name = "customer_has_role", joinColumns = @JoinColumn(name = "customer_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
 	private Collection<Role> roles;
-	private Boolean blooked = false;
-	private Boolean deleted = false;
 	private Integer toReadNotification = 0;
 	@OneToOne
     private CustomerOptions customerOptions;
@@ -78,22 +76,6 @@ public class Customer implements UserDetails {
 		this.toReadNotification = toReadNotification;
 	}
 
-	public Boolean getDeleted() {
-		return deleted;
-	}
-
-	public void setDeleted(Boolean deleted) {
-		this.deleted = deleted;
-	}
-
-	public Boolean getBlooked() {
-		return blooked;
-	}
-
-	public void setIsBlooked(Boolean blooked) {
-		this.blooked = blooked;
-	}
-
 	@ManyToMany
 	@JoinTable(name = "user_allergy", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "allergy_id"))
 	private List<Allergy> allergies;
@@ -116,8 +98,7 @@ public class Customer implements UserDetails {
 
 	@Override
 	public boolean isEnabled() {
-		return enabled;
-	}
+		return status == Status.ENABLED ;	}
 
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
@@ -232,7 +213,7 @@ public class Customer implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return status != Status.BLOCKED;
+        return status == Status.ENABLED;
     }
 
 	@Override

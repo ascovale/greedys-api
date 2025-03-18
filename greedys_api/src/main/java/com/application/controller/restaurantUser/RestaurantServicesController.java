@@ -33,7 +33,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/restaurant_user/{idRestaurantUser}/service")
 //@PreAuthorize("@securityService.isRestaurantUserPermission(#idRestaurantUser)")
-@SecurityRequirement(name = "bearerAuth")
+@SecurityRequirement(name = "restaurantBearerAuth")
 public class RestaurantServicesController {
 
     @Autowired

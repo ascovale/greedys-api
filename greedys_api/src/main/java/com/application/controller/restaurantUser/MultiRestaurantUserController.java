@@ -14,7 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "MultiRestaurantUser", description = "Controller per la gestione dei multi user di ristoranti")
 @RestController
 @RequestMapping("/restaurant_user/")
-@SecurityRequirement(name = "bearerAuth")
+@SecurityRequirement(name = "restaurantBearerAuth")
 public class MultiRestaurantUserController {
         private final RestaurantUserService restaurantUserService;
 

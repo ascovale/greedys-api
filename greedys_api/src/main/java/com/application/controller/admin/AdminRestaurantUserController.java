@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.application.persistence.model.restaurant.user.RestaurantUser;
 import com.application.service.RestaurantUserService;
 import com.application.web.util.GenericResponse;
 
@@ -20,9 +21,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RequestMapping("/admin/user")
 @RestController
-@SecurityRequirement(name = "bearerAuth")
+@SecurityRequirement(name = "adminBearerAuth")
 @Tag(name = "Admin RestaurantUser", description = "Admin management APIs for the RestaurantUser")
 public class AdminRestaurantUserController {
+
+    //TODO Forse manca il delete restaurant user e quindi anche altri utenti
+
     private final RestaurantUserService restaurantUserService;
 
     @Autowired
@@ -36,8 +40,18 @@ public class AdminRestaurantUserController {
     @ApiResponse(responseCode = "400", description = "Invalid request")
     @PutMapping("/restaurantUser/{idRestaurantUser}/block")
     public GenericResponse blockRestaurantUser(@PathVariable Long idRestaurantUser) {
-        restaurantUserService.blockRestaurantUser(idRestaurantUser);
+        restaurantUserService.updateRestaurantUserStatus(idRestaurantUser, RestaurantUser.Status.BLOCKED);
         return new GenericResponse("Restaurant user blocked successfully");
+    }
+
+    @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_USER_WRITE')")
+    @Operation(summary = "Enable restaurant user", description = "Enables a restaurant user by their ID")
+    @ApiResponse(responseCode = "200", description = "Restaurant user enabled successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
+    @ApiResponse(responseCode = "400", description = "Invalid request")
+    @PutMapping("/restaurantUser/{idRestaurantUser}/enable")
+    public GenericResponse enableRestaurantUser(@PathVariable Long idRestaurantUser) {
+        restaurantUserService.updateRestaurantUserStatus(idRestaurantUser, RestaurantUser.Status.ENABLED);
+        return new GenericResponse("Restaurant user enabled successfully");
     }
 
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_USER_WRITE')")
@@ -47,6 +61,7 @@ public class AdminRestaurantUserController {
     @PutMapping("/restaurant/{idRestaurant}/changeOwner/{idOldOwner}/{idNewOwner}")
     public GenericResponse changeRestaurantOwner(@PathVariable Long idRestaurant, @PathVariable Long idOldOwner,
             @PathVariable Long idNewOwner) {
+                //TODO updateRestaurantUserStatus
         restaurantUserService.changeRestaurantOwner(idRestaurant, idOldOwner, idNewOwner);
         return new GenericResponse("Restaurant owner changed successfully");
     }

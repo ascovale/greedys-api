@@ -32,7 +32,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "Admin Services", description = "Controller for managing services")
 @RestController
 @RequestMapping("/admin/service")
-@SecurityRequirement(name = "bearerAuth")
+@SecurityRequirement(name = "adminBearerAuth")
 public class AdminServicesController {
 
     @Autowired
