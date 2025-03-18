@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.application.persistence.model.admin.Admin;
 import com.application.service.AdminService;
 import com.application.web.util.GenericResponse;
 
@@ -19,7 +20,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RequestMapping("/admin")
 @RestController
-@SecurityRequirement(name = "bearerAuth")
+@SecurityRequirement(name = "adminBearerAuth")
 @Tag(name = "Admin User", description = "Admin management APIs for the Admin users")
 public class AdminUsersController {
     // Riscrivere tutta la classe per implementare i metodi per dare togliere i permessi agli utenti admin
@@ -39,18 +40,28 @@ public class AdminUsersController {
     @ApiResponse(responseCode = "400", description = "Invalid request")
     @PutMapping("/blockAdmin/{adminId}")
     public GenericResponse blockUser(@PathVariable Long adminId) {
-        adminService.blockAdmin(adminId);
+        adminService.updateCustomerStatus(adminId, Admin.Status.BLOCKED);
         return new GenericResponse("Admin blocked successfully");
     }
 
-    @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_WRITE')")
+    @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_ADMIN_WRITE')")
     @Operation(summary = "Enable user", description = "Enables a user by their ID")
     @ApiResponse(responseCode = "200", description = "User enabled successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
     @PutMapping("/enableAdmin/{adminId}")
     public GenericResponse enableUser(@PathVariable Long adminId) {
-        adminService.enableUser(adminId);
+        adminService.updateCustomerStatus(adminId, Admin.Status.ENABLED);
         return new GenericResponse("User enabled successfully");
+    }
+
+    @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_ADMIN_WRITE')")
+    @Operation(summary = "Delete admin user", description = "Deletes an admin user by their ID")
+    @ApiResponse(responseCode = "200", description = "Admin user deleted successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
+    @ApiResponse(responseCode = "400", description = "Invalid request")
+    @PutMapping("/deleteAdmin/{adminId}")
+    public GenericResponse deleteAdminUser(@PathVariable Long adminId) {
+        adminService.updateCustomerStatus(adminId, Admin.Status.DELETED);
+        return new GenericResponse("Admin user deleted successfully");
     }
 
 

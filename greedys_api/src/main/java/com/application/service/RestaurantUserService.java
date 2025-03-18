@@ -7,6 +7,8 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.session.SessionInformation;
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -51,6 +53,8 @@ public class RestaurantUserService {
     private RestaurantRoleDAO rrDAO;
     @Autowired
     private RestaurantPrivilegeDAO rpDAO;
+    @Autowired
+    SessionRegistry sessionRegistry;
 
     // TODO QUANDO CREO UN UTENTE DEVO SPECIFICARE IL RUOLO CHE HA NEL RISTORANTE
     // TODO Io farei che l'user può essere creato nello stesso tempo
@@ -340,4 +344,18 @@ public class RestaurantUserService {
         return ruDAO.findByEmail(userEmail);
     }
 
+    public void updateRestaurantUserStatus(Long restaurantUserId, RestaurantUser.Status newStatus) {
+        RestaurantUser ru = ruDAO.findById(restaurantUserId)
+                .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
+
+        // Aggiorna lo stato del customer
+        ru.setStatus(newStatus);
+        ruDAO.save(ru);
+
+        // Invalida tutte le sessioni attive del restaurant user
+        sessionRegistry.getAllPrincipals().stream()
+                .filter(principal -> principal instanceof RestaurantUser && ((RestaurantUser) principal).getId().equals(restaurantUserId))
+                .forEach(principal -> sessionRegistry.getAllSessions(principal, false)
+                        .forEach(SessionInformation::expireNow));
+    }
 }

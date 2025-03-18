@@ -56,9 +56,9 @@ public class RestaurantUser implements UserDetails {
     public void setAccepted(boolean accepted) {
         this.accepted = accepted;
     }
-
+    @Override
     public boolean isEnabled() {
-        return enabled;
+        return status == Status.ENABLED && restaurant != null && restaurant.getStatus() == Restaurant.Status.ENABLED;
     }
 
     public void setEnabled(boolean enabled) {
@@ -205,7 +205,7 @@ public class RestaurantUser implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-        return status != Status.DELETED;
+        return status == Status.ENABLED;
     }
 
     @Override
@@ -218,4 +218,5 @@ public class RestaurantUser implements UserDetails {
         //TODO in futuro da cambiare se le credenziali scadono
         return true;
     }
+
 }

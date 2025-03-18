@@ -44,7 +44,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/restaurant_user/restaurant")
 //@PreAuthorize("@securityService.isRestaurantUserPermission(#idRestaurantUser)")
-@SecurityRequirement(name = "bearerAuth")
+@SecurityRequirement(name = "restaurantBearerAuth")
 public class RestaurantController {
 
 	//TODO: 	@PreAuthorize("securityRestaurantUserService.isRestaurantEnabled(#idRestaurantUser)")
@@ -68,6 +68,7 @@ public class RestaurantController {
 		this.tableService = tableService;
 	}
 
+	@PreAuthorize("authentication.principal.isEnabled()")
 	@Operation(summary = "Get all reservations of a restaurant", description = "Ottieni tutte le prenotazioni di un ristorante")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ReservationDTO.class)))),
@@ -82,7 +83,7 @@ public class RestaurantController {
 		return reservations;
 	}
 
-	@PreAuthorize("securityRestaurantUserService.isRestaurantEnabled(#idRestaurantUser)")
+	@PreAuthorize("authentication.principal.isEnabled()")
 	@Operation(summary = "Get all accepted reservations of a restaurant", description = "Ottieni tutte le prenotazioni accettate di un ristorante")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ReservationDTO.class)))),
@@ -98,6 +99,7 @@ public class RestaurantController {
 		return reservations;
 	}
 
+	@PreAuthorize("authentication.principal.isEnabled()")
 	@Operation(summary = "Get all reservations of a restaurant with pagination", description = "Ottieni tutte le prenotazioni di un ristorante con paginazione")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ReservationDTO.class)))),
@@ -116,6 +118,7 @@ public class RestaurantController {
 		return new ResponseEntity<>(reservations, HttpStatus.OK);
 	}
 
+	@PreAuthorize("authentication.principal.isEnabled()")
 	@Operation(summary = "Get all pending reservations of a restaurant", description = "Ottieni tutte le prenotazioni in attesa di un ristorante")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ReservationDTO.class)))),
@@ -142,6 +145,7 @@ public class RestaurantController {
 
 	// questo metodo forse dovrebbe essere public tranne che questo può vedere anche
 	// quelli disabilitati
+	@PreAuthorize("authentication.principal.isEnabled()")
 	@GetMapping(value = "/services")
 	@Operation(summary = "Get services of a restaurant", description = "Ottieni i servizi di un ristorante")
 	@ApiResponses(value = {
@@ -155,6 +159,7 @@ public class RestaurantController {
 	}
 
 	/* -- === *** ROOMS AND TABLES *** === --- */
+	@PreAuthorize("authentication.principal.isEnabled()")
 	@GetMapping(value = "/rooms")
 	@Operation(summary = "Get rooms of a restaurant", description = "Ottieni le sale di un ristorante")
 	@ApiResponses(value = {
@@ -167,6 +172,7 @@ public class RestaurantController {
 		return new ResponseEntity<>(rooms, HttpStatus.OK);
 	}
 
+	@PreAuthorize("authentication.principal.isEnabled()")
 	@GetMapping(value = "/room/{roomId}/tables")
 	@Operation(summary = "Get tables of a room", description = "Ottieni i tavoli di una sala")
 	@ApiResponses(value = {
@@ -179,6 +185,7 @@ public class RestaurantController {
 		return new ResponseEntity<>(tables, HttpStatus.OK);
 	}
 
+	@PreAuthorize("authentication.principal.isEnabled()")
 	@PostMapping(value = "/room")
 	@Operation(summary = "Add a room to a restaurant", description = "Aggiungi una sala a un ristorante")
 	@ApiResponses(value = {
@@ -190,7 +197,7 @@ public class RestaurantController {
 		roomService.createRoom(roomDto);
 		return new GenericResponse("success");
 	}
-
+	@PreAuthorize("authentication.principal.isEnabled()")
 	@PostMapping(value = "/table")
 	@Operation(summary = "Add a table to a room", description = "Aggiungi un tavolo a una sala")
 	@ApiResponses(value = {
@@ -203,6 +210,7 @@ public class RestaurantController {
 		return new GenericResponse("success");
 	}
 
+	@PreAuthorize("authentication.principal.isEnabled()")
 	@Operation(summary = "Set no show time limit", description = "Imposta il limite di tempo per il no show")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class))),
@@ -215,6 +223,7 @@ public class RestaurantController {
 		return new GenericResponse("success");
 	}
 
+	@PreAuthorize("authentication.principal.isEnabled()")
 	@GetMapping(value = "/types")
 	@Operation(summary = "Get types of a restaurant", description = "Ottieni i tipi di un ristorante")
 	@ApiResponses(value = {
