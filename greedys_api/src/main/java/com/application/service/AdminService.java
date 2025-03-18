@@ -7,7 +7,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -251,12 +251,6 @@ public class AdminService {
 		return adminDAO.save(user);
 	}
 
-	@Transactional
-    public void enableUser(Long adminId) {
-		Admin admin = adminDAO.findById(adminId).orElseThrow(() -> new EntityNotFoundException("User not found"));
-		admin.setEnabled(true);
-		adminDAO.save(admin);
-	}
 /* 
     public void removePermissions(Long idUser) {
 		User user = adminDAO.findById(idUser).orElseThrow(() -> new EntityNotFoundException("User not found"));
@@ -264,10 +258,21 @@ public class AdminService {
 		adminDAO.save(user);
 	}*/
 
-    public void blockAdmin(Long userId) {
-		Admin user = adminDAO.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
-		user.setEnabled(false);
-		adminDAO.save(user);
-    }
+
+
+	public void updateCustomerStatus(Long adminId, Admin.Status newStatus) {
+		Admin admin = adminDAO.findById(adminId)
+				.orElseThrow(() -> new IllegalArgumentException("Customer not found"));
+
+		// Aggiorna lo stato del customer
+		admin.setStatus(newStatus);
+		adminDAO.save(admin);
+
+		// Invalida tutte le sessioni attive del admin
+		sessionRegistry.getAllPrincipals().stream()
+				.filter(principal -> principal instanceof Admin && ((Admin) principal).getId().equals(adminId))
+				.forEach(principal -> sessionRegistry.getAllSessions(principal, false)
+						.forEach(SessionInformation::expireNow));
+	}
 
 }

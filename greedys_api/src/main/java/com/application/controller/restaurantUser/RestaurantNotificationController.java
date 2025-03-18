@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -20,7 +21,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/restaurant_user/{idRestaurantUser}/notification")
-@SecurityRequirement(name = "bearerAuth")
+@SecurityRequirement(name = "restaurantBearerAuth")
 //@PreAuthorize("@securityService.isRestaurantUserPermission(#idRestaurantUser)")
 @Tag(name = "Restaurant Notification", description = "Restaurant Notification management APIs")
 public class RestaurantNotificationController {
@@ -30,7 +31,7 @@ public class RestaurantNotificationController {
     public RestaurantNotificationController(RestaurantNotificationService restaurantNotificationService) {
         this.restaurantNotificationService = restaurantNotificationService;
     }
-
+    @PreAuthorize("authentication.principal.isEnabled()")
     @Operation(summary = "Get unread notifications", description = "Returns a pageable list of unread notifications")
     @GetMapping("/unread/{page}/{size}")
     public ResponseEntity<Page<RestaurantNotification>> getUnreadNotifications(@PathVariable Long idRestaurantUser,
@@ -42,6 +43,7 @@ public class RestaurantNotificationController {
         return ResponseEntity.ok().body(unreadNotifications);
     }
 
+    @PreAuthorize("authentication.principal.isEnabled()")
     @Operation(summary = "Set notification as read", description = "Sets the notification with the given ID as the given read boolean")
     @PutMapping("/read")
     public ResponseEntity<Void> setNotificationAsRead(@PathVariable Long idRestaurantUser,
@@ -50,6 +52,7 @@ public class RestaurantNotificationController {
         return ResponseEntity.ok().build();
     }
 
+    @PreAuthorize("authentication.principal.isEnabled()")
     @Operation(summary = "Get all notifications", description = "Returns a pageable list of all notifications")
     @GetMapping("/all/{page}/{size}")
     public ResponseEntity<Page<RestaurantNotification>> getAllNotifications(@PathVariable Long idRestaurantUser,
@@ -60,6 +63,7 @@ public class RestaurantNotificationController {
         return ResponseEntity.ok().body(allNotifications);
     }
 
+    @PreAuthorize("authentication.principal.isEnabled()")
     @Operation(summary = "Get a specific notification", description = "Returns the notification with the given ID")
     @GetMapping("/{notificationId}")
     public ResponseEntity<RestaurantNotification> getRestaurantNotification(@PathVariable Long idRestaurantUser,
@@ -68,6 +72,7 @@ public class RestaurantNotificationController {
         return ResponseEntity.ok().body(notification);
     }
 
+    @PreAuthorize("authentication.principal.isEnabled()")
     @Operation(summary = "Set a specific notification as read", description = "Sets the notification with the given ID as read")
     @PutMapping("/{notificationId}/read")
     public ResponseEntity<Void> setSingleNotificationAsRead(@PathVariable Long idRestaurantUser,
@@ -76,6 +81,7 @@ public class RestaurantNotificationController {
         return ResponseEntity.ok().build();
     }
 
+    @PreAuthorize("authentication.principal.isEnabled()")
     @Operation(summary = "Set all notifications as read", description = "Sets all notifications for the given user as read")
     @PutMapping("/all-read")
     public ResponseEntity<Void> setAllNotificationsAsRead(@PathVariable Long idRestaurantUser) {
@@ -83,6 +89,7 @@ public class RestaurantNotificationController {
         return ResponseEntity.ok().build();
     }
 
+    @PreAuthorize("authentication.principal.isEnabled()")
     @Operation(summary = "Get unread notifications count", description = "Returns the count of unread notifications")
     @GetMapping("/unread/count")
     public ResponseEntity<Long> getUnreadNotificationsCount(@PathVariable Long idRestaurantUser) {

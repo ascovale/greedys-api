@@ -3,14 +3,17 @@ package com.application.controller.restaurantUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Controller;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
+import com.application.persistence.model.restaurant.user.RestaurantUser;
 import com.application.service.ReservationService;
 import com.application.web.dto.post.restaurant.RestaurantNewReservationDTO;
 
@@ -26,8 +29,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  * requests related to reservations for the restaurant.
  * It contains methods for creating, accepting, rejecting, marking as no-show, and marking as seated reservations.
  */
-@Controller
-@SecurityRequirement(name = "bearerAuth")
+@RestController
+@SecurityRequirement(name = "restaurantBearerAuth")
 //@PreAuthorize("@securityService.isRestaurantUserPermission(#idRestaurantUser)")
 @RequestMapping("/restaurant_user/reservation")
 @Tag(name = "Reservation Restaurant", description = "APIs for managing reservations from the restaurant")
@@ -76,9 +79,9 @@ public class RestaurantReservationController {
 			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
 	})
 	@PutMapping("/{reservationId}/accept")
-	@PreAuthorize("@securityService.hasPermissionOnReservation(#idRestaurantUser, #reservationId)")
-	public ResponseEntity<?> acceptReservation(@PathVariable Long idRestaurantUser, @PathVariable Long reservationId, @RequestParam Boolean accepted) {
-		reservationService.markReservationAcceptedFromRestauantUser(idRestaurantUser, reservationId, accepted);
+	@PreAuthorize("@securityRestaurantUserService.hasPermissionOnReservation(#reservationId)")
+	public ResponseEntity<?> acceptReservation(@PathVariable Long reservationId, @RequestParam Boolean accepted) {
+		reservationService.markReservationAcceptedFromRestauantUser(getCurrentRestaurantUserId(),reservationId, accepted);
 		return ResponseEntity.ok().build();
 	}
 
@@ -92,8 +95,8 @@ public class RestaurantReservationController {
 	 */
 	@Operation(summary = "Reject a reservation", description = "Endpoint to reject a reservation by its ID")
 	@PutMapping("/{reservationId}/reject")
-	public ResponseEntity<?> rejectReservation(@PathVariable Long idRestaurantUser, @PathVariable Long reservationId, @RequestParam Boolean rejected) {
-		reservationService.markReservationRejectedFromRestauantUser(idRestaurantUser, reservationId, rejected);
+	public ResponseEntity<?> rejectReservation( @PathVariable Long reservationId, @RequestParam Boolean rejected) {
+		reservationService.markReservationRejectedFromRestauantUser(getCurrentRestaurantUserId(),reservationId, rejected);
 		return ResponseEntity.ok().build();
 	}
 
@@ -113,8 +116,8 @@ public class RestaurantReservationController {
 			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
 	})
 	@PutMapping("/{reservationId}/no-show")
-	public ResponseEntity<?> markReservationNoShow(@PathVariable Long idRestaurantUser, @PathVariable Long reservationId, @RequestParam Boolean noShow) {
-		reservationService.markReservationNoShowFromRestauantUser(idRestaurantUser, reservationId, noShow);
+	public ResponseEntity<?> markReservationNoShow( @PathVariable Long reservationId, @RequestParam Boolean noShow) {
+		reservationService.markReservationNoShowFromRestauantUser(getCurrentRestaurantUserId(),reservationId, noShow);
 		return ResponseEntity.ok().build();
 	}
 
@@ -134,8 +137,8 @@ public class RestaurantReservationController {
 			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
 	})
 	@PutMapping("/{reservationId}/seated")
-	public ResponseEntity<?> markReservationSeated(@PathVariable Long idRestaurantUser, @PathVariable Long reservationId, @RequestParam Boolean seated) {
-		reservationService.markReservationSeatedFromRestauantUser(idRestaurantUser, reservationId, seated);
+	public ResponseEntity<?> markReservationSeated( @PathVariable Long reservationId, @RequestParam Boolean seated) {
+		reservationService.markReservationSeatedFromRestauantUser(getCurrentRestaurantUserId(), reservationId, seated);
 		return ResponseEntity.ok().build();
 	}
 	
@@ -158,5 +161,12 @@ public class RestaurantReservationController {
 		return ResponseEntity.ok().build();
 	}
 
+	private Long getCurrentRestaurantUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof RestaurantUser) {
+            return ((RestaurantUser) authentication.getPrincipal()).getId();
+        }
+        return null;
+    }
 
 }

@@ -7,10 +7,10 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -76,7 +76,6 @@ public class CustomerService {
 		this.privilegeDAO = privilegeDAO;
 		this.allergyDAO = allergyDAO;
 	}
-	
 
 	// API
 
@@ -321,58 +320,65 @@ public class CustomerService {
 	}
 
 	@Transactional
-    public void enableUser(Long userId) {
+	public void enableUser(Long userId) {
 		Customer user = userDAO.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
 		user.setEnabled(true);
-		userDAO.save(user);}
-/* 
-    public void removePermissions(Long idUser) {
-		User user = userDAO.findById(idUser).orElseThrow(() -> new EntityNotFoundException("User not found"));
-		user.setRoles(Arrays.asList(roleRepository.findByName("ROLE_USER")));
 		userDAO.save(user);
-	}*/
+	}
+	/*
+	 * public void removePermissions(Long idUser) {
+	 * User user = userDAO.findById(idUser).orElseThrow(() -> new
+	 * EntityNotFoundException("User not found"));
+	 * user.setRoles(Arrays.asList(roleRepository.findByName("ROLE_USER")));
+	 * userDAO.save(user);
+	 * }
+	 */
 
-    public void blockUser(Long userId) {
+	public void blockUser(Long userId) {
 		Customer user = userDAO.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
 		user.setEnabled(false);
 		userDAO.save(user);
-    }
+	}
 
-    public void reportRestaurantAbuse(Long restaurantId) {
+	public void reportRestaurantAbuse(Long restaurantId) {
 
 		// Assuming there is a ReportAbuseDAO and ReportAbuse entity
-		/*ReportAbuse report = new ReportAbuse();
-		report.setRestaurantId(restaurantId);
-		report.setUserId(getCurrentUser().getId());
-		report.setTimestamp(LocalDateTime.now());
-		reportAbuseDAO.save(report);*/
-        // TODO in futuro decidere cosa farà anche solo mandare una mail
-		//L'utente segnala qualche tipo di abuso nella recensione o altro
-    }
+		/*
+		 * ReportAbuse report = new ReportAbuse();
+		 * report.setRestaurantId(restaurantId);
+		 * report.setUserId(getCurrentUser().getId());
+		 * report.setTimestamp(LocalDateTime.now());
+		 * reportAbuseDAO.save(report);
+		 */
+		// TODO in futuro decidere cosa farà anche solo mandare una mail
+		// L'utente segnala qualche tipo di abuso nella recensione o altro
+	}
 
 	@Transactional
-    public List<String> getAllergies(Long userId) {
+	public List<String> getAllergies(Long userId) {
 		Customer user = userDAO.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
 		return user.getAllergies().stream().map(Allergy::getName).collect(Collectors.toList());
-    }
+	}
 
-    public Page<UserDTO> findAll(PageRequest pageable) {
+	public Page<UserDTO> findAll(PageRequest pageable) {
 		return userDAO.findAll(pageable).map(UserDTO::new);
 	}
 
-    public void addRoleToCustomer(Long customerId, String role) {
-		Customer customer = userDAO.findById(customerId).orElseThrow(() -> new EntityNotFoundException("Customer not found"));
+	public void addRoleToCustomer(Long customerId, String role) {
+		Customer customer = userDAO.findById(customerId)
+				.orElseThrow(() -> new EntityNotFoundException("Customer not found"));
 		customer.getRoles().add(roleRepository.findByName(role));
 		userDAO.save(customer);
-    }
+	}
 
-    public void removeRoleFromCustomer(Long customerId, String role) {
-		Customer customer = userDAO.findById(customerId).orElseThrow(() -> new EntityNotFoundException("Customer not found"));
+	public void removeRoleFromCustomer(Long customerId, String role) {
+		Customer customer = userDAO.findById(customerId)
+				.orElseThrow(() -> new EntityNotFoundException("Customer not found"));
 		customer.getRoles().remove(roleRepository.findByName(role));
 		userDAO.save(customer);
-    }
+	}
 
-    public void addPrivilegeToRole(String roleName, String privilegeName) {
+	public void addPrivilegeToRole(String roleName, String privilegeName) {
 		Role role = roleRepository.findByName(roleName);
 		if (role == null) {
 			throw new EntityNotFoundException("Role not found");
@@ -383,6 +389,21 @@ public class CustomerService {
 		}
 		role.getPrivileges().add(privilege);
 		roleRepository.save(role);
-    }
+	}
+
+	public void updateCustomerStatus(Long customerId, Customer.Status newStatus) {
+		Customer customer = userDAO.findById(customerId)
+				.orElseThrow(() -> new IllegalArgumentException("Customer not found"));
+
+		// Aggiorna lo stato del customer
+		customer.setStatus(newStatus);
+		userDAO.save(customer);
+
+		// Invalida tutte le sessioni attive del customer
+		sessionRegistry.getAllPrincipals().stream()
+				.filter(principal -> principal instanceof Customer && ((Customer) principal).getId().equals(customerId))
+				.forEach(principal -> sessionRegistry.getAllSessions(principal, false)
+						.forEach(SessionInformation::expireNow));
+	}
 
 }

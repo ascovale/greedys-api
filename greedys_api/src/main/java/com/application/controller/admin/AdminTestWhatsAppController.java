@@ -1,7 +1,6 @@
 package com.application.controller.admin;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -14,13 +13,14 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 /**
  * Controller for handling WhatsApp message sending requests.
  */
 
 @RestController
-@PreAuthorize("hasRole('ADMIN')")
+@SecurityRequirement(name = "adminBearerAuth")
 public class AdminTestWhatsAppController {
     @Autowired
     private WhatsAppService whatsappService;
