@@ -7,7 +7,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public class NewRestaurantDTO {
-
     @NotNull
     @Size(min = 1, message = "{Size.restaurantDto.name}")
     private String name;
