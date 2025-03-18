@@ -32,11 +32,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RequestMapping("/admin/customer")
 @RestController
-@SecurityRequirement(name = "bearerAuth")
+@SecurityRequirement(name = "adminBearerAuth")
 @Tag(name = "Admin Customer", description = "Admin management APIs for the Customer")
 public class AdminCustomerController {
     private final CustomerService userService;
-
     @Autowired
     public AdminCustomerController(CustomerService userService) {
         this.userService = userService;
@@ -78,7 +77,7 @@ public class AdminCustomerController {
     @ApiResponse(responseCode = "400", description = "Invalid request")
     @PutMapping("/blockUser/{userId}")
     public GenericResponse blockUser(@PathVariable Long userId) {
-        userService.blockUser(userId);
+        userService.updateCustomerStatus(userId,Customer.Status.BLOCKED);
         return new GenericResponse("User blocked successfully");
     }
 
@@ -88,7 +87,7 @@ public class AdminCustomerController {
     @ApiResponse(responseCode = "400", description = "Invalid request")
     @PutMapping("/enableUser/{userId}")
     public GenericResponse enableUser(@PathVariable Long userId) {
-        userService.enableUser(userId);
+        userService.updateCustomerStatus(userId,Customer.Status.ENABLED);
         return new GenericResponse("User enabled successfully");
     }
 
@@ -156,8 +155,6 @@ public class AdminCustomerController {
         userService.addPrivilegeToRole(roleName, permission);
         return new GenericResponse("Permission added successfully");
     }
-
-
 
     @Operation(summary = "Get user ID", description = "Ottiene l'ID dell'utente corrente", responses = {
             @ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Long.class))),

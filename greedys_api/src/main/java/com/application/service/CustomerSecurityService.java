@@ -16,17 +16,15 @@ public class CustomerSecurityService {
 
     @Autowired 
     private ReservationDAO reservationRepository;
-    
+
     public boolean hasPermissionOnReservation(Long idReservation) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
             return false;
         }
-
         Object principal = authentication.getPrincipal();
         Long customerId = null; 
         Customer customer =null;
-
         if (principal instanceof Customer) {
             customer = (Customer) principal;
             customerId = customer.getId();
@@ -39,4 +37,22 @@ public class CustomerSecurityService {
         return reservation.isPresent() && reservation.get().getCustomer().getId().equals(customerId) && customer.isEnabled();
     }
 
+    public boolean hasAllergy(Long idAllergy) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return false;
+        }
+        Object principal = authentication.getPrincipal();
+        Customer customer = null;
+        if (principal instanceof Customer) {
+            customer = (Customer) principal;
+        } else {
+            return false;
+        }
+        // Check if the customer has the allergy with the given id
+        return customer.getAllergies().stream()
+                       .anyMatch(allergy -> allergy.getId().equals(idAllergy));
+    }
+
+    
 }

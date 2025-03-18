@@ -47,7 +47,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RequestMapping("/admin/restaurant")
 @RestController
-@SecurityRequirement(name = "bearerAuth")
+@SecurityRequirement(name = "adminBearerAuth")
 @Tag(name = "Admin Restaurant", description = "Admin management APIs for the Restaurant")
 public class AdminRestaurantController {
 
@@ -356,4 +356,14 @@ public class AdminRestaurantController {
 		return new GenericResponse("Restaurant marked as deleted successfully");
 	}
 
+	
+    @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_USER_WRITE')")
+    @Operation(summary = "Block restaurant user", description = "Blocks a restaurant user by their ID")
+    @ApiResponse(responseCode = "200", description = "Restaurant user blocked successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
+    @ApiResponse(responseCode = "400", description = "Invalid request")
+    @PutMapping("/{idRestaurant}/block")
+    public GenericResponse blockRestaurantUser(@PathVariable Long idRestaurant) {
+		restaurantService.updateRestaurantStatus(idRestaurant, com.application.persistence.model.restaurant.Restaurant.Status.DISABLED);
+        return new GenericResponse("Restaurant user blocked successfully");
+    }
 }

@@ -35,7 +35,7 @@ public class Admin implements UserDetails {
 	@ManyToMany
 	@JoinTable(name = "admin_has_role", joinColumns = @JoinColumn(name = "admin_id"), inverseJoinColumns = @JoinColumn(name = "admin_role_id"))
 	private Collection<AdminRole> adminRoles;
-	private Boolean bloked = false;
+	private Boolean blocked = false;
 	private Boolean deleted = false;
 	private Integer toReadNotification = 0;
 	
@@ -67,20 +67,17 @@ public class Admin implements UserDetails {
 		this.deleted = deleted;
 	}
 
-	public Boolean getBloked() {
-		return bloked;
+	public Boolean getBlocked() {
+		return blocked;
 	}
 
-	public void setIsBloked(Boolean bloked) {
-		this.bloked = bloked;
+	public void setIsBlocked(Boolean blocked) {
+		this.blocked = blocked;
 	}
-
-
 
 	@Override
 	public boolean isEnabled() {
-		return enabled;
-	}
+		return status == Status.ENABLED ;	}
 
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
@@ -178,8 +175,6 @@ public class Admin implements UserDetails {
         return authorities;
     }
 
-	
-
 	public Integer getToReadNotification() {
 		return toReadNotification;
 	}
@@ -196,7 +191,7 @@ public class Admin implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return status != Status.BLOCKED;
+        return status == Status.ENABLED;
     }
 
 	@Override

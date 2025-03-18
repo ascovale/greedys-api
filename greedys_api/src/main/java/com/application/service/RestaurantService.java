@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.session.SessionInformation;
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,6 +59,9 @@ public class RestaurantService {
 	@Autowired
 	private RestaurantUserService restaurantUserService;
 
+	@Autowired
+	private SessionRegistry sessionRegistry;
+
 	public Restaurant getReference(Long id) {
 		return entityManager.getReference(Restaurant.class, id);
 	}
@@ -99,7 +104,7 @@ public class RestaurantService {
 		RestaurantDTO r = new RestaurantDTO(restaurant);
 		NewRestaurantUserDTO restaurantUserDTO = new NewRestaurantUserDTO();
 		restaurantUserDTO.setRestaurantId(r.getId());
-		RestaurantUser owner = restaurantUserService.registerRestaurantUser(restaurantUserDTO,restaurant);
+		RestaurantUser owner = restaurantUserService.registerRestaurantUser(restaurantUserDTO, restaurant);
 		RestaurantRole rRole = new RestaurantRole();
 		rRole.setName("ROLE_OWNER");
 		rRole.setRestaurant(getReference(r.getId()));
@@ -130,13 +135,15 @@ public class RestaurantService {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException("Unimplemented method 'markRestaurantAsDeleted'");
 
-		
-		/*User user = userService.registerNewUserAccount(accountDto);
-		eventPublisher.publishEvent(new UserOnRegistrationCompleteEvent(user, Locale.ITALIAN, getAppUrl(request)));
-		restaurantDto.setOwnerId(user.getId());
-		RestaurantDTO r = restaurantService.registerRestaurant(restaurantDto);
-		return new GenericResponse("success");*/
-		
+		/*
+		 * User user = userService.registerNewUserAccount(accountDto);
+		 * eventPublisher.publishEvent(new UserOnRegistrationCompleteEvent(user,
+		 * Locale.ITALIAN, getAppUrl(request)));
+		 * restaurantDto.setOwnerId(user.getId());
+		 * RestaurantDTO r = restaurantService.registerRestaurant(restaurantDto);
+		 * return new GenericResponse("success");
+		 */
+
 	}
 
 	public Collection<LocalDate> getClosedDays(Long id, LocalDate start, LocalDate end) {
@@ -183,7 +190,8 @@ public class RestaurantService {
 	}
 
 	public List<String> getRestaurantTypesNames() {
-		RestaurantUser restaurantUser = (RestaurantUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		RestaurantUser restaurantUser = (RestaurantUser) SecurityContextHolder.getContext().getAuthentication()
+				.getPrincipal();
 		if (restaurantUser != null) {
 			Restaurant restaurant = restaurantUser.getRestaurant();
 			return restaurant.getRestaurantTypes().stream()
@@ -222,7 +230,7 @@ public class RestaurantService {
 
 	public void changeRestaurantEmail(Long idRestaurant, String newEmail) {
 		Restaurant restaurant = rDAO.findById(idRestaurant)
-			.orElseThrow(() -> new IllegalArgumentException("Invalid restaurant ID"));
+				.orElseThrow(() -> new IllegalArgumentException("Invalid restaurant ID"));
 		restaurant.setEmail(newEmail);
 		rDAO.save(restaurant);
 	}
@@ -232,7 +240,7 @@ public class RestaurantService {
 
 	public void updateRestaurantCategory(Long idCategory, RestaurantCategoryDTO restaurantCategoryDto) {
 		RestaurantCategory restaurantCategory = restaurantCategoryDAO.findById(idCategory)
-			.orElseThrow(() -> new IllegalArgumentException("Invalid category ID"));
+				.orElseThrow(() -> new IllegalArgumentException("Invalid category ID"));
 		restaurantCategory.setName(restaurantCategoryDto.getName());
 		restaurantCategory.setDescription(restaurantCategoryDto.getDescription());
 		restaurantCategoryDAO.save(restaurantCategory);
@@ -240,17 +248,34 @@ public class RestaurantService {
 
 	public void deleteRestaurantCategory(Long idCategory) {
 		RestaurantCategory restaurantCategory = restaurantCategoryDAO.findById(idCategory)
-			.orElseThrow(() -> new IllegalArgumentException("Invalid category ID"));
-		//restaurantCategory.setStatus(RestaurantCategory.Status.DELETED);
+				.orElseThrow(() -> new IllegalArgumentException("Invalid category ID"));
+		// restaurantCategory.setStatus(RestaurantCategory.Status.DELETED);
 		restaurantCategoryDAO.save(restaurantCategory);
 	}
 
-
-    public void setRestaurantDeleted(Long idRestaurant, boolean b) {
+	public void setRestaurantDeleted(Long idRestaurant, boolean b) {
 		Restaurant restaurant = rDAO.findById(idRestaurant)
-			.orElseThrow(() -> new IllegalArgumentException("Invalid restaurant ID"));
+				.orElseThrow(() -> new IllegalArgumentException("Invalid restaurant ID"));
 		restaurant.setStatus(Restaurant.Status.DELETED);
 		rDAO.save(restaurant);
-    }
+	}
 
+	public void updateRestaurantStatus(Long restaurantId, Restaurant.Status newStatus) {
+		Restaurant restaurant = rDAO.findById(restaurantId)
+				.orElseThrow(() -> new IllegalArgumentException("Invalid restaurant ID"));
+		restaurant.setStatus(Restaurant.Status.DISABLED);
+		Collection<RestaurantUser> restaurantUsers = ruDAO.findByRestaurantId(restaurantId);
+		for (RestaurantUser ru : restaurantUsers) {
+			Long restaurantUserId = ru.getId();
+			// Aggiorna lo stato del customer
+			ruDAO.save(ru);
+			ruDAO.save(ru);
+			// Invalida tutte le sessioni attive del restaurantUser
+			sessionRegistry.getAllPrincipals().stream()
+					.filter(principal -> principal instanceof RestaurantUser
+							&& ((RestaurantUser) principal).getId().equals(restaurantUserId))
+					.forEach(principal -> sessionRegistry.getAllSessions(principal, false)
+							.forEach(SessionInformation::expireNow));
+		}
+	}
 }
