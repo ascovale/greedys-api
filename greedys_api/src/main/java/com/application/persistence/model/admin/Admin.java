@@ -76,8 +76,8 @@ public class Admin implements UserDetails {
 
 	@Override
 	public boolean isEnabled() {
-		return status == Status.ENABLED ;	}
-
+		return status == Status.ENABLED ;	
+	}
 
 	public Collection<AdminRole> getAdminRoles() {
 		return adminRoles;
