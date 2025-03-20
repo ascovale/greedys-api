@@ -10,8 +10,6 @@ import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.session.SessionInformation;
-import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,7 +54,6 @@ public class CustomerService {
 	private final EntityManager entityManager;
 	private final AllergyDAO allergyDAO;
 	private final PrivilegeDAO privilegeDAO;
-	private final SessionRegistry sessionRegistry;
 	
 		public CustomerService(CustomerDAO userDAO, VerificationTokenDAO tokenDAO,
 				PasswordResetTokenDAO passwordTokenRepository,
@@ -64,8 +61,7 @@ public class CustomerService {
 				RoleDAO roleRepository,
 				EntityManager entityManager,
 				AllergyDAO allergyDAO,
-				PrivilegeDAO privilegeDAO,
-				SessionRegistry sessionRegistry
+				PrivilegeDAO privilegeDAO
 				) {
 			this.userDAO = userDAO;
 			this.tokenDAO = tokenDAO;
@@ -75,7 +71,6 @@ public class CustomerService {
 			this.entityManager = entityManager;
 			this.privilegeDAO = privilegeDAO;
 			this.allergyDAO = allergyDAO;
-			this.sessionRegistry = sessionRegistry;
 
 	}
 
@@ -386,24 +381,6 @@ public class CustomerService {
 		// Aggiorna lo stato del customer
 		customer.setStatus(newStatus);
 		userDAO.save(customer);
-
-		// Invalida tutte le sessioni attive del customer
-		sessionRegistry.getAllPrincipals().stream()
-				.filter(principal -> principal instanceof Customer && ((Customer) principal).getId().equals(customerId))
-				.forEach(principal -> sessionRegistry.getAllSessions(principal, false)
-						.forEach(SessionInformation::expireNow));
-
-	}
-
-	public List<String> getUsersFromSessionRegistry() {
-		return sessionRegistry.getAllPrincipals().stream()
-				.filter((u) -> !sessionRegistry.getAllSessions(u, false).isEmpty()).map(o -> {
-					if (o instanceof Customer) {
-						return ((Customer) o).getEmail();
-					} else {
-						return o.toString();
-					}
-				}).collect(Collectors.toList());
 	}
 
 	public void save(Customer user) {
