@@ -36,9 +36,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Tag(name = "Auth", description = "Controller per la gestione dell'autenticazione")
+@Tag(name = "Customer Auth", description = "Controller per la gestione dell'autenticazione")
 @RestController
-@RequestMapping(value = "/public/auth", produces = "application/json")
+@RequestMapping(value = "/public/customer", produces = "application/json")
 public class CustomerAuthController {
     private static final Logger logger = LoggerFactory.getLogger(CustomerAuthController.class);
 
@@ -59,7 +59,7 @@ public class CustomerAuthController {
             @ApiResponse(responseCode = "401", description = "Autenticazione fallita", content = @Content(mediaType = "application/json"))
     })
     @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Richiesta di autenticazione", required = true, content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthRequestDTO.class)))
-    @PostMapping(value = "/user", produces = "application/json")
+    @PostMapping(value = "/login", produces = "application/json")
     public ResponseEntity<AuthResponseDTO> createAuthenticationToken(@RequestBody AuthRequestDTO authenticationRequest)
             throws Exception {
         authenticationManager.authenticate(
@@ -143,4 +143,5 @@ public class CustomerAuthController {
         // Implement a method to generate a random password
         return UUID.randomUUID().toString();
     }
+
 }

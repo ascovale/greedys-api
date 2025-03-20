@@ -5,10 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
-import org.springframework.security.core.session.SessionInformation;
-import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,14 +42,12 @@ public class AdminService {
 	private final AdminPasswordResetTokenDAO passwordTokenRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final AdminRoleDAO roleRepository;
-	private final SessionRegistry sessionRegistry;
 	private final EntityManager entityManager;
 
 	public AdminService(AdminDAO adminDAO, AdminVerificationTokenDAO tokenDAO,
 	AdminPasswordResetTokenDAO passwordTokenRepository,
 			PasswordEncoder passwordEncoder,
 			AdminRoleDAO roleRepository,
-			SessionRegistry sessionRegistry,
 			EntityManager entityManager
 			) {
 		this.adminDAO = adminDAO;
@@ -60,7 +55,6 @@ public class AdminService {
 		this.passwordTokenRepository = passwordTokenRepository;
 		this.passwordEncoder = passwordEncoder;
 		this.roleRepository = roleRepository;
-		this.sessionRegistry = sessionRegistry;
 		this.entityManager = entityManager;
 	}
 
@@ -198,17 +192,6 @@ public class AdminService {
 		return adminDAO.findByEmail(email) != null;
 	}
 
-	public List<String> getAdminsFromSessionRegistry() {
-		return sessionRegistry.getAllPrincipals().stream()
-				.filter((u) -> !sessionRegistry.getAllSessions(u, false).isEmpty()).map(o -> {
-					if (o instanceof Admin) {
-						return ((Admin) o).getEmail();
-					} else {
-						return o.toString();
-					}
-				}).collect(Collectors.toList());
-	}
-
 	public void save(Admin user) {
 		adminDAO.save(user);
 	}
@@ -268,11 +251,7 @@ public class AdminService {
 		admin.setStatus(newStatus);
 		adminDAO.save(admin);
 
-		// Invalida tutte le sessioni attive del admin
-		sessionRegistry.getAllPrincipals().stream()
-				.filter(principal -> principal instanceof Admin && ((Admin) principal).getId().equals(adminId))
-				.forEach(principal -> sessionRegistry.getAllSessions(principal, false)
-						.forEach(SessionInformation::expireNow));
+		// Ricreare il token jwt per i ruoli che possono essere cambiati
 	}
 
 }
