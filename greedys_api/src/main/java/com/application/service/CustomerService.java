@@ -305,7 +305,7 @@ public class CustomerService {
 	@Transactional
 	public void enableUser(Long userId) {
 		Customer user = userDAO.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
-		user.setEnabled(true);
+		user.setStatus(Customer.Status.ENABLED);
 		userDAO.save(user);
 	}
 	/*
@@ -319,7 +319,7 @@ public class CustomerService {
 
 	public void blockUser(Long userId) {
 		Customer user = userDAO.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
-		user.setEnabled(false);
+		user.setStatus(Customer.Status.DISABLED);
 		userDAO.save(user);
 	}
 
