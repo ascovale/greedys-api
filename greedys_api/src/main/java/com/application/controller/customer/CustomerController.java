@@ -22,6 +22,7 @@ import com.application.persistence.model.customer.Customer;
 import com.application.security.user.ISecurityUserService;
 import com.application.service.CustomerService;
 import com.application.web.dto.get.UserDTO;
+import com.application.web.dto.post.NewCustomerDTO;
 import com.application.web.dto.put.UpdatePasswordDTO;
 import com.application.web.error.InvalidOldPasswordException;
 import com.application.web.util.GenericResponse;
@@ -43,7 +44,7 @@ import jakarta.validation.Valid;
 public class CustomerController {
     private final CustomerService userService;
     private final MessageSource messages;
-    private final ISecurityUserService securityUserService;
+    private final ISecurityUserService securityUserService;    
 
     public CustomerController(CustomerService userService,
             MessageSource messages, @Qualifier("customerSecurityService") ISecurityUserService securityUserService) {
@@ -99,7 +100,6 @@ public class CustomerController {
         return new GenericResponse(messages.getMessage("message.resetPasswordEmail", null, request.getLocale()));
     }
 
-    // change user password
     @PreAuthorize("authentication.principal.isEnabled()")
     @Operation(summary = "Generate new token for password change", description = "Cambia la password dell'utente dopo aver verificato la vecchia password")
     @ApiResponse(responseCode = "200", description = "Password cambiata con successo", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
@@ -130,22 +130,22 @@ public class CustomerController {
 
     @PreAuthorize("authentication.principal.isEnabled()")
     @Operation(summary = "Delete customer", description = "Cancella un utente specifico tramite il suo ID")
-    @ApiResponse(responseCode = "200", description = "Utente cancellato con successo", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
-    @ApiResponse(responseCode = "404", description = "Utente non trovato")
-    @DeleteMapping("/delete customer")
+    @ApiResponse(responseCode = "200", description = "Customer cancellato con successo", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
+    @ApiResponse(responseCode = "404", description = "Customer non trovato")
+    @DeleteMapping("/delete")
     public GenericResponse deleteUser() {
         userService.deleteUserById(getUserId());
-        return new GenericResponse("User deleted successfully");
+        return new GenericResponse("Customer deleted successfully");
     }
 
     @PreAuthorize("authentication.principal.isEnabled()")
     @Operation(summary = "Update user", description = "Modifica i dettagli di un utente specifico tramite il suo ID")
-    @ApiResponse(responseCode = "200", description = "Utente aggiornato con successo", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserDTO.class)))
+    @ApiResponse(responseCode = "200", description = "Utente aggiornato con successo", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "404", description = "Utente non trovato")
-    @PutMapping("/{id}")
-    public GenericResponse updateUser(@Valid @RequestBody UserDTO userDto) {
-        userService.updateUser(getUserId(), userDto);
-        return new GenericResponse("User modified successfully");
+    @PutMapping("/update")
+    public GenericResponse updateUser(@Valid @RequestBody NewCustomerDTO customerDto) {
+        userService.updateUser(getUserId(), customerDto);
+        return new GenericResponse("Customer modified successfully");
     }
 
     @PreAuthorize("authentication.principal.isEnabled()")

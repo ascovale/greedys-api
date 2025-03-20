@@ -23,10 +23,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Tag(name = "Auth", description = "Controller per la gestione dell'autenticazione")
+@Tag(name = "Admin Auth", description = "Controller per la gestione dell'autenticazione")
 @RestController
-@RequestMapping(value = "/public/admin/auth", produces = "application/json")
+@RequestMapping(value = "/public/admin", produces = "application/json")
 public class AdminAuthController {
+
+    //TODO Manca Restaurant User Auth
 
     private AuthenticationManager authenticationManager;
     private JwtUtil jwtUtil;
@@ -45,7 +47,7 @@ public class AdminAuthController {
             @ApiResponse(responseCode = "401", description = "Autenticazione fallita", content = @Content(mediaType = "application/json"))
     })
     @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Richiesta di autenticazione", required = true, content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthRequestDTO.class)))
-    @PostMapping(value = "/", produces = "application/json")
+    @PostMapping(value = "/login", produces = "application/json")
     public ResponseEntity<AdminAuthResponseDTO> createAuthenticationToken(@RequestBody AuthRequestDTO authenticationRequest)
             throws Exception {
         authenticationManager.authenticate(
