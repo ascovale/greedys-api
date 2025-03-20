@@ -81,7 +81,7 @@ public class TestDataConfig {
 		userDTO.setPassword("Minosse100%");
 		userDTO.setEmail("info@lasoffittarenovatio.it");
 		Customer user = userService.registerNewUserAccount(userDTO);
-		user.setEnabled(true);
+		user.setStatus(Customer.Status.ENABLED);
 		if (premiumRole != null) {
 			user.addRole(premiumRole);
 		}
@@ -170,7 +170,6 @@ public class TestDataConfig {
 			massimoUser.setPassword("Minosse100%");
 			massimoUser.setStatus(RestaurantUser.Status.ENABLED);
 			ruDAO.save(massimoUser);
-
 		}
 	}
 
