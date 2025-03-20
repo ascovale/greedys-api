@@ -3,8 +3,6 @@ package com.application.persistence.model.restaurant.user;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import com.application.persistence.model.restaurant.Restaurant;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -12,7 +10,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -23,8 +20,6 @@ public class RestaurantRole {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private String name;
-    @ManyToOne
-    private Restaurant restaurant;
 	@ManyToMany
     private Collection<RestaurantUser> users;
     @ManyToMany
@@ -41,16 +36,6 @@ public class RestaurantRole {
     public RestaurantRole(final String name) {
         super();
         this.name = name;
-    }
-
-    //
-
-    public Restaurant getRestaurant() {
-        return restaurant;
-    }
-
-    public void setRestaurant(final Restaurant restaurant) {
-        this.restaurant = restaurant;
     }
 
     public Long getId() {
@@ -97,7 +82,6 @@ public class RestaurantRole {
     public String toString() {
         final StringBuilder builder = new StringBuilder();
         builder.append("Role [name=").append(name).append("] ")
-        .append("Restaurant [id=").append(restaurant.getId()).append("] ")
         .append("[id=").append(id).append("]");
         return builder.toString();
     }

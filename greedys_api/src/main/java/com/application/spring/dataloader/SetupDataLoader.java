@@ -16,12 +16,16 @@ import com.application.persistence.dao.admin.AdminPrivilegeDAO;
 import com.application.persistence.dao.admin.AdminRoleDAO;
 import com.application.persistence.dao.customer.PrivilegeDAO;
 import com.application.persistence.dao.customer.RoleDAO;
+import com.application.persistence.dao.restaurant.RestaurantPrivilegeDAO;
+import com.application.persistence.dao.restaurant.RestaurantRoleDAO;
 import com.application.persistence.dao.restaurant.ServiceTypeDAO;
 import com.application.persistence.model.admin.AdminPrivilege;
 import com.application.persistence.model.admin.AdminRole;
 import com.application.persistence.model.customer.Privilege;
 import com.application.persistence.model.customer.Role;
 import com.application.persistence.model.reservation.ServiceType;
+import com.application.persistence.model.restaurant.user.RestaurantPrivilege;
+import com.application.persistence.model.restaurant.user.RestaurantRole;
 import com.application.persistence.model.systemconfig.SetupConfig;
 
 @Component
@@ -40,10 +44,12 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
     private AdminPrivilegeDAO adminPrivilegeDAO;
     @Autowired
     private PasswordEncoder passwordEncoder;
-    
+    @Autowired
+    RestaurantRoleDAO restaurantRoleDAO;
+    @Autowired
+    RestaurantPrivilegeDAO restaurantPrivilegeDAO;
     @Autowired
     private SetupConfigDAO setupConfigDAO;
-
 
     // API
     @Override
@@ -104,24 +110,6 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
         ucreateRoleIfNotFound("ROLE_PREMIUM_USER", new ArrayList<>(uadminPrivileges));
         ucreateRoleIfNotFound("ROLE_USER", new ArrayList<>(userPrivileges));
 
-        // == I RESTAURANT ROLE SONO RELATIVI AD UN RISTORANTE QUINDI POSSONO ESSERE
-        // GESTITI DALL'UTENTE E VENGONO GENERATI QUANDO VIENE CREATO UN RISTORANTE
-        /*
-         * final List<Privilege> restaurantPrivileges = new ArrayList<Privilege>(
-         * Arrays.asList(ureadPrivilege, uwritePrivilege));
-         * 
-         * ucreateRestaurantRoleIfNotFound("ROLE_OWNER", restaurantPrivileges);
-         * ucreateRestaurantRoleIfNotFound("ROLE_MANAGER", restaurantPrivileges);
-         * ucreateRestaurantRoleIfNotFound("ROLE_VIEWER", restaurantPrivileges);
-         * ucreateRestaurantRoleIfNotFound("ROLE_CHEF", restaurantPrivileges);
-         * ucreateRestaurantRoleIfNotFound("ROLE_WAITER", restaurantPrivileges);
-         */
-        // == create initial companyUser
-        // createUserIfNotFound("test@test.com", "Test", "Test", "test", new
-        // ArrayList<RoleCompany>(Arrays.asList(adminRole)));
-
-        // create defautlt service types
-        // ucreateServiceIfNotFound("MENU");
         setupConfig.setId(1L);
         setupConfig.setAlreadySetup(true);
         setupConfigDAO.save(setupConfig);
@@ -177,16 +165,80 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
         role = adminRoleDAO.save(role);
         return role;
     }
-    /*
-     * private Role ucreateRestaurantRoleIfNotFound(String name, List<Privilege>
-     * privileges) {
-     * Role role = roleDAO.findByName(name);
-     * if (role == null) {
-     * role = new Role(name);
-     * }
-     * role.setPrivileges(privileges);
-     * role = roleDAO.save(role);
-     * return role;
-     * }
-     */
+
+    @Transactional
+    private Role ucreateCustomerRestaurantRoleIfNotFound(String name, List<Privilege> privileges) {
+        Role role = roleDAO.findByName(name);
+        if (role == null) {
+            role = new Role(name);
+        }
+        role.setPrivileges(privileges);
+        role = roleDAO.save(role);
+        return role;
+    }
+
+    @Transactional
+    private void createRestaurantPrivilegesAndRoles() {
+        // Crea i privilegi specifici per i ruoli dei ristoranti
+        final RestaurantPrivilege managerWritePrivilege = ucreateRestaurantPrivilegeIfNotFound("PRIVILEGE_RESTAURANT_USER_MANAGER_WRITE");
+        final RestaurantPrivilege chefWritePrivilege = ucreateRestaurantPrivilegeIfNotFound("PRIVILEGE_RESTAURANT_USER_CHEF_WRITE");
+        final RestaurantPrivilege waiterWritePrivilege = ucreateRestaurantPrivilegeIfNotFound("PRIVILEGE_RESTAURANT_USER_WAITER_WRITE");
+        final RestaurantPrivilege viewerWritePrivilege = ucreateRestaurantPrivilegeIfNotFound("PRIVILEGE_RESTAURANT_USER_VIEWER_WRITE");
+        final RestaurantPrivilege roleWritePrivilege = ucreateRestaurantPrivilegeIfNotFound("PRIVILEGE_RESTAURANT_USER_ROLE_WRITE");
+        final RestaurantPrivilege reservationWritePrivilege = ucreateRestaurantPrivilegeIfNotFound("PRIVILEGE_RESTAURANT_USER_RESERVATION_WRITE");
+        final RestaurantPrivilege serviceWritePrivilege = ucreateRestaurantPrivilegeIfNotFound("PRIVILEGE_RESTAURANT_USER_SERVICE_WRITE");
+        final RestaurantPrivilege serviceReadPrivilege = ucreateRestaurantPrivilegeIfNotFound("PRIVILEGE_RESTAURANT_USER_SERVICE_READ");
+        final RestaurantPrivilege slotWritePrivilege = ucreateRestaurantPrivilegeIfNotFound("PRIVILEGE_RESTAURANT_USER_SLOT_WRITE");
+    
+        // Lista dei privilegi per i ruoli dei ristoranti
+        final List<RestaurantPrivilege> ownerPrivileges = new ArrayList<>(Arrays.asList(
+            managerWritePrivilege, chefWritePrivilege, waiterWritePrivilege, viewerWritePrivilege,
+            roleWritePrivilege, reservationWritePrivilege, serviceWritePrivilege, serviceReadPrivilege, slotWritePrivilege
+        ));
+    
+        final List<RestaurantPrivilege> managerPrivileges = new ArrayList<>(Arrays.asList(
+            chefWritePrivilege, waiterWritePrivilege, viewerWritePrivilege,
+            roleWritePrivilege, reservationWritePrivilege, serviceWritePrivilege, serviceReadPrivilege, slotWritePrivilege
+        ));
+    
+        final List<RestaurantPrivilege> viewerPrivileges = new ArrayList<>(Arrays.asList(
+            serviceReadPrivilege
+        ));
+    
+        final List<RestaurantPrivilege> chefPrivileges = new ArrayList<>(Arrays.asList(
+            serviceReadPrivilege, slotWritePrivilege
+        ));
+    
+        final List<RestaurantPrivilege> waiterPrivileges = new ArrayList<>(Arrays.asList(
+            serviceReadPrivilege
+        ));
+    
+        // Crea i ruoli predefiniti per i ristoranti
+        ucreateRestaurantRoleIfNotFound("ROLE_OWNER", ownerPrivileges);
+        ucreateRestaurantRoleIfNotFound("ROLE_MANAGER", managerPrivileges);
+        ucreateRestaurantRoleIfNotFound("ROLE_VIEWER", viewerPrivileges);
+        ucreateRestaurantRoleIfNotFound("ROLE_CHEF", chefPrivileges);
+        ucreateRestaurantRoleIfNotFound("ROLE_WAITER", waiterPrivileges);
+    }
+
+    @Transactional
+    private RestaurantPrivilege ucreateRestaurantPrivilegeIfNotFound(final String name) {
+        RestaurantPrivilege privilege = restaurantPrivilegeDAO.findByName(name);
+        if (privilege == null) {
+            privilege = new RestaurantPrivilege(name);
+            privilege = restaurantPrivilegeDAO.save(privilege);
+        }
+        return privilege;
+    }
+
+    @Transactional
+    private RestaurantRole ucreateRestaurantRoleIfNotFound(String name, List<RestaurantPrivilege> privileges) {
+        RestaurantRole role = restaurantRoleDAO.findByName(name);
+        if (role == null) {
+            role = new RestaurantRole(name);
+        }
+        role.setPrivileges(privileges);
+        role = restaurantRoleDAO.save(role);
+        return role;
+    }
 }

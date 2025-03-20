@@ -81,4 +81,9 @@ public class SlotService {
         return new SlotDTO(slotDAO.findById(id).get());
     }
 
+    public boolean cancelSlot(Long id, Long slotId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'cancelSlot'");
+    }
+
 }
