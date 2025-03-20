@@ -183,7 +183,7 @@ public class CustomerService {
 			return TOKEN_EXPIRED;
 		}
 
-		user.setEnabled(true);
+		user.setStatus(Customer.Status.ENABLED);
 		// tokenDAO.delete(verificationToken);
 		userDAO.save(user);
 		return TOKEN_VALID;

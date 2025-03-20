@@ -24,6 +24,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "adminBearerAuth")
 @Tag(name = "Admin RestaurantUser", description = "Admin management APIs for the RestaurantUser")
 public class AdminRestaurantUserController {
+    //TODO: aggiungere ruoli e permessi ai ruoli come metodi
 
     //TODO Forse manca il delete restaurant user e quindi anche altri utenti
 

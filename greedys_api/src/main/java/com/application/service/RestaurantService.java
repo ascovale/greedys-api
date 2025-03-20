@@ -102,7 +102,6 @@ public class RestaurantService {
 		RestaurantUser owner = restaurantUserService.registerRestaurantUser(restaurantUserDTO, restaurant);
 		RestaurantRole rRole = new RestaurantRole();
 		rRole.setName("ROLE_OWNER");
-		rRole.setRestaurant(getReference(r.getId()));
 		rRole.setUsers(Collections.singletonList(owner));
 		restaurantRoleDAO.save(rRole);
 		restaurantUserService.acceptRestaurantUser(owner.getId());

@@ -68,7 +68,9 @@ public class Restaurant {
 	public enum Status {
 		ENABLED,
 		DISABLED,
-		DELETED
+		DELETED,
+		CLOSED,
+		TEMPORARILY_CLOSED
 	}
 
 	@Column(name = "status")

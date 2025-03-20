@@ -31,8 +31,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "Service", description = "Controller per la gestione dei servizi offerti dai ristoranti")
 @RestController
-@RequestMapping("/restaurant_user/{idRestaurantUser}/service")
-//@PreAuthorize("@securityService.isRestaurantUserPermission(#idRestaurantUser)")
+@RequestMapping("/restaurant/service")
 @SecurityRequirement(name = "restaurantBearerAuth")
 public class RestaurantServicesController {
 
@@ -41,13 +40,13 @@ public class RestaurantServicesController {
     @Autowired
     private SlotService slotService;
 
-    @PreAuthorize("@securityService.hasRestaurantUserPrivilege(#idRestaurantUser, 'PRIVILEGE_GESTIONE_SERVIZI')")
     @Operation(summary = "Create a new service", description = "This method creates a new service in the system.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Service created successfully"),
         @ApiResponse(responseCode = "400", description = "Invalid input data"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
+    @PreAuthorize("authentication.principal.isEnabled() & hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_WRITE')")
     @PostMapping("/new_service")
     public ResponseEntity<GenericResponse> newService(@RequestBody RestaurantNewServiceDTO servicesDto) {
         System.out.println("<<<   Controller Service   >>>");
@@ -62,7 +61,7 @@ public class RestaurantServicesController {
         @ApiResponse(responseCode = "400", description = "Invalid service ID"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @PreAuthorize("@securityService.hasRestaurantUserPrivilege(#idRestaurantUser, 'PRIVILEGE_GESTIONE_SERVIZI') && @securityService.hasServicePermission(#serviceId)")
+    @PreAuthorize("authentication.principal.isEnabled() & hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_WRITE')")
     @DeleteMapping("/delete_service")
     public GenericResponse deleteService(@RequestParam Long serviceId) {
         System.out.println("<<<   Controller Service   >>>");
@@ -71,7 +70,7 @@ public class RestaurantServicesController {
         return new GenericResponse("success");
     }
 
-    @PreAuthorize("@securityService.hasRestaurantUserPrivilege(#idRestaurantUser, 'PRIVILEGE_GESTIONE_SERVIZI') && @securityService.hasServicePermission(#serviceId)")
+    @PreAuthorize("authentication.principal.isEnabled() & hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_READ')")
     @Operation(summary = "Get service by ID", description = "Retrieve a service by its ID.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Service retrieved successfully"),
@@ -84,7 +83,7 @@ public class RestaurantServicesController {
         return ResponseEntity.ok(service);
     }
 
-    @PreAuthorize("@securityService.hasRestaurantUserPrivilege(#idRestaurantUser, 'PRIVILEGE_GESTIONE_SERVIZI') && @securityService.hasServicePermission(#serviceId)")
+    @PreAuthorize("authentication.principal.isEnabled() & hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_READ')")
     @Operation(summary = "Get all slots of a service", description = "Retrieve all slots associated with a specific service by its ID.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Slots retrieved successfully"),
@@ -96,6 +95,7 @@ public class RestaurantServicesController {
         return slotService.findByService_Id(serviceId);
     }
 
+    @PreAuthorize("authentication.principal.isEnabled() & hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_READ')")
     @GetMapping("/serviceTypes")
     @Operation(summary = "Get all service types", description = "Retrieve all service types.")
     @ApiResponses(value = {

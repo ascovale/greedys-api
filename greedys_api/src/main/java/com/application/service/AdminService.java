@@ -48,8 +48,7 @@ public class AdminService {
 	AdminPasswordResetTokenDAO passwordTokenRepository,
 			PasswordEncoder passwordEncoder,
 			AdminRoleDAO roleRepository,
-			EntityManager entityManager
-			) {
+			EntityManager entityManager) {
 		this.adminDAO = adminDAO;
 		this.tokenDAO = tokenDAO;
 		this.passwordTokenRepository = passwordTokenRepository;
@@ -57,8 +56,6 @@ public class AdminService {
 		this.roleRepository = roleRepository;
 		this.entityManager = entityManager;
 	}
-
-	// API
 
 	public AdminDTO findById(long id) {
 		Admin user = adminDAO.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
@@ -72,15 +69,15 @@ public class AdminService {
 		if (accountDto.getPassword() == null) {
 			throw new IllegalArgumentException("rawPassword cannot be null");
 		}
-		final Admin user = new Admin();
+		final Admin admin = new Admin();
 
-		user.setName(accountDto.getFirstName());
-		user.setSurname(accountDto.getLastName());
-		user.setPassword(passwordEncoder.encode(accountDto.getPassword()));
-		user.setEmail(accountDto.getEmail());
+		admin.setName(accountDto.getFirstName());
+		admin.setSurname(accountDto.getLastName());
+		admin.setPassword(passwordEncoder.encode(accountDto.getPassword()));
+		admin.setEmail(accountDto.getEmail());
 		// user.setUsing2FA(accountDto.isUsing2FA());
-		user.setAdminRoles(Arrays.asList(roleRepository.findByName("ROLE_USER")));
-		return adminDAO.save(user);
+		admin.setAdminRoles(Arrays.asList(roleRepository.findByName("ROLE_USER")));
+		return adminDAO.save(admin);
 	}
 
 	public Admin getUser(final String verificationToken) {
@@ -167,7 +164,8 @@ public class AdminService {
 			return TOKEN_EXPIRED;
 		}
 
-		user.setEnabled(true);
+		user.setStatus(Admin.Status.ENABLED);
+		//TODO: Cancellare verificationToken anche restaurantUser e Customer
 		// tokenDAO.delete(verificationToken);
 		adminDAO.save(user);
 		return TOKEN_VALID;
@@ -201,10 +199,10 @@ public class AdminService {
 	}
 
 	public void addImage(String email, Image image) {
-		Admin user = adminDAO.findByEmail(email);
+		Admin admin = adminDAO.findByEmail(email);
 		// user.setImage(image);
 		// BIsogna aggiungere una lista di immagini
-		adminDAO.save(user);
+		adminDAO.save(admin);
 	}
 
 	public Admin getReference(Long userId) {
@@ -251,7 +249,7 @@ public class AdminService {
 		admin.setStatus(newStatus);
 		adminDAO.save(admin);
 
-		// Ricreare il token jwt per i ruoli che possono essere cambiati
+		// TODO: gestione della cache
 	}
 
 }

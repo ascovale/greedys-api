@@ -44,7 +44,7 @@ public class SlotController {
                                     schema = @Schema(implementation = SlotDTO.class))),
                     
             })
-    @GetMapping("/{id}")
+    @GetMapping("/{slotId}")
     public SlotDTO getSlotById(@PathVariable Long id) {
         return slotService.findById(id);
     }

@@ -23,6 +23,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "adminBearerAuth")
 @Tag(name = "Admin User", description = "Admin management APIs for the Admin users")
 public class AdminUsersController {
+    //TODO: aggiungere ruoli e permessi ai ruoli come metodi
     // Riscrivere tutta la classe per implementare i metodi per dare togliere i permessi agli utenti admin
     // e per bloccare e sbloccare gli utenti admin o forse meglio chiamarlo supporto
     // aggiungere e rimuovere

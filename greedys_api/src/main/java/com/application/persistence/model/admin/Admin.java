@@ -30,7 +30,6 @@ public class Admin implements UserDetails {
 	private String email;
 	@Column(length = 60)
 	private String password;
-	private boolean enabled;
 	private String phoneNumber;
 	@ManyToMany
 	@JoinTable(name = "admin_has_role", joinColumns = @JoinColumn(name = "admin_id"), inverseJoinColumns = @JoinColumn(name = "admin_role_id"))
@@ -46,7 +45,7 @@ public class Admin implements UserDetails {
         DISABLED
     }
 
-	private Status status;
+	private Status status= Status.ENABLED;
 
 	public Status getStatus() {
 		return status;
@@ -79,9 +78,6 @@ public class Admin implements UserDetails {
 	public boolean isEnabled() {
 		return status == Status.ENABLED ;	}
 
-	public void setEnabled(boolean enabled) {
-		this.enabled = enabled;
-	}
 
 	public Collection<AdminRole> getAdminRoles() {
 		return adminRoles;
@@ -198,6 +194,13 @@ public class Admin implements UserDetails {
 	public boolean isCredentialsNonExpired() {
 		//TODO in futuro da cambiare se le credenziali scadono
 		return true;
+	}
+
+	public void addAdminRole(AdminRole adminRole) {
+		if (this.adminRoles == null) {
+			this.adminRoles = new ArrayList<>();
+		}
+		this.adminRoles.add(adminRole);
 	}
 	
 

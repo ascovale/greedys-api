@@ -31,11 +31,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  */
 @RestController
 @SecurityRequirement(name = "restaurantBearerAuth")
-//@PreAuthorize("@securityService.isRestaurantUserPermission(#idRestaurantUser)")
-@RequestMapping("/restaurant_user/reservation")
+@RequestMapping("/restaurant/reservation")
 @Tag(name = "Reservation Restaurant", description = "APIs for managing reservations from the restaurant")
 public class RestaurantReservationController {
-
+	//
 	private ReservationService reservationService;
 
 	@Autowired
@@ -43,13 +42,6 @@ public class RestaurantReservationController {
 		this.reservationService = reservationService;
 	}
 
-	/**
-	 * Creates a new reservation.
-	 *
-	 * @param idRestaurant the ID of the restaurant
-	 * @param DTO the data transfer object containing reservation details
-	 * @return ResponseEntity indicating the result of the operation
-	 */
 	@Operation(summary = "Create a new reservation", description = "Endpoint to create a new reservation")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Reservation created successfully"),
@@ -57,20 +49,14 @@ public class RestaurantReservationController {
 			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
 	})
 	@PostMapping("/new_reservation")
-	@PreAuthorize("@securityService.hasPermissionOnReservation(#idRestaurantUser, #DTO.reservationId)")
-	public ResponseEntity<?> createReservation(@PathVariable Long idRestaurantUser, @RequestBody RestaurantNewReservationDTO dto) {
+	@PreAuthorize("authentication.principal.isEnabled() & hasAuthority('PRIVILEGE_RESTAURANT_USER_RESERVATION_WRITE')")
+	public ResponseEntity<?> createReservation(@RequestBody RestaurantNewReservationDTO dto) {
+		//TODO: rivedere i permessi va bene che controllo il ristorante
+		// ma devo controllare enabled e che abbia il permesso di scrivere
 		reservationService.createRestaurantReservation(dto);
 		return ResponseEntity.ok().build();
 	}
 
-	/**
-	 * Accepts a reservation by its ID.
-	 *
-	 * @param idRestaurant the ID of the restaurant
-	 * @param reservationId the ID of the reservation
-	 * @param accepted the acceptance status
-	 * @return ResponseEntity indicating the result of the operation
-	 */
 	@Operation(summary = "Accept a reservation", description = "Endpoint to accept a reservation by its ID")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Reservation accepted successfully"),
