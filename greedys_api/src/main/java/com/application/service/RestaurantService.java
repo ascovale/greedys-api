@@ -10,8 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.session.SessionInformation;
-import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,9 +56,6 @@ public class RestaurantService {
 
 	@Autowired
 	private RestaurantUserService restaurantUserService;
-
-	@Autowired
-	private SessionRegistry sessionRegistry;
 
 	public Restaurant getReference(Long id) {
 		return entityManager.getReference(Restaurant.class, id);
@@ -270,12 +265,7 @@ public class RestaurantService {
 			// Aggiorna lo stato del customer
 			ruDAO.save(ru);
 			ruDAO.save(ru);
-			// Invalida tutte le sessioni attive del restaurantUser
-			sessionRegistry.getAllPrincipals().stream()
-					.filter(principal -> principal instanceof RestaurantUser
-							&& ((RestaurantUser) principal).getId().equals(restaurantUserId))
-					.forEach(principal -> sessionRegistry.getAllSessions(principal, false)
-							.forEach(SessionInformation::expireNow));
+			// Creare nuovamente Jwt perchè i permessi possono essere cambiati
 		}
 	}
 }
