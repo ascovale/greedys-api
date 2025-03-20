@@ -1,12 +1,11 @@
 package com.application.spring;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Properties;
 
 import javax.sql.DataSource;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,6 +24,8 @@ import jakarta.persistence.EntityManagerFactory;
 @EnableTransactionManagement
 public class PersistenceJPAConfig {
 
+    private static final Logger logger = LoggerFactory.getLogger(PersistenceJPAConfig.class);
+
     private final Environment env;
 
     public PersistenceJPAConfig(Environment env) {
@@ -33,12 +34,12 @@ public class PersistenceJPAConfig {
 
     @Bean
     DataSource dataSource() {
-        String dbPassword = "";
+        String dbPassword = "Minosse100%";/* 
         try {
             dbPassword = new String(Files.readAllBytes(Paths.get("/run/secrets/db_password"))).trim();
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
         
         DataSource dataSource = DataSourceBuilder.create()
                 .url(env.getProperty("spring.datasource.url"))
@@ -52,11 +53,12 @@ public class PersistenceJPAConfig {
         while (attempts > 0) {
             try {
                 dataSource.getConnection().close();
-                System.out.println("Database disponibile.");
+                logger.info("Database disponibile.");
                 break;
             } catch (Exception ex) {
                 attempts--;
-                System.out.println("Database non ancora disponibile. Riprovo tra 5 secondi... Tentativi rimasti: " + attempts);
+                logger.error("Errore durante il tentativo di connessione al database: {}", ex.getMessage(), ex);
+                logger.warn("Database non ancora disponibile. Riprovo tra 5 secondi... Tentativi rimasti: {}", attempts);
                 try {
                     Thread.sleep(5000); // Attende 5 secondi prima di riprovare
                 } catch (InterruptedException ie) {
