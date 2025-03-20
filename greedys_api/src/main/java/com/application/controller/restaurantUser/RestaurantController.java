@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.application.controller.utils.ControllerUtils;
 import com.application.service.ReservationService;
 import com.application.service.RestaurantService;
 import com.application.service.RoomService;
@@ -42,14 +43,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "Restaurant", description = "Controller per la gestione dei ristoranti")
 @RestController
-@RequestMapping("/restaurant_user/restaurant")
+@RequestMapping("/restaurant")
 //@PreAuthorize("@securityService.isRestaurantUserPermission(#idRestaurantUser)")
 @SecurityRequirement(name = "restaurantBearerAuth")
 public class RestaurantController {
 
-	//TODO: 	@PreAuthorize("securityRestaurantUserService.isRestaurantEnabled(#idRestaurantUser)")
-	// mettere i nuovi permessi nei preauthorize
-	//togliere idRestaurantUser e prendere idRestaurant
 
 	//Creare un tester che fa le richieste all'api e ne verifica la correttezza dei risultati.
 
@@ -76,7 +74,6 @@ public class RestaurantController {
 	})
 	@GetMapping(value = "/reservations")
 	public Collection<ReservationDTO> getReservations(
-			@PathVariable Long idRestaurantUser,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end) {
 		Collection<ReservationDTO> reservations = reservationService.getRestaurantReservations(start, end);
@@ -91,7 +88,6 @@ public class RestaurantController {
 	})
 	@GetMapping(value = "/reservation/accepted")
 	public Collection<ReservationDTO> getAcceptedReservations(
-			@PathVariable Long idRestaurantUser,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end) {
 		Collection<ReservationDTO> reservations = reservationService
@@ -107,7 +103,6 @@ public class RestaurantController {
 	})
 	@GetMapping(value = "/reservation/pageable")
 	public ResponseEntity<Page<ReservationDTO>> getReservationsPageable(
-			@PathVariable Long idRestaurantUser,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end,
 			@RequestParam int page,
@@ -126,7 +121,6 @@ public class RestaurantController {
 	})
 	@GetMapping(value = "/reservation/pending")
 	public Collection<ReservationDTO> getPendingReservations(
-			@PathVariable Long idRestaurantUser,
 			@RequestParam(required = false) LocalDate start,
 			@RequestParam(required = false) LocalDate end) {
 
@@ -138,7 +132,7 @@ public class RestaurantController {
 		} else if (end != null) {
 			throw new IllegalArgumentException("end cannot be null if start is not null");
 		} else {
-			reservations = reservationService.getPendingReservationsFromRestaurantUser(idRestaurantUser);
+			reservations = reservationService.getPendingReservationsFromRestaurantUser(ControllerUtils.getCurrentRestaurantUser().getId());
 		}
 		return reservations;
 	}
@@ -153,8 +147,8 @@ public class RestaurantController {
 			@ApiResponse(responseCode = "404", description = "Ristorante non trovato"),
 			@ApiResponse(responseCode = "400", description = "Richiesta non valida")
 	})
-	public ResponseEntity<Collection<ServiceDTO>> getServices(@PathVariable Long idRestaurant) {
-		Collection<ServiceDTO> services = restaurantService.getServices(idRestaurant);
+	public ResponseEntity<Collection<ServiceDTO>> getServices() {
+		Collection<ServiceDTO> services = restaurantService.getServices(ControllerUtils.getCurrentRestaurant().getId());
 		return new ResponseEntity<>(services, HttpStatus.OK);
 	}
 
@@ -167,8 +161,8 @@ public class RestaurantController {
 			@ApiResponse(responseCode = "404", description = "Ristorante non trovato"),
 			@ApiResponse(responseCode = "400", description = "Richiesta non valida")
 	})
-	public ResponseEntity<Collection<RoomDTO>> getRooms(@PathVariable Long idRestaurant) {
-		Collection<RoomDTO> rooms = roomService.findByRestaurant(idRestaurant);
+	public ResponseEntity<Collection<RoomDTO>> getRooms() {
+		Collection<RoomDTO> rooms = roomService.findByRestaurant(ControllerUtils.getCurrentRestaurant().getId());
 		return new ResponseEntity<>(rooms, HttpStatus.OK);
 	}
 
@@ -180,7 +174,8 @@ public class RestaurantController {
 			@ApiResponse(responseCode = "404", description = "Ristorante o sala non trovato"),
 			@ApiResponse(responseCode = "400", description = "Richiesta non valida")
 	})
-	public ResponseEntity<Collection<TableDTO>> getTables(@PathVariable Long idRestaurant, @PathVariable Long roomId) {
+	public ResponseEntity<Collection<TableDTO>> getTables(@PathVariable Long roomId) {
+		//TODO: restituisce tutti i tavoli non di un ristorante specifico credo non lo ho fatto io
 		Collection<TableDTO> tables = tableService.findByRoom(roomId);
 		return new ResponseEntity<>(tables, HttpStatus.OK);
 	}
@@ -193,7 +188,8 @@ public class RestaurantController {
 			@ApiResponse(responseCode = "404", description = "Ristorante non trovato"),
 			@ApiResponse(responseCode = "400", description = "Richiesta non valida")
 	})
-	public GenericResponse addRoom(@PathVariable Long idRestaurant, @RequestBody NewRoomDTO roomDto) {
+	public GenericResponse addRoom(@RequestBody NewRoomDTO roomDto) {
+		//TODO: a quale ristorante associa la stanza
 		roomService.createRoom(roomDto);
 		return new GenericResponse("success");
 	}
@@ -206,6 +202,7 @@ public class RestaurantController {
 			@ApiResponse(responseCode = "400", description = "Richiesta non valida")
 	})
 	public GenericResponse addTable(@RequestParam NewTableDTO tableDto) {
+		//TODO: a quale ristorante associa il tavolo
 		tableService.createTable(tableDto);
 		return new GenericResponse("success");
 	}
@@ -218,8 +215,8 @@ public class RestaurantController {
 			@ApiResponse(responseCode = "400", description = "Richiesta non valida")
 	})
 	@PostMapping(value = "/no-show-time-limit")
-	public GenericResponse setNoShowTimeLimit(@PathVariable Long idRestaurant, @RequestParam int minutes) {
-		restaurantService.setNoShowTimeLimit(idRestaurant, minutes);
+	public GenericResponse setNoShowTimeLimit(@RequestParam int minutes) {
+		restaurantService.setNoShowTimeLimit(ControllerUtils.getCurrentRestaurant().getId(), minutes);
 		return new GenericResponse("success");
 	}
 

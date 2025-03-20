@@ -70,7 +70,7 @@ public class SecurityConfig {
                         @Qualifier("restaurantAuthenticationManager") AuthenticationManager authenticationManager)
                         throws Exception {
                 http
-                                .securityMatcher("/restaurant_user/**")
+                                .securityMatcher("/restaurant/**")
                                 .requiresChannel(channel -> channel.anyRequest().requiresSecure())
                                 .csrf(csrf -> csrf.disable())
                                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -87,9 +87,7 @@ public class SecurityConfig {
                                                                  */
                                                                 "/doc**", "/swagger-ui/**",
                                                                 "/register/**", "/v3/api-docs*/**", "/api/**",
-                                                                "/auth/**", "/restaurant/search*",
-                                                                "/restaurant/*/open-days*",
-                                                                "/restaurant/*/day-slots*", "/restaurant/*/services",
+                                                                "/auth/**", 
                                                                 "/reservation/**", "/error*", "/actuator/health",
                                                                 "/public/**")
                                                 .permitAll().requestMatchers("/restaurant_user/**").authenticated())
@@ -118,9 +116,7 @@ public class SecurityConfig {
 
                                                                 "/doc**", "/swagger-ui/**",
                                                                 "/register/**", "/v3/api-docs*/**", "/api/**",
-                                                                "/auth/**", "/restaurant/search*",
-                                                                "/restaurant/*/open-days*",
-                                                                "/restaurant/*/day-slots*", "/restaurant/*/services",
+                                                                "/auth/**",
                                                                 "/reservation/**", "/error*", "/actuator/health",
                                                                 "/public/**")
                                                 .permitAll()
@@ -147,9 +143,7 @@ public class SecurityConfig {
                                                 .requestMatchers(
                                                                 "/doc**", "/swagger-ui/**",
                                                                 "/register/**", "/v3/api-docs*/**", "/api/**",
-                                                                "/auth/**", "/restaurant/search*",
-                                                                "/restaurant/*/open-days*",
-                                                                "/restaurant/*/day-slots*", "/restaurant/*/services",
+                                                                "/auth/**", 
                                                                 "/reservation/**", "/error*", "/actuator/health",
                                                                 "/public/**")
                                                 .permitAll()

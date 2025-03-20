@@ -35,6 +35,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "adminBearerAuth")
 @Tag(name = "Admin Customer", description = "Admin management APIs for the Customer")
 public class AdminCustomerController {
+    //TODO: aggiungere ruoli e permessi ai ruoli come metodi
     private final CustomerService userService;
     @Autowired
     public AdminCustomerController(CustomerService userService) {

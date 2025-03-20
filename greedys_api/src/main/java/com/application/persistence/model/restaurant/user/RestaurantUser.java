@@ -41,13 +41,37 @@ public class RestaurantUser implements UserDetails {
     private RestaurantUserOptions options;
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private Status status;
+    private Status status = Status.ENABLED;
     private String phoneNumber;
     @Column(length = 60)
     private String password;
     private String email;
-    private boolean enabled;
     private boolean accepted;
+    private String firstName;
+    private String lastName;
+
+    public enum Status {
+        BLOCKED,
+        DELETED,
+        ENABLED,
+        DISABLED
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
 
     public boolean isAccepted() {
         return accepted;
@@ -59,17 +83,6 @@ public class RestaurantUser implements UserDetails {
     @Override
     public boolean isEnabled() {
         return status == Status.ENABLED && restaurant != null && restaurant.getStatus() == Restaurant.Status.ENABLED;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    public enum Status {
-        BLOCKED,
-        DELETED,
-        ENABLED,
-        DISABLED
     }
 
     public String getEmail() {

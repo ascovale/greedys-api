@@ -36,7 +36,6 @@ public class Customer implements UserDetails {
 	private String email;
 	@Column(length = 60)
 	private String password;
-	private boolean enabled;
 	private String phoneNumber;
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "customer")
 	private Set<Reservation> reservations;
@@ -51,10 +50,11 @@ public class Customer implements UserDetails {
         BLOCKED,
         DELETED,
         ENABLED,
-        DISABLED
+        DISABLED,
+		VERIFY_TOKEN
     }
 
-	private Status status;
+	private Status status = Status.VERIFY_TOKEN;
 
 	public Status getStatus() {
 		return status;
@@ -98,10 +98,7 @@ public class Customer implements UserDetails {
 
 	@Override
 	public boolean isEnabled() {
-		return status == Status.ENABLED ;	}
-
-	public void setEnabled(boolean enabled) {
-		this.enabled = enabled;
+		return status == Status.ENABLED ;	
 	}
 
 	public String getName() {
@@ -221,6 +218,13 @@ public class Customer implements UserDetails {
 		//TODO in futuro da cambiare se le credenziali scadono
 
 		return true;
+	}
+
+	public void addRole(Role role) {
+		if (roles == null) {
+			roles = new ArrayList<>();
+		}
+		roles.add(role);
 	}
 
 }

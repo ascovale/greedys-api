@@ -164,9 +164,18 @@ public class RestaurantUserService {
     }
 
     public RestaurantUserDTO changeRestaurantUserRole(Long idRestaurantUser, Long idUser, String string) {
+        //TODO implementare una logica che capisca se il primo user ha ruolo per cambiare il ruolo del secondo
         RestaurantUser ru = ruDAO.findById(idRestaurantUser)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid restaurant user ID: " + idRestaurantUser));
-        ru.addRestaurantRole(new RestaurantRole(string));
+        RestaurantRole role = rrDAO.findByName(string);
+        if (role == null) {
+            throw new IllegalArgumentException("Role not found: " + string);
+        }
+        if (ru.getRestaurantRoles().stream().anyMatch(r -> r.getName().equals("ROLE_OWNER"))) {
+            throw new IllegalArgumentException("Cannot change role for a user with ROLE_OWNER");
+        }
+        ru.getRestaurantRoles().clear();
+        ru.addRestaurantRole(role);
         // non bisogna creare un nuovo ruolo bisogna mettere ruolo solo
         ruDAO.save(ru);
         return new RestaurantUserDTO(ru);
@@ -295,7 +304,7 @@ public class RestaurantUserService {
             return TOKEN_EXPIRED;
         }
 
-        user.setEnabled(true);
+        user.setStatus(RestaurantUser.Status.ENABLED);
         // tokenDAO.delete(verificationToken);
         ruDAO.save(user);
         return TOKEN_VALID;
