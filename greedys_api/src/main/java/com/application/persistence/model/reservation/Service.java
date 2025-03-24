@@ -1,8 +1,10 @@
 package com.application.persistence.model.reservation;
 
-import java.util.Set;
-import java.util.HashSet;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
+
+import com.application.persistence.model.restaurant.Restaurant;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -16,8 +18,6 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-
-import com.application.persistence.model.restaurant.Restaurant;
 
 @Entity
 @Table(name = "service")
@@ -138,5 +138,12 @@ public class Service {
 	public void setColor(String color) {
 		this.color = color;
 	}
+
+    public void addServiceType(ServiceType pranzoType) {
+		if (serviceTypes == null) {
+			serviceTypes = new HashSet<>();
+		}
+		serviceTypes.add(pranzoType);
+    }
 
 }

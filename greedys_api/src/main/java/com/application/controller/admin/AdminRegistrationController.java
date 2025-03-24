@@ -1,6 +1,7 @@
-package com.application.controller.pub;
+package com.application.controller.admin;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -27,13 +28,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.application.persistence.model.admin.Admin;
+import com.application.persistence.model.admin.AdminPrivilege;
+import com.application.persistence.model.admin.AdminVerificationToken;
 import com.application.persistence.model.customer.Customer;
-import com.application.persistence.model.customer.Privilege;
 import com.application.persistence.model.customer.VerificationToken;
-import com.application.registration.UserOnRegistrationCompleteEvent;
-import com.application.service.CustomerService;
+import com.application.registration.AdminOnRegistrationCompleteEvent;
+import com.application.service.AdminService;
 import com.application.service.EmailService;
-import com.application.web.dto.post.NewCustomerDTO;
+import com.application.web.dto.post.admin.NewAdminDTO;
 import com.application.web.util.GenericResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -45,13 +48,15 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
+
+//TODO: questo non va in public ma in admin un admin è creato di default
 @RestController
-@RequestMapping("/public/register/admin")
+@RequestMapping("/admin/register")
 public class AdminRegistrationController {
     private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
     @Autowired
-    private CustomerService userService;
+    private AdminService adminService;
 
     @Autowired
     private MessageSource messages;
@@ -74,20 +79,21 @@ public class AdminRegistrationController {
     }
 
     // Registration
-    @Operation(summary = "Registra un nuovo utente")
+    @Operation(summary = "Registra un nuovo admin")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Utente registrato con successo",
+        @ApiResponse(responseCode = "200", description = "Customer registrato con successo",
                      content = { @Content(mediaType = "application/json",
-                     schema = @Schema(implementation = NewCustomerDTO.class)) }),
+                     schema = @Schema(implementation = NewAdminDTO.class)) }),
         @ApiResponse(responseCode = "400", description = "Richiesta non valida",
                      content = @Content),
         @ApiResponse(responseCode = "500", description = "Errore interno del server",
                      content = @Content) })
     @PostMapping("/")
-    public ResponseEntity<String> registerUserAccount(@Valid @RequestBody NewCustomerDTO accountDto, HttpServletRequest request) {
+    public ResponseEntity<String> registerUserAccount(@Valid @RequestBody NewAdminDTO accountDto, HttpServletRequest request) {
         try {
-            Customer user = userService.registerNewUserAccount(accountDto);
-            eventPublisher.publishEvent(new UserOnRegistrationCompleteEvent(user, Locale.ITALIAN, getAppUrl(request)));
+            Admin admin = adminService.registerNewAdminAccount(accountDto);
+            //verifica la mail mandiamo una mail di conferma
+            eventPublisher.publishEvent(new AdminOnRegistrationCompleteEvent(admin, Locale.ITALIAN, getAppUrl(request)));
             return ResponseEntity.ok("User registered successfully");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -98,14 +104,14 @@ public class AdminRegistrationController {
     @RequestMapping(value = "/confirm", method = RequestMethod.GET)
     public String confirmRegistration(final HttpServletRequest request, final Model model, @RequestParam final String token) throws UnsupportedEncodingException {
         Locale locale = request.getLocale();
-        final String result = userService.validateVerificationToken(token);
+        final String result = adminService.validateVerificationToken(token);
         if (result.equals("valid")) {
-            final Customer user = userService.getUser(token);
+            final Admin admin = adminService.getAdmin(token);
             // if (user.isUsing2FA()) {
             // model.addAttribute("qr", userService.generateQRUrl(user));
             // return "redirect:/qrcode.html?lang=" + locale.getLanguage();
             // }
-            authWithoutPassword(user);
+            authWithoutPassword(admin);
             model.addAttribute("message", messages.getMessage("message.accountVerified", null, locale));
             return "redirect:/console.html?lang=" + locale.getLanguage();
         }
@@ -121,9 +127,10 @@ public class AdminRegistrationController {
     @RequestMapping(value = "/resendToken", method = RequestMethod.GET)
     @ResponseBody
     public GenericResponse resendRegistrationToken(final HttpServletRequest request, @RequestParam("token") final String existingToken) {
-        final VerificationToken newToken = userService.generateNewVerificationToken(existingToken);
-		Customer customer = userService.getUser(newToken.getToken());
-        mailService.sendEmail(constructResendVerificationTokenEmail(getAppUrl(request), request.getLocale(), newToken, customer));
+        final AdminVerificationToken newToken = adminService.generateNewVerificationToken(existingToken);
+		Admin customer = adminService.getAdmin(newToken.getToken());
+        //TODO: Sistemare invio del token
+        //mailService.sendEmail(constructResendVerificationTokenEmail(getAppUrl(request), request.getLocale(), newToken, customer));
         return new GenericResponse(messages.getMessage("message.resendToken", null, request.getLocale()));
     }
 
@@ -147,7 +154,7 @@ public class AdminRegistrationController {
 
     @SuppressWarnings("unused")
 	private SimpleMailMessage constructResetTokenEmail(final String contextPath, final Locale locale, final String token, final Customer user) {
-        final String url = contextPath + "/user/changePassword?id=" + user.getId() + "&token=" + token;
+        final String url = contextPath + "/admin/changePassword?id=" + user.getId() + "&token=" + token;
         final String message = messages.getMessage("message.resetPassword", null, locale);
         return constructEmail("Reset Password", message + " \r\n" + url, user);
     }
@@ -180,11 +187,17 @@ public class AdminRegistrationController {
     }
         */
 
-    public void authWithoutPassword(Customer user) {
-        List<Privilege> privileges = user.getRoles().stream().map(role -> role.getPrivileges()).flatMap(list -> list.stream()).distinct().collect(Collectors.toList());
+        
+    public void authWithoutPassword(Admin admin) {
+
+        List<AdminPrivilege> privileges = admin.getAdminRoles().stream()
+        .map(adminRole -> adminRole.getAdminPrivileges())
+        .flatMap(Collection::stream)
+        .distinct()
+        .collect(Collectors.toList());
         List<GrantedAuthority> authorities = privileges.stream().map(p -> new SimpleGrantedAuthority(p.getName())).collect(Collectors.toList());
 
-        Authentication authentication = new UsernamePasswordAuthenticationToken(user, null, authorities);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(admin, null, authorities);
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }

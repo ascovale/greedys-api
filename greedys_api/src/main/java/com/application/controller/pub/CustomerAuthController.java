@@ -23,7 +23,7 @@ import com.application.service.CustomerService;
 import com.application.web.dto.AuthRequestDTO;
 import com.application.web.dto.AuthRequestGoogleDTO;
 import com.application.web.dto.AuthResponseDTO;
-import com.application.web.dto.get.UserDTO;
+import com.application.web.dto.get.CustomerDTO;
 import com.application.web.dto.post.NewCustomerDTO;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
@@ -44,14 +44,14 @@ public class CustomerAuthController {
 
     private AuthenticationManager authenticationManager;
     private JwtUtil jwtUtil;
-    private CustomerService userService;
+    private CustomerService customerService;
 
     public CustomerAuthController(@Qualifier("customerAuthenticationManager")AuthenticationManager authenticationManager,
             JwtUtil jwtUtil,
-            CustomerService userService) {
+            CustomerService customerService) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
-        this.userService = userService;
+        this.customerService = customerService;
     }
 
     @Operation(summary = "Crea un token di autenticazione", description = "Autentica un utente e restituisce un token JWT", responses = {
@@ -66,9 +66,9 @@ public class CustomerAuthController {
                 new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(),
                         authenticationRequest.getPassword()));
 
-        final Customer userDetails = userService.findUserByEmail(authenticationRequest.getUsername());
+        final Customer userDetails = customerService.findUserByEmail(authenticationRequest.getUsername());
         final String jwt = jwtUtil.generateToken(userDetails);
-        final AuthResponseDTO responseDTO = new AuthResponseDTO(jwt, new UserDTO(userDetails));
+        final AuthResponseDTO responseDTO = new AuthResponseDTO(jwt, new CustomerDTO(userDetails));
 
         return ResponseEntity.ok(responseDTO);
     }
@@ -90,7 +90,7 @@ public class CustomerAuthController {
             String name = (String) idToken.getPayload().get("name");
             logger.warn("Google token verified. Email: {}, Name: {}", email, name);
             // quali dati vogliamo prendere da google?
-            Customer user = userService.findUserByEmail(email);
+            Customer user = customerService.findUserByEmail(email);
             if (user == null) {
                 NewCustomerDTO accountDto = new NewCustomerDTO();
                 // devo verificare questa cosa
@@ -98,10 +98,10 @@ public class CustomerAuthController {
                 accountDto.setLastName(name.split(" ")[1]);
                 accountDto.setEmail(email);
                 accountDto.setPassword(generateRandomPassword()); // Generate and set a random password
-                user = userService.registerNewUserAccount(accountDto);
+                user = customerService.registerNewCustomerAccount(accountDto);
             }
             String jwt = jwtUtil.generateToken(user);
-            return ResponseEntity.ok(new AuthResponseDTO(jwt, new UserDTO(user)));
+            return ResponseEntity.ok(new AuthResponseDTO(jwt, new CustomerDTO(user)));
         } else {
             logger.warn("Google token verification failed.");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();

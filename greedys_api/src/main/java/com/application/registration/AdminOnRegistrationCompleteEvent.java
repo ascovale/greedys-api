@@ -4,17 +4,17 @@ import java.util.Locale;
 
 import org.springframework.context.ApplicationEvent;
 
-import com.application.persistence.model.customer.Customer;
+import com.application.persistence.model.admin.Admin;
 
-public class UserOnRegistrationCompleteEvent extends ApplicationEvent {
+public class AdminOnRegistrationCompleteEvent extends ApplicationEvent {
 
     private final String appUrl;
     private final Locale locale;
-    private final Customer user;
+    private final Admin admin;
 
-    public UserOnRegistrationCompleteEvent(final Customer registered, final Locale locale, final String appUrl) {
+    public AdminOnRegistrationCompleteEvent(final Admin registered, final Locale locale, final String appUrl) {
         super(registered);
-        this.user = registered;
+        this.admin = registered;
         this.locale = locale;
         this.appUrl = appUrl;
     }
@@ -27,8 +27,8 @@ public class UserOnRegistrationCompleteEvent extends ApplicationEvent {
         return locale;
     }
 
-    public Customer getUser() {
-        return user;
+    public Admin getAdmin() {
+        return admin;
     }
 
 }

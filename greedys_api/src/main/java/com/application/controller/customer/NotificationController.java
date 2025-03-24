@@ -81,6 +81,8 @@ public class NotificationController {
         return ResponseEntity.ok().body(unreadNotifications);
     }
 
+    
+
     @PreAuthorize("authentication.principal.isEnabled()")
     @Operation(summary = "Get all notifications", description = "Returns a pageable list of all notifications")
     @GetMapping("/all/{page}/{size}")

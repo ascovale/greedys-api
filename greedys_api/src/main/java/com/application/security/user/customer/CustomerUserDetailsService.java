@@ -20,7 +20,8 @@ public class CustomerUserDetailsService implements UserDetailsService {
     private final LoginAttemptService loginAttemptService;
     private final HttpServletRequest request;
 
-    public CustomerUserDetailsService(CustomerDAO custumerDAO, LoginAttemptService loginAttemptService, HttpServletRequest request) {
+    public CustomerUserDetailsService(CustomerDAO custumerDAO, LoginAttemptService loginAttemptService,
+            HttpServletRequest request) {
         this.custumerDAO = custumerDAO;
         this.loginAttemptService = loginAttemptService;
         this.request = request;
@@ -37,6 +38,10 @@ public class CustomerUserDetailsService implements UserDetailsService {
             if (customer == null) {
                 throw new UsernameNotFoundException("No user found with username: " + email);
             }
+
+            // Forza il caricamento lazy delle autorità
+            customer.getAuthorities().size();
+
             return customer;
         } catch (final Exception e) {
             throw new RuntimeException(e);
