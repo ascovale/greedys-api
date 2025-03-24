@@ -27,6 +27,7 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "restaurant_user")
 public class RestaurantUser implements UserDetails {
+    //TODO: Sistemare implementazione
     @Id
     @Column(unique = true, nullable = false)
     @GeneratedValue(strategy = GenerationType.AUTO)
