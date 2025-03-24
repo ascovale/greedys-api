@@ -1,18 +1,18 @@
 package com.application.web.dto;
 
-import com.application.web.dto.get.UserDTO;
+import com.application.web.dto.get.CustomerDTO;
 
 public class AuthResponseDTO {
     
     private String jwt;
-    private UserDTO user;
+    private CustomerDTO user;
 
-    public AuthResponseDTO(String jwt, UserDTO user) {
+    public AuthResponseDTO(String jwt, CustomerDTO user) {
         this.jwt = jwt;
         this.user = user;
     }
 
-    public UserDTO getUser() {
+    public CustomerDTO getUser() {
         return user;
     }
 

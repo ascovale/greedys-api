@@ -14,8 +14,8 @@ import com.application.persistence.model.restaurant.RestaurantImage;
 import com.application.web.dto.RestaurantFullDetailsDto;
 import com.application.web.dto.RestaurantImageDto;
 import com.application.web.dto.ServiceDto;
+import com.application.web.dto.get.CustomerDTO;
 import com.application.web.dto.get.RestaurantDTO;
-import com.application.web.dto.get.UserDTO;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 public class Mapper {
@@ -64,8 +64,8 @@ public class Mapper {
         return dto;
     }
     
-    public static UserDTO toDTO(Customer r) {
-        UserDTO dto = new UserDTO(r);
+    public static CustomerDTO toDTO(Customer r) {
+        CustomerDTO dto = new CustomerDTO(r);
         return dto;
     }
     public static ServiceDto toDTO(Service service) {

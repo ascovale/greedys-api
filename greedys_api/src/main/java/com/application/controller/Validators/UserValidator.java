@@ -4,13 +4,13 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
 
-import com.application.web.dto.get.UserDTO;
+import com.application.web.dto.get.CustomerDTO;
 
 public class UserValidator implements Validator {
 
     @Override
     public boolean supports(final Class<?> clazz) {
-        return UserDTO.class.isAssignableFrom(clazz);
+        return CustomerDTO.class.isAssignableFrom(clazz);
     }
 
     @Override
