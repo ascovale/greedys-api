@@ -148,7 +148,8 @@ public class MvcConfig implements WebMvcConfigurer, ApplicationContextAware {
     RequestContextListener requestContextListener() {
         return new RequestContextListener();
     }
-
+    // TODO impostare email signup@greedys.it e vedere quale altre 
+    // TODO impostare email reservation@greedys.it
     @Bean
     JavaMailSender getJavaMailSender() {
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();

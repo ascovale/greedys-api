@@ -25,7 +25,7 @@ public class AdminVerificationToken {
     private String token;
     @OneToOne(targetEntity = Customer.class, fetch = FetchType.EAGER)
     @JoinColumn(nullable = false, name = "user_id", referencedColumnName = "id",
-    foreignKey =@ForeignKey(name="FK_VERIFY_USER"))
+    foreignKey =@ForeignKey(name="FK_VERIFY_ADMIN"))
     private Admin admin;
     private LocalDateTime expiryDate;
 

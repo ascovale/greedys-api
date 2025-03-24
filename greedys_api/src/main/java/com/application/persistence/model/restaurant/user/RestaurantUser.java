@@ -160,6 +160,9 @@ public class RestaurantUser implements UserDetails {
     }
 
     public void addRestaurantRole(RestaurantRole restaurantRoles) {
+        if (this.restaurantRoles == null) {
+            this.restaurantRoles = new ArrayList<>();
+        }
         this.restaurantRoles.add(restaurantRoles);
     }
 

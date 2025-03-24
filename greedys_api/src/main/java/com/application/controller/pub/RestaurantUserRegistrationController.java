@@ -36,6 +36,8 @@ import jakarta.servlet.http.HttpServletRequest;
 @RestController
 @RequestMapping("/public/register/restaurant_user")
 public class RestaurantUserRegistrationController {
+
+    //TODO: eventpublisher per inviare email per aggiunta nuovo utente con verifica mail
     private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
     @Autowired

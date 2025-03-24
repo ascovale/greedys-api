@@ -28,7 +28,7 @@ import com.application.persistence.model.customer.Privilege;
 import com.application.persistence.model.customer.Role;
 import com.application.persistence.model.customer.VerificationToken;
 import com.application.web.dto.AllergyDTO;
-import com.application.web.dto.get.UserDTO;
+import com.application.web.dto.get.CustomerDTO;
 import com.application.web.dto.post.NewCustomerDTO;
 import com.application.web.error.UserAlreadyExistException;
 
@@ -74,32 +74,30 @@ public class CustomerService {
 
 	}
 
-	// API
-
-	public UserDTO findById(long id) {
+	public CustomerDTO findById(long id) {
 		Customer user = userDAO.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
-		return new UserDTO(user);
+		return new CustomerDTO(user);
 	}
 
-	public Customer registerNewUserAccount(final NewCustomerDTO accountDto) {
+	public Customer registerNewCustomerAccount(final NewCustomerDTO accountDto) {
 		if (emailExists(accountDto.getEmail())) {
 			throw new UserAlreadyExistException("There is an account with that email adress: " + accountDto.getEmail());
 		}
 		if (accountDto.getPassword() == null) {
 			throw new IllegalArgumentException("rawPassword cannot be null");
 		}
-		final Customer user = new Customer();
+		final Customer customer = new Customer();
 
-		user.setName(accountDto.getFirstName());
-		user.setSurname(accountDto.getLastName());
-		user.setPassword(passwordEncoder.encode(accountDto.getPassword()));
-		user.setEmail(accountDto.getEmail());
+		customer.setName(accountDto.getFirstName());
+		customer.setSurname(accountDto.getLastName());
+		customer.setPassword(passwordEncoder.encode(accountDto.getPassword()));
+		customer.setEmail(accountDto.getEmail());
 		// user.setUsing2FA(accountDto.isUsing2FA());
-		user.setRoles(Arrays.asList(roleRepository.findByName("ROLE_USER")));
-		return userDAO.save(user);
+		customer.setRoles(Arrays.asList(roleRepository.findByName("ROLE_CUSTOMER")));
+		return userDAO.save(customer);
 	}
 
-	public Customer getUser(final String verificationToken) {
+	public Customer getCustomer(final String verificationToken) {
 		final VerificationToken token = tokenDAO.findByToken(verificationToken);
 		if (token != null) {
 			return token.getCustomer();
@@ -343,8 +341,8 @@ public class CustomerService {
 		return user.getAllergies().stream().map(Allergy::getName).collect(Collectors.toList());
 	}
 
-	public Page<UserDTO> findAll(PageRequest pageable) {
-		return userDAO.findAll(pageable).map(UserDTO::new);
+	public Page<CustomerDTO> findAll(PageRequest pageable) {
+		return userDAO.findAll(pageable).map(CustomerDTO::new);
 	}
 
 	public void addRoleToCustomer(Long customerId, String role) {

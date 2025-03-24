@@ -44,34 +44,47 @@ public class RestaurantUserDetailsService implements UserDetailsService {
             final RestaurantUser user = restaurantUserDAO.findByEmail(email);
             if (user == null) {
                 throw new UsernameNotFoundException("No user found with username: " + email);
-            } else if (isMultiRestaurantUser(email)) {
+            }
+    
+            // Forza il caricamento lazy delle autorità
+            user.getAuthorities().size();
+    
+            if (isMultiRestaurantUser(email)) {
                 authorities = getSwitchUserAuthorities();
-                new org.springframework.security.core.userdetails.User(user.getEmail(),
-                    user.getPassword(),
-                    user.isEnabled(),
-                    true,
-                    true,
-                    true,
-                    authorities);
-            } 
+                return new org.springframework.security.core.userdetails.User(
+                        user.getEmail(),
+                        user.getPassword(),
+                        user.isEnabled(),
+                        true,
+                        true,
+                        true,
+                        authorities);
+            }
+    
             return user;
         } catch (final Exception e) {
             throw new RuntimeException(e);
         }
     }
+
+    
 
     public UserDetails loadUserById(final Long restaurantUserId) throws UsernameNotFoundException {
         try {
-            final RestaurantUser user = restaurantUserDAO.findById(restaurantUserId).get();
+            final RestaurantUser user = restaurantUserDAO.findById(restaurantUserId).orElse(null);
             if (user == null) {
                 throw new UsernameNotFoundException("No user found with ID: " + restaurantUserId);
             }
-
+    
+            // Forza il caricamento lazy delle autorità
+            user.getAuthorities().size();
+    
             return user;
         } catch (final Exception e) {
             throw new RuntimeException(e);
         }
     }
+    
     public UserDetails loadSwitchUserById(final Long id) throws UsernameNotFoundException {
         try {
             final RestaurantUser user = restaurantUserDAO.findById(id).get();

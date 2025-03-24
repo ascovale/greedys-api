@@ -20,7 +20,8 @@ public class AdminUserDetailsService implements UserDetailsService {
     private final LoginAttemptService loginAttemptService;
     private final HttpServletRequest request;
 
-    public AdminUserDetailsService(AdminDAO adminDAO, LoginAttemptService loginAttemptService, HttpServletRequest request) {
+    public AdminUserDetailsService(AdminDAO adminDAO, LoginAttemptService loginAttemptService,
+            HttpServletRequest request) {
         this.adminDAO = adminDAO;
         this.loginAttemptService = loginAttemptService;
         this.request = request;
@@ -35,8 +36,12 @@ public class AdminUserDetailsService implements UserDetailsService {
         try {
             final Admin admin = adminDAO.findByEmail(email);
             if (admin == null) {
-                throw new UsernameNotFoundException("No user found with username: " + email);
+                throw new UsernameNotFoundException("No admin found with username: " + email);
             }
+
+            // Forza il caricamento lazy delle autorità
+            admin.getAuthorities().size();
+
             return admin;
         } catch (final Exception e) {
             throw new RuntimeException(e);

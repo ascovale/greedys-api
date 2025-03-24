@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.application.captcha.ICaptchaService;
 import com.application.persistence.model.customer.Customer;
-import com.application.registration.UserOnRegistrationCompleteEvent;
+import com.application.registration.CustomerOnRegistrationCompleteEvent;
 import com.application.service.CustomerService;
 import com.application.web.dto.post.NewCustomerDTO;
 import com.application.web.util.GenericResponse;
@@ -47,8 +47,8 @@ public class RegistrationCaptchaController {
 
         LOGGER.debug("Registering user account with information: {}", accountDto);
 
-        final Customer registered = userService.registerNewUserAccount(accountDto);
-        eventPublisher.publishEvent(new UserOnRegistrationCompleteEvent(registered, request.getLocale(), getAppUrl(request)));
+        final Customer registered = userService.registerNewCustomerAccount(accountDto);
+        eventPublisher.publishEvent(new CustomerOnRegistrationCompleteEvent(registered, request.getLocale(), getAppUrl(request)));
         return new GenericResponse("success");
     }
 

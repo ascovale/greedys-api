@@ -67,7 +67,7 @@ public class SwaggerConfig {
         public GroupedOpenApi restaurantApi() {
                 return GroupedOpenApi.builder()
                                 .group("restaurant-api")
-                                .pathsToMatch("/restaurant_user/**")
+                                .pathsToMatch("/restaurant/**")
                                 .addOpenApiCustomizer(openApi -> openApi
                                                 .components(new Components()
                                                                 .addSecuritySchemes("restaurantBearerAuth",
