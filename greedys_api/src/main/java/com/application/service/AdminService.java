@@ -17,9 +17,9 @@ import com.application.persistence.dao.admin.AdminVerificationTokenDAO;
 import com.application.persistence.model.Image;
 import com.application.persistence.model.admin.Admin;
 import com.application.persistence.model.admin.AdminPasswordResetToken;
+import com.application.persistence.model.admin.AdminRole;
 import com.application.persistence.model.admin.AdminVerificationToken;
 import com.application.web.dto.get.AdminDTO;
-import com.application.web.dto.get.UserDTO;
 import com.application.web.dto.post.admin.NewAdminDTO;
 import com.application.web.error.UserAlreadyExistException;
 
@@ -43,18 +43,21 @@ public class AdminService {
 	private final PasswordEncoder passwordEncoder;
 	private final AdminRoleDAO roleRepository;
 	private final EntityManager entityManager;
+	private final AdminRoleDAO adminRoleDAO;
 
 	public AdminService(AdminDAO adminDAO, AdminVerificationTokenDAO tokenDAO,
 	AdminPasswordResetTokenDAO passwordTokenRepository,
 			PasswordEncoder passwordEncoder,
 			AdminRoleDAO roleRepository,
-			EntityManager entityManager) {
+			EntityManager entityManager,
+			AdminRoleDAO adminRoleDAO) {
 		this.adminDAO = adminDAO;
 		this.tokenDAO = tokenDAO;
 		this.passwordTokenRepository = passwordTokenRepository;
 		this.passwordEncoder = passwordEncoder;
 		this.roleRepository = roleRepository;
 		this.entityManager = entityManager;
+		this.adminRoleDAO = adminRoleDAO;
 	}
 
 	public AdminDTO findById(long id) {
@@ -75,12 +78,16 @@ public class AdminService {
 		admin.setSurname(accountDto.getLastName());
 		admin.setPassword(passwordEncoder.encode(accountDto.getPassword()));
 		admin.setEmail(accountDto.getEmail());
+		admin.setStatus(Admin.Status.ENABLED);
+		AdminRole adminRole = adminRoleDAO.findByName("ROLE_SUPER_ADMIN");
+
+		admin.setAdminRoles(Arrays.asList(adminRole));
 		// user.setUsing2FA(accountDto.isUsing2FA());
 		admin.setAdminRoles(Arrays.asList(roleRepository.findByName("ROLE_USER")));
 		return adminDAO.save(admin);
 	}
 
-	public Admin getUser(final String verificationToken) {
+	public Admin getAdmin(final String verificationToken) {
 		AdminVerificationToken token = tokenDAO.findByToken(verificationToken);
 		if (token != null) {
 			return token.getAdmin();
@@ -213,8 +220,8 @@ public class AdminService {
 		Admin user = adminDAO.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
 		deleteUser(user);
 	}
-
-	public Admin updateUser(Long id, UserDTO userDto) {
+/* 
+	public Admin updateUser(Long id, AdminUserDTO userDto) {
 		Admin user = adminDAO.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
 		if (userDto.getFirstName() != null) {
 			user.setName(userDto.getFirstName());
@@ -231,7 +238,7 @@ public class AdminService {
 		}
 		return adminDAO.save(user);
 	}
-
+*/
 /* 
     public void removePermissions(Long idUser) {
 		User user = adminDAO.findById(idUser).orElseThrow(() -> new EntityNotFoundException("User not found"));

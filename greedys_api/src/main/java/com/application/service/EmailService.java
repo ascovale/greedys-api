@@ -61,7 +61,9 @@ public class EmailService {
         email.setTo(recipientAddress);
         email.setSubject(subject);
         email.setText(message);
-        email.setFrom(env.getProperty("support.email"));
+        // TODO: Impostare le diverse email per le varie tipologie di notifiche
+        //email.setFrom(env.getProperty("support.email"));
+        email.setFrom("reservationslasoffitta@gmail.com");
         return email;
 
     }

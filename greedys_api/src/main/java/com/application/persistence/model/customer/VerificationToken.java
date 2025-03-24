@@ -1,6 +1,7 @@
 package com.application.persistence.model.customer;
 
 import java.time.LocalDateTime;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ForeignKey;
@@ -22,7 +23,7 @@ public class VerificationToken {
     private String token;
     @OneToOne(targetEntity = Customer.class, fetch = FetchType.EAGER)
     @JoinColumn(nullable = false, name = "user_id", referencedColumnName = "id",
-    foreignKey =@ForeignKey(name="FK_VERIFY_USER"))
+    foreignKey =@ForeignKey(name="FK_VERIFY_CUSTOMER"))
     private Customer customer;
     private LocalDateTime expiryDate;
 

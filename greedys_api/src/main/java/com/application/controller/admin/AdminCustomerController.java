@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.application.persistence.model.customer.Customer;
 import com.application.service.CustomerService;
 import com.application.web.dto.AllergyDTO;
-import com.application.web.dto.get.UserDTO;
+import com.application.web.dto.get.CustomerDTO;
 import com.application.web.util.GenericResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -104,7 +104,7 @@ public class AdminCustomerController {
     @ApiResponse(responseCode = "200", description = "Users retrieved successfully", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "400", description = "Invalid request")
     @GetMapping("/customers/page")
-    public Page<UserDTO> listUsersWithPagination(@RequestParam int page, @RequestParam int size) {
+    public Page<CustomerDTO> listUsersWithPagination(@RequestParam int page, @RequestParam int size) {
         PageRequest pageable = PageRequest.of(page, size);
         return userService.findAll(pageable);
     }

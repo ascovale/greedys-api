@@ -18,7 +18,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,7 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.application.persistence.model.customer.Customer;
 import com.application.persistence.model.customer.Privilege;
 import com.application.persistence.model.customer.VerificationToken;
-import com.application.registration.UserOnRegistrationCompleteEvent;
+import com.application.registration.CustomerOnRegistrationCompleteEvent;
 import com.application.service.CustomerService;
 import com.application.service.EmailService;
 import com.application.web.dto.post.NewCustomerDTO;
@@ -74,9 +73,9 @@ public class CustomerRegistrationController {
     }
 
     // Registration
-    @Operation(summary = "Registra un nuovo utente")
+    @Operation(summary = "Registra un nuovo utente customer")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Utente registrato con successo",
+        @ApiResponse(responseCode = "200", description = "Customer registrato con successo",
                      content = { @Content(mediaType = "application/json",
                      schema = @Schema(implementation = NewCustomerDTO.class)) }),
         @ApiResponse(responseCode = "400", description = "Richiesta non valida",
@@ -84,49 +83,37 @@ public class CustomerRegistrationController {
         @ApiResponse(responseCode = "500", description = "Errore interno del server",
                      content = @Content) })
     @PostMapping("/")
-    public ResponseEntity<String> registerUserAccount(@Valid @RequestBody NewCustomerDTO accountDto, HttpServletRequest request) {
+    public ResponseEntity<String> registerCustomerAccount(@Valid @RequestBody NewCustomerDTO accountDto, HttpServletRequest request) {
         try {
-            Customer user = userService.registerNewUserAccount(accountDto);
-            eventPublisher.publishEvent(new UserOnRegistrationCompleteEvent(user, Locale.ITALIAN, getAppUrl(request)));
-            return ResponseEntity.ok("User registered successfully");
+            Customer user = userService.registerNewCustomerAccount(accountDto);
+            eventPublisher.publishEvent(new CustomerOnRegistrationCompleteEvent(user, Locale.ITALIAN, getAppUrl(request)));
+            return ResponseEntity.ok("Customer registered successfully");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-
-
     @RequestMapping(value = "/confirm", method = RequestMethod.GET)
-    public String confirmRegistration(final HttpServletRequest request, final Model model, @RequestParam final String token) throws UnsupportedEncodingException {
+    @ResponseBody
+    public GenericResponse confirmRegistrationResponse(final HttpServletRequest request, @RequestParam final String token) throws UnsupportedEncodingException {
         Locale locale = request.getLocale();
         final String result = userService.validateVerificationToken(token);
         if (result.equals("valid")) {
-            final Customer user = userService.getUser(token);
-            // if (user.isUsing2FA()) {
-            // model.addAttribute("qr", userService.generateQRUrl(user));
-            // return "redirect:/qrcode.html?lang=" + locale.getLanguage();
-            // }
+            final Customer user = userService.getCustomer(token);
             authWithoutPassword(user);
-            model.addAttribute("message", messages.getMessage("message.accountVerified", null, locale));
-            return "redirect:/console.html?lang=" + locale.getLanguage();
+            return new GenericResponse(messages.getMessage("message.accountVerified", null, locale));
         }
 
-        model.addAttribute("message", messages.getMessage("auth.message." + result, null, locale));
-        model.addAttribute("expired", "expired".equals(result));
-        model.addAttribute("token", token);
-        return "redirect:/badUser.html?lang=" + locale.getLanguage();
+        return new GenericResponse(messages.getMessage("auth.message." + result, null, locale) + "expired".equals(result));
     }
-
-    // user activation - verification
 
     @RequestMapping(value = "/resendToken", method = RequestMethod.GET)
     @ResponseBody
     public GenericResponse resendRegistrationToken(final HttpServletRequest request, @RequestParam("token") final String existingToken) {
         final VerificationToken newToken = userService.generateNewVerificationToken(existingToken);
-		Customer customer = userService.getUser(newToken.getToken());
+		Customer customer = userService.getCustomer(newToken.getToken());
         mailService.sendEmail(constructResendVerificationTokenEmail(getAppUrl(request), request.getLocale(), newToken, customer));
         return new GenericResponse(messages.getMessage("message.resendToken", null, request.getLocale()));
     }
-
 
 /*
     @RequestMapping(value = "/user/update/2fa", method = RequestMethod.POST)
@@ -139,25 +126,24 @@ public class CustomerRegistrationController {
         return null;
     }*/
 
-
-	private SimpleMailMessage constructResendVerificationTokenEmail(final String contextPath, final Locale locale, final VerificationToken newToken, final Customer user) {
+	private SimpleMailMessage constructResendVerificationTokenEmail(final String contextPath, final Locale locale, final VerificationToken newToken, final Customer customer) {
         final String confirmationUrl = contextPath + "/registrationConfirm.html?token=" + newToken.getToken();
         final String message = messages.getMessage("message.resendToken", null, locale);
-        return constructEmail("Resend Registration Token", message + " \r\n" + confirmationUrl, user);
+        return constructEmail("Resend Registration Token", message + " \r\n" + confirmationUrl, customer);
     }
 
     @SuppressWarnings("unused")
-	private SimpleMailMessage constructResetTokenEmail(final String contextPath, final Locale locale, final String token, final Customer user) {
-        final String url = contextPath + "/user/changePassword?id=" + user.getId() + "&token=" + token;
+	private SimpleMailMessage constructResetTokenEmail(final String contextPath, final Locale locale, final String token, final Customer customer) {
+        final String url = contextPath + "/customer/changePassword?id=" + customer.getId() + "&token=" + token;
         final String message = messages.getMessage("message.resetPassword", null, locale);
-        return constructEmail("Reset Password", message + " \r\n" + url, user);
+        return constructEmail("Reset Password", message + " \r\n" + url, customer);
     }
 
-    private SimpleMailMessage constructEmail(String subject, String body, Customer user) {
+    private SimpleMailMessage constructEmail(String subject, String body, Customer customer) {
         final SimpleMailMessage email = new SimpleMailMessage();
         email.setSubject(subject);
         email.setText(body);
-        email.setTo(user.getEmail());
+        email.setTo(customer.getEmail());
         email.setFrom(env.getProperty("support.email"));
         return email;
     }
@@ -181,11 +167,11 @@ public class CustomerRegistrationController {
     }
         */
 
-    public void authWithoutPassword(Customer user) {
-        List<Privilege> privileges = user.getRoles().stream().map(role -> role.getPrivileges()).flatMap(list -> list.stream()).distinct().collect(Collectors.toList());
+    public void authWithoutPassword(Customer customer) {
+        List<Privilege> privileges = customer.getRoles().stream().map(role -> role.getPrivileges()).flatMap(list -> list.stream()).distinct().collect(Collectors.toList());
         List<GrantedAuthority> authorities = privileges.stream().map(p -> new SimpleGrantedAuthority(p.getName())).collect(Collectors.toList());
 
-        Authentication authentication = new UsernamePasswordAuthenticationToken(user, null, authorities);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(customer, null, authorities);
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }

@@ -8,7 +8,16 @@ import jakarta.persistence.Id;
 public class SetupConfig {
     @Id
     private Long id;
-    private boolean alreadySetup;
+    private boolean alreadySetup=false;
+    private boolean dataUploaded=false;
+
+    public boolean isDataUploaded() {
+        return dataUploaded;
+    }
+
+    public void setDataUploaded(boolean dataUploaded) {
+        this.dataUploaded = dataUploaded;
+    }
 
     // getters and setters
     public Long getId() {

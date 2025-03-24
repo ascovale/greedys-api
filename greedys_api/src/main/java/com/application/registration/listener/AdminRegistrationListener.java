@@ -11,14 +11,14 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
 
-import com.application.service.CustomerService;
-import com.application.persistence.model.customer.Customer;
-import com.application.registration.UserOnRegistrationCompleteEvent;
+import com.application.persistence.model.admin.Admin;
+import com.application.registration.AdminOnRegistrationCompleteEvent;
+import com.application.service.AdminService;
 
 @Component
-public class UserRegistrationListener implements ApplicationListener<UserOnRegistrationCompleteEvent> {
+public class AdminRegistrationListener implements ApplicationListener<AdminOnRegistrationCompleteEvent> {
 	@Autowired
-	private CustomerService service;
+	private AdminService service;
 
 	@Autowired
 	private MessageSource messages;
@@ -33,24 +33,24 @@ public class UserRegistrationListener implements ApplicationListener<UserOnRegis
 	// API
 
 	@Override
-	public void onApplicationEvent(final UserOnRegistrationCompleteEvent event) {
+	public void onApplicationEvent(final AdminOnRegistrationCompleteEvent event) {
 		this.confirmRegistration(event);
 	}
 
-	private void confirmRegistration(final UserOnRegistrationCompleteEvent event) {
-		final Customer user = event.getUser();
+	private void confirmRegistration(final AdminOnRegistrationCompleteEvent event) {
+		final Admin admin = event.getAdmin();
 		final String token = UUID.randomUUID().toString();
-		service.createVerificationTokenForUser(user, token);
-		final SimpleMailMessage email = constructEmailMessage(event, user, token);
+		service.createVerificationTokenForAdmin(admin, token);
+		final SimpleMailMessage email = constructEmailMessage(event, admin, token);
 		mailSender.send(email);
 	}
 
-	private final SimpleMailMessage constructEmailMessage(final UserOnRegistrationCompleteEvent event, final Customer user,
+	private final SimpleMailMessage constructEmailMessage(final AdminOnRegistrationCompleteEvent event, final Admin admin,
 			final String token) {
 		System.out.println("Prova inviare");
-		final String recipientAddress = user.getEmail();
+		final String recipientAddress = admin.getEmail();
 		final String subject = "Registration Confirmation";
-		final String confirmationUrl = event.getAppUrl() + "/register/user/confirm?token=" + token;
+		final String confirmationUrl = event.getAppUrl() + "/register/admin/confirm?token=" + token;
 		final String message = messages.getMessage("message.regSucc", null, event.getLocale());
 		final SimpleMailMessage email = new SimpleMailMessage();
 		email.setTo(recipientAddress);
