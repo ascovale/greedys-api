@@ -85,6 +85,7 @@ public class SwaggerConfig {
                 return GroupedOpenApi.builder()
                                 .group("public-api")
                                 .pathsToMatch("/public/**", "/register/**", "/auth/**")
+                                .pathsToExclude("/restaurant/**", "/customer/**", "/admin/**") // Escludi i percorsi di altri gruppi
                                 .build();
         }
 }

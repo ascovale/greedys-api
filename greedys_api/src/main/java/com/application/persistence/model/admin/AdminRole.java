@@ -1,6 +1,6 @@
 package com.application.persistence.model.admin;
 
-import java.util.Collection;
+import java.util.List;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -25,7 +25,7 @@ public class AdminRole {
     	joinColumns = @JoinColumn(name = "admin_role_id"), 
     	inverseJoinColumns = @JoinColumn(name = "admin_privilege_id")
     )	
-    private Collection<AdminPrivilege> adminPrivileges;
+    private List<AdminPrivilege> adminPrivileges;
 
     public AdminRole() {
         super();
@@ -55,11 +55,11 @@ public class AdminRole {
     }
 
 
-	public Collection<AdminPrivilege> getAdminPrivileges() {
+	public List<AdminPrivilege> getAdminPrivileges() {
 		return adminPrivileges;
 	}
 
-	public void setAdminPrivileges(Collection<AdminPrivilege> adminPrivileges) {
+	public void setAdminPrivileges(List<AdminPrivilege> adminPrivileges) {
 		this.adminPrivileges = adminPrivileges;
 	}
 

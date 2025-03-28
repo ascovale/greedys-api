@@ -1,6 +1,6 @@
 package com.application.web.dto.post;
 
-import java.util.Collection;
+import java.util.List;
 
 import com.application.persistence.model.menu.MenuItem.Allergen;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -12,7 +12,7 @@ public class NewMenuItemDTO {
     @JsonProperty("description")
     private String description;
     @JsonProperty("allergen")
-    private Collection<Allergen> allergen;
+    private List<Allergen> allergen;
     @JsonProperty("restaurantId")
     private Long restaurantId;
 
@@ -32,7 +32,7 @@ public class NewMenuItemDTO {
         return description;
     }
 
-    public Collection<Allergen> getAllergen() {
+    public List<Allergen> getAllergen() {
         return allergen;
     }
 
@@ -44,7 +44,7 @@ public class NewMenuItemDTO {
         this.description = description;
     }
 
-    public void setAllergen(Collection<Allergen> allergen) {
+    public void setAllergen(List<Allergen> allergen) {
         this.allergen = allergen;
     }
 

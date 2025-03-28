@@ -1,7 +1,6 @@
 package com.application.persistence.model.admin;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.springframework.security.core.GrantedAuthority;
@@ -32,8 +31,10 @@ public class Admin implements UserDetails {
 	private String password;
 	private String phoneNumber;
 	@ManyToMany
-	@JoinTable(name = "admin_has_role", joinColumns = @JoinColumn(name = "admin_id"), inverseJoinColumns = @JoinColumn(name = "admin_role_id"))
-	private Collection<AdminRole> adminRoles;
+	@JoinTable(name = "admin_has_role", 
+		joinColumns = @JoinColumn(name = "admin_id"), 
+		inverseJoinColumns = @JoinColumn(name = "admin_role_id"))
+	private List<AdminRole> adminRoles = new ArrayList<>();
 	private Boolean blocked = false;
 	private Boolean deleted = false;
 	private Integer toReadNotification = 0;
@@ -79,7 +80,7 @@ public class Admin implements UserDetails {
 		return status == Status.ENABLED ;	
 	}
 
-	public Collection<AdminRole> getAdminRoles() {
+	public List<AdminRole> getAdminRoles() {
 		return adminRoles;
 	}
 
@@ -124,7 +125,7 @@ public class Admin implements UserDetails {
 		this.password = password;
 	}
 
-	public void setAdminRoles(Collection<AdminRole> adminRoles) {
+	public void setAdminRoles(List<AdminRole> adminRoles) {
 		this.adminRoles = adminRoles;
 	}
 
@@ -144,9 +145,8 @@ public class Admin implements UserDetails {
 		this.phoneNumber = phoneNumeber;
 	}
 
-	
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
+    public List<? extends GrantedAuthority> getAuthorities() {
         return getGrantedAuthorities(getRestaurantPrivileges());
     }
 

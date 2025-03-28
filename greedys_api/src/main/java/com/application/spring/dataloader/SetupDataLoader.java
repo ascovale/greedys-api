@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -344,9 +345,15 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
             if (user == null) {
                 return;
             }
+            user = userDAO.findByEmail("info@lasoffittarenovatio.it");
             user.setStatus(Customer.Status.ENABLED);
             if (premiumRole != null) {
+                logger.info("<<< User: {}", user);
+                logger.info(">>> PremiumRole: {}", premiumRole);
+                logger.info("Roles before adding: {}", user.getRoles());
+                Hibernate.initialize(user.getRoles());
                 user.addRole(premiumRole);
+                logger.info("Roles after adding: {}", user.getRoles());
             }
             userDAO.save(user);
         } catch (Exception e) {
@@ -393,6 +400,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
             restaurantDto.setName("La Soffitta Renovatio");
             restaurantDto.setAddress("Piazza del Risorgimento 46A");
             restaurantDto.setEmail("info@lasoffittarenovatio.it");
+            restaurantDto.setPassword("Minosse100%");
             restaurantService.registerRestaurant(restaurantDto);
 
             ServiceType pranzoType = serviceTypeDAO.findByName("Lunch");

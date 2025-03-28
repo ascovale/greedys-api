@@ -1,6 +1,5 @@
 package com.application.persistence.model.customer;
 
-import java.util.Collection;
 import java.util.List;
 
 import jakarta.persistence.Entity;
@@ -26,7 +25,7 @@ public class Role {
     	joinColumns = @JoinColumn(name = "role_id"), 
     	inverseJoinColumns = @JoinColumn(name = "privilege_id")
     )	
-    private Collection<Privilege> privileges;
+    private List<Privilege> privileges;
 
     public Role() {
         super();
@@ -56,7 +55,7 @@ public class Role {
     }
 
 
-	public Collection<Privilege> getPrivileges() {
+	public List<Privilege> getPrivileges() {
 		return privileges;
 	}
 
@@ -92,12 +91,12 @@ public class Role {
         builder.append("Role [name=").append(name).append("]").append("[id=").append(id).append("]");
         return builder.toString();
     }
-    public void setPrivileges(Collection<Privilege> privileges) {
+    public void setPrivileges(List<Privilege> privileges) {
 		this.privileges = privileges;
 	}
 
-    public List<Role> getPermissions() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getPermissions'");
+    public List<Privilege> getPermissions() {
+        return this.privileges;
     }
+
 }

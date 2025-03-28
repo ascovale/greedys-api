@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public class NewRestaurantDTO {
+	//TODO: Veridicare tutti i dati con Validators
     @NotNull
     @Size(min = 1, message = "{Size.restaurantDto.name}")
     private String name;
@@ -19,6 +20,16 @@ public class NewRestaurantDTO {
     @Size(min = 1, message = "{Size.restaurantDto.email}")
     private String email;
 	private Long ownerId;
+	//TODO: private String phoneNumber;
+	private String password;
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
 
 	public Long getOwnerId() {
 		return ownerId;	

@@ -1,7 +1,6 @@
 package com.application.persistence.model.restaurant.user;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.springframework.security.core.GrantedAuthority;
@@ -27,7 +26,6 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "restaurant_user")
 public class RestaurantUser implements UserDetails {
-    //TODO: Sistemare implementazione
     @Id
     @Column(unique = true, nullable = false)
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -36,8 +34,10 @@ public class RestaurantUser implements UserDetails {
     @JoinColumn(name = "restaurant_id")
     private Restaurant restaurant;
     @ManyToMany
-    @JoinTable(name = "restaurant_user_has_role", joinColumns = @JoinColumn(name = "restaurant_user_id"), inverseJoinColumns = @JoinColumn(name = "restaurant_role_id"))
-    private Collection<RestaurantRole> restaurantRoles;
+    @JoinTable(name = "restaurant_user_has_role", 
+        joinColumns = @JoinColumn(name = "restaurant_user_id"), 
+        inverseJoinColumns = @JoinColumn(name = "restaurant_role_id"))
+    private List<RestaurantRole> restaurantRoles = new ArrayList<>();
     @OneToOne
     private RestaurantUserOptions options;
     @Enumerated(EnumType.STRING)
@@ -152,19 +152,19 @@ public class RestaurantUser implements UserDetails {
         this.password = password;
     }
 
-    public Collection<RestaurantRole> getRestaurantRoles() {
+    public List<RestaurantRole> getRestaurantRoles() {
         return restaurantRoles;
     }
 
-    public void setRoles(Collection<RestaurantRole> restaurantRoles) {
+    public void setRoles(List<RestaurantRole> restaurantRoles) {
         this.restaurantRoles = restaurantRoles;
     }
 
-    public void addRestaurantRole(RestaurantRole restaurantRoles) {
+    public void addRestaurantRole(RestaurantRole restaurantRole) {
         if (this.restaurantRoles == null) {
             this.restaurantRoles = new ArrayList<>();
         }
-        this.restaurantRoles.add(restaurantRoles);
+        this.restaurantRoles.add(restaurantRole);
     }
 
     public void removeRole(RestaurantRole role) {
@@ -190,7 +190,7 @@ public class RestaurantUser implements UserDetails {
     }
 
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
+    public List<? extends GrantedAuthority> getAuthorities() {
         return getGrantedAuthorities(getRestaurantPrivileges());
     }
 

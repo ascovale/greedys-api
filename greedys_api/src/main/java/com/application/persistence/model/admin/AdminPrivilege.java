@@ -1,6 +1,6 @@
 package com.application.persistence.model.admin;
 
-import java.util.Collection;
+import java.util.List;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -18,7 +18,7 @@ public class AdminPrivilege {
     private Long id;
     private String name;
     @ManyToMany(mappedBy = "adminPrivileges")
-    private Collection<AdminRole> adminRoles;
+    private List<AdminRole> adminRoles;
 
     public AdminPrivilege() {
         super();
@@ -45,11 +45,11 @@ public class AdminPrivilege {
         this.name = name;
     }
 
-    public Collection<AdminRole> getAdminRoles() {
+    public List<AdminRole> getAdminRoles() {
 		return adminRoles;
 	}
 
-	public void setRoles(Collection<AdminRole> adminRoles) {
+	public void setRoles(List<AdminRole> adminRoles) {
 		this.adminRoles = adminRoles;
 	}
 

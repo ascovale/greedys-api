@@ -87,6 +87,9 @@ public class EmailService {
     //TODO il link per rimuovere ristorante è sbagliato da sistemare
     // Creare link per rimuovere ristorante lato flutterApp
     private SimpleMailMessage constructRestaurantAssociationConfirmationMessage(RestaurantUser restaurantUser) {
+        if (restaurantUser == null || restaurantUser.getRestaurant() == null || restaurantUser.getEmail() == null) {
+            throw new IllegalArgumentException("Invalid restaurant user or restaurant details");
+        }
         final String recipientAddress = restaurantUser.getEmail();
         final String subject = "Conferma associazione con ristorante";
         final String message = "Ciao " + ",\n\n" +

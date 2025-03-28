@@ -295,7 +295,7 @@ public class ServiceService {
 		Service service = new Service();
 		service.setName(servicesDto.getName());
 		service.setRestaurant(restaurant);
-
+		
 		if (servicesDto.getServiceType() != null) {
 			Set<ServiceType> serviceTypes = new HashSet<>();
 			serviceTypes.add(entityManager.getReference(ServiceType.class, servicesDto.getServiceType()));

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.hibernate.Hibernate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -63,6 +64,7 @@ public class RestaurantNotificationService {
 			restaurantUser.setToReadNotification(restaurantUser.getToReadNotification() + 1);
 			restaurantUserDAO.save(restaurantUser);
 			restaurantNotificationDAO.save(notification);
+			Hibernate.initialize(notification.getRestaurantUser());
 			notifications.add(notification);
 			firebaseService.sendFirebaseNotification(notification);
 		}

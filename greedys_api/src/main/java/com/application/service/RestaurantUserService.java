@@ -5,10 +5,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.hibernate.Hibernate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,36 +38,38 @@ public class RestaurantUserService {
     public static String QR_PREFIX = "https://chart.googleapis.com/chart?chs=200x200&chld=M%%7C0&cht=qr&chl=";
     public static String APP_NAME = "SpringRegistration";
 
-    @Autowired
     private RestaurantUserVerificationTokenDAO tokenDAO;
-    @Autowired
     private RestaurantUserDetailsService userDetailsService;
-    @Autowired
     private EmailService emailService;
-    @Autowired
     private RestaurantUserDAO ruDAO;
-    @Autowired
     private RestaurantDAO restaurantDAO;
-    @Autowired
     private RestaurantRoleDAO rrDAO;
-    @Autowired
     private RestaurantPrivilegeDAO rpDAO;
+    private PasswordEncoder passwordEncoder;
+
+    public RestaurantUserService(
+            RestaurantUserVerificationTokenDAO tokenDAO,
+            RestaurantUserDetailsService userDetailsService,
+            EmailService emailService,
+            RestaurantUserDAO ruDAO,
+            RestaurantDAO restaurantDAO,
+            RestaurantRoleDAO rrDAO,
+            RestaurantPrivilegeDAO rpDAO,
+            PasswordEncoder passwordEncoder) {
+        this.tokenDAO = tokenDAO;
+        this.userDetailsService = userDetailsService;
+        this.emailService = emailService;
+        this.ruDAO = ruDAO;
+        this.restaurantDAO = restaurantDAO;
+        this.rrDAO = rrDAO;
+        this.rpDAO = rpDAO;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     // TODO QUANDO CREO UN UTENTE DEVO SPECIFICARE IL RUOLO CHE HA NEL RISTORANTE
     // TODO Io farei che l'user può essere creato nello stesso tempo
     // se già esiste, lo prendo, altrimenti lo creo
     // invio di email come se fosse utente normale
-    public RestaurantUser registerRestaurantUser(NewRestaurantUserDTO restaurantUserDTO) {
-        System.out.println("Registering restaurant user with information:" + restaurantUserDTO.getRestaurantId() + " ");
-        RestaurantUser ru = new RestaurantUser();
-        Restaurant restaurant = restaurantDAO.findById(restaurantUserDTO.getRestaurantId())
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Invalid restaurant ID: " + restaurantUserDTO.getRestaurantId()));
-        ru.setRestaurant(restaurant);
-        ruDAO.save(ru);
-        emailService.sendRestaurantAssociationConfirmationEmail(ru);
-        return ru;
-    }
 
     public void acceptRestaurantUser(Long id) {
         ruDAO.acceptRestaurantUser(id);
@@ -83,7 +86,6 @@ public class RestaurantUserService {
         ruDAO.deleteById(idRestaurantUser);
     }
 
-    @Transactional
     public void changeRestaurantOwner(Long idRestaurant, Long idOldOwner, Long idNewOwner) {
         // TODO
         // VERIFICARE CHE L'ID DEL Restaurant USer sia quello del restaurant corretto
@@ -104,21 +106,40 @@ public class RestaurantUserService {
         }
         oldOwner.setStatus(RestaurantUser.Status.DELETED);
         newOwner.setStatus(RestaurantUser.Status.ENABLED);
+        Hibernate.initialize(newOwner.getRestaurantRoles());
         newOwner.addRestaurantRole(new RestaurantRole("ROLE_OWNER"));
+        
         oldOwner.removeRole(ownerRole);
         ruDAO.save(oldOwner);
         ruDAO.save(newOwner);
 
     }
 
-    public RestaurantUser registerRestaurantUser(NewRestaurantUserDTO restaurantUserDTO, Restaurant restaurant) {
+    
+    public RestaurantUser registerRestaurantUser(NewRestaurantUserDTO restaurantUserDTO, Restaurant restaurant, RestaurantRole rr) {
         System.out.println("Registering restaurant user with information:" + restaurantUserDTO.getRestaurantId() + " ");
         RestaurantUser ru = new RestaurantUser();
+        Hibernate.initialize(ru.getRestaurantRoles());
+        ru.addRestaurantRole(rr);
         ru.setRestaurant(restaurant);
+        ru.setPassword(passwordEncoder.encode(restaurantUserDTO.getPassword()));
         ruDAO.save(ru);
         emailService.sendRestaurantAssociationConfirmationEmail(ru);
         return ru;
     }
+
+    public RestaurantUser registerRestaurantUser(NewRestaurantUserDTO restaurantUserDTO, Restaurant restaurant) {
+        System.out.println("Registering restaurant user with information:" + restaurantUserDTO.getRestaurantId() + " ");
+        RestaurantUser ru = new RestaurantUser();
+        Hibernate.initialize(ru.getRestaurantRoles());
+        ru.setRestaurant(restaurant);
+        ru.setPassword(passwordEncoder.encode(restaurantUserDTO.getPassword()));
+        ruDAO.save(ru);
+        emailService.sendRestaurantAssociationConfirmationEmail(ru);
+        return ru;
+    }
+
+    //Add restaurant user bisogna verificare che il ristorante esista
 
     public RestaurantUserDTO addRestaurantUserRole(Long idRestaurantUser, String string) {
         RestaurantUser ru = ruDAO.findById(idRestaurantUser)
@@ -128,6 +149,7 @@ public class RestaurantUserService {
             throw new IllegalArgumentException("User already has the role: " + string);
         }
         RestaurantRole role = rrDAO.findByName(string);
+        Hibernate.initialize(ru.getRestaurantRoles());
         ru.addRestaurantRole(role);
 
         RestaurantUser newRestaurantUser = new RestaurantUser();
@@ -175,6 +197,7 @@ public class RestaurantUserService {
             throw new IllegalArgumentException("Cannot change role for a user with ROLE_OWNER");
         }
         ru.getRestaurantRoles().clear();
+        Hibernate.initialize(ru.getRestaurantRoles());
         ru.addRestaurantRole(role);
         // non bisogna creare un nuovo ruolo bisogna mettere ruolo solo
         ruDAO.save(ru);
@@ -225,6 +248,7 @@ public class RestaurantUserService {
             }
             privilegeMap.put(privilegeName, privilege);
         }
+        //TODO: MANCA IL METODO AGGIUNGI PRIVILEGIO E TOGLIO PRIVILEGIO A RUOLO
 
         // Associating privileges to roles
         RestaurantRole ownerRole = rrDAO.findByName("ROLE_OWNER");
@@ -232,7 +256,7 @@ public class RestaurantUserService {
         RestaurantRole chefRole = rrDAO.findByName("ROLE_CHEF");
         RestaurantRole waiterRole = rrDAO.findByName("ROLE_WAITER");
         RestaurantRole viewerRole = rrDAO.findByName("ROLE_VIEWER");
-
+        Hibernate.initialize(ownerRole.getRestaurantPrivileges());
         ownerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_VIEW_USERS"));
         ownerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_ADD_MANAGER"));
         ownerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_ADD_CHEF"));
