@@ -36,16 +36,6 @@ public class NewCustomerDTO {
         this.email = email;
     }
 
-    private Integer role;
-
-    public Integer getRole() {
-        return role;
-    }
-
-    public void setRole(final Integer role) {
-        this.role = role;
-    }
-
     public String getFirstName() {
         return firstName;
     }

@@ -23,18 +23,16 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Tag(name = "Admin Auth", description = "Controller per la gestione dell'autenticazione")
+@Tag(name = "Admin Authentication Controller", description = "Controller per la gestione dell'autenticazione degli utenti Admin")
 @RestController
 @RequestMapping(value = "/public/admin", produces = "application/json")
-public class AdminAuthController {
-
-    //TODO Manca Restaurant User Auth
+public class AdminAuthenticationController {
 
     private AuthenticationManager authenticationManager;
     private JwtUtil jwtUtil;
     private AdminService adminService;
 
-    public AdminAuthController(@Qualifier("adminAuthenticationManager") AuthenticationManager authenticationManager,
+    public AdminAuthenticationController(@Qualifier("adminAuthenticationManager") AuthenticationManager authenticationManager,
             JwtUtil jwtUtil,
             AdminService adminService) {
         this.authenticationManager = authenticationManager;

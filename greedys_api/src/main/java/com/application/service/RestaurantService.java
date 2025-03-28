@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,7 +30,6 @@ import com.application.web.dto.RestaurantImageDto;
 import com.application.web.dto.get.RestaurantDTO;
 import com.application.web.dto.get.ServiceDTO;
 import com.application.web.dto.get.SlotDTO;
-import com.application.web.dto.post.NewCustomerDTO;
 import com.application.web.dto.post.NewRestaurantDTO;
 import com.application.web.dto.post.NewRestaurantUserDTO;
 
@@ -39,6 +39,11 @@ import jakarta.persistence.PersistenceContext;
 @Transactional
 @Service("restaurantService")
 public class RestaurantService {
+	//TODO: Validators per partita IVA e codice fiscale
+	//email, codice postale, indirizzo
+	// ??? altro
+	//TODO Sistema per verificare email di un ristorante che si registra tramite una richiesta a google maps ad esempio
+	//Farei un sistema che ci da 10 giorni a ristorante
 
 	@Autowired
 	private RestaurantDAO rDAO;
@@ -94,16 +99,16 @@ public class RestaurantService {
 		restaurant.setCreationDate(LocalDate.now());
 		restaurant.setpI(restaurantDto.getpi());
 		restaurant.setPostCode(restaurantDto.getPost_code());
+		restaurant.setStatus(Restaurant.Status.DISABLED);
 		rDAO.save(restaurant);
 		System.out.println("<<< ID= " + restaurant.getId());
 		RestaurantDTO r = new RestaurantDTO(restaurant);
 		NewRestaurantUserDTO restaurantUserDTO = new NewRestaurantUserDTO();
 		restaurantUserDTO.setRestaurantId(r.getId());
-		RestaurantUser owner = restaurantUserService.registerRestaurantUser(restaurantUserDTO, restaurant);
-		RestaurantRole rRole = new RestaurantRole();
-		rRole.setName("ROLE_OWNER");
-		rRole.setUsers(Collections.singletonList(owner));
-		restaurantRoleDAO.save(rRole);
+		restaurantUserDTO.setEmail(restaurantDto.getEmail());
+		restaurantUserDTO.setPassword(restaurantDto.getPassword());
+		RestaurantRole role = restaurantRoleDAO.findByName("ROLE_OWNER");
+		RestaurantUser owner = restaurantUserService.registerRestaurantUser(restaurantUserDTO, restaurant,role);
 		restaurantUserService.acceptRestaurantUser(owner.getId());
 		return r;
 	}
@@ -114,6 +119,8 @@ public class RestaurantService {
 		return rfd;
 	}
 
+	//TODO: Add restaurant user bisogna verificare che il ristorante esista
+
 	public Page<RestaurantImageDto> getImages(Long idRestaurant, Pageable pageable) {
 		Page<RestaurantImageDto> rid = Mapper.mapRestaurantImagePageIntoDTOPage(pageable,
 				rDAO.getRestaurantImages(idRestaurant, pageable));
@@ -121,23 +128,9 @@ public class RestaurantService {
 	}
 
 	public void addImage(Restaurant restaurant, Image image) {
+		Hibernate.initialize(restaurant.getRestaurantImages());
 		restaurant.getRestaurantImages().add(image);
 		rDAO.save(restaurant);
-	}
-
-	public RestaurantUser registerRestaurantAndUser(NewRestaurantDTO restaurantDto, NewCustomerDTO accountDto) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'markRestaurantAsDeleted'");
-
-		/*
-		 * User user = userService.registerNewUserAccount(accountDto);
-		 * eventPublisher.publishEvent(new UserOnRegistrationCompleteEvent(user,
-		 * Locale.ITALIAN, getAppUrl(request)));
-		 * restaurantDto.setOwnerId(user.getId());
-		 * RestaurantDTO r = restaurantService.registerRestaurant(restaurantDto);
-		 * return new GenericResponse("success");
-		 */
-
 	}
 
 	public Collection<LocalDate> getClosedDays(Long id, LocalDate start, LocalDate end) {

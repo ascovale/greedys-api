@@ -51,6 +51,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "Admin Restaurant", description = "Admin management APIs for the Restaurant")
 public class AdminRestaurantController {
 
+	//TODO: cambiare convenzione invece di restaurantId usare id_restaurant
+	//TODO:Scrivere per aggiungere togliere privilegi customer ma anche restaurant user e andmin
+
 	private final RestaurantService restaurantService;
 	private final ReservationService reservationService;
 	private final RestaurantUserService restaurantUserService;
@@ -73,12 +76,12 @@ public class AdminRestaurantController {
 			@ApiResponse(responseCode = "404", description = "Ristorante non trovato")
 	})
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_RESTAURANT_READ')")
-	@GetMapping(value = "{idRestaurant}/reservation")
+	@GetMapping(value = "{restaurantId}/reservation")
 	public Collection<ReservationDTO> getReservations(
-			@PathVariable Long idRestaurant,
+			@PathVariable Long restaurantId,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end) {
-		Collection<ReservationDTO> reservations = reservationService.getReservations(idRestaurant, start, end);
+		Collection<ReservationDTO> reservations = reservationService.getReservations(restaurantId, start, end);
 		return reservations;
 	}
 
@@ -88,12 +91,12 @@ public class AdminRestaurantController {
 			@ApiResponse(responseCode = "404", description = "Ristorante non trovato")
 	})
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_RESTAURANT_READ')")
-	@GetMapping(value = "{idRestaurant}/reservation/accepted")
+	@GetMapping(value = "{restaurantId}/reservation/accepted")
 	public Collection<ReservationDTO> getAcceptedReservations(
-			@PathVariable Long idRestaurant,
+			@PathVariable Long restaurantId,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end) {
-		Collection<ReservationDTO> reservations = reservationService.getAcceptedReservations(idRestaurant, start, end);
+		Collection<ReservationDTO> reservations = reservationService.getAcceptedReservations(restaurantId, start, end);
 		return reservations;
 	}
 
@@ -103,15 +106,15 @@ public class AdminRestaurantController {
 			@ApiResponse(responseCode = "404", description = "Ristorante non trovato")
 	})
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_RESTAURANT_READ')")
-	@GetMapping(value = "{idRestaurant}/reservation/pageable")
+	@GetMapping(value = "{restaurantId}/reservation/pageable")
 	public ResponseEntity<Page<ReservationDTO>> getReservationsPageable(
-			@PathVariable Long idRestaurant,
+			@PathVariable Long restaurantId,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end,
 			@RequestParam int page,
 			@RequestParam int size) {
 		Pageable pageable = PageRequest.of(page, size);
-		Page<ReservationDTO> reservations = reservationService.getReservationsPageable(idRestaurant, start, end,
+		Page<ReservationDTO> reservations = reservationService.getReservationsPageable(restaurantId, start, end,
 				pageable);
 		return new ResponseEntity<>(reservations, HttpStatus.OK);
 	}
@@ -122,21 +125,21 @@ public class AdminRestaurantController {
 			@ApiResponse(responseCode = "404", description = "Ristorante non trovato")
 	})
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_RESTAURANT_READ')")
-	@GetMapping(value = "{idRestaurant}/reservation/pending")
+	@GetMapping(value = "{restaurantId}/reservation/pending")
 	public Collection<ReservationDTO> getPendingReservations(
-			@PathVariable Long idRestaurant,
+			@PathVariable Long restaurantId,
 			@RequestParam(required = false) LocalDate start,
 			@RequestParam(required = false) LocalDate end) {
 
 		Collection<ReservationDTO> reservations;
 		if (end != null && start != null) {
-			reservations = reservationService.getPendingReservations(idRestaurant, start, end);
+			reservations = reservationService.getPendingReservations(restaurantId, start, end);
 		} else if (start != null) {
-			reservations = reservationService.getPendingReservations(idRestaurant, start);
+			reservations = reservationService.getPendingReservations(restaurantId, start);
 		} else if (end != null) {
 			throw new IllegalArgumentException("end cannot be null if start is not null");
 		} else {
-			reservations = reservationService.getPendingReservations(idRestaurant);
+			reservations = reservationService.getPendingReservations(restaurantId);
 		}
 		return reservations;
 	}
@@ -147,9 +150,9 @@ public class AdminRestaurantController {
 		@ApiResponse(responseCode = "404", description = "Ristorante non trovato")
 	})
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_RESTAURANT_READ')")
-	@GetMapping(value = "{idRestaurant}/reservation/pending/pageable")
+	@GetMapping(value = "{restaurantId}/reservation/pending/pageable")
 	public ResponseEntity<Page<ReservationDTO>> getPendingReservationsPageable(
-		@PathVariable Long idRestaurant,
+		@PathVariable Long restaurantId,
 		@RequestParam(required = false) LocalDate start,
 		@RequestParam(required = false) LocalDate end,
 		@RequestParam int page,
@@ -159,13 +162,13 @@ public class AdminRestaurantController {
 		Page<ReservationDTO> reservations;
 
 		if (end != null && start != null) {
-		reservations = reservationService.getPendingReservationsPageable(idRestaurant, start, end, pageable);
+		reservations = reservationService.getPendingReservationsPageable(restaurantId, start, end, pageable);
 		} else if (start != null) {
-		reservations = reservationService.getPendingReservationsPageable(idRestaurant, start, pageable);
+		reservations = reservationService.getPendingReservationsPageable(restaurantId, start, pageable);
 		} else if (end != null) {
 		throw new IllegalArgumentException("end cannot be null if start is not null");
 		} else {
-		reservations = reservationService.getPendingReservationsPageable(idRestaurant, pageable);
+		reservations = reservationService.getPendingReservationsPageable(restaurantId, pageable);
 		}
 		return new ResponseEntity<>(reservations, HttpStatus.OK);
 	}
@@ -176,13 +179,13 @@ public class AdminRestaurantController {
 			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class))),
 			@ApiResponse(responseCode = "404", description = "Ristorante o utente non trovato")
 	})
-	@PostMapping("{idRestaurantUser}/user/accept")
-	public GenericResponse acceptUser(@PathVariable Long idRestaurantUser) {
-		restaurantUserService.acceptRestaurantUser(idRestaurantUser);
+	@PostMapping("{restaurantUserId}/user/accept")
+	public GenericResponse acceptUser(@PathVariable Long restaurantUserId) {
+		restaurantUserService.acceptRestaurantUser(restaurantUserId);
 		return new GenericResponse("success");
 	}
 
-	@GetMapping(value = "/{idRestaurant}/services")
+	@GetMapping(value = "/{restaurantId}/services")
 	@Operation(summary = "Get services of a restaurant", description = "Ottieni i servizi di un ristorante")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ServiceDTO.class)))),
@@ -190,14 +193,14 @@ public class AdminRestaurantController {
 			@ApiResponse(responseCode = "400", description = "Richiesta non valida")
 	})
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_READ')")
-	public ResponseEntity<Collection<ServiceDTO>> getServices(@PathVariable Long idRestaurant) {
-		Collection<ServiceDTO> services = restaurantService.getServices(idRestaurant);
+	public ResponseEntity<Collection<ServiceDTO>> getServices(@PathVariable Long restaurantId) {
+		Collection<ServiceDTO> services = restaurantService.getServices(restaurantId);
 		return new ResponseEntity<>(services, HttpStatus.OK);
 	}
 
 	/* -- === *** ROOMS AND TABLES *** === --- */
 
-	@GetMapping(value = "/{idRestaurant}/rooms")
+	@GetMapping(value = "/{restaurantId}/rooms")
 	@Operation(summary = "Get rooms of a restaurant", description = "Ottieni le sale di un ristorante")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = RoomDTO.class)))),
@@ -205,12 +208,12 @@ public class AdminRestaurantController {
 			@ApiResponse(responseCode = "400", description = "Richiesta non valida")
 	})
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_READ')")
-	public ResponseEntity<Collection<RoomDTO>> getRooms(@PathVariable Long idRestaurant) {
-		Collection<RoomDTO> rooms = roomService.findByRestaurant(idRestaurant);
+	public ResponseEntity<Collection<RoomDTO>> getRooms(@PathVariable Long restaurantId) {
+		Collection<RoomDTO> rooms = roomService.findByRestaurant(restaurantId);
 		return new ResponseEntity<>(rooms, HttpStatus.OK);
 	}
 
-	@GetMapping(value = "/{idRestaurant}/room/{roomId}/tables")
+	@GetMapping(value = "/{restaurantId}/room/{roomId}/tables")
 	@Operation(summary = "Get tables of a room", description = "Ottieni i tavoli di una sala")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = TableDTO.class)))),
@@ -218,12 +221,12 @@ public class AdminRestaurantController {
 			@ApiResponse(responseCode = "400", description = "Richiesta non valida")
 	})
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_READ')")
-	public ResponseEntity<Collection<TableDTO>> getTables(@PathVariable Long idRestaurant, @PathVariable Long roomId) {
+	public ResponseEntity<Collection<TableDTO>> getTables(@PathVariable Long restaurantId, @PathVariable Long roomId) {
 		Collection<TableDTO> tables = tableService.findByRoom(roomId);
 		return new ResponseEntity<>(tables, HttpStatus.OK);
 	}
 
-	@PostMapping(value = "/{idRestaurant}/room")
+	@PostMapping(value = "/{restaurantId}/room")
 	@Operation(summary = "Add a room to a restaurant", description = "Aggiungi una sala a un ristorante")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class))),
@@ -231,12 +234,12 @@ public class AdminRestaurantController {
 			@ApiResponse(responseCode = "400", description = "Richiesta non valida")
 	})
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
-	public GenericResponse addRoom(@PathVariable Long idRestaurant, @RequestBody NewRoomDTO roomDto) {
+	public GenericResponse addRoom(@PathVariable Long restaurantId, @RequestBody NewRoomDTO roomDto) {
 		roomService.createRoom(roomDto);
 		return new GenericResponse("success");
 	}
 
-	@PostMapping(value = "/{idRestaurant}/table")
+	@PostMapping(value = "/{restaurantId}/table")
 	@Operation(summary = "Add a table to a room", description = "Aggiungi un tavolo a una sala")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class))),
@@ -244,7 +247,7 @@ public class AdminRestaurantController {
 			@ApiResponse(responseCode = "400", description = "Richiesta non valida")
 	})
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
-	public GenericResponse addTable(@PathVariable Long idRestaurant, @RequestParam NewTableDTO tableDto) {
+	public GenericResponse addTable(@PathVariable Long restaurantId, @RequestParam NewTableDTO tableDto) {
 		tableService.createTable(tableDto);
 		return new GenericResponse("success");
 	}
@@ -256,13 +259,13 @@ public class AdminRestaurantController {
 			@ApiResponse(responseCode = "400", description = "Richiesta non valida")
 	})
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
-	@PostMapping(value = "{idRestaurant}/no-show-time-limit")
-	public GenericResponse setNoShowTimeLimit(@PathVariable Long idRestaurant, @RequestParam int minutes) {
-		restaurantService.setNoShowTimeLimit(idRestaurant, minutes);
+	@PostMapping(value = "{restaurantId}/no_show_time_limit")
+	public GenericResponse setNoShowTimeLimit(@PathVariable Long restaurantId, @RequestParam int minutes) {
+		restaurantService.setNoShowTimeLimit(restaurantId, minutes);
 		return new GenericResponse("success");
 	}
 
-	@GetMapping(value = "{idRestaurant}/types")
+	@GetMapping(value = "{restaurantId}/types")
 	@Operation(summary = "Get types of a restaurant", description = "Ottieni i tipi di un ristorante")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = String.class)))),
@@ -270,8 +273,8 @@ public class AdminRestaurantController {
 			@ApiResponse(responseCode = "400", description = "Richiesta non valida")
 	})
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
-	public ResponseEntity<Collection<String>> getRestaurantTypesNames(@PathVariable Long idRestaurant) {
-		List<String> types = restaurantService.getRestaurantTypesNames(idRestaurant);
+	public ResponseEntity<Collection<String>> getRestaurantTypesNames(@PathVariable Long restaurantId) {
+		List<String> types = restaurantService.getRestaurantTypesNames(restaurantId);
 		return new ResponseEntity<>(types, HttpStatus.OK);
 	}
 
@@ -279,7 +282,7 @@ public class AdminRestaurantController {
 	@Operation(summary = "Create category", description = "Creates a new category for the specified restaurant by its ID")
 	@ApiResponse(responseCode = "200", description = "Category created successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
 	@ApiResponse(responseCode = "400", description = "Invalid request")
-	@PostMapping("/createRestaurantCategory")
+	@PostMapping("/create_restaurant_category")
 	public GenericResponse createCategory(@RequestBody RestaurantCategoryDTO restaurantCategoryDto) {
 		restaurantService.createRestaurantCategory(restaurantCategoryDto);
 		return new GenericResponse("Category created successfully");
@@ -310,9 +313,9 @@ public class AdminRestaurantController {
 	@Operation(summary = "Enable restaurant", description = "Enables a restaurant by its primary email")
 	@ApiResponse(responseCode = "200", description = "Restaurant enabled successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
 	@ApiResponse(responseCode = "400", description = "Invalid request")
-	@PutMapping("/{idRestaurant}/enableRestaurant")
-	public GenericResponse enableRestaurant(@PathVariable Long idRestaurant) {
-		restaurantService.enableRestaurant(idRestaurant);
+	@PutMapping("/{restaurantId}/enable_restaurant")
+	public GenericResponse enableRestaurant(@PathVariable Long restaurantId) {
+		restaurantService.enableRestaurant(restaurantId);
 		return new GenericResponse("Restaurant enabled successfully");
 	}
 
@@ -320,9 +323,9 @@ public class AdminRestaurantController {
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
 	@ApiResponse(responseCode = "200", description = "Restaurant deleted successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
 	@ApiResponse(responseCode = "400", description = "Invalid request")
-	@PutMapping("/{idRestaurant}/deleteRestaurant")
-	public GenericResponse deleteRestaurant(@PathVariable Long idRestaurant) {
-		restaurantService.deleteRestaurant(idRestaurant);
+	@PutMapping("/{restaurantId}/delete_restaurant")
+	public GenericResponse deleteRestaurant(@PathVariable Long restaurantId) {
+		restaurantService.deleteRestaurant(restaurantId);
 		return new GenericResponse("Restaurant deleted successfully");
 	}
 
@@ -340,9 +343,9 @@ public class AdminRestaurantController {
 	@Operation(summary = "Change restaurant email", description = "Changes the email of a restaurant by its ID")
 	@ApiResponse(responseCode = "200", description = "Restaurant email changed successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
 	@ApiResponse(responseCode = "400", description = "Invalid request")
-	@PutMapping("/{idRestaurant}/changeEmail")
-	public GenericResponse changeRestaurantEmail(@PathVariable Long idRestaurant, @RequestBody String newEmail) {
-		restaurantService.changeRestaurantEmail(idRestaurant, newEmail);
+	@PutMapping("/{restaurantId}/change_email")
+	public GenericResponse changeRestaurantEmail(@PathVariable Long restaurantId, @RequestBody String newEmail) {
+		restaurantService.changeRestaurantEmail(restaurantId, newEmail);
 		return new GenericResponse("Restaurant email changed successfully");
 	}
 
@@ -350,9 +353,9 @@ public class AdminRestaurantController {
 	@Operation(summary = "Mark restaurant as deleted", description = "Marks a restaurant as deleted similar to disable by its ID")
 	@ApiResponse(responseCode = "200", description = "Restaurant marked as deleted successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
 	@ApiResponse(responseCode = "400", description = "Invalid request")
-	@DeleteMapping("/{idRestaurant}/markAsDeleted")
-	public GenericResponse markRestaurantAsDeleted(@PathVariable Long idRestaurant, @RequestParam boolean deleted) {
-		restaurantService.setRestaurantDeleted(idRestaurant, deleted);
+	@DeleteMapping("/{restaurantId}/mark_as_deleted")
+	public GenericResponse markRestaurantAsDeleted(@PathVariable Long restaurantId, @RequestParam boolean deleted) {
+		restaurantService.setRestaurantDeleted(restaurantId, deleted);
 		return new GenericResponse("Restaurant marked as deleted successfully");
 	}
 
@@ -361,9 +364,9 @@ public class AdminRestaurantController {
     @Operation(summary = "Block restaurant user", description = "Blocks a restaurant user by their ID")
     @ApiResponse(responseCode = "200", description = "Restaurant user blocked successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
-    @PutMapping("/{idRestaurant}/block")
-    public GenericResponse blockRestaurantUser(@PathVariable Long idRestaurant) {
-		restaurantService.updateRestaurantStatus(idRestaurant, com.application.persistence.model.restaurant.Restaurant.Status.DISABLED);
+    @PutMapping("/{restaurantId}/block")
+    public GenericResponse blockRestaurantUser(@PathVariable Long restaurantId) {
+		restaurantService.updateRestaurantStatus(restaurantId, com.application.persistence.model.restaurant.Restaurant.Status.DISABLED);
         return new GenericResponse("Restaurant user blocked successfully");
     }
 }

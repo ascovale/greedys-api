@@ -1,6 +1,6 @@
 package com.application.persistence.model.menu;
 
-import java.util.Collection;
+import java.util.List;
 
 import com.application.persistence.model.restaurant.Restaurant;
 
@@ -22,8 +22,8 @@ import jakarta.persistence.Table;
  *   <li><b>id</b>: The unique identifier for the menu item.</li>
  *   <li><b>name</b>: The name of the menu item.</li>
  *   <li><b>description</b>: A description of the menu item.</li>
- *   <li><b>ingredients</b>: A Collection of ingredients used in the menu item.</li>
- *   <li><b>allergens</b>: A Collection of allergens present in the menu item.</li>
+ *   <li><b>ingredients</b>: A List of ingredients used in the menu item.</li>
+ *   <li><b>allergens</b>: A List of allergens present in the menu item.</li>
  * </ul>
  * 
  * <p>The MenuItem class also contains an enumeration of possible allergens.</p>
@@ -52,7 +52,7 @@ public class MenuItem {
     private String name;
     private String description;
 
-    private Collection<String> ingredients;
+    private List<String> ingredients;
     
     public enum Allergen {
         GLUTEN,
@@ -70,10 +70,10 @@ public class MenuItem {
         LUPIN,
         MOLLUSCS
     }
-    private Collection<Allergen> allergens;
+    private List<Allergen> allergens;
 
     @OneToMany(mappedBy = "item")
-    private Collection<MenuHasItem> menusWithItem;
+    private List<MenuHasItem> menusWithItem;
 
     @ManyToOne
     private Restaurant restaurant;
@@ -104,19 +104,19 @@ public class MenuItem {
         this.description = description;
     }
 
-    public Collection<String> getIngredients() {
+    public List<String> getIngredients() {
         return ingredients;
     }
 
-    public void setIngredients(Collection<String> ingredients) {
+    public void setIngredients(List<String> ingredients) {
         this.ingredients = ingredients;
     }
 
-    public Collection<Allergen> getAllergens() {
+    public List<Allergen> getAllergens() {
         return allergens;
     }
 
-    public void setAllergens(Collection<Allergen> allergens) {
+    public void setAllergens(List<Allergen> allergens) {
         this.allergens = allergens;
     }
 

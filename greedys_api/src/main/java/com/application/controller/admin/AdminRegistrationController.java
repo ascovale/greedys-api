@@ -31,8 +31,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.application.persistence.model.admin.Admin;
 import com.application.persistence.model.admin.AdminPrivilege;
 import com.application.persistence.model.admin.AdminVerificationToken;
-import com.application.persistence.model.customer.Customer;
-import com.application.persistence.model.customer.VerificationToken;
 import com.application.registration.AdminOnRegistrationCompleteEvent;
 import com.application.service.AdminService;
 import com.application.service.EmailService;
@@ -128,9 +126,8 @@ public class AdminRegistrationController {
     @ResponseBody
     public GenericResponse resendRegistrationToken(final HttpServletRequest request, @RequestParam("token") final String existingToken) {
         final AdminVerificationToken newToken = adminService.generateNewVerificationToken(existingToken);
-		Admin customer = adminService.getAdmin(newToken.getToken());
-        //TODO: Sistemare invio del token
-        //mailService.sendEmail(constructResendVerificationTokenEmail(getAppUrl(request), request.getLocale(), newToken, customer));
+		Admin admin = adminService.getAdmin(newToken.getToken());
+        mailService.sendEmail(constructResendVerificationTokenEmail(getAppUrl(request), request.getLocale(), newToken, admin));
         return new GenericResponse(messages.getMessage("message.resendToken", null, request.getLocale()));
     }
 
@@ -146,24 +143,24 @@ public class AdminRegistrationController {
         return null;
     }*/
 
-	private SimpleMailMessage constructResendVerificationTokenEmail(final String contextPath, final Locale locale, final VerificationToken newToken, final Customer user) {
+	private SimpleMailMessage constructResendVerificationTokenEmail(final String contextPath, final Locale locale, final AdminVerificationToken newToken, final Admin admin) {
         final String confirmationUrl = contextPath + "/registrationConfirm.html?token=" + newToken.getToken();
         final String message = messages.getMessage("message.resendToken", null, locale);
-        return constructEmail("Resend Registration Token", message + " \r\n" + confirmationUrl, user);
+        return constructEmail("Resend Registration Token", message + " \r\n" + confirmationUrl, admin);
     }
 
     @SuppressWarnings("unused")
-	private SimpleMailMessage constructResetTokenEmail(final String contextPath, final Locale locale, final String token, final Customer user) {
-        final String url = contextPath + "/admin/changePassword?id=" + user.getId() + "&token=" + token;
+	private SimpleMailMessage constructResetTokenEmail(final String contextPath, final Locale locale, final String token, final Admin admin) {
+        final String url = contextPath + "/admin/changePassword?id=" + admin.getId() + "&token=" + token;
         final String message = messages.getMessage("message.resetPassword", null, locale);
-        return constructEmail("Reset Password", message + " \r\n" + url, user);
+        return constructEmail("Reset Password", message + " \r\n" + url, admin);
     }
 
-    private SimpleMailMessage constructEmail(String subject, String body, Customer user) {
+    private SimpleMailMessage constructEmail(String subject, String body, Admin admin) {
         final SimpleMailMessage email = new SimpleMailMessage();
         email.setSubject(subject);
         email.setText(body);
-        email.setTo(user.getEmail());
+        email.setTo(admin.getEmail());
         email.setFrom(env.getProperty("support.email"));
         return email;
     }

@@ -1,7 +1,6 @@
 package com.application.persistence.model.customer;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -40,8 +39,10 @@ public class Customer implements UserDetails {
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "customer")
 	private Set<Reservation> reservations;
 	@ManyToMany
-	@JoinTable(name = "customer_has_role", joinColumns = @JoinColumn(name = "customer_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
-	private Collection<Role> roles;
+	@JoinTable(name = "customer_has_role", 
+		joinColumns = @JoinColumn(name = "customer_id"), 
+		inverseJoinColumns = @JoinColumn(name = "role_id"))
+	private List<Role> roles = new ArrayList<>();
 	private Integer toReadNotification = 0;
 	@OneToOne
     private CustomerOptions customerOptions;
@@ -142,11 +143,11 @@ public class Customer implements UserDetails {
 		this.password = password;
 	}
 
-	public Collection<Role> getRoles() {
+	public List<Role> getRoles() {
 		return roles;
 	}
 
-	public void setRoles(Collection<Role> roles) {
+	public void setRoles(List<Role> roles) {
 		this.roles = roles;
 	}
 
@@ -167,7 +168,7 @@ public class Customer implements UserDetails {
 	}
 
 	@Override
-	public Collection<? extends GrantedAuthority> getAuthorities() {
+	public List<? extends GrantedAuthority> getAuthorities() {
         return getGrantedAuthorities(getPrivileges());
     }
 
@@ -224,7 +225,9 @@ public class Customer implements UserDetails {
 		if (roles == null) {
 			roles = new ArrayList<>();
 		}
-		roles.add(role);
+		if (!roles.contains(role)) {
+			roles.add(role);
+		}
 	}
 
 }

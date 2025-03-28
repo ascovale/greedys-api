@@ -83,7 +83,7 @@ public class AdminService {
 
 		admin.setAdminRoles(Arrays.asList(adminRole));
 		// user.setUsing2FA(accountDto.isUsing2FA());
-		admin.setAdminRoles(Arrays.asList(roleRepository.findByName("ROLE_USER")));
+		//admin.setAdminRoles(Arrays.asList(roleRepository.findByName("ROLE_USER")));
 		return adminDAO.save(admin);
 	}
 

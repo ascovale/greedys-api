@@ -39,9 +39,9 @@ public class AdminRestaurantUserController {
     @Operation(summary = "Block restaurant user", description = "Blocks a restaurant user by their ID")
     @ApiResponse(responseCode = "200", description = "Restaurant user blocked successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
-    @PutMapping("/restaurantUser/{idRestaurantUser}/block")
-    public GenericResponse blockRestaurantUser(@PathVariable Long idRestaurantUser) {
-        restaurantUserService.updateRestaurantUserStatus(idRestaurantUser, RestaurantUser.Status.BLOCKED);
+    @PutMapping("/restaurantUser/{restaurantUserId}/block")
+    public GenericResponse blockRestaurantUser(@PathVariable Long restaurantUserId) {
+        restaurantUserService.updateRestaurantUserStatus(restaurantUserId, RestaurantUser.Status.BLOCKED);
         return new GenericResponse("Restaurant user blocked successfully");
     }
 
@@ -49,9 +49,9 @@ public class AdminRestaurantUserController {
     @Operation(summary = "Enable restaurant user", description = "Enables a restaurant user by their ID")
     @ApiResponse(responseCode = "200", description = "Restaurant user enabled successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
-    @PutMapping("/restaurantUser/{idRestaurantUser}/enable")
-    public GenericResponse enableRestaurantUser(@PathVariable Long idRestaurantUser) {
-        restaurantUserService.updateRestaurantUserStatus(idRestaurantUser, RestaurantUser.Status.ENABLED);
+    @PutMapping("/restaurantUser/{restaurantUserId}/enable")
+    public GenericResponse enableRestaurantUser(@PathVariable Long restaurantUserId) {
+        restaurantUserService.updateRestaurantUserStatus(restaurantUserId, RestaurantUser.Status.ENABLED);
         return new GenericResponse("Restaurant user enabled successfully");
     }
 

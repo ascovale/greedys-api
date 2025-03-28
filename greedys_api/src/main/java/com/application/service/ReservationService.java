@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
+import org.hibernate.Hibernate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -180,6 +181,7 @@ public class ReservationService {
         Customer user = getCurrentUser();
         reservation.setCreator(getCurrentUser());
         reservation.setCustomer(user);
+        Hibernate.initialize(user.getReservations());
         user.getReservations().add(reservation);
         return reservationDAO.save(reservation);
     }

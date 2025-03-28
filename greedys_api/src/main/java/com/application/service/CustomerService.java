@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.hibernate.Hibernate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -215,6 +216,7 @@ public class CustomerService {
 		Customer user = userDAO.findByEmail(email);
 		// user.setImage(image);
 		// BIsogna aggiungere una lista di immagini
+		// se si fa add bisogna mettere Hibernate.initialize(user.getImages());
 		userDAO.save(user);
 	}
 
@@ -250,6 +252,7 @@ public class CustomerService {
 		Customer user = getCurrentUser();
 		Allergy allergy = allergyDAO.findById(idAllergy)
 				.orElseThrow(() -> new EntityNotFoundException("Allergy not found"));
+		Hibernate.initialize(user.getAllergies());
 		user.getAllergies().add(allergy);
 		userDAO.save(user);
 	}
@@ -348,6 +351,7 @@ public class CustomerService {
 	public void addRoleToCustomer(Long customerId, String role) {
 		Customer customer = userDAO.findById(customerId)
 				.orElseThrow(() -> new EntityNotFoundException("Customer not found"));
+		Hibernate.initialize(customer.getRoles());
 		customer.getRoles().add(roleRepository.findByName(role));
 		userDAO.save(customer);
 	}
@@ -368,6 +372,7 @@ public class CustomerService {
 		if (privilege == null) {
 			throw new EntityNotFoundException("Permission not found");
 		}
+		Hibernate.initialize(role.getPrivileges());
 		role.getPrivileges().add(privilege);
 		roleRepository.save(role);
 	}
