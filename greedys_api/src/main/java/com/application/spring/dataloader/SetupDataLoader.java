@@ -114,7 +114,6 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
         if (!setupConfig.isDataUploaded()) {
 
             logger.info("    >>>  ---   Creating Test data  ---  <<< ");
-
             setupConfig.setAlreadySetup(true);
             setupConfig.setDataUploaded(true);
             createSomeAdmin();
@@ -323,8 +322,6 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
     @Transactional
     private void createSomeCustomer() {
         logger.info("    >>>  ---   Creating customer  ---  <<< ");
-
-        Role premiumRole = roleDAO.findByName("ROLE_PREMIUM_USER");
         Customer existingCustomer = userDAO.findByEmail("info@lasoffittarenovatio.it");
         if (existingCustomer != null) {
             System.out.println("Customer with email info@lasoffittarenovatio.it already exists.");
@@ -346,13 +343,19 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
                 return;
             }
             user = userDAO.findByEmail("info@lasoffittarenovatio.it");
+            Role premiumRole = roleDAO.findByName("ROLE_PREMIUM_USER");
             user.setStatus(Customer.Status.ENABLED);
             if (premiumRole != null) {
                 logger.info("<<< User: {}", user);
                 logger.info(">>> PremiumRole: {}", premiumRole);
                 logger.info("Roles before adding: {}", user.getRoles());
                 Hibernate.initialize(user.getRoles());
-                user.addRole(premiumRole);
+                // Crea una nuova lista modificabile
+                List<Role> roles = new ArrayList<>(user.getRoles());
+                if (!roles.contains(premiumRole)) {
+                    roles.add(premiumRole);
+                }
+                user.setRoles(roles); // Sostituisci la collezione originale
                 logger.info("Roles after adding: {}", user.getRoles());
             }
             userDAO.save(user);

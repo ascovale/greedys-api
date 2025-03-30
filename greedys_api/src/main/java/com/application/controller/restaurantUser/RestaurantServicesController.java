@@ -77,7 +77,7 @@ public class RestaurantServicesController {
         @ApiResponse(responseCode = "404", description = "Service not found"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @GetMapping("/getService/{serviceId}")
+    @GetMapping("/get_service/{serviceId}")
     public ResponseEntity<ServiceDTO> getServiceById(@PathVariable Long serviceId) {
         ServiceDTO service = serviceService.findById(serviceId);
         return ResponseEntity.ok(service);
@@ -90,13 +90,13 @@ public class RestaurantServicesController {
         @ApiResponse(responseCode = "404", description = "Service not found"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @GetMapping("/getServiceSlot/{serviceId}")
+    @GetMapping("/get_service_slot/{serviceId}")
     public Collection<SlotDTO> getSlots(@PathVariable(value = "serviceId") long serviceId) {
         return slotService.findByService_Id(serviceId);
     }
 
     @PreAuthorize("authentication.principal.isEnabled() & hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_READ')")
-    @GetMapping("/serviceTypes")
+    @GetMapping("/service_types")
     @Operation(summary = "Get all service types", description = "Retrieve all service types.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Service types retrieved successfully"),

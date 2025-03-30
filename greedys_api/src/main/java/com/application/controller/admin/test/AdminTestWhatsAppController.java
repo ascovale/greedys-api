@@ -1,4 +1,4 @@
-package com.application.controller.admin;
+package com.application.controller.admin.test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;

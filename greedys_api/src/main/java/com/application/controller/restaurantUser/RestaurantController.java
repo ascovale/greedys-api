@@ -216,7 +216,7 @@ public class RestaurantController {
 			@ApiResponse(responseCode = "404", description = "Ristorante non trovato"),
 			@ApiResponse(responseCode = "400", description = "Richiesta non valida")
 	})
-	@PostMapping(value = "/no-show-time-limit")
+	@PostMapping(value = "/no_show_time_limit")
 	public GenericResponse setNoShowTimeLimit(@RequestParam int minutes) {
 		restaurantService.setNoShowTimeLimit(ControllerUtils.getCurrentRestaurant().getId(), minutes);
 		return new GenericResponse("success");

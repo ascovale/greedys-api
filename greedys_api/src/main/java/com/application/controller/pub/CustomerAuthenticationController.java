@@ -144,7 +144,7 @@ public class CustomerAuthenticationController {
                 messages.getMessage("auth.message." + result, null, locale) + "expired".equals(result));
     }
 
-    @RequestMapping(value = "/resendToken", method = RequestMethod.GET)
+    @RequestMapping(value = "/resend_token", method = RequestMethod.GET)
     @ResponseBody
     public GenericResponse resendRegistrationToken(final HttpServletRequest request,
             @RequestParam("token") final String existingToken) {

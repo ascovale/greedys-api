@@ -1,8 +1,5 @@
 package com.application.spring;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Locale;
 import java.util.Properties;
 
@@ -63,10 +60,10 @@ public class MvcConfig implements WebMvcConfigurer, ApplicationContextAware {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/**")
                 .addResourceLocations("classpath:/static/", "classpath:/public/",
-                                     "classpath:/resources/", "classpath:/META-INF/resources/");
+                        "classpath:/resources/", "classpath:/META-INF/resources/");
         registry.addResourceHandler("/webjars/**")
                 .addResourceLocations("classpath:/META-INF/resources/webjars/");
-                
+
         registry.addResourceHandler("/swagger-ui/**")
                 .addResourceLocations("classpath:/META-INF/resources/webjars/");
     }
@@ -74,16 +71,14 @@ public class MvcConfig implements WebMvcConfigurer, ApplicationContextAware {
     @Override
     public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
         configurer
-            .favorParameter(false)           // Non usare parametri per il content-type
-            .useRegisteredExtensionsOnly(true)       // Usa solo estensioni registrate
-            .ignoreAcceptHeader(true)        // Ignora l'header Accept (usa il default)
-            .defaultContentType(MediaType.APPLICATION_JSON); // Imposta JSON come default
+                .favorParameter(false) // Non usare parametri per il content-type
+                .useRegisteredExtensionsOnly(true) // Usa solo estensioni registrate
+                .ignoreAcceptHeader(true) // Ignora l'header Accept (usa il default)
+                .defaultContentType(MediaType.APPLICATION_JSON); // Imposta JSON come default
     }
 
-
-
     @Bean
-    SpringResourceTemplateResolver templateResolver(){
+    SpringResourceTemplateResolver templateResolver() {
         SpringResourceTemplateResolver templateResolver = new SpringResourceTemplateResolver();
         templateResolver.setApplicationContext(applicationContext);
         templateResolver.setPrefix("classpath:/templates/");
@@ -94,7 +89,7 @@ public class MvcConfig implements WebMvcConfigurer, ApplicationContextAware {
     }
 
     @Bean
-    SpringTemplateEngine templateEngine(){
+    SpringTemplateEngine templateEngine() {
         SpringTemplateEngine templateEngine = new SpringTemplateEngine();
         templateEngine.setTemplateResolver(templateResolver());
         templateEngine.setEnableSpringELCompiler(true);
@@ -102,20 +97,20 @@ public class MvcConfig implements WebMvcConfigurer, ApplicationContextAware {
     }
 
     @Bean
-    ThymeleafViewResolver viewResolver(){
+    ThymeleafViewResolver viewResolver() {
         ThymeleafViewResolver viewResolver = new ThymeleafViewResolver();
         viewResolver.setTemplateEngine(templateEngine());
         viewResolver.setCharacterEncoding("UTF-8");
         return viewResolver;
     }
-  
+
     @Override
     public void addInterceptors(final InterceptorRegistry registry) {
         final LocaleChangeInterceptor localeChangeInterceptor = new LocaleChangeInterceptor();
         localeChangeInterceptor.setParamName("lang");
         registry.addInterceptor(localeChangeInterceptor);
     }
-    
+
     // beans
 
     @Bean(name = "myLocaleResolver")
@@ -148,66 +143,90 @@ public class MvcConfig implements WebMvcConfigurer, ApplicationContextAware {
     RequestContextListener requestContextListener() {
         return new RequestContextListener();
     }
-    // TODO impostare email signup@greedys.it e vedere quale altre 
+
+    // TODO impostare email signup@greedys.it e vedere quale altre
     // TODO impostare email reservation@greedys.it
     @Bean
     JavaMailSender getJavaMailSender() {
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
-        mailSender.setHost("smtp.gmail.com");
-        mailSender.setPort(587);
-        mailSender.setUsername("reservationslasoffitta@gmail.com");
-        String emailPassword = "";
-        try {
-            emailPassword = new String(Files.readAllBytes(Paths.get("/run/secrets/email_password"))).trim();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        mailSender.setPassword(emailPassword);
+        mailSender.setHost("smtp.aruba.it"); // Host SMTP di Aruba
+        mailSender.setPort(465); // Porta per SSL diretto
+        mailSender.setUsername("reservation@greedys.it"); // Indirizzo email completo
+        mailSender.setPassword("Massimino100%%"); // Password dell'account email
+    
         Properties props = mailSender.getJavaMailProperties();
         props.put("mail.transport.protocol", "smtp");
-        props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.debug", "true");
+        props.put("mail.smtp.auth", "true"); // Abilita autenticazione
+        props.put("mail.smtp.ssl.enable", "true"); // Abilita SSL diretto
+        props.put("mail.smtp.ssl.trust", "smtp.aruba.it"); // Accetta il certificato SSL
+        props.put("mail.debug", "true"); // Abilita debug per i log
+    
         return mailSender;
     }
 
+    /*@Bean
+    JavaMailSender getJavaMailSender() {
+        JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
+        mailSender.setHost("smtp.aruba.it"); // Host SMTP di Aruba
+        mailSender.setPort(587); // Porta per STARTTLS
+        mailSender.setUsername("reservation@greedys.it"); // Indirizzo email completo
+        mailSender.setPassword("Massimino100%%"); // Password dell'account email
+
+        Properties props = mailSender.getJavaMailProperties();
+        props.put("mail.transport.protocol", "smtp");
+        props.put("mail.smtp.auth", "true"); // Abilita autenticazione
+        props.put("mail.smtp.starttls.enable", "true"); // Abilita STARTTLS
+        props.put("mail.debug", "true"); // Abilita debug per i log
+
+        return mailSender;
+    } */
+    /*
+     * try {
+     * emailPassword = new
+     * String(Files.readAllBytes(Paths.get("/run/secrets/email_password"))).trim();
+     * } catch (IOException e) {
+     * e.printStackTrace();
+     * }
+     */
 
     @Bean
     JavaMailSender getUserMailSender() {
         /*
-        JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
-        mailSender.setHost("smtp.example.com");
-        mailSender.setPort(587);
-        mailSender.setUsername("user2@example.com");
-        mailSender.setPassword("password2");
-
-        Properties props = mailSender.getJavaMailProperties();
-        props.put("mail.transport.protocol", "smtp");
-        props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.debug", "true");
-
-        return mailSender;*/
+         * JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
+         * mailSender.setHost("smtp.example.com");
+         * mailSender.setPort(587);
+         * mailSender.setUsername("user2@example.com");
+         * mailSender.setPassword("password2");
+         * 
+         * Properties props = mailSender.getJavaMailProperties();
+         * props.put("mail.transport.protocol", "smtp");
+         * props.put("mail.smtp.auth", "true");
+         * props.put("mail.smtp.starttls.enable", "true");
+         * props.put("mail.debug", "true");
+         * 
+         * return mailSender;
+         */
         return getJavaMailSender();
     }
 
     @Bean
     JavaMailSender getReservationMailSender() {
         /*
-        JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
-        mailSender.setHost("smtp.example.com");
-        mailSender.setPort(587);
-        mailSender.setUsername("user2@example.com");
-        mailSender.setPassword("password2");
-
-        Properties props = mailSender.getJavaMailProperties();
-        props.put("mail.transport.protocol", "smtp");
-        props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.debug", "true");
-
-        return mailSender;*/
+         * JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
+         * mailSender.setHost("smtp.example.com");
+         * mailSender.setPort(587);
+         * mailSender.setUsername("user2@example.com");
+         * mailSender.setPassword("password2");
+         * 
+         * Properties props = mailSender.getJavaMailProperties();
+         * props.put("mail.transport.protocol", "smtp");
+         * props.put("mail.smtp.auth", "true");
+         * props.put("mail.smtp.starttls.enable", "true");
+         * props.put("mail.debug", "true");
+         * 
+         * return mailSender;
+         */
         return getJavaMailSender();
     }
-    
+
 }
