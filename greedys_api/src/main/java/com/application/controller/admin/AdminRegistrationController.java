@@ -122,7 +122,7 @@ public class AdminRegistrationController {
 
     // user activation - verification
 
-    @RequestMapping(value = "/resendToken", method = RequestMethod.GET)
+    @RequestMapping(value = "/resend_token", method = RequestMethod.GET)
     @ResponseBody
     public GenericResponse resendRegistrationToken(final HttpServletRequest request, @RequestParam("token") final String existingToken) {
         final AdminVerificationToken newToken = adminService.generateNewVerificationToken(existingToken);

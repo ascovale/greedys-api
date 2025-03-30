@@ -46,7 +46,7 @@ public class AdminCustomerController {
     @Operation(summary = "Create allergy", description = "Creates a new allergy for the specified user by their ID")
     @ApiResponse(responseCode = "200", description = "Allergy created successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
-    @PostMapping("/allergy/createAllergy")
+    @PostMapping("/allergy/create_allergy")
     public GenericResponse createAllergy(@RequestBody AllergyDTO allergyDto) {
         userService.createAllergy(allergyDto);
         return new GenericResponse("Allergy created successfully");
@@ -56,7 +56,7 @@ public class AdminCustomerController {
     @Operation(summary = "Delete allergy", description = "Deletes an allergy by its ID")
     @ApiResponse(responseCode = "200", description = "Allergy deleted successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
-    @DeleteMapping("/allergy/deleteAllergy/{idAllergy}")
+    @DeleteMapping("/allergy/delete_allergy/{idAllergy}")
     public GenericResponse deleteAllergy(@PathVariable Long idAllergy) {
         userService.deleteAllergy(idAllergy);
         return new GenericResponse("Allergy deleted successfully");
@@ -66,7 +66,7 @@ public class AdminCustomerController {
     @Operation(summary = "Modify allergy", description = "Modifies an existing allergy")
     @ApiResponse(responseCode = "200", description = "Allergy modified successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
-    @PutMapping("/allergy/{idAllergy}/modifyAllergy")
+    @PutMapping("/allergy/{idAllergy}/modify_allergy")
     public GenericResponse modifyAllergy(@PathVariable Long idAllergy, @RequestBody AllergyDTO allergyDto) {
         userService.modifyAllergy(idAllergy, allergyDto);
         return new GenericResponse("Allergy modified successfully");
@@ -76,7 +76,7 @@ public class AdminCustomerController {
     @Operation(summary = "Block user", description = "Blocks a user by their ID")
     @ApiResponse(responseCode = "200", description = "User blocked successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
-    @PutMapping("/blockUser/{userId}")
+    @PutMapping("/block_user/{userId}")
     public GenericResponse blockUser(@PathVariable Long userId) {
         userService.updateCustomerStatus(userId,Customer.Status.BLOCKED);
         return new GenericResponse("User blocked successfully");
@@ -86,7 +86,7 @@ public class AdminCustomerController {
     @Operation(summary = "Enable user", description = "Enables a user by their ID")
     @ApiResponse(responseCode = "200", description = "User enabled successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
-    @PutMapping("/enableUser/{userId}")
+    @PutMapping("/enable_user/{userId}")
     public GenericResponse enableUser(@PathVariable Long userId) {
         userService.updateCustomerStatus(userId,Customer.Status.ENABLED);
         return new GenericResponse("User enabled successfully");
@@ -113,7 +113,7 @@ public class AdminCustomerController {
     @Operation(summary = "Switch to customer user", description = "Switches the current admin user to a customer user")
     @ApiResponse(responseCode = "200", description = "Switched to customer user successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
-    @GetMapping("/admin/switchToCustomerUser")
+    @GetMapping("/admin/switch_to_customer_user")
     public String switchToCustomerUser() {
         return "redirect:/admin/home";
     }
@@ -122,7 +122,7 @@ public class AdminCustomerController {
     @Operation(summary = "Exit customer user", description = "Exits the current customer user session and returns to admin user")
     @ApiResponse(responseCode = "200", description = "Exited customer user successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
-    @GetMapping("/admin/exitCustomerUser")
+    @GetMapping("/admin/exit_customer_user")
     public String exitCustomerUser() {
         return "redirect:/admin/home";
     }
@@ -131,7 +131,7 @@ public class AdminCustomerController {
     @Operation(summary = "Add role to customer", description = "Adds a role to a customer by their ID")
     @ApiResponse(responseCode = "200", description = "Role added successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
-    @PutMapping("/{customerId}/addRole")
+    @PutMapping("/{customerId}/add_role")
     public GenericResponse addRoleToCustomer(@PathVariable Long customerId, @RequestParam String role) {
         userService.addRoleToCustomer(customerId, role);
         return new GenericResponse("Role added successfully");
@@ -141,7 +141,7 @@ public class AdminCustomerController {
     @Operation(summary = "Remove role from customer", description = "Removes a role from a customer by their ID")
     @ApiResponse(responseCode = "200", description = "Role removed successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
-    @PutMapping("/{customerId}/removeRole")
+    @PutMapping("/{customerId}/remove_role")
     public GenericResponse removeRoleFromCustomer(@PathVariable Long customerId, @RequestParam String role) {
         userService.removeRoleFromCustomer(customerId, role);
         return new GenericResponse("Role removed successfully");
@@ -151,7 +151,7 @@ public class AdminCustomerController {
     @Operation(summary = "Add permission to role", description = "Adds a permission to a role by its name")
     @ApiResponse(responseCode = "200", description = "Permission added successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
-    @PutMapping("/role/{roleName}/addPrivilege")
+    @PutMapping("/role/{roleName}/add_privilege")
     public GenericResponse addPrivilegeToRole(@PathVariable String roleName, @RequestParam String permission) {
         userService.addPrivilegeToRole(roleName, permission);
         return new GenericResponse("Permission added successfully");

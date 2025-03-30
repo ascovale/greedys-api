@@ -120,6 +120,7 @@ public class RestaurantUserService {
         System.out.println("Registering restaurant user with information:" + restaurantUserDTO.getRestaurantId() + " ");
         RestaurantUser ru = new RestaurantUser();
         Hibernate.initialize(ru.getRestaurantRoles());
+        ru.setEmail(restaurantUserDTO.getEmail());
         ru.addRestaurantRole(rr);
         ru.setRestaurant(restaurant);
         ru.setPassword(passwordEncoder.encode(restaurantUserDTO.getPassword()));

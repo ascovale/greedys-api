@@ -39,7 +39,7 @@ public class AdminUsersController {
     @Operation(summary = "Block user", description = "Blocks a user by their ID")
     @ApiResponse(responseCode = "200", description = "User blocked successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
-    @PutMapping("/blockAdmin/{adminId}")
+    @PutMapping("/block/{adminId}")
     public GenericResponse blockUser(@PathVariable Long adminId) {
         adminService.updateCustomerStatus(adminId, Admin.Status.BLOCKED);
         return new GenericResponse("Admin blocked successfully");
@@ -49,7 +49,7 @@ public class AdminUsersController {
     @Operation(summary = "Enable user", description = "Enables a user by their ID")
     @ApiResponse(responseCode = "200", description = "User enabled successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
-    @PutMapping("/enableAdmin/{adminId}")
+    @PutMapping("/enable/{adminId}")
     public GenericResponse enableUser(@PathVariable Long adminId) {
         adminService.updateCustomerStatus(adminId, Admin.Status.ENABLED);
         return new GenericResponse("User enabled successfully");
@@ -59,7 +59,7 @@ public class AdminUsersController {
     @Operation(summary = "Delete admin user", description = "Deletes an admin user by their ID")
     @ApiResponse(responseCode = "200", description = "Admin user deleted successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
-    @PutMapping("/deleteAdmin/{adminId}")
+    @PutMapping("/delete/{adminId}")
     public GenericResponse deleteAdminUser(@PathVariable Long adminId) {
         adminService.updateCustomerStatus(adminId, Admin.Status.DELETED);
         return new GenericResponse("Admin user deleted successfully");

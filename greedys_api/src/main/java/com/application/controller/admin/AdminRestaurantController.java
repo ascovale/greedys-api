@@ -54,6 +54,8 @@ public class AdminRestaurantController {
 	//TODO: cambiare convenzione invece di restaurantId usare id_restaurant
 	//TODO:Scrivere per aggiungere togliere privilegi customer ma anche restaurant user e andmin
 
+	//TODO: Aggiungere createRestaurant
+
 	private final RestaurantService restaurantService;
 	private final ReservationService reservationService;
 	private final RestaurantUserService restaurantUserService;
@@ -173,18 +175,18 @@ public class AdminRestaurantController {
 		return new ResponseEntity<>(reservations, HttpStatus.OK);
 	}
 
-
+/* 
 	@Operation(summary = "Accept a user", description = "Accetta un utente per un ristorante specifico")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class))),
 			@ApiResponse(responseCode = "404", description = "Ristorante o utente non trovato")
 	})
-	@PostMapping("{restaurantUserId}/user/accept")
+	@PostMapping("{restaurantUserId}/accept")
 	public GenericResponse acceptUser(@PathVariable Long restaurantUserId) {
 		restaurantUserService.acceptRestaurantUser(restaurantUserId);
 		return new GenericResponse("success");
 	}
-
+*/
 	@GetMapping(value = "/{restaurantId}/services")
 	@Operation(summary = "Get services of a restaurant", description = "Ottieni i servizi di un ristorante")
 	@ApiResponses(value = {
@@ -292,7 +294,7 @@ public class AdminRestaurantController {
 	@Operation(summary = "Delete category", description = "Deletes a category by its ID")
 	@ApiResponse(responseCode = "200", description = "Category deleted successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
 	@ApiResponse(responseCode = "400", description = "Invalid request")
-	@DeleteMapping("/deleteRestaurantCategory/{idCategory}")
+	@DeleteMapping("/delete_restaurant_category/{idCategory}")
 	public GenericResponse deleteCategory(@PathVariable Long idCategory) {
 		restaurantService.deleteRestaurantCategory(idCategory);
 		return new GenericResponse("Category deleted successfully");
@@ -302,7 +304,7 @@ public class AdminRestaurantController {
 	@Operation(summary = "Update category", description = "Updates an existing category by its ID")
 	@ApiResponse(responseCode = "200", description = "Category updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
 	@ApiResponse(responseCode = "400", description = "Invalid request")
-	@PutMapping("/updateRestaurantCategory/{idCategory}")
+	@PutMapping("/update_restaurant_category/{idCategory}")
 	public GenericResponse updateCategory(@PathVariable Long idCategory,
 			@RequestBody RestaurantCategoryDTO restaurantCategoryDto) {
 		restaurantService.updateRestaurantCategory(idCategory, restaurantCategoryDto);

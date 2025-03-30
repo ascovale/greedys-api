@@ -12,6 +12,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -194,20 +195,26 @@ public class RestaurantAuthenticationController {
     })
     @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Richiesta di autenticazione", required = true, content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthRequestDTO.class)))
     @PostMapping(value = "/login", produces = "application/json")
-    public ResponseEntity<RestaurantUserAuthResponseDTO> createAuthenticationToken(
-            @RequestBody AuthRequestDTO authenticationRequest)
-            throws Exception {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(),
-                        authenticationRequest.getPassword()));
+    public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthRequestDTO authenticationRequest) {
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(),
+                            authenticationRequest.getPassword()));
 
-        final RestaurantUser userDetails = restaurantUserService
-                .findRestaurantUserByEmail(authenticationRequest.getUsername());
-        final String jwt = jwtUtil.generateToken(userDetails);
-        final RestaurantUserAuthResponseDTO responseDTO = new RestaurantUserAuthResponseDTO(jwt,
-                new RestaurantUserDTO(userDetails));
+            final RestaurantUser userDetails = restaurantUserService
+                    .findRestaurantUserByEmail(authenticationRequest.getUsername());
+            final String jwt = jwtUtil.generateToken(userDetails);
+            final RestaurantUserAuthResponseDTO responseDTO = new RestaurantUserAuthResponseDTO(jwt,
+                    new RestaurantUserDTO(userDetails));
 
-        return ResponseEntity.ok(responseDTO);
+            return ResponseEntity.ok(responseDTO);
+        } catch (DisabledException e) {
+            LOGGER.error("Authentication failed: User is disabled", e);
+            return ResponseEntity.status(403).body(new GenericResponse("User is disabled"));
+        } catch (Exception e) {
+            LOGGER.error("Authentication failed", e);
+            return ResponseEntity.status(401).body(new GenericResponse("Authentication failed"));
+        }
     }
 /* 
     @Operation(summary = "Confirm restaurant user registration", description = "Conferma la registrazione")

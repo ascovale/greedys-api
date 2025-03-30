@@ -24,7 +24,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "RestaurantUser", description = "Controller per la gestione degli utenti di un ristorante")
 @RestController
-@RequestMapping("/restaurant/restaurant_user")
+@RequestMapping("/restaurant/user")
 @SecurityRequirement(name = "restaurantBearerAuth")
 public class RestaurantUserController {
         private final RestaurantUserService restaurantUserService;
@@ -40,7 +40,7 @@ public class RestaurantUserController {
                         @ApiResponse(responseCode = "404", description = "Utente o ristorante non trovato")
         })
         @PreAuthorize("authentication.principal.isEnabled() & hasAuthority('PRIVILEGE_RESTAURANT_USER_MANAGER_WRITE')")
-        @PostMapping(value = "/add-manager/{idRestaurantUser}")
+        @PostMapping(value = "/add_manager/{idRestaurantUser}")
         public ResponseEntity<RestaurantUserDTO> addRestaurantUserAsManager(@PathVariable Long idRestaurantUser) {
                 RestaurantUserDTO updatedUser = restaurantUserService.addRestaurantUserRole(idRestaurantUser,
                                 "ROLE_MANAGER");
@@ -53,7 +53,7 @@ public class RestaurantUserController {
                         @ApiResponse(responseCode = "404", description = "Utente o ristorante non trovato")
         })
         @PreAuthorize("authentication.principal.isEnabled() & hasAuthority('PRIVILEGE_RESTAURANT_USER_CHEF_WRITE')")
-        @PostMapping(value = "/add-chef/{idRestaurantUser}")
+        @PostMapping(value = "/add_chef/{idRestaurantUser}")
         public ResponseEntity<RestaurantUserDTO> addRestaurantUserAsChef(
                         @PathVariable Long idRestaurantUser) {
                 RestaurantUserDTO updatedUser = restaurantUserService.addRestaurantUserRole(
@@ -68,7 +68,7 @@ public class RestaurantUserController {
                         @ApiResponse(responseCode = "404", description = "Utente o ristorante non trovato")
         })
         @PreAuthorize("authentication.principal.isEnabled() & hasAuthority('PRIVILEGE_RESTAURANT_USER_WAITER_WRITE')")
-        @PostMapping(value = "/add-waiter/{idRestaurantUser}")
+        @PostMapping(value = "/add_waiter/{idRestaurantUser}")
         public ResponseEntity<RestaurantUserDTO> addRestaurantUserAsWaiter(
                         @PathVariable Long idRestaurantUser) {
                 RestaurantUserDTO updatedUser = restaurantUserService.addRestaurantUserRole(
@@ -83,7 +83,7 @@ public class RestaurantUserController {
                         @ApiResponse(responseCode = "404", description = "Utente o ristorante non trovato")
         })
         @PreAuthorize("authentication.principal.isEnabled() & hasAuthority('PRIVILEGE_RESTAURANT_USER_VIEWER_WRITE')")
-        @PostMapping(value = "/add-viewer/{idRestaurantUser}")
+        @PostMapping(value = "/add_viewer/{idRestaurantUser}")
         public ResponseEntity<RestaurantUserDTO> addRestaurantUserAsViewer(
                         @PathVariable Long idRestaurantUser) {
                 RestaurantUserDTO updatedUser = restaurantUserService.addRestaurantUserRole(
@@ -98,7 +98,7 @@ public class RestaurantUserController {
                         @ApiResponse(responseCode = "404", description = "Utente o ristorante non trovato")
         })
         @PreAuthorize("authentication.principal.isEnabled() & hasAuthority('PRIVILEGE_RESTAURANT_USER_MANAGER_WRITE')")
-        @DeleteMapping(value = "/disable-user/{idRestaurantUser}")
+        @DeleteMapping(value = "/disable_user/{idRestaurantUser}")
         public ResponseEntity<Void> disableRestaurantUser(@PathVariable Long idRestaurantUser) {
                 restaurantUserService.disableRestaurantUser(ControllerUtils.getCurrentRestaurantUser().getId(),
                                 idRestaurantUser);
@@ -111,7 +111,7 @@ public class RestaurantUserController {
                         @ApiResponse(responseCode = "404", description = "Utente o ristorante non trovato")
         })
         @PreAuthorize("authentication.principal.isEnabled() & hasAuthority('PRIVILEGE_RESTAURANT_USER_MANAGER_WRITE')")
-        @PutMapping(value = "/change-role/chef/{idRestaurantUser}")
+        @PutMapping(value = "/change_role/chef/{idRestaurantUser}")
         public ResponseEntity<RestaurantUserDTO> changeRestaurantUserRoleToChef(
                         @PathVariable Long idRestaurantUser) {
                 RestaurantUserDTO updatedUser = restaurantUserService.changeRestaurantUserRole(
@@ -126,7 +126,7 @@ public class RestaurantUserController {
                         @ApiResponse(responseCode = "404", description = "Utente o ristorante non trovato")
         })
         @PreAuthorize("authentication.principal.isEnabled() & hasAuthority('PRIVILEGE_RESTAURANT_USER_ROLE_WRITE')")
-        @PutMapping(value = "/change-role/waiter/{idRestaurantUser}")
+        @PutMapping(value = "/change_role/waiter/{idRestaurantUser}")
         public ResponseEntity<RestaurantUserDTO> changeRestaurantUserRoleToWaiter(
                         @PathVariable Long idRestaurantUser) {
                 RestaurantUserDTO updatedUser = restaurantUserService.changeRestaurantUserRole(

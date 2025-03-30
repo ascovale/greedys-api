@@ -19,7 +19,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@RequestMapping("/admin/user")
+@RequestMapping("/admin/restaurant/user")
 @RestController
 @SecurityRequirement(name = "adminBearerAuth")
 @Tag(name = "Admin RestaurantUser", description = "Admin management APIs for the RestaurantUser")
@@ -39,7 +39,7 @@ public class AdminRestaurantUserController {
     @Operation(summary = "Block restaurant user", description = "Blocks a restaurant user by their ID")
     @ApiResponse(responseCode = "200", description = "Restaurant user blocked successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
-    @PutMapping("/restaurantUser/{restaurantUserId}/block")
+    @PutMapping("/{restaurantUserId}/block")
     public GenericResponse blockRestaurantUser(@PathVariable Long restaurantUserId) {
         restaurantUserService.updateRestaurantUserStatus(restaurantUserId, RestaurantUser.Status.BLOCKED);
         return new GenericResponse("Restaurant user blocked successfully");
@@ -49,7 +49,7 @@ public class AdminRestaurantUserController {
     @Operation(summary = "Enable restaurant user", description = "Enables a restaurant user by their ID")
     @ApiResponse(responseCode = "200", description = "Restaurant user enabled successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
-    @PutMapping("/restaurantUser/{restaurantUserId}/enable")
+    @PutMapping("/{restaurantUserId}/enable")
     public GenericResponse enableRestaurantUser(@PathVariable Long restaurantUserId) {
         restaurantUserService.updateRestaurantUserStatus(restaurantUserId, RestaurantUser.Status.ENABLED);
         return new GenericResponse("Restaurant user enabled successfully");
@@ -59,7 +59,7 @@ public class AdminRestaurantUserController {
     @Operation(summary = "Change restaurant owner", description = "Changes the owner of a restaurant")
     @ApiResponse(responseCode = "200", description = "Restaurant owner changed successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
-    @PutMapping("/restaurant/{idRestaurant}/changeOwner/{idOldOwner}/{idNewOwner}")
+    @PutMapping("/{idRestaurant}/changeOwner/{idOldOwner}/{idNewOwner}")
     public GenericResponse changeRestaurantOwner(@PathVariable Long idRestaurant, @PathVariable Long idOldOwner,
             @PathVariable Long idNewOwner) {
                 //TODO updateRestaurantUserStatus
@@ -70,7 +70,7 @@ public class AdminRestaurantUserController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_SWITCH_TO_RESTAURANT_USER')")
     @Operation(summary = "Switch to restaurant user", description = "Switches to restaurant user mode")
     @ApiResponse(responseCode = "200", description = "Switched to restaurant user mode successfully")
-    @GetMapping("/admin/switchToRestaurantUser")
+    @GetMapping("/switch_to_restaurantUser")
     public String switchToRestaurantUser() {
         return "redirect:/admin/home";
     }
@@ -78,7 +78,7 @@ public class AdminRestaurantUserController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_SWITCH_TO_RESTAURANT_USER')")
     @Operation(summary = "Exit restaurant user", description = "Exits the restaurant user mode and redirects to admin home")
     @ApiResponse(responseCode = "200", description = "Exited restaurant user mode successfully")
-    @GetMapping("/admin/exitRestaurantUser")
+    @GetMapping("/exit_restaurantUser")
     public String exitRestaurantUser() {
         return "redirect:/admin/home";
     }

@@ -63,7 +63,7 @@ public class EmailService {
         email.setText(message);
         // TODO: Impostare le diverse email per le varie tipologie di notifiche
         //email.setFrom(env.getProperty("support.email"));
-        email.setFrom("reservationslasoffitta@gmail.com");
+        email.setFrom("reservation@greedys.it");
         return email;
 
     }
@@ -84,7 +84,7 @@ public class EmailService {
         }
     }
 
-    //TODO il link per rimuovere ristorante è sbagliato da sistemare
+    //TODO: il link per rimuovere ristorante è sbagliato da sistemare
     // Creare link per rimuovere ristorante lato flutterApp
     private SimpleMailMessage constructRestaurantAssociationConfirmationMessage(RestaurantUser restaurantUser) {
         if (restaurantUser == null || restaurantUser.getRestaurant() == null || restaurantUser.getEmail() == null) {
@@ -101,7 +101,7 @@ public class EmailService {
         email.setTo(recipientAddress);
         email.setSubject(subject);
         email.setText(message);
-        email.setFrom(env.getProperty("support.email"));
+        email.setFrom("reservation@greedys.it");
         return email;
     }
 
@@ -128,5 +128,20 @@ public class EmailService {
     public void sendEmail(SimpleMailMessage constructResendVerificationTokenEmail) {
         mailSender.send(constructResendVerificationTokenEmail);
     }   
+
+
+    public void sendTestEmail(String to, String subject, String text) {
+        try {
+            SimpleMailMessage email = new SimpleMailMessage();
+            email.setTo(to); // Sostituisci con un indirizzo valido
+            email.setSubject(subject);
+            email.setText(text);
+            email.setFrom("reservation@greedys.it");
+            mailSender.send(email);
+            System.out.println("Email inviata con successo!");
+        } catch (Exception e) {
+            System.err.println("Errore durante l'invio dell'email: " + e.getMessage());
+        }
+    }
 
 }
