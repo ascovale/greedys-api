@@ -17,11 +17,8 @@ import com.application.service.utils.NotificatioUtils;
 public class EmailService {
 
     @Autowired
-    @Qualifier("getUserMailSender")
+    @Qualifier("reservationMailSender")
     private JavaMailSender mailSender;
-
-    @Autowired
-    private Environment env;
 
     private SimpleMailMessage constructNotificationMessage(Notification notification) {
         final String recipientAddress = notification.getCustomer().getEmail();
@@ -34,7 +31,7 @@ public class EmailService {
         email.setTo(recipientAddress);
         email.setSubject(subject);
         email.setText(message);
-        email.setFrom(env.getProperty("support.email"));
+        email.setFrom("reservation@greedys.it");
         return email;
     }
 
@@ -62,7 +59,7 @@ public class EmailService {
         email.setSubject(subject);
         email.setText(message);
         // TODO: Impostare le diverse email per le varie tipologie di notifiche
-        //email.setFrom(env.getProperty("support.email"));
+        //email.setFrom("reservation@greedys.it");
         email.setFrom("reservation@greedys.it");
         return email;
 
@@ -121,7 +118,7 @@ public class EmailService {
         message.setTo(email);
         message.setSubject(subject);
         message.setText(content);
-        message.setFrom(env.getProperty("support.email"));
+        message.setFrom("reservation@greedys.it");
         mailSender.send(message);
     }
 

@@ -5,6 +5,10 @@ services:
       - "5050:8443"  # Espone la porta HTTPS sul container
     deploy:
       replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
     depends_on:
       - db
       - rabbitmq
@@ -59,6 +63,7 @@ services:
 
 networks:
   app-network:
+    driver: overlay
 
 volumes:
   db_data:

@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.MessageSource;
-import org.springframework.core.env.Environment;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
@@ -24,11 +23,8 @@ public class CustomerRegistrationListener implements ApplicationListener<Custome
 	private MessageSource messages;
 
 	@Autowired
-	@Qualifier("getUserMailSender")
+	@Qualifier("reservationMailSender")
 	private JavaMailSender mailSender;
-
-	@Autowired
-	private Environment env;
 
 	// API
 
@@ -56,7 +52,7 @@ public class CustomerRegistrationListener implements ApplicationListener<Custome
 		email.setTo(recipientAddress);
 		email.setSubject(subject);
 		email.setText(message + " \r\n" + confirmationUrl);
-		email.setFrom(env.getProperty("support.email"));
+		email.setFrom("reservation@greedys.it");
 		return email;
 	}
 

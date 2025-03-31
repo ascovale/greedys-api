@@ -24,12 +24,9 @@ public class AdminRegistrationListener implements ApplicationListener<AdminOnReg
 	private MessageSource messages;
 
 	@Autowired
-	@Qualifier("getUserMailSender")
+	@Qualifier("reservationMailSender")
 	private JavaMailSender mailSender;
-
-	@Autowired
-	private Environment env;
-
+	
 	// API
 
 	@Override
@@ -56,7 +53,7 @@ public class AdminRegistrationListener implements ApplicationListener<AdminOnReg
 		email.setTo(recipientAddress);
 		email.setSubject(subject);
 		email.setText(message + " \r\n" + confirmationUrl);
-		email.setFrom(env.getProperty("support.email"));
+		email.setFrom("reservation@greedys.it");
 		return email;
 	}
 
