@@ -46,7 +46,7 @@ public class AdminCustomerController {
     @Operation(summary = "Create allergy", description = "Creates a new allergy for the specified user by their ID")
     @ApiResponse(responseCode = "200", description = "Allergy created successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
-    @PostMapping("/allergy/create_allergy")
+    @PostMapping("/allergy/new")
     public GenericResponse createAllergy(@RequestBody AllergyDTO allergyDto) {
         userService.createAllergy(allergyDto);
         return new GenericResponse("Allergy created successfully");
@@ -56,9 +56,9 @@ public class AdminCustomerController {
     @Operation(summary = "Delete allergy", description = "Deletes an allergy by its ID")
     @ApiResponse(responseCode = "200", description = "Allergy deleted successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
-    @DeleteMapping("/allergy/delete_allergy/{idAllergy}")
-    public GenericResponse deleteAllergy(@PathVariable Long idAllergy) {
-        userService.deleteAllergy(idAllergy);
+    @DeleteMapping("/allergy/{allergyId}/delete")
+    public GenericResponse deleteAllergy(@PathVariable Long allergyId) {
+        userService.deleteAllergy(allergyId);
         return new GenericResponse("Allergy deleted successfully");
     }
 
@@ -66,19 +66,19 @@ public class AdminCustomerController {
     @Operation(summary = "Modify allergy", description = "Modifies an existing allergy")
     @ApiResponse(responseCode = "200", description = "Allergy modified successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
-    @PutMapping("/allergy/{idAllergy}/modify_allergy")
+    @PutMapping("/allergy/{idAllergy}/modify")
     public GenericResponse modifyAllergy(@PathVariable Long idAllergy, @RequestBody AllergyDTO allergyDto) {
         userService.modifyAllergy(idAllergy, allergyDto);
         return new GenericResponse("Allergy modified successfully");
     }
 
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_WRITE')")
-    @Operation(summary = "Block user", description = "Blocks a user by their ID")
+    @Operation(summary = "Block customer", description = "Blocks a customer by their ID")
     @ApiResponse(responseCode = "200", description = "User blocked successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
-    @PutMapping("/block_user/{userId}")
-    public GenericResponse blockUser(@PathVariable Long userId) {
-        userService.updateCustomerStatus(userId,Customer.Status.BLOCKED);
+    @PutMapping("/{customerId}/block")
+    public GenericResponse blockUser(@PathVariable Long customerId) {
+        userService.updateCustomerStatus(customerId,Customer.Status.BLOCKED);
         return new GenericResponse("User blocked successfully");
     }
 
@@ -86,9 +86,9 @@ public class AdminCustomerController {
     @Operation(summary = "Enable user", description = "Enables a user by their ID")
     @ApiResponse(responseCode = "200", description = "User enabled successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
-    @PutMapping("/enable_user/{userId}")
-    public GenericResponse enableUser(@PathVariable Long userId) {
-        userService.updateCustomerStatus(userId,Customer.Status.ENABLED);
+    @PutMapping("/{customerId}/enable")
+    public GenericResponse enableCustomer(@PathVariable Long customerId) {
+        userService.updateCustomerStatus(customerId,Customer.Status.ENABLED);
         return new GenericResponse("User enabled successfully");
     }
 

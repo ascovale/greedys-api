@@ -145,14 +145,14 @@ public class PublicRestaurantController {
 		return new ResponseEntity<>(rooms, HttpStatus.OK);
 	}
 
-	@GetMapping(value = "/public/restaurant/{restaurantId}/room/{roomId}/tables")
+	@GetMapping(value = "/public/restaurant/room/{roomId}/tables")
 	@Operation(summary = "Get tables of a room", description = "Ottieni i tavoli di una sala")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = TableDTO.class)))),
 			@ApiResponse(responseCode = "404", description = "Ristorante o sala non trovato"),
 			@ApiResponse(responseCode = "400", description = "Richiesta non valida")
 	})
-	public ResponseEntity<Collection<TableDTO>> getTables(@PathVariable Long restaurantId, @PathVariable Long roomId) {
+	public ResponseEntity<Collection<TableDTO>> getTables(@PathVariable Long roomId) {
 		Collection<TableDTO> tables = tableService.findByRoom(roomId);
 		return new ResponseEntity<>(tables, HttpStatus.OK);
 	}

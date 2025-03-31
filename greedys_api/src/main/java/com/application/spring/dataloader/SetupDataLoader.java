@@ -355,6 +355,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
                 if (!roles.contains(premiumRole)) {
                     roles.add(premiumRole);
                 }
+                user.setStatus(Customer.Status.ENABLED);
                 user.setRoles(roles); // Sostituisci la collezione originale
                 logger.info("Roles after adding: {}", user.getRoles());
             }
@@ -405,6 +406,10 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
             restaurantDto.setEmail("info@lasoffittarenovatio.it");
             restaurantDto.setPassword("Minosse100%");
             restaurantService.registerRestaurant(restaurantDto);
+            
+            restaurant = restaurantDAO.findByName("La Soffitta Renovatio");
+            restaurant.setStatus(Restaurant.Status.ENABLED);
+            restaurantDAO.save(restaurant);
 
             ServiceType pranzoType = serviceTypeDAO.findByName("Lunch");
             Service pranzo = new Service();

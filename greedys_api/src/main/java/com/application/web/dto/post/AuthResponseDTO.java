@@ -1,4 +1,4 @@
-package com.application.web.dto;
+package com.application.web.dto.post;
 
 import com.application.web.dto.get.CustomerDTO;
 

@@ -13,9 +13,9 @@ import com.application.persistence.model.admin.Admin;
 import com.application.security.jwt.JwtUtil;
 import com.application.service.AdminService;
 import com.application.web.dto.AdminAuthResponseDTO;
-import com.application.web.dto.AuthRequestDTO;
-import com.application.web.dto.AuthResponseDTO;
 import com.application.web.dto.get.AdminDTO;
+import com.application.web.dto.post.AuthRequestDTO;
+import com.application.web.dto.post.AuthResponseDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;

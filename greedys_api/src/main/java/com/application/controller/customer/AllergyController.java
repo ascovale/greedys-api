@@ -36,7 +36,7 @@ public class AllergyController {
     @Operation(summary = "Add allergy to customer", description = "Aggiunge un'allergia all'utente specificato tramite il suo ID")
     @ApiResponse(responseCode = "200", description = "Allergia aggiunta con successo", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "404", description = "Utente non trovato")
-    @PostMapping("/newAllergy/{allergyId}")
+    @PostMapping("/add/{allergyId}")
     public GenericResponse addAllergyToUser(@PathVariable Long allergyId) {
         userService.addAllergy(allergyId);
         return new GenericResponse("Allergy added successfully");
@@ -46,7 +46,7 @@ public class AllergyController {
     @Operation(summary = "Remove allergy from customer", description = "Rimuove un'allergia dall'utente specificato tramite il suo ID")
     @ApiResponse(responseCode = "200", description = "Allergia rimossa con successo", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "404", description = "Utente non trovato")
-    @DeleteMapping("/deleteAllergy/{allergyId}")
+    @DeleteMapping("/remove/{allergyId}")
     public GenericResponse removeAllergyFromUser(@PathVariable Long idAllergy) {
         userService.removeAllergy(idAllergy);
         return new GenericResponse("Allergy removed successfully");
@@ -56,7 +56,7 @@ public class AllergyController {
     @Operation(summary = "Get allergies of customer", description = "Restituisce tutte le allergie dell'utente specificato tramite il suo ID")
     @ApiResponse(responseCode = "200", description = "Allergie recuperate con successo", content = @Content(mediaType = "application/json", schema = @Schema(implementation = List.class)))
     @ApiResponse(responseCode = "404", description = "Utente non trovato")
-    @GetMapping("/getAllergies")
+    @GetMapping("/get")
     public List<String> getAllergiesOfCustomer() {
         return userService.getAllergies(getCurrentUser().getId());
     }

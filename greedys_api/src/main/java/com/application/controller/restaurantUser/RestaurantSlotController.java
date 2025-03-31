@@ -33,7 +33,7 @@ public class RestaurantSlotController {
 
     })
     @PreAuthorize("authentication.principal.isEnabled() & hasAuthority('PRIVILEGE_RESTAURANT_USER_SLOT_WRITE')")
-    @PostMapping("/new_slot")
+    @PostMapping("/new")
     public ResponseEntity<String> newSlot( @RequestBody RestaurantNewSlotDTO slotDto) {
         slotService.addSlot(ControllerUtils.getCurrentRestaurantUser().getId(),slotDto);
         return ResponseEntity.ok().body("success");
@@ -44,7 +44,7 @@ public class RestaurantSlotController {
         @ApiResponse(responseCode = "404", description = "Slot not found", content = @Content(mediaType = "application/json"))
     })
     @PreAuthorize("authentication.principal.isEnabled() & hasAuthority('PRIVILEGE_RESTAURANT_USER_SLOT_WRITE')")
-    @PostMapping("/cancel_slot")
+    @PostMapping("/cancel")
     public ResponseEntity<String> cancelSlot(@RequestBody Long slotId) {
         boolean isCanceled = slotService.cancelSlot(ControllerUtils.getCurrentRestaurantUser().getId(), slotId);
         if (isCanceled) {

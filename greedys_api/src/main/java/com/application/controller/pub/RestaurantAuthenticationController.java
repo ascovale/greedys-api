@@ -28,10 +28,10 @@ import com.application.persistence.model.restaurant.user.RestaurantUser;
 import com.application.security.jwt.JwtUtil;
 import com.application.service.RestaurantService;
 import com.application.service.RestaurantUserService;
-import com.application.web.dto.AuthRequestDTO;
-import com.application.web.dto.AuthResponseDTO;
 import com.application.web.dto.RestaurantUserAuthResponseDTO;
 import com.application.web.dto.get.RestaurantUserDTO;
+import com.application.web.dto.post.AuthRequestDTO;
+import com.application.web.dto.post.AuthResponseDTO;
 import com.application.web.dto.post.NewRestaurantDTO;
 import com.application.web.util.GenericResponse;
 
