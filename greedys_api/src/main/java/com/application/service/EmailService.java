@@ -2,7 +2,6 @@ package com.application.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.core.env.Environment;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Async;
@@ -67,6 +66,8 @@ public class EmailService {
 
     @Async
     public void sendEmailNotification(RestaurantNotification notification) {
+
+        /* 
         try {
             RestaurantUser user = notification.getRestaurantUser();
             if (user.getUserOptions().getNotificationPreferences().get(notification.getType())) {
@@ -78,7 +79,7 @@ public class EmailService {
         } catch (Exception e) {
             // Log the exception and handle it accordingly
             System.err.println("Failed to send restaurant email: " + e.getMessage());
-        }
+        }*/
     }
 
     //TODO: il link per rimuovere ristorante è sbagliato da sistemare
