@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
+import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,6 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.application.persistence.dao.customer.CustomerDAO;
 import com.application.persistence.dao.customer.ReservationDAO;
 import com.application.persistence.dao.customer.ReservationLogDAO;
 import com.application.persistence.dao.customer.ReservationRequestDAO;
@@ -61,12 +63,15 @@ public class ReservationService {
     private final NotificationService customerNotificationService;
     private final RestaurantDAO restaurantDAO;
     private RestaurantUserDAO restaurantUserDAO;
+    CustomerDAO customerDAO;
 
     public ReservationService(ReservationDAO reservationDAO, ReservationRequestDAO reservationRequestDAO,
             ReservationLogDAO reservationLogDAO, ServiceDAO serviceDAO, ClosedDayDAO closedDaysDAO,
             RestaurantNotificationService restaurantNotificationService,
             NotificationService customerNotificationService, RestaurantDAO restaurantDAO,
-            RestaurantUserDAO restaurantUserDAO) {
+            RestaurantUserDAO restaurantUserDAO,
+            CustomerDAO customerDAO
+            ) {
         this.reservationDAO = reservationDAO;
         this.reservationRequestDAO = reservationRequestDAO;
         this.reservationLogDAO = reservationLogDAO;
@@ -76,6 +81,7 @@ public class ReservationService {
         this.customerNotificationService = customerNotificationService;
         this.restaurantDAO = restaurantDAO;
         this.restaurantUserDAO = restaurantUserDAO;
+        this.customerDAO= customerDAO;
     }
 
     @Transactional
@@ -91,7 +97,7 @@ public class ReservationService {
     public Reservation findById(Long id) {
         return reservationDAO.findById(id).orElse(null);
     }
-
+   
     @Transactional
     public Reservation createRestaurantReservation(RestaurantNewReservationDTO reservationDto)
             throws NoSuchElementException {
@@ -113,7 +119,7 @@ public class ReservationService {
         reservation.setNoShow(false);
         reservation.setCreationDate(LocalDate.now());
         // TODO forse deve essere restaurantUser
-        reservation.setCreator(getCurrentUser());
+        //reservation.setCreator(getCurrentUser());
         if (reservationDto.isAnonymous()) {
             reservation.set_user_info(reservationDto.getClientUser());
         } else {
@@ -146,7 +152,7 @@ public class ReservationService {
         reservation.setNoShow(reservationDto.getNoShow());
         reservation.setCreationDate(LocalDate.now());
         reservationDAO.save(reservation);
-        reservation.setCreator(getCurrentUser());
+        //reservation.setCreator(getCurrentUser());
         restaurantNotificationService.createNotificationsForRestaurant(reservation.getRestaurant(),
                 RestaurantNotification.Type.NEW_RESERVATION);
         if (reservationDto.isAnonymous()) {
@@ -179,11 +185,12 @@ public class ReservationService {
         reservation.setNoShow(false);
         reservation.setCreationDate(LocalDate.now());
     
-        Customer user = getCurrentUser();
-        reservation.setCreator(getCurrentUser());
+        Customer user = customerDAO.findById(getCurrentUser().getId()).get();
+        //reservation.setCreator(getCurrentUser());
         reservation.setCustomer(user);
-        //Hibernate.initialize(user.getReservations());
-        //user.getReservations().add(reservation);
+        Hibernate.initialize(user.getReservations());
+        user.getReservations().add(reservation);
+        System.out.println("Modificato");
 
         System.out.println("\n\n\n****Session is open: " + session.isOpen());
         Reservation r =reservationDAO.save(reservation);
@@ -273,7 +280,7 @@ public class ReservationService {
     public void adminDeleteReservation(Long reservationId) {
         Reservation reservation = reservationDAO.findById(reservationId).get();
         reservation.setDeleted(true);
-        reservation.setCancelUser(getCurrentUser());
+        //reservation.setCancelUser(getCurrentUser());
         reservationDAO.save(reservation);
         customerNotificationService.createReservationNotification(reservation, Type.CANCEL);
         restaurantNotificationService.createNotificationsForRestaurant(reservation.getRestaurant(),
@@ -284,7 +291,8 @@ public class ReservationService {
     public void customerDeleteReservation(Long reservationId) {
         Reservation reservation = reservationDAO.findById(reservationId).get();
         reservation.setDeleted(true);
-        reservation.setCancelUser(getCurrentUser());
+        //TODO: implementare il cancelUser e dire chi ha cancellato cosi anche con chi ha creato ecc
+        //reservation.setCancelUser(getCurrentUser());
         reservationDAO.save(reservation);
         restaurantNotificationService.createNotificationsForRestaurant(reservation.getRestaurant(),
                 RestaurantNotification.Type.CANCEL);

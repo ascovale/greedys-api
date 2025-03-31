@@ -227,7 +227,7 @@ public class ServiceService {
 			Collection<Reservation> reservations = reservationDAO.findBySlot_Id(slot.getId());
 			for (Reservation reservation : reservations) {
 				reservation.setDeleted(true);
-				reservation.setCancelUser(getCurrentUser());
+				//reservation.setCancelUser(getCurrentUser());
 				reservationDAO.save(reservation);
 			}
 		}
