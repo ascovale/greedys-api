@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
-import org.hibernate.Hibernate;
+import org.hibernate.Session;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -164,6 +164,8 @@ public class ReservationService {
         if (slot == null || slot.getDeleted()) {
             throw new IllegalArgumentException("Slot is either null or deleted");
         }
+        Session session = entityManager.unwrap(Session.class);
+        System.out.println("\n\n\n****Session is open: " + session.isOpen());
         Reservation reservation = new Reservation();
         reservation.setRestaurant(entityManager.getReference(Restaurant.class, dTO.getRestaurant_id()));
         reservation.setPax(dTO.getPax());
@@ -176,14 +178,23 @@ public class ReservationService {
         reservation.setRestaurant(restaurant);
         reservation.setNoShow(false);
         reservation.setCreationDate(LocalDate.now());
-        restaurantNotificationService.createNotificationsForRestaurant(reservation.getRestaurant(),
-                RestaurantNotification.Type.REQUEST);
+    
         Customer user = getCurrentUser();
         reservation.setCreator(getCurrentUser());
         reservation.setCustomer(user);
-        Hibernate.initialize(user.getReservations());
-        user.getReservations().add(reservation);
-        return reservationDAO.save(reservation);
+        //Hibernate.initialize(user.getReservations());
+        //user.getReservations().add(reservation);
+
+        System.out.println("\n\n\n****Session is open: " + session.isOpen());
+        Reservation r =reservationDAO.save(reservation);
+        /* 
+        try {
+            restaurantNotificationService.createNotificationsForRestaurant(reservation.getRestaurant(),
+                    RestaurantNotification.Type.REQUEST);
+        } catch (Exception e) {
+            System.err.println("Failed to send restaurant email: " + e.getMessage());
+        }*/
+        return r;
     }
 
     public List<LocalDate> findNotAvailableDays(Long idRestaurant) {
@@ -618,16 +629,17 @@ public class ReservationService {
     public Page<ReservationDTO> getPendingReservationsPageable(Long idRestaurant, LocalDate start, LocalDate end,
             Pageable pageable) {
         return reservationDAO.findByRestaurantAndDateBetweenAndPending(idRestaurant, start, end, pageable)
-            .map(ReservationDTO::new);
+                .map(ReservationDTO::new);
     }
 
     public Page<ReservationDTO> getPendingReservationsPageable(Long idRestaurant, LocalDate start, Pageable pageable) {
         return reservationDAO.findByRestaurantAndDateAndPending(idRestaurant, start, pageable)
-            .map(ReservationDTO::new);
+                .map(ReservationDTO::new);
     }
+
     public Page<ReservationDTO> getPendingReservationsPageable(Long idRestaurant, Pageable pageable) {
         return reservationDAO.findByRestaurantIdAndPending(idRestaurant, pageable)
-            .map(ReservationDTO::new);
+                .map(ReservationDTO::new);
     }
 
 }

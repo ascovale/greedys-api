@@ -345,6 +345,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
             user = userDAO.findByEmail("info@lasoffittarenovatio.it");
             Role premiumRole = roleDAO.findByName("ROLE_PREMIUM_USER");
             user.setStatus(Customer.Status.ENABLED);
+            user.addRole(premiumRole);
             if (premiumRole != null) {
                 logger.info("<<< User: {}", user);
                 logger.info(">>> PremiumRole: {}", premiumRole);

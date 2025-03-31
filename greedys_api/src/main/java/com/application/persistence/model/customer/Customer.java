@@ -1,6 +1,7 @@
 package com.application.persistence.model.customer;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -37,7 +38,7 @@ public class Customer implements UserDetails {
 	private String password;
 	private String phoneNumber;
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "customer")
-	private Set<Reservation> reservations;
+	private Set<Reservation> reservations = new HashSet<>(); //
 	@ManyToMany
 	@JoinTable(name = "customer_has_role", 
 		joinColumns = @JoinColumn(name = "customer_id"), 
