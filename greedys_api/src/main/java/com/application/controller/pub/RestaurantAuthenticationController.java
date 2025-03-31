@@ -167,7 +167,7 @@ public class RestaurantAuthenticationController {
         email.setSubject(subject);
         email.setText(body);
         email.setTo(user.getEmail());
-        email.setFrom(env.getProperty("support.email"));
+        email.setFrom("reservation@greedys.it");
         return email;
     }
 
