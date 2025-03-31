@@ -55,15 +55,19 @@ public class AdminRestaurantUserController {
         return new GenericResponse("Restaurant user enabled successfully");
     }
 
+    //TODO: perchè voglio dire idOldOwner
+    //scrivere newOwnerId
+    //non basta passare forse bisogna cambiare solo mail?
+
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_USER_WRITE')")
     @Operation(summary = "Change restaurant owner", description = "Changes the owner of a restaurant")
     @ApiResponse(responseCode = "200", description = "Restaurant owner changed successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
-    @PutMapping("/{idRestaurant}/changeOwner/{idOldOwner}/{idNewOwner}")
-    public GenericResponse changeRestaurantOwner(@PathVariable Long idRestaurant, @PathVariable Long idOldOwner,
+    @PutMapping("/{restaurantId}/changeOwner/{idOldOwner}/{idNewOwner}")
+    public GenericResponse changeRestaurantOwner(@PathVariable Long restaurantId, @PathVariable Long idOldOwner,
             @PathVariable Long idNewOwner) {
                 //TODO updateRestaurantUserStatus
-        restaurantUserService.changeRestaurantOwner(idRestaurant, idOldOwner, idNewOwner);
+        restaurantUserService.changeRestaurantOwner(restaurantId, idOldOwner, idNewOwner);
         return new GenericResponse("Restaurant owner changed successfully");
     }
 

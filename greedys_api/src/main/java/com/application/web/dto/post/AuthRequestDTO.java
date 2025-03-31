@@ -1,4 +1,4 @@
-package com.application.web.dto;
+package com.application.web.dto.post;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 

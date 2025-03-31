@@ -115,7 +115,7 @@ public class CustomerController {
     @Operation(summary = "Get customer by id", description = "Recupera un customer specifico tramite il suo ID")
     @ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", schema = @Schema(implementation = CustomerDTO.class)))
     @ApiResponse(responseCode = "404", description = "Utente non trovato")
-    @GetMapping("/getCustomer")
+    @GetMapping("/get")
     public CustomerDTO getCustomer() {
         return new CustomerDTO(getCurrentCustomer());
     }
@@ -142,7 +142,7 @@ public class CustomerController {
     @Operation(summary = "Generate new token for password change", description = "Cambia la password dell'utente dopo aver verificato la vecchia password")
     @ApiResponse(responseCode = "200", description = "Password cambiata con successo", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Password vecchia non valida o dati non validi")
-    @PostMapping(value = "/password")
+    @PostMapping(value = "/password/new_token")
     public GenericResponse changeUserPassword(
             @Parameter(description = "Locale per i messaggi di risposta") final Locale locale,
             @Parameter(description = "DTO con la vecchia e la nuova password", required = true) @Valid UpdatePasswordDTO passwordDto) {
@@ -156,7 +156,7 @@ public class CustomerController {
     @PreAuthorize("authentication.principal.isEnabled()")
     @Operation(summary = "Confirm password change with token", description = "Conferma il cambio della password utilizzando un token")
     @ApiResponse(responseCode = "200", description = "Password cambiata con successo o token non valido", content = @Content(mediaType = "text/plain", schema = @Schema(type = "string")))
-    @PutMapping(value = "/password")
+    @PutMapping(value = "/password/confirm")
     public String confirmPasswordChange(
             @Parameter(description = "Token di reset della password") @RequestParam final String token) {
         final String result = securityCustomerService.validatePasswordResetToken(getCustomerId(), token);

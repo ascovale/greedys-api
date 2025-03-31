@@ -47,7 +47,7 @@ public class RestaurantServicesController {
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @PreAuthorize("authentication.principal.isEnabled() & hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_WRITE')")
-    @PostMapping("/new_service")
+    @PostMapping("/new")
     public ResponseEntity<GenericResponse> newService(@RequestBody RestaurantNewServiceDTO servicesDto) {
         System.out.println("<<<   Controller Service   >>>");
         System.out.println("<<<   name: " + servicesDto.getName());
@@ -62,7 +62,7 @@ public class RestaurantServicesController {
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @PreAuthorize("authentication.principal.isEnabled() & hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_WRITE')")
-    @DeleteMapping("/delete_service")
+    @DeleteMapping("/{serviceId}/delete")
     public GenericResponse deleteService(@RequestParam Long serviceId) {
         System.out.println("<<<   Controller Service   >>>");
         System.out.println("<<<   serviceId: " + serviceId);
@@ -77,7 +77,7 @@ public class RestaurantServicesController {
         @ApiResponse(responseCode = "404", description = "Service not found"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @GetMapping("/get_service/{serviceId}")
+    @GetMapping("/{serviceId}")
     public ResponseEntity<ServiceDTO> getServiceById(@PathVariable Long serviceId) {
         ServiceDTO service = serviceService.findById(serviceId);
         return ResponseEntity.ok(service);
@@ -90,13 +90,13 @@ public class RestaurantServicesController {
         @ApiResponse(responseCode = "404", description = "Service not found"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @GetMapping("/get_service_slot/{serviceId}")
+    @GetMapping("/{serviceId}/slots")
     public Collection<SlotDTO> getSlots(@PathVariable(value = "serviceId") long serviceId) {
         return slotService.findByService_Id(serviceId);
     }
 
     @PreAuthorize("authentication.principal.isEnabled() & hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_READ')")
-    @GetMapping("/service_types")
+    @GetMapping("/types")
     @Operation(summary = "Get all service types", description = "Retrieve all service types.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Service types retrieved successfully"),

@@ -75,7 +75,7 @@ public class ReservationController {
 		@ApiResponse(responseCode = "400", description = "Invalid input", content = @Content),
 		@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
 	})
-	@PostMapping("/{reservationId}/request-modify")
+	@PostMapping("/{reservationId}/request_modify")
 	public ResponseEntity<?> requestModifyReservation(@PathVariable Long reservationId,@RequestBody CustomerNewReservationDTO DTO) {
 		reservationService.requestModifyReservation(reservationId,DTO);
 		return ResponseEntity.ok().build();

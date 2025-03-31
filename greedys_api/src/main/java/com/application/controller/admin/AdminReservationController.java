@@ -46,7 +46,7 @@ public class AdminReservationController {
 			@ApiResponse(responseCode = "400", description = "Invalid input", content = @Content),
 			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
 	})
-	@PostMapping("/new_reservation")
+	@PostMapping("/new")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_WRITE')")
 	public ResponseEntity<?> createReservation(@RequestBody AdminNewReservationDTO DTO) {
 		reservationService.createAdminReservation(DTO);
@@ -82,7 +82,7 @@ public class AdminReservationController {
 			@ApiResponse(responseCode = "404", description = "Reservation not found", content = @Content),
 			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
 	})
-	@PutMapping("/{reservationId}/no-show")
+	@PutMapping("/{reservationId}/no_show")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_WRITE')")
 	public ResponseEntity<?> markReservationNoShow(@PathVariable Long reservationId, @RequestParam Boolean noShow) {
 		reservationService.adminMarkReservationNoShow(reservationId, noShow);

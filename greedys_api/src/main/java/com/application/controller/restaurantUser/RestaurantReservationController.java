@@ -48,7 +48,7 @@ public class RestaurantReservationController {
 			@ApiResponse(responseCode = "400", description = "Invalid input", content = @Content),
 			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
 	})
-	@PostMapping("/new_reservation")
+	@PostMapping("/new")
 	@PreAuthorize("authentication.principal.isEnabled() & hasAuthority('PRIVILEGE_RESTAURANT_USER_RESERVATION_WRITE')")
 	public ResponseEntity<?> createReservation(@RequestBody RestaurantNewReservationDTO dto) {
 		//TODO: rivedere i permessi va bene che controllo il ristorante
@@ -71,14 +71,7 @@ public class RestaurantReservationController {
 		return ResponseEntity.ok().build();
 	}
 
-	/**
-	 * Rejects a reservation by its ID.
-	 *
-	 * @param idRestaurant the ID of the restaurant
-	 * @param reservationId the ID of the reservation
-	 * @param rejected the rejection status
-	 * @return ResponseEntity indicating the result of the operation
-	 */
+
 	@Operation(summary = "Reject a reservation", description = "Endpoint to reject a reservation by its ID")
 	@PutMapping("/{reservationId}/reject")
 	public ResponseEntity<?> rejectReservation( @PathVariable Long reservationId, @RequestParam Boolean rejected) {
@@ -86,14 +79,7 @@ public class RestaurantReservationController {
 		return ResponseEntity.ok().build();
 	}
 
-	/**
-	 * Marks a reservation as no show by its ID.
-	 *
-	 * @param idRestaurant the ID of the restaurant
-	 * @param reservationId the ID of the reservation
-	 * @param noShow the no-show status
-	 * @return ResponseEntity indicating the result of the operation
-	 */
+
 	@Operation(summary = "Mark a reservation as no show", description = "Endpoint to mark a reservation as no show by its ID")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Reservation marked as no show successfully"),
@@ -101,20 +87,12 @@ public class RestaurantReservationController {
 			@ApiResponse(responseCode = "404", description = "Reservation not found", content = @Content),
 			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
 	})
-	@PutMapping("/{reservationId}/no-show")
+	@PutMapping("/{reservationId}/no_show")
 	public ResponseEntity<?> markReservationNoShow( @PathVariable Long reservationId, @RequestParam Boolean noShow) {
 		reservationService.markReservationNoShowFromRestauantUser(getCurrentRestaurantUserId(),reservationId, noShow);
 		return ResponseEntity.ok().build();
 	}
 
-	/**
-	 * Marks a reservation as seated by its ID.
-	 *
-	 * @param idRestaurant the ID of the restaurant
-	 * @param reservationId the ID of the reservation
-	 * @param seated the seated status
-	 * @return ResponseEntity indicating the result of the operation
-	 */
 	@Operation(summary = "Mark a reservation as seated", description = "Endpoint to mark a reservation as seated by its ID")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Reservation marked as seated successfully"),
@@ -128,12 +106,7 @@ public class RestaurantReservationController {
 		return ResponseEntity.ok().build();
 	}
 	
-	/**
-	 * Accepts a reservation modification request by its ID.
-	 *
-	 * @param reservationId the ID of the reservation
-	 * @return ResponseEntity indicating the result of the operation
-	 */
+
 	@Operation(summary = "Accept a reservation modification request", description = "Endpoint to accept a reservation modification request by its ID")
 	@ApiResponses(value = {
 		@ApiResponse(responseCode = "200", description = "Reservation modification request accepted successfully"),

@@ -223,6 +223,10 @@ public class RestaurantService {
 	}
 
 	public void enableRestaurant(Long idRestaurant) {
+		Restaurant restaurant = rDAO.findById(idRestaurant)
+				.orElseThrow(() -> new IllegalArgumentException("Invalid restaurant ID"));
+		restaurant.setStatus(Restaurant.Status.ENABLED);
+		rDAO.save(restaurant);
 	}
 
 	public void updateRestaurantCategory(Long idCategory, RestaurantCategoryDTO restaurantCategoryDto) {

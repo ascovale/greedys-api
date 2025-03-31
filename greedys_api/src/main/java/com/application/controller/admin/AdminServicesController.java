@@ -48,7 +48,7 @@ public class AdminServicesController {
             @ApiResponse(responseCode = "400", description = "Invalid input data"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @PostMapping("/new_service")
+    @PostMapping("/new")
     public ResponseEntity<GenericResponse> newService(@RequestBody AdminNewServiceDTO servicesDto) {
         System.out.println("<<<   Controller Service   >>>");
         System.out.println("<<<   name: " + servicesDto.getName());
@@ -63,7 +63,7 @@ public class AdminServicesController {
             @ApiResponse(responseCode = "400", description = "Invalid service ID"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @DeleteMapping("/delete_service")
+    @DeleteMapping("/{serviceId}/delete")
     public GenericResponse deleteService(@RequestParam Long serviceId) {
         System.out.println("<<<   Controller Service   >>>");
         System.out.println("<<<   serviceId: " + serviceId);
@@ -78,7 +78,7 @@ public class AdminServicesController {
             @ApiResponse(responseCode = "404", description = "Service not found"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @GetMapping("/{serviceId}/")
+    @GetMapping("/{serviceId}")
     public ResponseEntity<ServiceDTO> getServiceById(@PathVariable("serviceId") Long serviceId) {
         ServiceDTO service = serviceService.findById(serviceId);
         return ResponseEntity.ok(service);
@@ -97,7 +97,7 @@ public class AdminServicesController {
     }
 
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_READ')")
-    @GetMapping("/service_types")
+    @GetMapping("/types")
     @Operation(summary = "Get all service types", description = "Retrieve all service types.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Service types retrieved successfully"),
@@ -114,7 +114,7 @@ public class AdminServicesController {
         @ApiResponse(responseCode = "400", description = "Invalid input data"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @PostMapping("/new_service_type")
+    @PostMapping("/type/new")
     public ResponseEntity<GenericResponse> newServiceType(@RequestBody String serviceTypeString) {
         serviceService.newServiceType(serviceTypeString);
         return ResponseEntity.ok(new GenericResponse("success"));
@@ -128,7 +128,7 @@ public class AdminServicesController {
         @ApiResponse(responseCode = "404", description = "Service type not found"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @PutMapping("/type/{typeId}")
+    @PutMapping("/type/{typeId}/update")
     public ResponseEntity<GenericResponse> updateServiceType(@PathVariable Long typeId, @RequestBody String serviceTypeString) {
         serviceService.updateServiceType(typeId, serviceTypeString);
         return ResponseEntity.ok(new GenericResponse("success"));
@@ -141,7 +141,7 @@ public class AdminServicesController {
         @ApiResponse(responseCode = "400", description = "Invalid service type ID"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @DeleteMapping("/type/{typeId}")
+    @DeleteMapping("/type/{typeId}/delete")
     public ResponseEntity<GenericResponse> deleteServiceType(@PathVariable Long typeId) {
         serviceService.deleteServiceType(typeId);
         return ResponseEntity.ok(new GenericResponse("success"));
