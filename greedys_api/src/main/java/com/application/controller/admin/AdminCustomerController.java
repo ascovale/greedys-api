@@ -18,9 +18,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.persistence.model.customer.Customer;
+import com.application.service.AllergyService;
 import com.application.service.CustomerService;
-import com.application.web.dto.AllergyDTO;
 import com.application.web.dto.get.CustomerDTO;
+import com.application.web.dto.post.NewAllergyDTO;
 import com.application.web.util.GenericResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -36,10 +37,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "Admin Customer", description = "Admin management APIs for the Customer")
 public class AdminCustomerController {
     //TODO: aggiungere ruoli e permessi ai ruoli come metodi
-    private final CustomerService userService;
+    private final CustomerService customerService;
+    private final AllergyService allergyService;
+
     @Autowired
-    public AdminCustomerController(CustomerService userService) {
-        this.userService = userService;
+    public AdminCustomerController(CustomerService customerService, AllergyService allergyService) {
+        this.customerService = customerService;
+        this.allergyService = allergyService;
     }
 
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_WRITE')")
@@ -47,8 +51,8 @@ public class AdminCustomerController {
     @ApiResponse(responseCode = "200", description = "Allergy created successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
     @PostMapping("/allergy/new")
-    public GenericResponse createAllergy(@RequestBody AllergyDTO allergyDto) {
-        userService.createAllergy(allergyDto);
+    public GenericResponse createAllergy(@RequestBody NewAllergyDTO allergyDto) {
+        allergyService.createAllergy(allergyDto);
         return new GenericResponse("Allergy created successfully");
     }
 
@@ -58,7 +62,7 @@ public class AdminCustomerController {
     @ApiResponse(responseCode = "400", description = "Invalid request")
     @DeleteMapping("/allergy/{allergyId}/delete")
     public GenericResponse deleteAllergy(@PathVariable Long allergyId) {
-        userService.deleteAllergy(allergyId);
+        allergyService.deleteAllergy(allergyId);
         return new GenericResponse("Allergy deleted successfully");
     }
 
@@ -67,8 +71,8 @@ public class AdminCustomerController {
     @ApiResponse(responseCode = "200", description = "Allergy modified successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
     @PutMapping("/allergy/{idAllergy}/modify")
-    public GenericResponse modifyAllergy(@PathVariable Long idAllergy, @RequestBody AllergyDTO allergyDto) {
-        userService.modifyAllergy(idAllergy, allergyDto);
+    public GenericResponse modifyAllergy(@PathVariable Long idAllergy, @RequestBody NewAllergyDTO allergyDto) {
+        allergyService.modifyAllergy(idAllergy, allergyDto);
         return new GenericResponse("Allergy modified successfully");
     }
 
@@ -78,7 +82,7 @@ public class AdminCustomerController {
     @ApiResponse(responseCode = "400", description = "Invalid request")
     @PutMapping("/{customerId}/block")
     public GenericResponse blockUser(@PathVariable Long customerId) {
-        userService.updateCustomerStatus(customerId,Customer.Status.BLOCKED);
+        customerService.updateCustomerStatus(customerId,Customer.Status.BLOCKED);
         return new GenericResponse("User blocked successfully");
     }
 
@@ -88,14 +92,14 @@ public class AdminCustomerController {
     @ApiResponse(responseCode = "400", description = "Invalid request")
     @PutMapping("/{customerId}/enable")
     public GenericResponse enableCustomer(@PathVariable Long customerId) {
-        userService.updateCustomerStatus(customerId,Customer.Status.ENABLED);
+        customerService.updateCustomerStatus(customerId,Customer.Status.ENABLED);
         return new GenericResponse("User enabled successfully");
     }
 
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_READ')")
     @GetMapping("/customers")
     public String listUsers(Model model) {
-        model.addAttribute("users", userService.findAll());
+        model.addAttribute("users", customerService.findAll());
         return "users";
     }
 
@@ -106,7 +110,7 @@ public class AdminCustomerController {
     @GetMapping("/customers/page")
     public Page<CustomerDTO> listUsersWithPagination(@RequestParam int page, @RequestParam int size) {
         PageRequest pageable = PageRequest.of(page, size);
-        return userService.findAll(pageable);
+        return customerService.findAll(pageable);
     }
 
     @PreAuthorize("hasAuthority('PRIVILEGE_SWITCH_TO_CUSTOMER')")
@@ -133,7 +137,7 @@ public class AdminCustomerController {
     @ApiResponse(responseCode = "400", description = "Invalid request")
     @PutMapping("/{customerId}/add_role")
     public GenericResponse addRoleToCustomer(@PathVariable Long customerId, @RequestParam String role) {
-        userService.addRoleToCustomer(customerId, role);
+        customerService.addRoleToCustomer(customerId, role);
         return new GenericResponse("Role added successfully");
     }
 
@@ -143,7 +147,7 @@ public class AdminCustomerController {
     @ApiResponse(responseCode = "400", description = "Invalid request")
     @PutMapping("/{customerId}/remove_role")
     public GenericResponse removeRoleFromCustomer(@PathVariable Long customerId, @RequestParam String role) {
-        userService.removeRoleFromCustomer(customerId, role);
+        customerService.removeRoleFromCustomer(customerId, role);
         return new GenericResponse("Role removed successfully");
     }
 
@@ -153,7 +157,7 @@ public class AdminCustomerController {
     @ApiResponse(responseCode = "400", description = "Invalid request")
     @PutMapping("/role/{roleName}/add_privilege")
     public GenericResponse addPrivilegeToRole(@PathVariable String roleName, @RequestParam String permission) {
-        userService.addPrivilegeToRole(roleName, permission);
+        customerService.addPrivilegeToRole(roleName, permission);
         return new GenericResponse("Permission added successfully");
     }
 
@@ -181,7 +185,7 @@ public class AdminCustomerController {
     @ApiResponse(responseCode = "404", description = "Utente non trovato")
     @GetMapping("/{id}")
     public UserDTO getUser(@PathVariable Long id) {
-        return userService.findById(id);
+        return customerService.findById(id);
     }
 
     // ------------------- Password Management ----------------------------- //
@@ -191,10 +195,10 @@ public class AdminCustomerController {
     @PostMapping(value = "/password/reset")
     public GenericResponse resetPassword(final HttpServletRequest request,
             @Parameter(description = "Email dell'utente per cui resettare la password") @RequestParam("email") final String userEmail) {
-        final Customer user = userService.findUserByEmail(userEmail);
+        final Customer user = customerService.findUserByEmail(userEmail);
         if (user != null) {
             final String token = UUID.randomUUID().toString();
-            userService.createPasswordResetTokenForUser(user, token);
+            customerService.createPasswordResetTokenForUser(user, token);
             // mailSender.send(constructResetTokenEmail(getAppUrl(request),
             // request.getLocale(), token, user));
         }
@@ -210,10 +214,10 @@ public class AdminCustomerController {
             @Parameter(description = "Locale per i messaggi di risposta") final Locale locale,
             @Parameter(description = "ID dell'utente") @PathVariable Long id,
             @Parameter(description = "DTO con la vecchia e la nuova password", required = true) @Valid UpdatePasswordDTO passwordDto) {
-        if (!userService.checkIfValidOldPassword(id, passwordDto.getOldPassword())) {
+        if (!customerService.checkIfValidOldPassword(id, passwordDto.getOldPassword())) {
             throw new InvalidOldPasswordException();
         }
-        userService.changeUserPassword(id, passwordDto.getNewPassword());
+        customerService.changeUserPassword(id, passwordDto.getNewPassword());
         return new GenericResponse(messages.getMessage("message.updatePasswordSuc", null, locale));
     }
 
@@ -223,7 +227,7 @@ public class AdminCustomerController {
     public String confirmPasswordChange(
             @Parameter(description = "ID dell'utente") @PathVariable final long id,
             @Parameter(description = "Token di reset della password") @RequestParam final String token) {
-        final String result = securityUserService.validatePasswordResetToken(id, token);
+        final String result = securitycustomerService.validatePasswordResetToken(id, token);
         if (result != null) {
             return "invalidToken";
         }
@@ -243,7 +247,7 @@ public class AdminCustomerController {
     @ApiResponse(responseCode = "404", description = "Utente non trovato")
     @DeleteMapping("/{id}")
     public GenericResponse deleteUser(@PathVariable Long id) {
-        userService.deleteUserById(id);
+        customerService.deleteUserById(id);
         return new GenericResponse("User deleted successfully");
     }
 
@@ -252,7 +256,7 @@ public class AdminCustomerController {
     @ApiResponse(responseCode = "404", description = "Utente non trovato")
     @PutMapping("/{id}")
     public GenericResponse updateUser(@PathVariable Long id, @Valid @RequestBody UserDTO userDto) {
-        userService.updateUser(id, userDto);
+        customerService.updateUser(id, userDto);
         return new GenericResponse("User modified successfully");
     }
 
@@ -261,7 +265,7 @@ public class AdminCustomerController {
     @ApiResponse(responseCode = "404", description = "Utente o ristorante non trovato")
     @PostMapping("/report/{restaurantId}")
     public GenericResponse reportRestaurantAbuse(@PathVariable Long userId, @PathVariable Long restaurantId) {
-        userService.reportRestaurantAbuse(restaurantId);
+        customerService.reportRestaurantAbuse(restaurantId);
         return new GenericResponse("Abuse reported successfully");
     }
 

@@ -28,7 +28,7 @@ import com.application.persistence.model.customer.PasswordResetToken;
 import com.application.persistence.model.customer.Privilege;
 import com.application.persistence.model.customer.Role;
 import com.application.persistence.model.customer.VerificationToken;
-import com.application.web.dto.AllergyDTO;
+import com.application.web.dto.get.AllergyDTO;
 import com.application.web.dto.get.CustomerDTO;
 import com.application.web.dto.post.NewCustomerDTO;
 import com.application.web.error.UserAlreadyExistException;
@@ -47,7 +47,7 @@ public class CustomerService {
 	public static String QR_PREFIX = "https://chart.googleapis.com/chart?chs=200x200&chld=M%%7C0&cht=qr&chl=";
 	public static String APP_NAME = "SpringRegistration";
 
-	private final CustomerDAO userDAO;
+	private final CustomerDAO customerDAO;
 	private final VerificationTokenDAO tokenDAO;
 	private final PasswordResetTokenDAO passwordTokenRepository;
 	private final PasswordEncoder passwordEncoder;
@@ -56,15 +56,15 @@ public class CustomerService {
 	private final AllergyDAO allergyDAO;
 	private final PrivilegeDAO privilegeDAO;
 	
-		public CustomerService(CustomerDAO userDAO, VerificationTokenDAO tokenDAO,
+		public CustomerService(CustomerDAO customerDAO, VerificationTokenDAO tokenDAO,
 				PasswordResetTokenDAO passwordTokenRepository,
 				PasswordEncoder passwordEncoder,
 				RoleDAO roleRepository,
 				EntityManager entityManager,
 				AllergyDAO allergyDAO,
 				PrivilegeDAO privilegeDAO
-				) {
-			this.userDAO = userDAO;
+		) {
+			this.customerDAO = customerDAO;
 			this.tokenDAO = tokenDAO;
 			this.passwordTokenRepository = passwordTokenRepository;
 			this.passwordEncoder = passwordEncoder;
@@ -76,7 +76,7 @@ public class CustomerService {
 	}
 
 	public CustomerDTO findById(long id) {
-		Customer user = userDAO.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
+		Customer user = customerDAO.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
 		return new CustomerDTO(user);
 	}
 
@@ -95,7 +95,7 @@ public class CustomerService {
 		customer.setEmail(accountDto.getEmail());
 		// user.setUsing2FA(accountDto.isUsing2FA());
 		customer.setRoles(Arrays.asList(roleRepository.findByName("ROLE_CUSTOMER")));
-		return userDAO.save(customer);
+		return customerDAO.save(customer);
 	}
 
 	public Customer getCustomer(final String verificationToken) {
@@ -111,7 +111,7 @@ public class CustomerService {
 	}
 
 	public void saveRegisteredUser(final Customer user) {
-		userDAO.save(user);
+		customerDAO.save(user);
 	}
 
 	public void deleteUser(final Customer user) {
@@ -123,7 +123,7 @@ public class CustomerService {
 		if (passwordToken != null) {
 			passwordTokenRepository.delete(passwordToken);
 		}
-		userDAO.delete(user);
+		customerDAO.delete(user);
 	}
 
 	public void createVerificationTokenForUser(final Customer user, final String token) {
@@ -144,7 +144,7 @@ public class CustomerService {
 	}
 
 	public Customer findUserByEmail(final String email) {
-		return userDAO.findByEmail(email);
+		return customerDAO.findByEmail(email);
 	}
 
 	public PasswordResetToken getPasswordResetToken(final String token) {
@@ -156,17 +156,17 @@ public class CustomerService {
 	}
 
 	public Optional<Customer> getUserByID(final long id) {
-		return userDAO.findById(id);
+		return customerDAO.findById(id);
 	}
 
 	public void changeUserPassword(final Long id, final String password) {
-		final Customer user = userDAO.findById(id).get();
+		final Customer user = customerDAO.findById(id).get();
 		user.setPassword(passwordEncoder.encode(password));
-		userDAO.save(user);
+		customerDAO.save(user);
 	}
 
 	public boolean checkIfValidOldPassword(final Long id, final String oldPassword) {
-		return passwordEncoder.matches(oldPassword, userDAO.findById(id).get().getPassword());
+		return passwordEncoder.matches(oldPassword, customerDAO.findById(id).get().getPassword());
 	}
 
 	public String validateVerificationToken(String token) {
@@ -184,7 +184,7 @@ public class CustomerService {
 
 		user.setStatus(Customer.Status.ENABLED);
 		// tokenDAO.delete(verificationToken);
-		userDAO.save(user);
+		customerDAO.save(user);
 		return TOKEN_VALID;
 	}
 
@@ -198,26 +198,26 @@ public class CustomerService {
 	 * curAuth = SecurityContextHolder.getContext() .getAuthentication(); User
 	 * currentUser = (User) curAuth.getPrincipal(); //
 	 * currentUser.setUsing2FA(use2FA); currentUser =
-	 * companyuserDAO.save(currentUser); final Authentication auth = new
+	 * companycustomerDAO.save(currentUser); final Authentication auth = new
 	 * UsernamePasswordAuthenticationToken(currentUser, currentUser.getPassword(),
 	 * curAuth.getAuthorities()); SecurityContextHolder.getContext()
 	 * .setAuthentication(auth); return currentUser; }
 	 */
 
 	private boolean emailExists(final String email) {
-		return userDAO.findByEmail(email) != null;
+		return customerDAO.findByEmail(email) != null;
 	}
 
 	public List<Customer> findAll() {
-		return userDAO.findAll();
+		return customerDAO.findAll();
 	}
 
 	public void addImage(String email, Image image) {
-		Customer user = userDAO.findByEmail(email);
+		Customer user = customerDAO.findByEmail(email);
 		// user.setImage(image);
 		// BIsogna aggiungere una lista di immagini
 		// se si fa add bisogna mettere Hibernate.initialize(user.getImages());
-		userDAO.save(user);
+		customerDAO.save(user);
 	}
 
 	public Customer getReference(Long userId) {
@@ -225,12 +225,12 @@ public class CustomerService {
 	}
 
 	public void deleteUserById(Long id) {
-		Customer user = userDAO.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
+		Customer user = customerDAO.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
 		deleteUser(user);
 	}
 
 	public Customer updateUser(Long id, NewCustomerDTO userDto) {
-		Customer user = userDAO.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
+		Customer user = customerDAO.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
 		if (userDto.getFirstName() != null) {
 			user.setName(userDto.getFirstName());
 		}
@@ -244,7 +244,7 @@ public class CustomerService {
 			}
 			user.setEmail(userDto.getEmail());
 		}
-		return userDAO.save(user);
+		return customerDAO.save(user);
 	}
 
 	@Transactional
@@ -254,7 +254,7 @@ public class CustomerService {
 				.orElseThrow(() -> new EntityNotFoundException("Allergy not found"));
 		Hibernate.initialize(user.getAllergies());
 		user.getAllergies().add(allergy);
-		userDAO.save(user);
+		customerDAO.save(user);
 	}
 
 	@Transactional
@@ -263,7 +263,7 @@ public class CustomerService {
 		Allergy allergy = allergyDAO.findById(idAllergy)
 				.orElseThrow(() -> new EntityNotFoundException("Allergy not found"));
 		user.getAllergies().remove(allergy);
-		userDAO.save(user);
+		customerDAO.save(user);
 	}
 
 	private Customer getCurrentUser() {
@@ -276,52 +276,26 @@ public class CustomerService {
 		}
 	}
 
-	@Transactional
-	public void createAllergy(AllergyDTO allergyDto) {
-		Allergy allergy = new Allergy();
-		allergy.setName(allergyDto.getName());
-		allergy.setDescription(allergyDto.getDescription());
-		allergyDAO.save(allergy);
-	}
-
-	public void deleteAllergy(Long idAllergy) {
-		Allergy allergy = allergyDAO.findById(idAllergy)
-				.orElseThrow(() -> new EntityNotFoundException("Allergy not found"));
-		allergyDAO.delete(allergy);
-	}
-
-	@Transactional
-	public void modifyAllergy(Long idAllergy, AllergyDTO allergyDto) {
-		Allergy allergy = allergyDAO.findById(idAllergy)
-				.orElseThrow(() -> new EntityNotFoundException("Allergy not found"));
-		if (allergyDto.getName() != null) {
-			allergy.setName(allergyDto.getName());
-		}
-		if (allergyDto.getDescription() != null) {
-			allergy.setDescription(allergyDto.getDescription());
-		}
-		allergyDAO.save(allergy);
-	}
 
 	@Transactional
 	public void enableUser(Long userId) {
-		Customer user = userDAO.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
+		Customer user = customerDAO.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
 		user.setStatus(Customer.Status.ENABLED);
-		userDAO.save(user);
+		customerDAO.save(user);
 	}
 	/*
 	 * public void removePermissions(Long idUser) {
-	 * User user = userDAO.findById(idUser).orElseThrow(() -> new
+	 * User user = customerDAO.findById(idUser).orElseThrow(() -> new
 	 * EntityNotFoundException("User not found"));
 	 * user.setRoles(Arrays.asList(roleRepository.findByName("ROLE_USER")));
-	 * userDAO.save(user);
+	 * customerDAO.save(user);
 	 * }
 	 */
 
 	public void blockUser(Long userId) {
-		Customer user = userDAO.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
+		Customer user = customerDAO.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
 		user.setStatus(Customer.Status.DISABLED);
-		userDAO.save(user);
+		customerDAO.save(user);
 	}
 
 	public void reportRestaurantAbuse(Long restaurantId) {
@@ -339,28 +313,30 @@ public class CustomerService {
 	}
 
 	@Transactional
-	public List<String> getAllergies(Long userId) {
-		Customer user = userDAO.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
-		return user.getAllergies().stream().map(Allergy::getName).collect(Collectors.toList());
+	public List<AllergyDTO> getAllergies(Long customerId) {
+		Customer customer = customerDAO.findById(customerId).orElseThrow(() -> new EntityNotFoundException("User not found"));
+		return customer.getAllergies().stream()
+				.map(AllergyDTO::new)
+				.collect(Collectors.toList());
 	}
 
 	public Page<CustomerDTO> findAll(PageRequest pageable) {
-		return userDAO.findAll(pageable).map(CustomerDTO::new);
+		return customerDAO.findAll(pageable).map(CustomerDTO::new);
 	}
 
 	public void addRoleToCustomer(Long customerId, String role) {
-		Customer customer = userDAO.findById(customerId)
+		Customer customer = customerDAO.findById(customerId)
 				.orElseThrow(() -> new EntityNotFoundException("Customer not found"));
 		Hibernate.initialize(customer.getRoles());
 		customer.getRoles().add(roleRepository.findByName(role));
-		userDAO.save(customer);
+		customerDAO.save(customer);
 	}
 
 	public void removeRoleFromCustomer(Long customerId, String role) {
-		Customer customer = userDAO.findById(customerId)
+		Customer customer = customerDAO.findById(customerId)
 				.orElseThrow(() -> new EntityNotFoundException("Customer not found"));
 		customer.getRoles().remove(roleRepository.findByName(role));
-		userDAO.save(customer);
+		customerDAO.save(customer);
 	}
 
 	public void addPrivilegeToRole(String roleName, String privilegeName) {
@@ -378,16 +354,60 @@ public class CustomerService {
 	}
 
 	public void updateCustomerStatus(Long customerId, Customer.Status newStatus) {
-		Customer customer = userDAO.findById(customerId)
+		Customer customer = customerDAO.findById(customerId)
 				.orElseThrow(() -> new IllegalArgumentException("Customer not found"));
 
 		// Aggiorna lo stato del customer
 		customer.setStatus(newStatus);
-		userDAO.save(customer);
+		customerDAO.save(customer);
 	}
 
 	public void save(Customer user) {
-		userDAO.save(user);
+		customerDAO.save(user);
 	}
 
+	public void updateFirstName(Long customerId, String firstName) {
+		Customer customer = findCustomerById(customerId);
+		if (customer == null) {
+			throw new IllegalStateException("Customer not found");
+		}
+		customer.setName(firstName);
+		saveCustomer(customer);
+	}
+
+	public void updateLastName(Long customerId, String lastName) {
+		Customer customer = findCustomerById(customerId);
+		if (customer == null) {
+			throw new IllegalStateException("Customer not found");
+		}
+		customer.setSurname(lastName);
+		saveCustomer(customer);
+	}
+
+	public void updateEmail(Long customerId, String email) {
+		Customer customer = findCustomerById(customerId);
+		if (customer == null) {
+			throw new IllegalStateException("Customer not found");
+		}
+		customer.setEmail(email);
+		saveCustomer(customer);
+	}
+
+	private Customer findCustomerById(Long customerId) {
+		// Implement logic to retrieve customer by ID from the database
+		return null; // Replace with actual implementation
+	}
+
+	private void saveCustomer(Customer customer) {
+		// Implement logic to save the updated customer to the database
+	}
+
+	public void markCustomerHasDeleted(Long customerId) {
+		Customer customer = customerDAO.findById(customerId)
+				.orElseThrow(() -> new EntityNotFoundException("Customer not found"));
+		customer.setStatus(Customer.Status.AUTO_DELETE);
+		customerDAO.save(customer);
+	}
+
+	
 }

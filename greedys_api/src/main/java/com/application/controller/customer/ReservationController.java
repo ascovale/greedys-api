@@ -1,6 +1,7 @@
 package com.application.controller.customer;
 
 import java.util.Collection;
+import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -38,21 +39,22 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/customer/reservation")
 @SecurityRequirement(name = "customerBearerAuth")
-@Tag(name = "Reservation", description = "APIs for managing reservations")
+@Tag(name = "Reservation", description = "APIs for managing reservations of the customer")
 public class ReservationController {
 	@Autowired
 	private ReservationService reservationService;
 	
 	@Operation(summary = "The customer user ask for a reservation", description = "Endpoint to ask for a reservation")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Reservation requested successfully"),
+			@ApiResponse(responseCode = "200", description = "Reservation requested successfully", 
+						 content = @Content(mediaType = "application/json", schema = @Schema(implementation = ReservationDTO.class))),
 			@ApiResponse(responseCode = "400", description = "Invalid input", content = @Content),
 			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
 	})
 	@PostMapping("/ask")
-	public ResponseEntity<?> askReservation(@RequestBody CustomerNewReservationDTO DTO) {
-		reservationService.askForReservation(DTO);
-		return ResponseEntity.ok().build();
+	public ResponseEntity<ReservationDTO> askReservation(@RequestBody CustomerNewReservationDTO DTO) {
+		ReservationDTO reservationDTO = reservationService.askForReservation(DTO);
+		return ResponseEntity.ok(reservationDTO);
 	}
 
 	@PreAuthorize("authentication.principal.isEnabled() and @customerSecurityService.hasPermissionOnReservation(#reservationId)")
@@ -94,24 +96,32 @@ public class ReservationController {
 		return ResponseEntity.ok().build();
 	}
 
-	@PreAuthorize("authentication.principal.isEnabled() and @customerSecurityService.hasPermissionOnReservation(#reservationId)")
+	@PreAuthorize("authentication.principal.isEnabled()")
 	@Operation(summary = "Get user's reservations", description = "Recupera l'elenco delle prenotazioni dell'utente")
     @ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ReservationDTO.class))))
     @ApiResponse(responseCode = "404", description = "Utente non trovato")
     @GetMapping("/reservations")
-    public Collection<ReservationDTO> getUserReservations() {
-        return reservationService.findAllUserReservations(getUserId());
+    public Collection<ReservationDTO> getCustomerReservations() {
+		System.out.println("->->->      Getting customer reservations");
+        return reservationService.findAllCustomerReservations(getUserId());
     }
 
 	public Long getUserId() {
-        return getCurrentUser().getId();
-    }
+			Customer currentUser = getCurrentCustomer();
+			if (currentUser == null) {
+				throw new RuntimeException("Current user is null");
+			}
+			System.out.println(".-.-.-.-.-.-. Current user: " + currentUser.getId());
+			return currentUser.getId();
+		}
 
-    private Customer getCurrentUser() {
+    private Customer getCurrentCustomer() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.getPrincipal() instanceof Customer) {
             return (Customer) authentication.getPrincipal();
-        }
-        return null;
+        } else{
+			Logger.getLogger(ReservationController.class.getName()).warning("User not found in SecurityContextHolder");
+			throw new RuntimeException("User not found");
+		}
     }
 }

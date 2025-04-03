@@ -5,7 +5,6 @@ import java.time.LocalDate;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
-import com.application.persistence.model.reservation.ClientInfo;
 
 public class RestaurantNewReservationDTO {
 	
@@ -17,11 +16,7 @@ public class RestaurantNewReservationDTO {
 	private LocalDate reservationDay; 
     private Long restaurant_id;
 	private Long user_id;
-	private ClientInfo clientUser;
 
-	public Boolean isAnonymous() {
-		return user_id == null;
-	}
 
 	public Long getUser_id() {
 		if (user_id == null) {
@@ -61,15 +56,6 @@ public class RestaurantNewReservationDTO {
 	public void setKids(Integer kids) {
 		this.kids = kids;
 	}
-
-	public ClientInfo getClientUser() {
-		return clientUser;
-	}
-
-	public void setClientUser(ClientInfo clientUser) {
-		this.clientUser = clientUser;
-	}
-
 
 	public String getNotes() {
 		return notes;

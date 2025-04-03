@@ -41,8 +41,6 @@ public class ReservationLog {
 	@Column(name = "creation_date")
 	private LocalDate creationDate;
 
-	private ClientInfo user_info;
-
 	@ManyToOne(optional = true)
 	@JoinColumn(name = "customer_id")
 	private Customer customer;
@@ -58,6 +56,8 @@ public class ReservationLog {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idreservation", referencedColumnName = "id")
 	private Reservation reservation;
+
+	//TODO: aggiungere tutti i cambi di reservation
 	private Customer logCreator;
 	//TODO AGGIUNGERE ORARIO DI REQUEST RESERVATION e altri dati
 	
@@ -78,7 +78,6 @@ public class ReservationLog {
 		this.reservation = reservation;
 		this.date = reservation.getDate();
 		this.creationDate = reservation.getCreationDate();
-		this.user_info = reservation.get_user_info();
 		this.customer = reservation.getCustomer();
 		this.slot = reservation.getSlot();
 		this.pax = reservation.getPax();
@@ -101,14 +100,6 @@ public class ReservationLog {
 
 	public void setTable(com.application.persistence.model.restaurant.Table table) {
 		this.table = table;
-	}
-
-	public ClientInfo get_user_info() {
-		return user_info;
-	}
-
-	public void set_user_info(ClientInfo user_info) {
-		this.user_info = user_info;
 	}
 
 	public Long getCustomerId() {
