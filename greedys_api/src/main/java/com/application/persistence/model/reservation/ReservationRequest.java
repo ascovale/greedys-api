@@ -35,7 +35,6 @@ public class ReservationRequest {
 	private LocalDate date;
 	@Column(name = "creation_date")
 	private LocalDate creationDate;
-	private ClientInfo user_info;
 	@ManyToOne(optional = true)
 	@JoinColumn(name = "customer_id")
 	private Customer customer;
@@ -62,15 +61,6 @@ public class ReservationRequest {
 
 	public void setTable(com.application.persistence.model.restaurant.Table table) {
 		this.table = table;
-	}
-
-
-	public ClientInfo get_user_info() {
-		return user_info;
-	}
-
-	public void set_user_info(ClientInfo user_info) {
-		this.user_info = user_info;
 	}
 
 	public Long getCustomerId() {

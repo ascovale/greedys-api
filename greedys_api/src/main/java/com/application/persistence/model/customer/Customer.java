@@ -53,7 +53,8 @@ public class Customer implements UserDetails {
         DELETED,
         ENABLED,
         DISABLED,
-		VERIFY_TOKEN
+		VERIFY_TOKEN,
+		AUTO_DELETE
     }
 
 	private Status status = Status.VERIFY_TOKEN;

@@ -45,8 +45,10 @@ import com.application.persistence.model.restaurant.user.RestaurantPrivilege;
 import com.application.persistence.model.restaurant.user.RestaurantRole;
 import com.application.persistence.model.systemconfig.SetupConfig;
 import com.application.service.AdminService;
+import com.application.service.AllergyService;
 import com.application.service.CustomerService;
 import com.application.service.RestaurantService;
+import com.application.web.dto.post.NewAllergyDTO;
 import com.application.web.dto.post.NewCustomerDTO;
 import com.application.web.dto.post.NewRestaurantDTO;
 import com.application.web.dto.post.admin.NewAdminDTO;
@@ -90,6 +92,8 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
     AdminService adminService;
     @Autowired
     RestaurantService restaurantService;
+    @Autowired
+    private AllergyService allergyService;
 
     static final Logger logger = LoggerFactory.getLogger(SetupDataLoader.class);
 
@@ -119,6 +123,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
             createSomeAdmin();
             createSomeCustomer();
             createRestaurantLaSoffittaRenovatio();
+            createAllergies();
             logger.info("    >>>  ---   Test data Created   ---  <<< ");
         }
     }
@@ -242,7 +247,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
             role = new AdminRole(name);
         }
         role.setAdminPrivileges(privileges);
-        role = adminRoleDAO.save(role);
+        adminRoleDAO.save(role);
         return role;
     }
 
@@ -324,9 +329,10 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
         logger.info("    >>>  ---   Creating customer  ---  <<< ");
         Customer existingCustomer = userDAO.findByEmail("info@lasoffittarenovatio.it");
         if (existingCustomer != null) {
-            System.out.println("Customer with email info@lasoffittarenovatio.it already exists.");
+            logger.info("Customer with email info@lasoffittarenovatio.it already exists.");
             return;
         }
+
         Customer user = null;
         try {
             NewCustomerDTO userDTO = new NewCustomerDTO();
@@ -336,33 +342,28 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
             userDTO.setEmail("info@lasoffittarenovatio.it");
             user = userService.registerNewCustomerAccount(userDTO);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error creating customer account", e);
+            return;
         }
+
         try {
             if (user == null) {
                 return;
             }
             user = userDAO.findByEmail("info@lasoffittarenovatio.it");
             Role premiumRole = roleDAO.findByName("ROLE_PREMIUM_USER");
-            user.setStatus(Customer.Status.ENABLED);
-            user.addRole(premiumRole);
             if (premiumRole != null) {
-                logger.info("<<< User: {}", user);
-                logger.info(">>> PremiumRole: {}", premiumRole);
-                logger.info("Roles before adding: {}", user.getRoles());
                 Hibernate.initialize(user.getRoles());
-                // Crea una nuova lista modificabile
-                List<Role> roles = new ArrayList<>(user.getRoles());
+                List<Role> roles = new ArrayList<>(user.getRoles()); // Create a modifiable list
                 if (!roles.contains(premiumRole)) {
                     roles.add(premiumRole);
                 }
+                user.setRoles(roles);
                 user.setStatus(Customer.Status.ENABLED);
-                user.setRoles(roles); // Sostituisci la collezione originale
-                logger.info("Roles after adding: {}", user.getRoles());
+                userDAO.save(user);
             }
-            userDAO.save(user);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error assigning roles to customer", e);
         }
     }
 
@@ -407,7 +408,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
             restaurantDto.setEmail("info@lasoffittarenovatio.it");
             restaurantDto.setPassword("Minosse100%");
             restaurantService.registerRestaurant(restaurantDto);
-            
+
             restaurant = restaurantDAO.findByName("La Soffitta Renovatio");
             restaurant.setStatus(Restaurant.Status.ENABLED);
             restaurantDAO.save(restaurant);
@@ -453,5 +454,42 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
             slotDAO.save(slot);
         }
         return slots;
+    }
+
+    @Transactional
+    private void createAllergies() {
+        SetupConfig setupConfig = setupConfigDAO.findById(1L).orElse(new SetupConfig());
+        if (setupConfig.isDataUploaded()) {
+            logger.info("    >>>  ---   Allergies already created, skipping   ---  <<< ");
+            return;
+        }
+
+        logger.info("    >>>  ---   Creating Allergies   ---  <<< ");
+        List<NewAllergyDTO> allergies = Arrays.asList(
+                new NewAllergyDTO("Cereals", "Includes wheat, rye, barley, oats, and foods like bread, pasta, and cereals."),
+                new NewAllergyDTO("Shellfish", "Includes shrimp, crab, lobster, and other crustaceans."),
+                new NewAllergyDTO("Eggs", "Includes eggs and foods containing eggs such as mayonnaise and baked goods."),
+                new NewAllergyDTO("Fish", "Includes fish like salmon, tuna, and cod."),
+                new NewAllergyDTO("Peanuts", "Includes peanuts and foods containing peanuts such as peanut butter."),
+                new NewAllergyDTO("Soy", "Includes soybeans and soy-based products like tofu and soy milk."),
+                new NewAllergyDTO("Milk", "Includes milk and dairy products like cheese, butter, and yogurt."),
+                new NewAllergyDTO("Nuts", "Includes tree nuts like almonds, walnuts, and hazelnuts."),
+                new NewAllergyDTO("Celery", "Includes celery and celery-based products like celery salt."),
+                new NewAllergyDTO("Mustard", "Includes mustard seeds and mustard-based products."),
+                new NewAllergyDTO("Sesame", "Includes sesame seeds and sesame oil."),
+                new NewAllergyDTO("Sulfites", "Includes sulfites found in dried fruits, wine, and some processed foods."),
+                new NewAllergyDTO("Lupin", "Includes lupin beans and lupin-based flour."),
+                new NewAllergyDTO("Mollusks", "Includes clams, mussels, oysters, and squid.")
+        );
+
+        for (NewAllergyDTO allergy : allergies) {
+            if (allergyService.findByName(allergy.getName()) == null) {
+                allergyService.createAllergy(allergy);
+            }
+        }
+
+        setupConfig.setDataUploaded(true);
+        setupConfigDAO.save(setupConfig);
+        logger.info("    >>>  ---   Allergies Created   ---  <<< ");
     }
 }

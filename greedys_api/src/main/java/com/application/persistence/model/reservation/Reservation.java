@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
+import com.application.persistence.model.admin.Admin;
 import com.application.persistence.model.customer.Customer;
 import com.application.persistence.model.restaurant.Restaurant;
 import com.application.persistence.model.restaurant.user.RestaurantUser;
@@ -36,7 +37,6 @@ public class Reservation {
 	private LocalDate date;
 	@Column(name = "creation_date")
 	private LocalDate creationDate;
-	private ClientInfo user_info;
 	@ManyToOne(optional = true)
 	@JoinColumn(name = "customer_id")
 	private Customer customer;
@@ -57,29 +57,109 @@ public class Reservation {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idrestaurant_user")
  	private RestaurantUser restaurantUser;
-	private Customer creator;
-	private Customer rejectUser;
-	private Customer cancelUser;
 
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "creator_customer_id", nullable = true)
+	private Customer creatorCustomer;
 
-	public Customer getCancelUser() {
-		return cancelUser;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "creator_restaurant_user_id", nullable = true)
+	private RestaurantUser creatorRestaurantUser;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "creator_admin_id", nullable = true)
+	private Admin creatorAdmin;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "last_modifier_customer_id", nullable = true)
+	private Customer lastModifierCustomer;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "last_modifier_restaurant_user_id", nullable = true)
+	private RestaurantUser lastModifierRestaurantUser;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "last_modifier_admin_id", nullable = true)
+	private Admin lastModifierAdmin;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "acceptor_restaurant_user_id", nullable = true)
+	private RestaurantUser acceptorRestaurantUser;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "acceptor_admin_id", nullable = true)
+	private Admin acceptorAdmin;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "created_by_customer_id", nullable = true)
+	private Customer createdByCustomer;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "created_by_restaurant_user_id", nullable = true)
+	private RestaurantUser createdByRestaurantUser;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "created_by_admin_id", nullable = true)
+	private Admin createdByAdmin;
+
+	public Object getCreatedBy() {
+		if (createdByCustomer != null) {
+			return createdByCustomer;
+		} else if (createdByRestaurantUser != null) {
+			return createdByRestaurantUser;
+		} else if (createdByAdmin != null) {
+			return createdByAdmin;
+		}
+		return null;
 	}
 
-	public void setCancelUser(Customer cancelUser) {
-		this.cancelUser = cancelUser;
+	// Separate setters for createdBy
+	public void setCreatedByCustomer(Customer customer) {
+		this.createdByCustomer = customer;
+		this.createdByRestaurantUser = null;
+		this.createdByAdmin = null;
 	}
 
-	public Customer getRejectUser() {
-		return rejectUser;
+	public void setCreatedByRestaurantUser(RestaurantUser restaurantUser) {
+		this.createdByRestaurantUser = restaurantUser;
+		this.createdByCustomer = null;
+		this.createdByAdmin = null;
 	}
 
-	public void setRejectUser(Customer rejectUser) {
-		this.rejectUser = rejectUser;
+	public void setCreatedByAdmin(Admin admin) {
+		this.createdByAdmin = admin;
+		this.createdByCustomer = null;
+		this.createdByRestaurantUser = null;
 	}
 
-	public Customer getCreator() {
-		return creator;
+	// Separate setters for lastModifier
+	public void setLastModifiedByCustomer(Customer customer) {
+		this.lastModifierCustomer = customer;
+		this.lastModifierRestaurantUser = null;
+		this.lastModifierAdmin = null;
+	}
+
+	public void setLastModifiedByRestaurantUser(RestaurantUser restaurantUser) {
+		this.lastModifierRestaurantUser = restaurantUser;
+		this.lastModifierCustomer = null;
+		this.lastModifierAdmin = null;
+	}
+
+	public void setLastModifiedByAdmin(Admin admin) {
+		this.lastModifierAdmin = admin;
+		this.lastModifierCustomer = null;
+		this.lastModifierRestaurantUser = null;
+	}
+
+	// Separate setters for acceptor
+	public void setAcceptedByRestaurantUser(RestaurantUser restaurantUser) {
+		this.acceptorRestaurantUser = restaurantUser;
+		this.acceptorAdmin = null;
+	}
+
+	public void setAcceptedByAdmin(Admin admin) {
+		this.acceptorAdmin = admin;
+		this.acceptorRestaurantUser = null;
 	}
 
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -91,15 +171,6 @@ public class Reservation {
 
 	public void setTable(com.application.persistence.model.restaurant.Table table) {
 		this.table = table;
-	}
-
-
-	public ClientInfo get_user_info() {
-		return user_info;
-	}
-
-	public void set_user_info(ClientInfo user_info) {
-		this.user_info = user_info;
 	}
 
 	public Boolean getSeated() {
@@ -255,7 +326,6 @@ public class Reservation {
         return null;
     }
 
-
 	public boolean isAfterNoShowTimeLimit(LocalDateTime dateTime) {
 		long noShowTimeLimit = this.getRestaurant().getNoShowTimeLimit();
 		LocalDateTime reservationDateTime = getReservationDateTime();
@@ -266,8 +336,67 @@ public class Reservation {
 		return dateTime.isAfter(noShowDeadline);
 	}
 
-    public void setCreator(Customer creator) {
-		this.creator = creator;
+	public Customer getCreatorCustomer() {
+		return creatorCustomer;
 	}
 
+	public void setCreatorCustomer(Customer creatorCustomer) {
+		this.creatorCustomer = creatorCustomer;
+	}
+
+	public RestaurantUser getCreatorRestaurantUser() {
+		return creatorRestaurantUser;
+	}
+
+	public void setCreatorRestaurantUser(RestaurantUser creatorRestaurantUser) {
+		this.creatorRestaurantUser = creatorRestaurantUser;
+	}
+
+	public Admin getCreatorAdmin() {
+		return creatorAdmin;
+	}
+
+	public void setCreatorAdmin(Admin creatorAdmin) {
+		this.creatorAdmin = creatorAdmin;
+	}
+
+	public Customer getLastModifierCustomer() {
+		return lastModifierCustomer;
+	}
+
+	public void setLastModifierCustomer(Customer lastModifierCustomer) {
+		this.lastModifierCustomer = lastModifierCustomer;
+	}
+
+	public RestaurantUser getLastModifierRestaurantUser() {
+		return lastModifierRestaurantUser;
+	}
+
+	public void setLastModifierRestaurantUser(RestaurantUser lastModifierRestaurantUser) {
+		this.lastModifierRestaurantUser = lastModifierRestaurantUser;
+	}
+
+	public Admin getLastModifierAdmin() {
+		return lastModifierAdmin;
+	}
+
+	public void setLastModifierAdmin(Admin lastModifierAdmin) {
+		this.lastModifierAdmin = lastModifierAdmin;
+	}
+
+	public RestaurantUser getAcceptorRestaurantUser() {
+		return acceptorRestaurantUser;
+	}
+
+	public void setAcceptorRestaurantUser(RestaurantUser acceptorRestaurantUser) {
+		this.acceptorRestaurantUser = acceptorRestaurantUser;
+	}
+
+	public Admin getAcceptorAdmin() {
+		return acceptorAdmin;
+	}
+
+	public void setAcceptorAdmin(Admin acceptorAdmin) {
+		this.acceptorAdmin = acceptorAdmin;
+	}
 }

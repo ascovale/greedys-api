@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,7 +20,6 @@ import com.application.persistence.model.customer.Customer;
 import com.application.security.user.ISecurityUserService;
 import com.application.service.CustomerService;
 import com.application.web.dto.get.CustomerDTO;
-import com.application.web.dto.post.NewCustomerDTO;
 import com.application.web.dto.put.UpdatePasswordDTO;
 import com.application.web.error.InvalidOldPasswordException;
 import com.application.web.util.GenericResponse;
@@ -66,20 +64,7 @@ public class CustomerController {
         return getCurrentCustomer().getId();
     }
     
-    @PreAuthorize("authentication.principal.isEnabled()")
-    @Operation(summary = "Get current customer details", description = "Ottiene i dettagli del customer corrente", responses = {
-            @ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", schema = @Schema(implementation = CustomerDTO.class))),
-            @ApiResponse(responseCode = "401", description = "Non autorizzato"),
-            @ApiResponse(responseCode = "403", description = "Accesso negato")
-    })
-    @GetMapping("/details")
-    public CustomerDTO getCustomerDetails() {
-        Customer currentCustomer = getCurrentCustomer();
-        if (currentCustomer == null) {
-            throw new IllegalStateException("Current customer not found");
-        }
-        return new CustomerDTO(currentCustomer);
-    }
+   
     //TODO: impostiazione preferenze notifiche
     //TODO: impostiazione preferenze nel sistema ad esempio come ricevere notifica però è più restaurant
 
@@ -165,25 +150,48 @@ public class CustomerController {
         }
         return "success";
     }
-
+    //TODO: Bisogna considerare che quando il cliente viene marchiato come eliminato e viene rimesso deve essere possibile confermare il token o rigenerare quello se usa la stessa mail
+    //Studiare bene cosa fare
     @PreAuthorize("authentication.principal.isEnabled()")
     @Operation(summary = "Delete customer", description = "Cancella un customer specifico tramite il suo ID")
     @ApiResponse(responseCode = "200", description = "Customer cancellato con successo", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "404", description = "Customer non trovato")
     @DeleteMapping("/delete")
     public GenericResponse deleteCustomer() {
-        customerService.deleteUserById(getCustomerId());
+        customerService.markCustomerHasDeleted(getCustomerId());
         return new GenericResponse("Customer deleted successfully");
     }
 
     @PreAuthorize("authentication.principal.isEnabled()")
-    @Operation(summary = "Update customer", description = "Modifica i dettagli di un customer specifico tramite il suo ID")
-    @ApiResponse(responseCode = "200", description = "Utente aggiornato con successo", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
+    @Operation(summary = "Update customer first name", description = "Modifica il nome del customer specifico tramite il suo ID")
+    @ApiResponse(responseCode = "200", description = "Nome aggiornato con successo", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "404", description = "Utente non trovato")
-    @PutMapping("/update")
-    public GenericResponse updateCustomer(@Valid @RequestBody NewCustomerDTO customerDto) {
-        customerService.updateUser(getCustomerId(), customerDto);
-        return new GenericResponse("Customer modified successfully");
+    @PutMapping("/update/firstName")
+    public GenericResponse updateFirstName(@RequestParam String firstName) {
+        customerService.updateFirstName(getCustomerId(), firstName);
+        return new GenericResponse("First name updated successfully");
+    }
+
+    @PreAuthorize("authentication.principal.isEnabled()")
+    @Operation(summary = "Update customer last name", description = "Modifica il cognome del customer specifico tramite il suo ID")
+    @ApiResponse(responseCode = "200", description = "Cognome aggiornato con successo", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
+    @ApiResponse(responseCode = "404", description = "Utente non trovato")
+    @PutMapping("/update/lastName")
+    public GenericResponse updateLastName(@RequestParam String lastName) {
+        customerService.updateLastName(getCustomerId(), lastName);
+        return new GenericResponse("Last name updated successfully");
+    }
+
+    //TODO: Devo rigenerare il token di conferma email
+    //TODO: Devo richiedere le credenziali di accesso per essere sicuro
+    @PreAuthorize("authentication.principal.isEnabled()")
+    @Operation(summary = "Update customer email", description = "Modifica l'email del customer specifico tramite il suo ID")
+    @ApiResponse(responseCode = "200", description = "Email aggiornata con successo", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
+    @ApiResponse(responseCode = "404", description = "Utente non trovato")
+    @PutMapping("/update/email")
+    public GenericResponse updateEmail(@RequestParam String email) {
+        customerService.updateEmail(getCustomerId(), email);
+        return new GenericResponse("Email updated successfully");
     }
 
     //TODO: implementare il metodo nel service per segnalare un abuso
