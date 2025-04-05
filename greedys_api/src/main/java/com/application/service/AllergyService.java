@@ -73,9 +73,7 @@ public class AllergyService {
         return new AllergyDTO(allergy);
     }
 
-	public AllergyDTO findByName(String name) {
-		return allergyDAO.findByName(name)
-			.map(AllergyDTO::new)
-			.orElseThrow(() -> new EntityNotFoundException("Allergy with name " + name + " not found"));
+	public Allergy findByName(String name) {
+		return allergyDAO.findByName(name).orElse(null);
 	}
 }

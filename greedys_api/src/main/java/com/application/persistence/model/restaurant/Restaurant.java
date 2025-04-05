@@ -1,6 +1,7 @@
 package com.application.persistence.model.restaurant;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -113,10 +114,16 @@ public class Restaurant {
 	}
 
 	public List<RestaurantCategory> getRestaurantTypes() {
+		if (restaurantTypes == null) {
+			restaurantTypes = new ArrayList<>();
+		}
 		return restaurantTypes;
 	}
 
 	public void setRestaurantTypes(List<RestaurantCategory> restaurantTypes) {
+		if (this.restaurantTypes == null) {
+			this.restaurantTypes = new ArrayList<>();
+		}
 		this.restaurantTypes = restaurantTypes;
 	}
 

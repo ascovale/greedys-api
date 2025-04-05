@@ -133,7 +133,8 @@ public class SwaggerConfig {
                                 .addSchemas("AllergyDTO", new Schema<>()
                                         .type("object")
                                         .addProperty("id", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("name", new Schema<String>().type("string")))
+                                        .addProperty("name", new Schema<String>().type("string"))
+                                        .addProperty("description", new Schema<String>().type("string")))
                                 .addSchemas("NotificationRequest", new Schema<>()
                                         .type("object")
                                         .addProperty("title", new Schema<String>().type("string"))
@@ -142,7 +143,11 @@ public class SwaggerConfig {
                                         .type("object")
                                         .addProperty("to", new Schema<String>().type("string"))
                                         .addProperty("subject", new Schema<String>().type("string"))
-                                        .addProperty("body", new Schema<String>().type("string"))))
+                                        .addProperty("body", new Schema<String>().type("string")))
+                                .addSchemas("NewAllergyDTO", new Schema<>()
+                                        .type("object")
+                                        .addProperty("name", new Schema<String>().type("string"))
+                                        .addProperty("description", new Schema<String>().type("string"))))
                         .addSecurityItem(new SecurityRequirement().addList("adminBearerAuth")))
                 .build();
     }

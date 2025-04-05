@@ -67,7 +67,7 @@ import jakarta.validation.Valid;
 public class CustomerAuthenticationController {
     private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
-    private CustomerService userService;
+    private CustomerService customerService;
 
     private MessageSource messages;
 
@@ -81,16 +81,14 @@ public class CustomerAuthenticationController {
 
     private JwtUtil jwtUtil;
 
-    private CustomerService customerService;
-
     private static final Logger logger = LoggerFactory.getLogger(CustomerAuthenticationController.class);
 
     @Autowired
-    public CustomerAuthenticationController(CustomerService userService, MessageSource messages,
+    public CustomerAuthenticationController(CustomerService customerService, MessageSource messages,
         ApplicationEventPublisher eventPublisher, Environment env, EmailService mailService,
         @Qualifier("customerAuthenticationManager")AuthenticationManager authenticationManager, 
-        JwtUtil jwtUtil, CustomerService customerService) {
-        this.userService = userService;
+        JwtUtil jwtUtil) {
+        this.customerService = customerService;
         this.messages = messages;
         this.eventPublisher = eventPublisher;
         this.env = env;
@@ -119,9 +117,9 @@ public class CustomerAuthenticationController {
     public ResponseEntity<String> registerCustomerAccount(@Valid @RequestBody NewCustomerDTO accountDto,
             HttpServletRequest request) {
         try {
-            Customer user = userService.registerNewCustomerAccount(accountDto);
+            Customer customer = customerService.registerNewCustomerAccount(accountDto);
             eventPublisher
-                    .publishEvent(new CustomerOnRegistrationCompleteEvent(user, Locale.ITALIAN, getAppUrl(request)));
+                    .publishEvent(new CustomerOnRegistrationCompleteEvent(customer, Locale.ITALIAN, getAppUrl(request)));
             return ResponseEntity.ok("Customer registered successfully");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -133,10 +131,10 @@ public class CustomerAuthenticationController {
     public GenericResponse confirmRegistrationResponse(final HttpServletRequest request,
             @RequestParam final String token) throws UnsupportedEncodingException {
         Locale locale = request.getLocale();
-        final String result = userService.validateVerificationToken(token);
+        final String result = customerService.validateVerificationToken(token);
         if (result.equals("valid")) {
-            final Customer user = userService.getCustomer(token);
-            authWithoutPassword(user);
+            final Customer customer = customerService.getCustomer(token);
+            authWithoutPassword(customer);
             return new GenericResponse(messages.getMessage("message.accountVerified", null, locale));
         }
 
@@ -148,22 +146,22 @@ public class CustomerAuthenticationController {
     @ResponseBody
     public GenericResponse resendRegistrationToken(final HttpServletRequest request,
             @RequestParam("token") final String existingToken) {
-        final VerificationToken newToken = userService.generateNewVerificationToken(existingToken);
-        Customer customer = userService.getCustomer(newToken.getToken());
+        final VerificationToken newToken = customerService.generateNewVerificationToken(existingToken);
+        Customer customer = customerService.getCustomer(newToken.getToken());
         mailService.sendEmail(
                 constructResendVerificationTokenEmail(getAppUrl(request), request.getLocale(), newToken, customer));
         return new GenericResponse(messages.getMessage("message.resendToken", null, request.getLocale()));
     }
 
     /*
-     * @RequestMapping(value = "/user/update/2fa", method = RequestMethod.POST)
+     * @RequestMapping(value = "/customer/update/2fa", method = RequestMethod.POST)
      * 
      * @ResponseBody
      * public GenericResponse modifyUser2FA(@RequestParam("use2FA") final boolean
      * use2FA) throws UnsupportedEncodingException {
-     * final User user = userService.updateUser2FA(use2FA);
+     * final User customer = customerService.updateUser2FA(use2FA);
      * if (use2FA) {
-     * return new GenericResponse(userService.generateQRUrl(user));
+     * return new GenericResponse(customerService.generateQRUrl(customer));
      * }
      * return null;
      * }
@@ -239,9 +237,9 @@ public class CustomerAuthenticationController {
                 new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(),
                         authenticationRequest.getPassword()));
 
-        final Customer userDetails = customerService.findUserByEmail(authenticationRequest.getUsername());
-        final String jwt = jwtUtil.generateToken(userDetails);
-        final AuthResponseDTO responseDTO = new AuthResponseDTO(jwt, new CustomerDTO(userDetails));
+        final Customer customerDetails = customerService.findCustomerByEmail(authenticationRequest.getUsername());
+        final String jwt = jwtUtil.generateToken(customerDetails);
+        final AuthResponseDTO responseDTO = new AuthResponseDTO(jwt, new CustomerDTO(customerDetails));
 
         return ResponseEntity.ok(responseDTO);
     }
@@ -263,18 +261,18 @@ public class CustomerAuthenticationController {
             String name = (String) idToken.getPayload().get("name");
             logger.warn("Google token verified. Email: {}, Name: {}", email, name);
             // quali dati vogliamo prendere da google?
-            Customer user = customerService.findUserByEmail(email);
-            if (user == null) {
+            Customer customer = customerService.findCustomerByEmail(email);
+            if (customer == null) {
                 NewCustomerDTO accountDto = new NewCustomerDTO();
                 // devo verificare questa cosa
                 accountDto.setFirstName(name.split(" ")[0]);
                 accountDto.setLastName(name.split(" ")[1]);
                 accountDto.setEmail(email);
                 accountDto.setPassword(generateRandomPassword()); // Generate and set a random password
-                user = customerService.registerNewCustomerAccount(accountDto);
+                customer = customerService.registerNewCustomerAccount(accountDto);
             }
-            String jwt = jwtUtil.generateToken(user);
-            return ResponseEntity.ok(new AuthResponseDTO(jwt, new CustomerDTO(user)));
+            String jwt = jwtUtil.generateToken(customer);
+            return ResponseEntity.ok(new AuthResponseDTO(jwt, new CustomerDTO(customer)));
         } else {
             logger.warn("Google token verification failed.");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();

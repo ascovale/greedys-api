@@ -112,11 +112,12 @@ public class CustomerController {
     @ApiResponse(responseCode = "400", description = "Richiesta non valida")
     @PostMapping(value = "/password/reset")
     public GenericResponse resetPassword(final HttpServletRequest request,
-            @Parameter(description = "Email dell'utente per cui resettare la password") @RequestParam("email") final String userEmail) {
-        final Customer customer = customerService.findUserByEmail(userEmail);
+            @Parameter(description = "Email dell'utente per cui resettare la password") @RequestParam("email") final String customerEmail) {
+        final Customer customer = customerService.findCustomerByEmail(customerEmail);
         if (customer != null) {
+            //TODO: scrivere metodo sendPasswordResetTokenForCustomer
             final String token = UUID.randomUUID().toString();
-            customerService.createPasswordResetTokenForUser(customer, token);
+            customerService.createPasswordResetTokenForCustomer(customer, token);
             // mailSender.send(constructResetTokenEmail(getAppUrl(request),
             // request.getLocale(), token, customer));
         }
@@ -134,7 +135,7 @@ public class CustomerController {
         if (!customerService.checkIfValidOldPassword(getCustomerId(), passwordDto.getOldPassword())) {
             throw new InvalidOldPasswordException();
         }
-        customerService.changeUserPassword(getCustomerId(), passwordDto.getNewPassword());
+        customerService.changeCustomerPassword(getCustomerId(), passwordDto.getNewPassword());
         return new GenericResponse(messages.getMessage("message.updatePasswordSuc", null, locale));
     }
 

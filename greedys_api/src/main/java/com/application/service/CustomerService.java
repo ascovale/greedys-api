@@ -76,8 +76,8 @@ public class CustomerService {
 	}
 
 	public CustomerDTO findById(long id) {
-		Customer user = customerDAO.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
-		return new CustomerDTO(user);
+		Customer customer = customerDAO.findById(id).orElseThrow(() -> new EntityNotFoundException("Customer not found"));
+		return new CustomerDTO(customer);
 	}
 
 	public Customer registerNewCustomerAccount(final NewCustomerDTO accountDto) {
@@ -93,7 +93,7 @@ public class CustomerService {
 		customer.setSurname(accountDto.getLastName());
 		customer.setPassword(passwordEncoder.encode(accountDto.getPassword()));
 		customer.setEmail(accountDto.getEmail());
-		// user.setUsing2FA(accountDto.isUsing2FA());
+		// customer.setUsing2FA(accountDto.isUsing2FA());
 		customer.setRoles(Arrays.asList(roleRepository.findByName("ROLE_CUSTOMER")));
 		return customerDAO.save(customer);
 	}
@@ -110,24 +110,24 @@ public class CustomerService {
 		return tokenDAO.findByToken(verificationToken);
 	}
 
-	public void saveRegisteredUser(final Customer user) {
-		customerDAO.save(user);
+	public void saveRegisteredCustomer(final Customer customer) {
+		customerDAO.save(customer);
 	}
 
-	public void deleteUser(final Customer user) {
-		final VerificationToken verificationToken = tokenDAO.findByCustomer(user);
+	public void deleteCustomer(final Customer customer) {
+		final VerificationToken verificationToken = tokenDAO.findByCustomer(customer);
 		if (verificationToken != null) {
 			tokenDAO.delete(verificationToken);
 		}
-		final PasswordResetToken passwordToken = passwordTokenRepository.findByCustomer(user);
+		final PasswordResetToken passwordToken = passwordTokenRepository.findByCustomer(customer);
 		if (passwordToken != null) {
 			passwordTokenRepository.delete(passwordToken);
 		}
-		customerDAO.delete(user);
+		customerDAO.delete(customer);
 	}
 
-	public void createVerificationTokenForUser(final Customer user, final String token) {
-		final VerificationToken myToken = new VerificationToken(token, user);
+	public void createVerificationTokenForCustomer(final Customer customer, final String token) {
+		final VerificationToken myToken = new VerificationToken(token, customer);
 		tokenDAO.save(myToken);
 	}
 
@@ -138,12 +138,17 @@ public class CustomerService {
 		return vToken;
 	}
 
-	public void createPasswordResetTokenForUser(final Customer user, final String token) {
-		final PasswordResetToken myToken = new PasswordResetToken(token, user);
+	public void createPasswordResetTokenForCustomer(final Customer customer, final String token) {
+		final PasswordResetToken myToken = new PasswordResetToken(token, customer);
 		passwordTokenRepository.save(myToken);
+		try{
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
-	public Customer findUserByEmail(final String email) {
+	public Customer findCustomerByEmail(final String email) {
 		return customerDAO.findByEmail(email);
 	}
 
@@ -151,18 +156,18 @@ public class CustomerService {
 		return passwordTokenRepository.findByToken(token);
 	}
 
-	public Customer getUserByPasswordResetToken(final String token) {
+	public Customer getCustomerByPasswordResetToken(final String token) {
 		return passwordTokenRepository.findByToken(token).getCustomer();
 	}
 
-	public Optional<Customer> getUserByID(final long id) {
+	public Optional<Customer> getCustomerByID(final long id) {
 		return customerDAO.findById(id);
 	}
 
-	public void changeUserPassword(final Long id, final String password) {
-		final Customer user = customerDAO.findById(id).get();
-		user.setPassword(passwordEncoder.encode(password));
-		customerDAO.save(user);
+	public void changeCustomerPassword(final Long id, final String password) {
+		final Customer customer = customerDAO.findById(id).get();
+		customer.setPassword(passwordEncoder.encode(password));
+		customerDAO.save(customer);
 	}
 
 	public boolean checkIfValidOldPassword(final Long id, final String oldPassword) {
@@ -175,33 +180,33 @@ public class CustomerService {
 			return TOKEN_INVALID;
 		}
 
-		final Customer user = verificationToken.getCustomer();
+		final Customer customer = verificationToken.getCustomer();
 		final LocalDateTime now = LocalDateTime.now();
 		if (verificationToken.getExpiryDate().isBefore(now)) {
 			tokenDAO.delete(verificationToken);
 			return TOKEN_EXPIRED;
 		}
 
-		user.setStatus(Customer.Status.ENABLED);
+		customer.setStatus(Customer.Status.ENABLED);
 		// tokenDAO.delete(verificationToken);
-		customerDAO.save(user);
+		customerDAO.save(customer);
 		return TOKEN_VALID;
 	}
 
 	/*
-	 * public String generateQRUrl(User user) throws
+	 * public String generateQRUrl(Customer customer) throws
 	 * UnsupportedEncodingException { return QR_PREFIX +
 	 * URLEncoder.encode(String.format("otpauth://totp/%s:%s?secret=%s&issuer=%s",
-	 * APP_NAME, user.getEmail(), APP_NAME), "UTF-8"); }
+	 * APP_NAME, customer.getEmail(), APP_NAME), "UTF-8"); }
 	 * 
-	 * public User updateUser2FA(boolean use2FA) { final Authentication
-	 * curAuth = SecurityContextHolder.getContext() .getAuthentication(); User
-	 * currentUser = (User) curAuth.getPrincipal(); //
-	 * currentUser.setUsing2FA(use2FA); currentUser =
-	 * companycustomerDAO.save(currentUser); final Authentication auth = new
-	 * UsernamePasswordAuthenticationToken(currentUser, currentUser.getPassword(),
+	 * public Customer updateCustomer2FA(boolean use2FA) { final Authentication
+	 * curAuth = SecurityContextHolder.getContext() .getAuthentication(); Customer
+	 * currentCustomer = (Customer) curAuth.getPrincipal(); //
+	 * currentCustomer.setUsing2FA(use2FA); currentCustomer =
+	 * companycustomerDAO.save(currentCustomer); final Authentication auth = new
+	 * CustomernamePasswordAuthenticationToken(currentCustomer, currentCustomer.getPassword(),
 	 * curAuth.getAuthorities()); SecurityContextHolder.getContext()
-	 * .setAuthentication(auth); return currentUser; }
+	 * .setAuthentication(auth); return currentCustomer; }
 	 */
 
 	private boolean emailExists(final String email) {
@@ -213,60 +218,62 @@ public class CustomerService {
 	}
 
 	public void addImage(String email, Image image) {
-		Customer user = customerDAO.findByEmail(email);
-		// user.setImage(image);
+		Customer customer = customerDAO.findByEmail(email);
+		// customer.setImage(image);
 		// BIsogna aggiungere una lista di immagini
-		// se si fa add bisogna mettere Hibernate.initialize(user.getImages());
-		customerDAO.save(user);
+		// se si fa add bisogna mettere Hibernate.initialize(customer.getImages());
+		customerDAO.save(customer);
 	}
 
-	public Customer getReference(Long userId) {
-		return entityManager.getReference(Customer.class, userId);
+	public Customer getReference(Long customerId) {
+		return entityManager.getReference(Customer.class, customerId);
 	}
 
-	public void deleteUserById(Long id) {
-		Customer user = customerDAO.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
-		deleteUser(user);
+	public void deleteCustomerById(Long id) {
+		Customer customer = customerDAO.findById(id).orElseThrow(() -> new EntityNotFoundException("Customer not found"));
+		deleteCustomer(customer);
 	}
 
-	public Customer updateUser(Long id, NewCustomerDTO userDto) {
-		Customer user = customerDAO.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
-		if (userDto.getFirstName() != null) {
-			user.setName(userDto.getFirstName());
+	public Customer updateCustomer(Long id, NewCustomerDTO customerDto) {
+		Customer customer = customerDAO.findById(id).orElseThrow(() -> new EntityNotFoundException("Customer not found"));
+		if (customerDto.getFirstName() != null) {
+			customer.setName(customerDto.getFirstName());
 		}
-		if (userDto.getLastName() != null) {
-			user.setSurname(userDto.getLastName());
+		if (customerDto.getLastName() != null) {
+			customer.setSurname(customerDto.getLastName());
 		}
-		if (userDto.getEmail() != null && !userDto.getEmail().equals(user.getEmail())) {
-			if (emailExists(userDto.getEmail())) {
+		if (customerDto.getEmail() != null && !customerDto.getEmail().equals(customer.getEmail())) {
+			if (emailExists(customerDto.getEmail())) {
 				throw new UserAlreadyExistException(
-						"There is an account with that email address: " + userDto.getEmail());
+						"There is an account with that email address: " + customerDto.getEmail());
 			}
-			user.setEmail(userDto.getEmail());
+			customer.setEmail(customerDto.getEmail());
 		}
-		return customerDAO.save(user);
+		return customerDAO.save(customer);
 	}
 
 	@Transactional
 	public void addAllergy(Long idAllergy) {
-		Customer user = getCurrentUser();
+		Customer customer = customerDAO.findById(getCurrentCustomer().getId())
+				.orElseThrow(() -> new EntityNotFoundException("Customer not found"));
 		Allergy allergy = allergyDAO.findById(idAllergy)
 				.orElseThrow(() -> new EntityNotFoundException("Allergy not found"));
-		Hibernate.initialize(user.getAllergies());
-		user.getAllergies().add(allergy);
-		customerDAO.save(user);
+		Hibernate.initialize(customer.getAllergies());
+		customer.getAllergies().add(allergy);
+		customerDAO.save(customer);
 	}
 
 	@Transactional
 	public void removeAllergy(Long idAllergy) {
-		Customer user = getCurrentUser();
+		Customer customer = customerDAO.findById(getCurrentCustomer().getId())
+		.orElseThrow(() -> new EntityNotFoundException("Customer not found"));
 		Allergy allergy = allergyDAO.findById(idAllergy)
 				.orElseThrow(() -> new EntityNotFoundException("Allergy not found"));
-		user.getAllergies().remove(allergy);
-		customerDAO.save(user);
+		customer.getAllergies().remove(allergy);
+		customerDAO.save(customer);
 	}
 
-	private Customer getCurrentUser() {
+	private Customer getCurrentCustomer() {
 		Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		if (principal instanceof Customer) {
 			return ((Customer) principal);
@@ -278,24 +285,24 @@ public class CustomerService {
 
 
 	@Transactional
-	public void enableUser(Long userId) {
-		Customer user = customerDAO.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
-		user.setStatus(Customer.Status.ENABLED);
-		customerDAO.save(user);
+	public void enableCustomer(Long customerId) {
+		Customer customer = customerDAO.findById(customerId).orElseThrow(() -> new EntityNotFoundException("Customer not found"));
+		customer.setStatus(Customer.Status.ENABLED);
+		customerDAO.save(customer);
 	}
 	/*
-	 * public void removePermissions(Long idUser) {
-	 * User user = customerDAO.findById(idUser).orElseThrow(() -> new
-	 * EntityNotFoundException("User not found"));
-	 * user.setRoles(Arrays.asList(roleRepository.findByName("ROLE_USER")));
-	 * customerDAO.save(user);
+	 * public void removePermissions(Long idCustomer) {
+	 * Customer customer = customerDAO.findById(idCustomer).orElseThrow(() -> new
+	 * EntityNotFoundException("Customer not found"));
+	 * customer.setRoles(Arrays.asList(roleRepository.findByName("ROLE_CUSTOMER")));
+	 * customerDAO.save(customer);
 	 * }
 	 */
 
-	public void blockUser(Long userId) {
-		Customer user = customerDAO.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
-		user.setStatus(Customer.Status.DISABLED);
-		customerDAO.save(user);
+	public void blockCustomer(Long customerId) {
+		Customer customer = customerDAO.findById(customerId).orElseThrow(() -> new EntityNotFoundException("Customer not found"));
+		customer.setStatus(Customer.Status.DISABLED);
+		customerDAO.save(customer);
 	}
 
 	public void reportRestaurantAbuse(Long restaurantId) {
@@ -304,7 +311,7 @@ public class CustomerService {
 		/*
 		 * ReportAbuse report = new ReportAbuse();
 		 * report.setRestaurantId(restaurantId);
-		 * report.setUserId(getCurrentUser().getId());
+		 * report.setCustomerId(getCurrentCustomer().getId());
 		 * report.setTimestamp(LocalDateTime.now());
 		 * reportAbuseDAO.save(report);
 		 */
@@ -314,7 +321,7 @@ public class CustomerService {
 
 	@Transactional
 	public List<AllergyDTO> getAllergies(Long customerId) {
-		Customer customer = customerDAO.findById(customerId).orElseThrow(() -> new EntityNotFoundException("User not found"));
+		Customer customer = customerDAO.findById(customerId).orElseThrow(() -> new EntityNotFoundException("Customer not found"));
 		return customer.getAllergies().stream()
 				.map(AllergyDTO::new)
 				.collect(Collectors.toList());
@@ -362,8 +369,8 @@ public class CustomerService {
 		customerDAO.save(customer);
 	}
 
-	public void save(Customer user) {
-		customerDAO.save(user);
+	public void save(Customer customer) {
+		customerDAO.save(customer);
 	}
 
 	public void updateFirstName(Long customerId, String firstName) {
