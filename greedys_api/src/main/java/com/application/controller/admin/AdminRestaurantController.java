@@ -267,7 +267,7 @@ public class AdminRestaurantController {
 		return new GenericResponse("success");
 	}
 
-	@GetMapping(value = "{restaurantId}/types")
+	@GetMapping(value = "{restaurantId}/categories")
 	@Operation(summary = "Get types of a restaurant", description = "Ottieni i tipi di un ristorante")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = String.class)))),
@@ -352,13 +352,5 @@ public class AdminRestaurantController {
 	}
 
 	
-    @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_USER_WRITE')")
-    @Operation(summary = "Block restaurant user", description = "Blocks a restaurant user by their ID")
-    @ApiResponse(responseCode = "200", description = "Restaurant user blocked successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
-    @ApiResponse(responseCode = "400", description = "Invalid request")
-    @PutMapping("/{restaurantId}/block")
-    public GenericResponse blockRestaurantUser(@PathVariable Long restaurantId) {
-		restaurantService.updateRestaurantStatus(restaurantId, com.application.persistence.model.restaurant.Restaurant.Status.DISABLED);
-        return new GenericResponse("Restaurant user blocked successfully");
-    }
+
 }

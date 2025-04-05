@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,10 +23,10 @@ import com.application.persistence.dao.admin.AdminRoleDAO;
 import com.application.persistence.dao.customer.CustomerDAO;
 import com.application.persistence.dao.customer.PrivilegeDAO;
 import com.application.persistence.dao.customer.RoleDAO;
+import com.application.persistence.dao.restaurant.RestaurantCategoryDAO;
 import com.application.persistence.dao.restaurant.RestaurantDAO;
 import com.application.persistence.dao.restaurant.RestaurantPrivilegeDAO;
 import com.application.persistence.dao.restaurant.RestaurantRoleDAO;
-import com.application.persistence.dao.restaurant.RestaurantUserDAO;
 import com.application.persistence.dao.restaurant.ServiceDAO;
 import com.application.persistence.dao.restaurant.ServiceTypeDAO;
 import com.application.persistence.dao.restaurant.SlotDAO;
@@ -41,6 +40,7 @@ import com.application.persistence.model.reservation.Service;
 import com.application.persistence.model.reservation.ServiceType;
 import com.application.persistence.model.reservation.Slot;
 import com.application.persistence.model.restaurant.Restaurant;
+import com.application.persistence.model.restaurant.RestaurantCategory;
 import com.application.persistence.model.restaurant.user.RestaurantPrivilege;
 import com.application.persistence.model.restaurant.user.RestaurantRole;
 import com.application.persistence.model.systemconfig.SetupConfig;
@@ -67,8 +67,6 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
     @Autowired
     private AdminPrivilegeDAO adminPrivilegeDAO;
     @Autowired
-    private PasswordEncoder passwordEncoder;
-    @Autowired
     RestaurantRoleDAO restaurantRoleDAO;
     @Autowired
     RestaurantPrivilegeDAO restaurantPrivilegeDAO;
@@ -87,13 +85,13 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
     @Autowired
     private SlotDAO slotDAO;
     @Autowired
-    private RestaurantUserDAO ruDAO;
-    @Autowired
     AdminService adminService;
     @Autowired
     RestaurantService restaurantService;
     @Autowired
     private AllergyService allergyService;
+    @Autowired
+    private RestaurantCategoryDAO restaurantCategoryDAO;
 
     static final Logger logger = LoggerFactory.getLogger(SetupDataLoader.class);
 
@@ -124,6 +122,8 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
             createSomeCustomer();
             createRestaurantLaSoffittaRenovatio();
             createAllergies();
+            createRestaurantCategories();
+            assignCategoriesToLaSoffittaRenovatio();
             logger.info("    >>>  ---   Test data Created   ---  <<< ");
         }
     }
@@ -466,21 +466,28 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 
         logger.info("    >>>  ---   Creating Allergies   ---  <<< ");
         List<NewAllergyDTO> allergies = Arrays.asList(
-                new NewAllergyDTO("Cereals", "Includes wheat, rye, barley, oats, and foods like bread, pasta, and cereals."),
-                new NewAllergyDTO("Shellfish", "Includes shrimp, crab, lobster, and other crustaceans."),
-                new NewAllergyDTO("Eggs", "Includes eggs and foods containing eggs such as mayonnaise and baked goods."),
-                new NewAllergyDTO("Fish", "Includes fish like salmon, tuna, and cod."),
-                new NewAllergyDTO("Peanuts", "Includes peanuts and foods containing peanuts such as peanut butter."),
-                new NewAllergyDTO("Soy", "Includes soybeans and soy-based products like tofu and soy milk."),
-                new NewAllergyDTO("Milk", "Includes milk and dairy products like cheese, butter, and yogurt."),
-                new NewAllergyDTO("Nuts", "Includes tree nuts like almonds, walnuts, and hazelnuts."),
-                new NewAllergyDTO("Celery", "Includes celery and celery-based products like celery salt."),
-                new NewAllergyDTO("Mustard", "Includes mustard seeds and mustard-based products."),
-                new NewAllergyDTO("Sesame", "Includes sesame seeds and sesame oil."),
-                new NewAllergyDTO("Sulfites", "Includes sulfites found in dried fruits, wine, and some processed foods."),
-                new NewAllergyDTO("Lupin", "Includes lupin beans and lupin-based flour."),
-                new NewAllergyDTO("Mollusks", "Includes clams, mussels, oysters, and squid.")
-        );
+            new NewAllergyDTO("Cereals", "Includes wheat, rye, barley, oats, and foods like bread, pasta, and cereals."),
+            new NewAllergyDTO("Shellfish", "Includes shrimp, crab, lobster, and other crustaceans."),
+            new NewAllergyDTO("Eggs", "Includes eggs and foods containing eggs such as mayonnaise and baked goods."),
+            new NewAllergyDTO("Fish", "Includes fish like salmon, tuna, and cod."),
+            new NewAllergyDTO("Peanuts", "Includes peanuts and foods containing peanuts such as peanut butter."),
+            new NewAllergyDTO("Soy", "Includes soybeans and soy-based products like tofu and soy milk."),
+            new NewAllergyDTO("Milk", "Includes milk and dairy products like cheese, butter, and yogurt."),
+            new NewAllergyDTO("Nuts", "Includes tree nuts like almonds, walnuts, and hazelnuts."),
+            new NewAllergyDTO("Celery", "Includes celery and celery-based products like celery salt."),
+            new NewAllergyDTO("Mustard", "Includes mustard seeds and mustard-based products."),
+            new NewAllergyDTO("Sesame", "Includes sesame seeds and sesame oil."),
+            new NewAllergyDTO("Sulfites", "Includes sulfites found in dried fruits, wine, and some processed foods."),
+            new NewAllergyDTO("Lupin", "Includes lupin beans and lupin-based flour."),
+            new NewAllergyDTO("Mollusks", "Includes clams, mussels, oysters, and squid."),
+            new NewAllergyDTO("Gluten", "Includes foods containing gluten such as bread, pasta, and pastries."),
+            new NewAllergyDTO("Corn", "Includes corn and corn-based products."),
+            new NewAllergyDTO("Garlic", "Includes garlic and foods containing garlic."),
+            new NewAllergyDTO("Onion", "Includes onion and foods containing onion."),
+            new NewAllergyDTO("Pork", "Includes pork and pork-based products."),
+            new NewAllergyDTO("Beef", "Includes beef and beef-based products."),
+            new NewAllergyDTO("Chicken", "Includes chicken and chicken-based products."),
+            new NewAllergyDTO("Alcohol", "Includes alcoholic beverages and foods containing alcohol."));
 
         for (NewAllergyDTO allergy : allergies) {
             if (allergyService.findByName(allergy.getName()) == null) {
@@ -491,5 +498,58 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
         setupConfig.setDataUploaded(true);
         setupConfigDAO.save(setupConfig);
         logger.info("    >>>  ---   Allergies Created   ---  <<< ");
+    }
+
+    @Transactional
+    private void createRestaurantCategories() {
+        logger.info("    >>>  ---   Creating Restaurant Categories   ---  <<< ");
+        List<String> categories = Arrays.asList(
+            "Pizzeria", "Cucina Italiana", "Cucina Romana", "Cinese", "Giapponese",
+            "Sushi", "Senza Glutine", "Vegano", "Carne", "Pesce", "Fast Food",
+            "Vegetariano", "Mediterranea", "Messicana", "Indiana", "Francese",
+            "Spagnola", "Tailandese", "Coreana", "Barbecue", "Bisteccheria", "Griglieria",
+            "Hamburgeria", "Birreria", "Pub", "Tapas", "Fusion", "Mediorientale",
+            "Gourmet", "Creperia", "Pastificio", "Rosticceria", "Kebab", "Libanese",
+            "Turca", "Greca", "Vietnamita", "Filippina", "Africana", "Peruviana",
+            "Brasiliana", "Argentina", "Caraibica", "Hawaiiana", "Australiana",
+            "Russa", "Tedesca", "Polacca", "Ungherese", "Nordica", "Casereccia",
+            "Street Food", "Paninoteca", "Enoteca", "Churrascaria", "Dim Sum",
+            "Tex-Mex", "Pizza al Taglio", "Trattoria", "Osteria", "Cioccolateria",
+            "Gelateria", "Dessert Bar", "Tea House"
+        );
+
+        for (String categoryName : categories) {
+            if (restaurantCategoryDAO.findByName(categoryName) == null) {
+                RestaurantCategory category = new RestaurantCategory();
+                category.setName(categoryName);
+                restaurantCategoryDAO.save(category);
+            }
+        }
+        logger.info("    >>>  ---   Restaurant Categories Created   ---  <<< ");
+    }
+
+    @Transactional
+    private void assignCategoriesToLaSoffittaRenovatio() {
+        logger.info("    >>>  ---   Assigning Categories to La Soffitta Renovatio   ---  <<< ");
+        Restaurant restaurant = restaurantDAO.findByName("La Soffitta Renovatio");
+        if (restaurant == null) {
+            logger.warn("Restaurant La Soffitta Renovatio not found.");
+            return;
+        }
+
+        List<String> categoryNames = Arrays.asList(
+            "Pizzeria", "Senza Glutine", "Vegano", "Cucina Italiana", 
+            "Cucina Romana", "Carne", "Pesce"
+        );
+
+        for (String categoryName : categoryNames) {
+            RestaurantCategory category = restaurantCategoryDAO.findByName(categoryName);
+            if (category != null && !restaurant.getRestaurantTypes().contains(category)) {
+                restaurant.getRestaurantTypes().add(category);
+            }
+        }
+
+        restaurantDAO.save(restaurant);
+        logger.info("    >>>  ---   Categories Assigned to La Soffitta Renovatio   ---  <<< ");
     }
 }

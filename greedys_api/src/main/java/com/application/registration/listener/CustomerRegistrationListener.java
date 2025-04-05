@@ -34,19 +34,19 @@ public class CustomerRegistrationListener implements ApplicationListener<Custome
 	}
 
 	private void confirmRegistration(final CustomerOnRegistrationCompleteEvent event) {
-		final Customer user = event.getUser();
+		final Customer customer = event.getUser();
 		final String token = UUID.randomUUID().toString();
-		service.createVerificationTokenForUser(user, token);
-		final SimpleMailMessage email = constructEmailMessage(event, user, token);
+		service.createVerificationTokenForCustomer(customer, token);
+		final SimpleMailMessage email = constructEmailMessage(event, customer, token);
 		mailSender.send(email);
 	}
 
-	private final SimpleMailMessage constructEmailMessage(final CustomerOnRegistrationCompleteEvent event, final Customer user,
+	private final SimpleMailMessage constructEmailMessage(final CustomerOnRegistrationCompleteEvent event, final Customer customer,
 			final String token) {
 		System.out.println("Prova inviare");
-		final String recipientAddress = user.getEmail();
+		final String recipientAddress = customer.getEmail();
 		final String subject = "Registration Confirmation";
-		final String confirmationUrl = event.getAppUrl() + "/register/user/confirm?token=" + token;
+		final String confirmationUrl = event.getAppUrl() + "/register/customer/confirm?token=" + token;
 		final String message = messages.getMessage("message.regSucc", null, event.getLocale());
 		final SimpleMailMessage email = new SimpleMailMessage();
 		email.setTo(recipientAddress);
