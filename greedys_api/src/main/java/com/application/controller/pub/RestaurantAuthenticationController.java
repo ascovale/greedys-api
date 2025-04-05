@@ -46,7 +46,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
-@Tag(name = "Restaurant Authentication Controller", description = "Controller per la creazione dei ristoranti e dell'autenticazione degli utenti del ristornate")
+@Tag(name = "Restaurant Authentication Controller", description = "Controller for restaurant creation and user authentication")
 @RequestMapping("/public/restaurant")
 @SecurityRequirement(name = "bearerAuth")
 public class RestaurantAuthenticationController {
@@ -83,9 +83,9 @@ public class RestaurantAuthenticationController {
     }
     // Restaurant Registration
 
-    @Operation(summary = "Request to register a new restaurant", description = "Richiesta di registrazione di un nuovo ristorante")
+    @Operation(summary = "Request to register a new restaurant", description = "Request to register a new restaurant")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Utente registrato con successo", content = {
+            @ApiResponse(responseCode = "200", description = "Restaurant registered successfully", content = {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = NewRestaurantDTO.class)) }),
     })
     @PostMapping(value = "/new_restaurant")
@@ -189,11 +189,12 @@ public class RestaurantAuthenticationController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
-    @Operation(summary = "Crea un token di autenticazione", description = "Autentica un utente e restituisce un token JWT", responses = {
-            @ApiResponse(responseCode = "200", description = "Autenticazione riuscita", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthResponseDTO.class))),
-            @ApiResponse(responseCode = "401", description = "Autenticazione fallita", content = @Content(mediaType = "application/json"))
+    @Operation(summary = "Generate an authentication token", description = "Authenticates a user and returns a JWT token")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Authentication successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthResponseDTO.class))),
+            @ApiResponse(responseCode = "401", description = "Authentication failed", content = @Content(mediaType = "application/json"))
     })
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Richiesta di autenticazione", required = true, content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthRequestDTO.class)))
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Authentication request", required = true, content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthRequestDTO.class)))
     @PostMapping(value = "/login", produces = "application/json")
     public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthRequestDTO authenticationRequest) {
         try {

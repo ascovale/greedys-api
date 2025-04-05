@@ -62,7 +62,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 @RestController
-@Tag(name = "Customer Authentication Controller", description = "Controller per la gestione dell'autenticazione dei customer")
+@Tag(name = "Customer Authentication Controller", description = "Controller for managing customer authentication")
 @RequestMapping("/public/customer")
 public class CustomerAuthenticationController {
     private final Logger LOGGER = LoggerFactory.getLogger(getClass());
@@ -107,12 +107,12 @@ public class CustomerAuthenticationController {
     }
 
     // Registration
-    @Operation(summary = "Registra un nuovo utente customer")
+    @Operation(summary = "Register a new customer", description = "Registers a new customer account and sends a verification email.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Customer registrato con successo", content = {
+            @ApiResponse(responseCode = "200", description = "Customer successfully registered", content = {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = NewCustomerDTO.class)) }),
-            @ApiResponse(responseCode = "400", description = "Richiesta non valida", content = @Content),
-            @ApiResponse(responseCode = "500", description = "Errore interno del server", content = @Content) })
+            @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content) })
     @PostMapping("/new_customer")
     public ResponseEntity<String> registerCustomerAccount(@Valid @RequestBody NewCustomerDTO accountDto,
             HttpServletRequest request) {
@@ -126,6 +126,11 @@ public class CustomerAuthenticationController {
         }
     }
 
+    @Operation(summary = "Confirm customer registration", description = "Validates the registration token and activates the customer account.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Account successfully verified", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Invalid or expired token", content = @Content)
+    })
     @RequestMapping(value = "/confirm", method = RequestMethod.GET)
     @ResponseBody
     public GenericResponse confirmRegistrationResponse(final HttpServletRequest request,
@@ -142,6 +147,11 @@ public class CustomerAuthenticationController {
                 messages.getMessage("auth.message." + result, null, locale) + "expired".equals(result));
     }
 
+    @Operation(summary = "Resend registration token", description = "Generates and sends a new registration token to the customer.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Token successfully resent", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Invalid token", content = @Content)
+    })
     @RequestMapping(value = "/resend_token", method = RequestMethod.GET)
     @ResponseBody
     public GenericResponse resendRegistrationToken(final HttpServletRequest request,
@@ -225,11 +235,12 @@ public class CustomerAuthenticationController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
-    @Operation(summary = "Crea un token di autenticazione", description = "Autentica un utente e restituisce un token JWT", responses = {
-            @ApiResponse(responseCode = "200", description = "Autenticazione riuscita", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthResponseDTO.class))),
-            @ApiResponse(responseCode = "401", description = "Autenticazione fallita", content = @Content(mediaType = "application/json"))
+    @Operation(summary = "Create an authentication token", description = "Authenticates a customer and returns a JWT token.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Authentication successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthResponseDTO.class))),
+            @ApiResponse(responseCode = "401", description = "Authentication failed", content = @Content(mediaType = "application/json"))
     })
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Richiesta di autenticazione", required = true, content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthRequestDTO.class)))
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Authentication request", required = true, content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthRequestDTO.class)))
     @PostMapping(value = "/login", produces = "application/json")
     public ResponseEntity<AuthResponseDTO> createAuthenticationToken(@RequestBody AuthRequestDTO authenticationRequest)
             throws Exception {
@@ -244,12 +255,12 @@ public class CustomerAuthenticationController {
         return ResponseEntity.ok(responseDTO);
     }
 
-    @Operation(summary = "Autentica con Google", description = "Autentica un utente utilizzando un token di Google e restituisce un token JWT", responses = {
-            @ApiResponse(responseCode = "200", description = "Autenticazione riuscita", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthResponseDTO.class))),
-            @ApiResponse(responseCode = "401", description = "Autenticazione fallita", content = @Content(mediaType = "application/json"))
+    @Operation(summary = "Authenticate with Google", description = "Authenticates a customer using a Google token and returns a JWT token.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Authentication successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthResponseDTO.class))),
+            @ApiResponse(responseCode = "401", description = "Authentication failed", content = @Content(mediaType = "application/json"))
     })
-
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Richiesta di autenticazione con Google", required = true, content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthRequestGoogleDTO.class)))
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Google authentication request", required = true, content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthRequestGoogleDTO.class)))
     @PostMapping("/google")
     public ResponseEntity<AuthResponseDTO> authenticateWithGoogle(@RequestBody AuthRequestGoogleDTO authRequest)
             throws Exception {
