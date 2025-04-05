@@ -23,7 +23,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Tag(name = "Admin Authentication Controller", description = "Controller per la gestione dell'autenticazione degli utenti Admin")
+@Tag(name = "Admin Authentication Controller", description = "Controller for managing Admin user authentication")
 @RestController
 @RequestMapping(value = "/public/admin", produces = "application/json")
 public class AdminAuthenticationController {
@@ -40,11 +40,11 @@ public class AdminAuthenticationController {
         this.adminService = adminService;
     }
 
-    @Operation(summary = "Crea un token di autenticazione", description = "Autentica un utente e restituisce un token JWT", responses = {
-            @ApiResponse(responseCode = "200", description = "Autenticazione riuscita", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthResponseDTO.class))),
-            @ApiResponse(responseCode = "401", description = "Autenticazione fallita", content = @Content(mediaType = "application/json"))
+    @Operation(summary = "Generate an authentication token", description = "Authenticates a user and returns a JWT token", responses = {
+            @ApiResponse(responseCode = "200", description = "Authentication successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthResponseDTO.class))),
+            @ApiResponse(responseCode = "401", description = "Authentication failed", content = @Content(mediaType = "application/json"))
     })
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Richiesta di autenticazione", required = true, content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthRequestDTO.class)))
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Authentication request", required = true, content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthRequestDTO.class)))
     @PostMapping(value = "/login", produces = "application/json")
     public ResponseEntity<AdminAuthResponseDTO> createAuthenticationToken(@RequestBody AuthRequestDTO authenticationRequest)
             throws Exception {

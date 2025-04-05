@@ -27,7 +27,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RequestMapping("/customer/allergy")
 @SecurityRequirement(name = "customerBearerAuth")
-@Tag(name = "Allergy", description = "Controller per la gestione delle allergie del customer")
+@Tag(name = "Allergy", description = "Controller for managing customer allergies")
 
 @RestController
 public class AllergyController {
@@ -40,9 +40,9 @@ public class AllergyController {
     }
 
     @PreAuthorize("authentication.principal.isEnabled()")
-    @Operation(summary = "Add allergy to customer", description = "Aggiunge un'allergia all'utente specificato tramite il suo ID")
-    @ApiResponse(responseCode = "200", description = "Allergia aggiunta con successo", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
-    @ApiResponse(responseCode = "404", description = "Utente non trovato")
+    @Operation(summary = "Add allergy to customer", description = "Adds an allergy to the currently authenticated customer using the allergy ID")
+    @ApiResponse(responseCode = "200", description = "Allergy successfully added", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
+    @ApiResponse(responseCode = "404", description = "Customer not found")
     @PostMapping("/add/{allergyId}")
     public GenericResponse addAllergyToUser(@PathVariable Long allergyId) {
         customerService.addAllergy(allergyId);
@@ -50,9 +50,9 @@ public class AllergyController {
     }
 
     @PreAuthorize("authentication.principal.isEnabled()")
-    @Operation(summary = "Remove allergy from customer", description = "Rimuove un'allergia dall'utente specificato tramite il suo ID")
-    @ApiResponse(responseCode = "200", description = "Allergia rimossa con successo", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
-    @ApiResponse(responseCode = "404", description = "Utente non trovato")
+    @Operation(summary = "Remove allergy from customer", description = "Removes an allergy from the currently authenticated customer using the allergy ID")
+    @ApiResponse(responseCode = "200", description = "Allergy successfully removed", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
+    @ApiResponse(responseCode = "404", description = "Customer not found")
     @DeleteMapping("/remove/{allergyId}")
     public GenericResponse removeAllergyFromUser(@PathVariable Long idAllergy) {
         customerService.removeAllergy(idAllergy);
@@ -60,27 +60,27 @@ public class AllergyController {
     }
 
     @PreAuthorize("authentication.principal.isEnabled()")
-    @Operation(summary = "Get allergies of customer", description = "Restituisce tutte le allergie dell'utente specificato tramite il suo ID")
-    @ApiResponse(responseCode = "200", description = "Allergie recuperate con successo", content = @Content(mediaType = "application/json", schema = @Schema(implementation = List.class)))
-    @ApiResponse(responseCode = "404", description = "Utente non trovato")
-    @GetMapping("/")
+    @Operation(summary = "Get allergies of customer", description = "Returns all allergies of the currently authenticated customer")
+    @ApiResponse(responseCode = "200", description = "Allergies successfully retrieved", content = @Content(mediaType = "application/json", schema = @Schema(implementation = List.class)))
+    @ApiResponse(responseCode = "404", description = "Customer not found")
+    @GetMapping("/allergies")
     public List<AllergyDTO> getAllergiesOfCustomer() {
         return customerService.getAllergies(getCurrentCustomer().getId());
     }
 
     @PreAuthorize("authentication.principal.isEnabled()")
-    @Operation(summary = "Get paginated allergies of customer", description = "Restituisce tutte le allergie dell'utente specificato tramite il suo ID in modo paginato")
-    @ApiResponse(responseCode = "200", description = "Allergie recuperate con successo", content = @Content(mediaType = "application/json", schema = @Schema(implementation = List.class)))
-    @ApiResponse(responseCode = "404", description = "Utente non trovato")
+    @Operation(summary = "Get paginated allergies of customer", description = "Returns paginated allergies of the currently authenticated customer")
+    @ApiResponse(responseCode = "200", description = "Allergies successfully retrieved", content = @Content(mediaType = "application/json", schema = @Schema(implementation = List.class)))
+    @ApiResponse(responseCode = "404", description = "Customer not found")
     @GetMapping("/paginated")
     public List<AllergyDTO> getPaginatedAllergiesOfCustomer(@RequestParam int page, @RequestParam int size) {
         return allergyService.getPaginatedAllergies( page, size);
     }
 
     @PreAuthorize("authentication.principal.isEnabled()")
-    @Operation(summary = "Get allergy by ID", description = "Restituisce un'allergia specifica dell'utente tramite il suo ID")
-    @ApiResponse(responseCode = "200", description = "Allergia recuperata con successo", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AllergyDTO.class)))
-    @ApiResponse(responseCode = "404", description = "Allergia non trovata")
+    @Operation(summary = "Get allergy by ID", description = "Returns a specific allergy of the currently authenticated customer using the allergy ID")
+    @ApiResponse(responseCode = "200", description = "Allergy successfully retrieved", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AllergyDTO.class)))
+    @ApiResponse(responseCode = "404", description = "Allergy not found")
     @GetMapping("/{allergyId}")
     public AllergyDTO getAllergyById(@PathVariable Long allergyId) {
         return allergyService.getAllergyById(allergyId);
@@ -91,7 +91,7 @@ public class AllergyController {
         if (principal instanceof Customer) {
             return ((Customer) principal);
         } else {
-            System.out.println("Questo non dovrebbe succedere");
+            System.out.println("This should not happen");
             return null;
         }
     }
