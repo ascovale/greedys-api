@@ -63,7 +63,7 @@ public class AllergyController {
     @Operation(summary = "Get allergies of customer", description = "Restituisce tutte le allergie dell'utente specificato tramite il suo ID")
     @ApiResponse(responseCode = "200", description = "Allergie recuperate con successo", content = @Content(mediaType = "application/json", schema = @Schema(implementation = List.class)))
     @ApiResponse(responseCode = "404", description = "Utente non trovato")
-    @GetMapping("/get")
+    @GetMapping("/")
     public List<AllergyDTO> getAllergiesOfCustomer() {
         return customerService.getAllergies(getCurrentCustomer().getId());
     }
@@ -72,7 +72,7 @@ public class AllergyController {
     @Operation(summary = "Get paginated allergies of customer", description = "Restituisce tutte le allergie dell'utente specificato tramite il suo ID in modo paginato")
     @ApiResponse(responseCode = "200", description = "Allergie recuperate con successo", content = @Content(mediaType = "application/json", schema = @Schema(implementation = List.class)))
     @ApiResponse(responseCode = "404", description = "Utente non trovato")
-    @GetMapping("/get/paginated")
+    @GetMapping("/paginated")
     public List<AllergyDTO> getPaginatedAllergiesOfCustomer(@RequestParam int page, @RequestParam int size) {
         return allergyService.getPaginatedAllergies( page, size);
     }
@@ -81,7 +81,7 @@ public class AllergyController {
     @Operation(summary = "Get allergy by ID", description = "Restituisce un'allergia specifica dell'utente tramite il suo ID")
     @ApiResponse(responseCode = "200", description = "Allergia recuperata con successo", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AllergyDTO.class)))
     @ApiResponse(responseCode = "404", description = "Allergia non trovata")
-    @GetMapping("/get/{allergyId}")
+    @GetMapping("/{allergyId}")
     public AllergyDTO getAllergyById(@PathVariable Long allergyId) {
         return allergyService.getAllergyById(allergyId);
     }
