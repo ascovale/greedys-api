@@ -216,7 +216,12 @@ public class SwaggerConfig {
                                         .addProperty("kids", new Schema<Integer>().type("integer"))
                                         .addProperty("notes", new Schema<String>().type("string"))
                                         .addProperty("reservationDay", new Schema<String>().type("string").format("date"))
-                                        .addProperty("restaurant_id", new Schema<Long>().type("integer").format("int64"))))
+                                        .addProperty("restaurant_id", new Schema<Long>().type("integer").format("int64")))
+                                .addSchemas("AllergyDTO", new Schema<>()
+                                        .type("object")
+                                        .addProperty("id", new Schema<Long>().type("integer").format("int64"))
+                                        .addProperty("name", new Schema<String>().type("string"))
+                                        .addProperty("description", new Schema<String>().type("string"))))
                         .addSecurityItem(new SecurityRequirement()
                                 .addList("customerBearerAuth")))
                 .build();
