@@ -147,7 +147,14 @@ public class SwaggerConfig {
                                 .addSchemas("NewAllergyDTO", new Schema<>()
                                         .type("object")
                                         .addProperty("name", new Schema<String>().type("string"))
-                                        .addProperty("description", new Schema<String>().type("string"))))
+                                        .addProperty("description", new Schema<String>().type("string")))
+                                .addSchemas("CustomerDTO", new Schema<>()
+                                        .type("object")
+                                        .addProperty("id", new Schema<Long>().type("integer").format("int64"))
+                                        .addProperty("firstName", new Schema<String>().type("string"))
+                                        .addProperty("lastName", new Schema<String>().type("string"))
+                                        .addProperty("email", new Schema<String>().type("string"))
+                                        .addProperty("status", new Schema<String>().type("string"))))
                         .addSecurityItem(new SecurityRequirement().addList("adminBearerAuth")))
                 .build();
     }
