@@ -27,12 +27,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping(value = "/public/admin", produces = "application/json")
 public class AdminAuthenticationController {
-
+        
     private AuthenticationManager authenticationManager;
     private JwtUtil jwtUtil;
     private AdminService adminService;
 
-    public AdminAuthenticationController(@Qualifier("adminAuthenticationManager") AuthenticationManager authenticationManager,
+    public AdminAuthenticationController(
+            @Qualifier("adminAuthenticationManager") AuthenticationManager authenticationManager,
             JwtUtil jwtUtil,
             AdminService adminService) {
         this.authenticationManager = authenticationManager;
@@ -46,17 +47,15 @@ public class AdminAuthenticationController {
     })
     @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Authentication request", required = true, content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthRequestDTO.class)))
     @PostMapping(value = "/login", produces = "application/json")
-    public ResponseEntity<AdminAuthResponseDTO> createAuthenticationToken(@RequestBody AuthRequestDTO authenticationRequest)
-            throws Exception {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(),
-                        authenticationRequest.getPassword()));
+    public ResponseEntity<?> createAuthenticationToken(
+            @RequestBody AuthRequestDTO authenticationRequest) {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(),
+                            authenticationRequest.getPassword()));
 
-        final Admin userDetails = adminService.findAdminByEmail(authenticationRequest.getUsername());
-        final String jwt = jwtUtil.generateToken(userDetails);
-        final AdminAuthResponseDTO responseDTO = new AdminAuthResponseDTO(jwt, new AdminDTO(userDetails));
-
-        return ResponseEntity.ok(responseDTO);
+            final Admin userDetails = adminService.findAdminByEmail(authenticationRequest.getUsername());
+            final String jwt = jwtUtil.generateToken(userDetails);
+            final AdminAuthResponseDTO responseDTO = new AdminAuthResponseDTO(jwt, new AdminDTO(userDetails));
+            return ResponseEntity.ok(responseDTO);
     }
-
 }

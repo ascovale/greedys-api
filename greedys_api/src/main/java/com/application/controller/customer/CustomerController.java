@@ -5,7 +5,6 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.MessageSource;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -34,7 +33,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
-@Tag(name = "Customer", description = "Controller per la gestione dei customer")
+@Tag(name = "Customer", description = "Controller for managing customers")
 @RestController
 @RequestMapping("/customer")
 @SecurityRequirement(name = "customerBearerAuth")
@@ -43,46 +42,54 @@ public class CustomerController {
     private final MessageSource messages;
     private final ISecurityUserService securityCustomerService;
 
-    //TODO Le mail dovrebbero essere mandate nel service 
+    // TODO Emails should be sent in the service layer
 
     public CustomerController(CustomerService customerService,
-            MessageSource messages, @Qualifier("customerSecurityService") ISecurityUserService securityCustomerService) {
+            MessageSource messages,
+            @Qualifier("customerSecurityService") ISecurityUserService securityCustomerService) {
         this.customerService = customerService;
         this.messages = messages;
         this.securityCustomerService = securityCustomerService;
     }
 
-    @PreAuthorize("authentication.principal.isEnabled()")
-    @Operation(summary = "Get Customer ID", description = "Ottiene l'ID del customer corrente", responses = {
-            @ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Long.class))),
-            @ApiResponse(responseCode = "401", description = "Non autorizzato"),
-            @ApiResponse(responseCode = "403", description = "Accesso negato"),
-            @ApiResponse(responseCode = "404", description = "Utente non trovato")
+    @Operation(summary = "Get Customer ID", description = "Retrieves the ID of the current customer", responses = {
+            @ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Long.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Access denied"),
+            @ApiResponse(responseCode = "404", description = "User not found")
     })
     @GetMapping("/id")
     public Long getCustomerId() {
         return getCurrentCustomer().getId();
     }
-    
-   
-    //TODO: impostiazione preferenze notifiche
-    //TODO: impostiazione preferenze nel sistema ad esempio come ricevere notifica però è più restaurant
 
-/* TODO: Implementare questo
-    @PreAuthorize("authentication.principal.isEnabled()")
-    @Operation(summary = "Get customer options", description = "Ottiene le opzioni configurate per il customer corrente", responses = {
-        @ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Map.class))),
-        @ApiResponse(responseCode = "401", description = "Non autorizzato"),
-        @ApiResponse(responseCode = "403", description = "Accesso negato")
-    })
-    @GetMapping("/options")
-    public Map<String, Object> getCustomerOptions() {
-        Customer currentUser = getCurrentCustomer();
-        if (currentUser == null) {
-        throw new IllegalStateException("Current customer not found");
-        }
-        return customerService.getCustomerOptions(currentUser.getId());
-    } */
+    // TODO: Notification preferences settings
+    // TODO: System preferences settings, e.g., how to receive notifications, but this is more restaurant-related
+
+    /*
+     * TODO: Implement this
+     * 
+     * @Operation(summary = "Get customer options", description =
+     * "Retrieves the configured options for the current customer", responses = {
+     * 
+     * @ApiResponse(responseCode = "200", description = "Operation successful",
+     * content = @Content(mediaType = "application/json", schema
+     * = @Schema(implementation = Map.class))),
+     * 
+     * @ApiResponse(responseCode = "401", description = "Unauthorized"),
+     * 
+     * @ApiResponse(responseCode = "403", description = "Access denied")
+     * })
+     * 
+     * @GetMapping("/options")
+     * public Map<String, Object> getCustomerOptions() {
+     * Customer currentUser = getCurrentCustomer();
+     * if (currentUser == null) {
+     * throw new IllegalStateException("Current customer not found");
+     * }
+     * return customerService.getCustomerOptions(currentUser.getId());
+     * }
+     */
 
     private Customer getCurrentCustomer() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -92,30 +99,30 @@ public class CustomerController {
         return null;
     }
 
-    //TODO: Questo metodo dovrebbe essere disponibile anche dalle altre tipologie di utente
-    //TODO: Implementare customerStats visualizza caratteristiche no show ecc
-    //TODO: Implementare restaurant Stats
-     
-    @PreAuthorize("authentication.principal.isEnabled()")
-    @Operation(summary = "Get customer by id", description = "Recupera un customer specifico tramite il suo ID")
-    @ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", schema = @Schema(implementation = CustomerDTO.class)))
-    @ApiResponse(responseCode = "404", description = "Utente non trovato")
+    // TODO: This method should also be available for other user types
+    // TODO: Implement customerStats to view characteristics like no-show, etc.
+    // TODO: Implement restaurantStats
+
+    @Operation(summary = "Get customer by ID", description = "Retrieves a specific customer by their ID")
+    @ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = CustomerDTO.class)))
+    @ApiResponse(responseCode = "401", description = "Unauthorized")
+    @ApiResponse(responseCode = "404", description = "User not found")
     @GetMapping("/get")
     public CustomerDTO getCustomer() {
         return new CustomerDTO(getCurrentCustomer());
     }
 
-    @PreAuthorize("authentication.principal.isEnabled()")
     // ------------------- Password Management ----------------------------- //
-    @Operation(summary = "Reset customer password by email", description = "Invia un'email per il reset della password all'utente specificato tramite email")
-    @ApiResponse(responseCode = "200", description = "Email per il reset della password inviata con successo", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
-    @ApiResponse(responseCode = "400", description = "Richiesta non valida")
+    @Operation(summary = "Reset customer password by email", description = "Sends an email to reset the password for the specified user by email")
+    @ApiResponse(responseCode = "200", description = "Password reset email sent successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
+    @ApiResponse(responseCode = "400", description = "Invalid request")
+    @ApiResponse(responseCode = "401", description = "Unauthorized")
     @PostMapping(value = "/password/reset")
     public GenericResponse resetPassword(final HttpServletRequest request,
-            @Parameter(description = "Email dell'utente per cui resettare la password") @RequestParam("email") final String customerEmail) {
+            @Parameter(description = "Email of the user to reset the password for") @RequestParam("email") final String customerEmail) {
         final Customer customer = customerService.findCustomerByEmail(customerEmail);
         if (customer != null) {
-            //TODO: scrivere metodo sendPasswordResetTokenForCustomer
+            // TODO: write method sendPasswordResetTokenForCustomer
             final String token = UUID.randomUUID().toString();
             customerService.createPasswordResetTokenForCustomer(customer, token);
             // mailSender.send(constructResetTokenEmail(getAppUrl(request),
@@ -124,14 +131,14 @@ public class CustomerController {
         return new GenericResponse(messages.getMessage("message.resetPasswordEmail", null, request.getLocale()));
     }
 
-    @PreAuthorize("authentication.principal.isEnabled()")
-    @Operation(summary = "Generate new token for password change", description = "Cambia la password dell'utente dopo aver verificato la vecchia password")
-    @ApiResponse(responseCode = "200", description = "Password cambiata con successo", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
-    @ApiResponse(responseCode = "400", description = "Password vecchia non valida o dati non validi")
+    @Operation(summary = "Generate new token for password change", description = "Changes the user's password after verifying the old password")
+    @ApiResponse(responseCode = "200", description = "Password changed successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
+    @ApiResponse(responseCode = "400", description = "Invalid old password or invalid data")
+    @ApiResponse(responseCode = "401", description = "Unauthorized")
     @PostMapping(value = "/password/new_token")
     public GenericResponse changeUserPassword(
-            @Parameter(description = "Locale per i messaggi di risposta") final Locale locale,
-            @Parameter(description = "DTO con la vecchia e la nuova password", required = true) @Valid UpdatePasswordDTO passwordDto) {
+            @Parameter(description = "Locale for response messages") final Locale locale,
+            @Parameter(description = "DTO containing the old and new password", required = true) @Valid UpdatePasswordDTO passwordDto) {
         if (!customerService.checkIfValidOldPassword(getCustomerId(), passwordDto.getOldPassword())) {
             throw new InvalidOldPasswordException();
         }
@@ -139,73 +146,85 @@ public class CustomerController {
         return new GenericResponse(messages.getMessage("message.updatePasswordSuc", null, locale));
     }
 
-    @PreAuthorize("authentication.principal.isEnabled()")
-    @Operation(summary = "Confirm password change with token", description = "Conferma il cambio della password utilizzando un token")
-    @ApiResponse(responseCode = "200", description = "Password cambiata con successo o token non valido", content = @Content(mediaType = "text/plain", schema = @Schema(type = "string")))
+    @Operation(summary = "Confirm password change with token", description = "Confirms the password change using a token")
+    @ApiResponse(responseCode = "200", description = "Password changed successfully or invalid token", content = @Content(mediaType = "text/plain", schema = @Schema(type = "string")))
+    @ApiResponse(responseCode = "401", description = "Unauthorized")
     @PutMapping(value = "/password/confirm")
     public String confirmPasswordChange(
-            @Parameter(description = "Token di reset della password") @RequestParam final String token) {
+            @Parameter(description = "Password reset token") @RequestParam final String token) {
         final String result = securityCustomerService.validatePasswordResetToken(getCustomerId(), token);
         if (result != null) {
             return "invalidToken";
         }
         return "success";
     }
-    //TODO: Bisogna considerare che quando il cliente viene marchiato come eliminato e viene rimesso deve essere possibile confermare il token o rigenerare quello se usa la stessa mail
-    //Studiare bene cosa fare
-    @PreAuthorize("authentication.principal.isEnabled()")
-    @Operation(summary = "Delete customer", description = "Cancella un customer specifico tramite il suo ID")
-    @ApiResponse(responseCode = "200", description = "Customer cancellato con successo", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
-    @ApiResponse(responseCode = "404", description = "Customer non trovato")
+    // TODO: Consider that when the customer is marked as deleted and then restored, it should be possible to confirm the token or regenerate it if the same email is used
+    // Study carefully what to do
+
+    @Operation(summary = "Delete customer", description = "Deletes a specific customer by their ID")
+    @ApiResponse(responseCode = "200", description = "Customer deleted successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
+    @ApiResponse(responseCode = "401", description = "Unauthorized")
+    @ApiResponse(responseCode = "404", description = "Customer not found")
     @DeleteMapping("/delete")
     public GenericResponse deleteCustomer() {
         customerService.markCustomerHasDeleted(getCustomerId());
         return new GenericResponse("Customer deleted successfully");
     }
 
-    @PreAuthorize("authentication.principal.isEnabled()")
-    @Operation(summary = "Update customer first name", description = "Modifica il nome del customer specifico tramite il suo ID")
-    @ApiResponse(responseCode = "200", description = "Nome aggiornato con successo", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
-    @ApiResponse(responseCode = "404", description = "Utente non trovato")
+    @Operation(summary = "Update customer first name", description = "Updates the first name of a specific customer by their ID")
+    @ApiResponse(responseCode = "200", description = "First name updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
+    @ApiResponse(responseCode = "401", description = "Unauthorized")
+    @ApiResponse(responseCode = "404", description = "User not found")
     @PutMapping("/update/firstName")
     public GenericResponse updateFirstName(@RequestParam String firstName) {
         customerService.updateFirstName(getCustomerId(), firstName);
         return new GenericResponse("First name updated successfully");
     }
 
-    @PreAuthorize("authentication.principal.isEnabled()")
-    @Operation(summary = "Update customer last name", description = "Modifica il cognome del customer specifico tramite il suo ID")
-    @ApiResponse(responseCode = "200", description = "Cognome aggiornato con successo", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
-    @ApiResponse(responseCode = "404", description = "Utente non trovato")
+    @Operation(summary = "Update customer last name", description = "Updates the last name of a specific customer by their ID")
+    @ApiResponse(responseCode = "200", description = "Last name updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
+    @ApiResponse(responseCode = "401", description = "Unauthorized")
+    @ApiResponse(responseCode = "404", description = "User not found")
     @PutMapping("/update/lastName")
     public GenericResponse updateLastName(@RequestParam String lastName) {
         customerService.updateLastName(getCustomerId(), lastName);
         return new GenericResponse("Last name updated successfully");
     }
 
-    //TODO: Devo rigenerare il token di conferma email
-    //TODO: Devo richiedere le credenziali di accesso per essere sicuro
-    @PreAuthorize("authentication.principal.isEnabled()")
-    @Operation(summary = "Update customer email", description = "Modifica l'email del customer specifico tramite il suo ID")
-    @ApiResponse(responseCode = "200", description = "Email aggiornata con successo", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
-    @ApiResponse(responseCode = "404", description = "Utente non trovato")
+    // TODO: Regenerate the email confirmation token
+    // TODO: Request access credentials to ensure security
+
+    @Operation(summary = "Update customer email", description = "Updates the email of a specific customer by their ID")
+    @ApiResponse(responseCode = "200", description = "Email updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
+    @ApiResponse(responseCode = "401", description = "Unauthorized")
+    @ApiResponse(responseCode = "404", description = "User not found")
     @PutMapping("/update/email")
     public GenericResponse updateEmail(@RequestParam String email) {
         customerService.updateEmail(getCustomerId(), email);
         return new GenericResponse("Email updated successfully");
     }
 
-    //TODO: implementare il metodo nel service per segnalare un abuso
-    // L'abuso deve essere segnalato all'admin del sistema e deve contenere anche un messaggio
-    /* 
-    @PreAuthorize("authentication.principal.isEnabled()")
-    @Operation(summary = "Report restaurant abuse", description = "Segnala un abuso da parte di un ristorante")
-    @ApiResponse(responseCode = "200", description = "Abuso segnalato con successo", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
-    @ApiResponse(responseCode = "404", description = "Utente o ristorante non trovato")
-    @PostMapping("/report/{restaurantId}")
-    public GenericResponse reportRestaurantAbuse(@PathVariable Long restaurantId) {
-        customerService.reportRestaurantAbuse(restaurantId);
-        return new GenericResponse("Abuse reported successfully");
-    }*/
+    // TODO: Implement the method in the service to report abuse
+    // The abuse should be reported to the system admin and should also contain a message
+    /*
+     * 
+     * @Operation(summary = "Report restaurant abuse", description =
+     * "Reports abuse by a restaurant")
+     * 
+     * @ApiResponse(responseCode = "200", description =
+     * "Abuse reported successfully", content = @Content(mediaType =
+     * "application/json", schema = @Schema(implementation =
+     * GenericResponse.class)))
+     * 
+     * @ApiResponse(responseCode = "404", description =
+     * "User or restaurant not found")
+     * 
+     * @PostMapping("/report/{restaurantId}")
+     * public GenericResponse reportRestaurantAbuse(@PathVariable Long restaurantId)
+     * {
+     * customerService.reportRestaurantAbuse(restaurantId);
+     * return new GenericResponse("Abuse reported successfully");
+     * }
+     */
 
 }

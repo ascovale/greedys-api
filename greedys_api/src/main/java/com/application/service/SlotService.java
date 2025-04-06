@@ -1,6 +1,7 @@
 package com.application.service;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -84,6 +85,16 @@ public class SlotService {
     public boolean cancelSlot(Long id, Long slotId) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'cancelSlot'");
+    }
+    public List<SlotDTO> findAllSlots() {
+        return slotDAO.findAll().stream()
+                .map(SlotDTO::new)
+                .collect(Collectors.toList());
+    }
+    public List<SlotDTO> findSlotsByRestaurantId(Long restaurantId) {
+        return slotDAO.findSlotsByRestaurantId(restaurantId).stream()
+                .map(SlotDTO::new)
+                .collect(Collectors.toList());
     }
 
 }

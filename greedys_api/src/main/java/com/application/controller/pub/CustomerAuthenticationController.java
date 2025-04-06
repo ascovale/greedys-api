@@ -85,9 +85,9 @@ public class CustomerAuthenticationController {
 
     @Autowired
     public CustomerAuthenticationController(CustomerService customerService, MessageSource messages,
-        ApplicationEventPublisher eventPublisher, Environment env, EmailService mailService,
-        @Qualifier("customerAuthenticationManager")AuthenticationManager authenticationManager, 
-        JwtUtil jwtUtil) {
+            ApplicationEventPublisher eventPublisher, Environment env, EmailService mailService,
+            @Qualifier("customerAuthenticationManager") AuthenticationManager authenticationManager,
+            JwtUtil jwtUtil) {
         this.customerService = customerService;
         this.messages = messages;
         this.eventPublisher = eventPublisher;
@@ -97,6 +97,7 @@ public class CustomerAuthenticationController {
         this.jwtUtil = jwtUtil;
         this.customerService = customerService;
     }
+
     public CustomerAuthenticationController() {
         super();
     }
@@ -119,7 +120,8 @@ public class CustomerAuthenticationController {
         try {
             Customer customer = customerService.registerNewCustomerAccount(accountDto);
             eventPublisher
-                    .publishEvent(new CustomerOnRegistrationCompleteEvent(customer, Locale.ITALIAN, getAppUrl(request)));
+                    .publishEvent(
+                            new CustomerOnRegistrationCompleteEvent(customer, Locale.ITALIAN, getAppUrl(request)));
             return ResponseEntity.ok("Customer registered successfully");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -242,17 +244,19 @@ public class CustomerAuthenticationController {
     })
     @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Authentication request", required = true, content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthRequestDTO.class)))
     @PostMapping(value = "/login", produces = "application/json")
-    public ResponseEntity<AuthResponseDTO> createAuthenticationToken(@RequestBody AuthRequestDTO authenticationRequest)
-            throws Exception {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(),
-                        authenticationRequest.getPassword()));
+    public ResponseEntity<?> createAuthenticationToken(
+            @RequestBody AuthRequestDTO authenticationRequest) {
+        
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(),
+                            authenticationRequest.getPassword()));
 
-        final Customer customerDetails = customerService.findCustomerByEmail(authenticationRequest.getUsername());
-        final String jwt = jwtUtil.generateToken(customerDetails);
-        final AuthResponseDTO responseDTO = new AuthResponseDTO(jwt, new CustomerDTO(customerDetails));
+            final Customer customerDetails = customerService.findCustomerByEmail(authenticationRequest.getUsername());
+            final String jwt = jwtUtil.generateToken(customerDetails);
+            final AuthResponseDTO responseDTO = new AuthResponseDTO(jwt, new CustomerDTO(customerDetails));
 
-        return ResponseEntity.ok(responseDTO);
+            return ResponseEntity.ok(responseDTO);
+      
     }
 
     @Operation(summary = "Authenticate with Google", description = "Authenticates a customer using a Google token and returns a JWT token.")
@@ -326,6 +330,5 @@ public class CustomerAuthenticationController {
         // Implement a method to generate a random password
         return UUID.randomUUID().toString();
     }
-
 
 }

@@ -4,8 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -161,17 +159,7 @@ public class AdminCustomerController {
         return new GenericResponse("Permission added successfully");
     }
 
-    @Operation(summary = "Get user ID", description = "Ottiene l'ID dell'utente corrente", responses = {
-            @ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Long.class))),
-            @ApiResponse(responseCode = "401", description = "Non autorizzato"),
-            @ApiResponse(responseCode = "403", description = "Accesso negato"),
-            @ApiResponse(responseCode = "404", description = "Utente non trovato")
-    })
-    @GetMapping("/id")
-    public Long getUserId() {
-        return getCurrentUser().getId();
-    }
-
+/* 
     private Customer getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.getPrincipal() instanceof Customer) {
@@ -179,7 +167,7 @@ public class AdminCustomerController {
         }
         return null;
     }
-    /* 
+     
     @Operation(summary = "Get user by id", description = "Recupera un utente specifico tramite il suo ID")
     @ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserDTO.class)))
     @ApiResponse(responseCode = "404", description = "Utente non trovato")

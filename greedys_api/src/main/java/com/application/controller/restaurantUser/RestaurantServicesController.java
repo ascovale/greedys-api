@@ -70,7 +70,7 @@ public class RestaurantServicesController {
         return new GenericResponse("success");
     }
 
-    @PreAuthorize("authentication.principal.isEnabled() & hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_READ')")
+    @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_READ')")
     @Operation(summary = "Get service by ID", description = "Retrieve a service by its ID.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Service retrieved successfully"),
@@ -83,7 +83,7 @@ public class RestaurantServicesController {
         return ResponseEntity.ok(service);
     }
 
-    @PreAuthorize("authentication.principal.isEnabled() & hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_READ')")
+    @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_READ')")
     @Operation(summary = "Get all slots of a service", description = "Retrieve all slots associated with a specific service by its ID.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Slots retrieved successfully"),
@@ -95,7 +95,7 @@ public class RestaurantServicesController {
         return slotService.findByService_Id(serviceId);
     }
 
-    @PreAuthorize("authentication.principal.isEnabled() & hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_READ')")
+    @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_READ')")
     @GetMapping("/types")
     @Operation(summary = "Get all service types", description = "Retrieve all service types.")
     @ApiResponses(value = {

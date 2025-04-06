@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.application.service.ReservationService;
 import com.application.service.RestaurantService;
-import com.application.service.RestaurantUserService;
 import com.application.service.RoomService;
 import com.application.service.TableService;
 import com.application.web.dto.RestaurantCategoryDTO;
@@ -58,24 +57,22 @@ public class AdminRestaurantController {
 
 	private final RestaurantService restaurantService;
 	private final ReservationService reservationService;
-	private final RestaurantUserService restaurantUserService;
 	private final RoomService roomService;
 	private final TableService tableService;
 
 	public AdminRestaurantController(RestaurantService restaurantService, ReservationService reservationService,
-			RestaurantUserService restaurantUserService, RoomService roomService,
+			RoomService roomService,
 			TableService tableService) {
 		this.restaurantService = restaurantService;
 		this.reservationService = reservationService;
-		this.restaurantUserService = restaurantUserService;
 		this.roomService = roomService;
 		this.tableService = tableService;
 	}
 
-	@Operation(summary = "Get all reservations of a restaurant", description = "Ottieni tutte le prenotazioni di un ristorante")
+	@Operation(summary = "Get all reservations of a restaurant", description = "Retrieve all reservations of a restaurant")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ReservationDTO.class)))),
-			@ApiResponse(responseCode = "404", description = "Ristorante non trovato")
+			@ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ReservationDTO.class)))),
+			@ApiResponse(responseCode = "404", description = "Restaurant not found")
 	})
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_RESTAURANT_READ')")
 	@GetMapping(value = "{restaurantId}/reservation")
@@ -87,10 +84,10 @@ public class AdminRestaurantController {
 		return reservations;
 	}
 
-	@Operation(summary = "Get all accepted reservations of a restaurant", description = "Ottieni tutte le prenotazioni accettate di un ristorante")
+	@Operation(summary = "Get all accepted reservations of a restaurant", description = "Retrieve all accepted reservations of a restaurant")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ReservationDTO.class)))),
-			@ApiResponse(responseCode = "404", description = "Ristorante non trovato")
+			@ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ReservationDTO.class)))),
+			@ApiResponse(responseCode = "404", description = "Restaurant not found")
 	})
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_RESTAURANT_READ')")
 	@GetMapping(value = "{restaurantId}/reservation/accepted")
@@ -102,10 +99,10 @@ public class AdminRestaurantController {
 		return reservations;
 	}
 
-	@Operation(summary = "Get all reservations of a restaurant with pagination", description = "Ottieni tutte le prenotazioni di un ristorante con paginazione")
+	@Operation(summary = "Get all reservations of a restaurant with pagination", description = "Retrieve all reservations of a restaurant with pagination")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ReservationDTO.class)))),
-			@ApiResponse(responseCode = "404", description = "Ristorante non trovato")
+			@ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ReservationDTO.class)))),
+			@ApiResponse(responseCode = "404", description = "Restaurant not found")
 	})
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_RESTAURANT_READ')")
 	@GetMapping(value = "{restaurantId}/reservation/pageable")
@@ -121,10 +118,10 @@ public class AdminRestaurantController {
 		return new ResponseEntity<>(reservations, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Get all pending reservations of a restaurant", description = "Ottieni tutte le prenotazioni in attesa di un ristorante")
+	@Operation(summary = "Get all pending reservations of a restaurant", description = "Retrieve all pending reservations of a restaurant")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ReservationDTO.class)))),
-			@ApiResponse(responseCode = "404", description = "Ristorante non trovato")
+			@ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ReservationDTO.class)))),
+			@ApiResponse(responseCode = "404", description = "Restaurant not found")
 	})
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_RESTAURANT_READ')")
 	@GetMapping(value = "{restaurantId}/reservation/pending")
@@ -146,10 +143,10 @@ public class AdminRestaurantController {
 		return reservations;
 	}
 
-	@Operation(summary = "Get all pending reservations of a restaurant with pagination", description = "Ottieni tutte le prenotazioni in attesa di un ristorante con paginazione")
+	@Operation(summary = "Get all pending reservations of a restaurant with pagination", description = "Retrieve all pending reservations of a restaurant with pagination")
 	@ApiResponses(value = {
-		@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ReservationDTO.class)))),
-		@ApiResponse(responseCode = "404", description = "Ristorante non trovato")
+		@ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ReservationDTO.class)))),
+		@ApiResponse(responseCode = "404", description = "Restaurant not found")
 	})
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_RESTAURANT_READ')")
 	@GetMapping(value = "{restaurantId}/reservation/pending/pageable")
@@ -176,10 +173,10 @@ public class AdminRestaurantController {
 	}
 
 /* 
-	@Operation(summary = "Accept a user", description = "Accetta un utente per un ristorante specifico")
+	@Operation(summary = "Accept a user", description = "Accept a user for a specific restaurant")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class))),
-			@ApiResponse(responseCode = "404", description = "Ristorante o utente non trovato")
+			@ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class))),
+			@ApiResponse(responseCode = "404", description = "Restaurant or user not found")
 	})
 	@PostMapping("{restaurantUserId}/accept")
 	public GenericResponse acceptUser(@PathVariable Long restaurantUserId) {
@@ -188,11 +185,10 @@ public class AdminRestaurantController {
 	}
 */
 	@GetMapping(value = "/{restaurantId}/services")
-	@Operation(summary = "Get services of a restaurant", description = "Ottieni i servizi di un ristorante")
+	@Operation(summary = "Get services of a restaurant", description = "Retrieve the services of a restaurant")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ServiceDTO.class)))),
-			@ApiResponse(responseCode = "404", description = "Ristorante non trovato"),
-			@ApiResponse(responseCode = "400", description = "Richiesta non valida")
+			@ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ServiceDTO.class)))),
+			@ApiResponse(responseCode = "404", description = "Restaurant not found"),
 	})
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_READ')")
 	public ResponseEntity<Collection<ServiceDTO>> getServices(@PathVariable Long restaurantId) {
@@ -203,11 +199,14 @@ public class AdminRestaurantController {
 	/* -- === *** ROOMS AND TABLES *** === --- */
 
 	@GetMapping(value = "/{restaurantId}/rooms")
-	@Operation(summary = "Get rooms of a restaurant", description = "Ottieni le sale di un ristorante")
+	@Operation(summary = "Get rooms of a restaurant", description = "Retrieve the rooms of a restaurant")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = RoomDTO.class)))),
-			@ApiResponse(responseCode = "404", description = "Ristorante non trovato"),
-			@ApiResponse(responseCode = "400", description = "Richiesta non valida")
+			@ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = RoomDTO.class)))),
+			@ApiResponse(responseCode = "404", description = "Restaurant not found"),
+			@ApiResponse(responseCode = "400", description = "Invalid request"),
+			@ApiResponse(responseCode = "401", description = "Unauthorized"),
+			@ApiResponse(responseCode = "405", description = "Method not allowed"),
+			@ApiResponse(responseCode = "500", description = "Internal server error")
 	})
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_READ')")
 	public ResponseEntity<Collection<RoomDTO>> getRooms(@PathVariable Long restaurantId) {
@@ -216,11 +215,14 @@ public class AdminRestaurantController {
 	}
 
 	@GetMapping(value = "/room/{roomId}/tables")
-	@Operation(summary = "Get tables of a room", description = "Ottieni i tavoli di una sala")
+	@Operation(summary = "Get tables of a room", description = "Retrieve the tables of a room")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = TableDTO.class)))),
-			@ApiResponse(responseCode = "404", description = "Ristorante o sala non trovato"),
-			@ApiResponse(responseCode = "400", description = "Richiesta non valida")
+			@ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = TableDTO.class)))),
+			@ApiResponse(responseCode = "404", description = "Restaurant or room not found"),
+			@ApiResponse(responseCode = "400", description = "Invalid request"),
+			@ApiResponse(responseCode = "401", description = "Unauthorized"),
+			@ApiResponse(responseCode = "405", description = "Method not allowed"),
+			@ApiResponse(responseCode = "500", description = "Internal server error")
 	})
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_READ')")
 	public ResponseEntity<Collection<TableDTO>> getTables(@PathVariable Long roomId) {
@@ -229,11 +231,14 @@ public class AdminRestaurantController {
 	}
 
 	@PostMapping(value = "/{restaurantId}/room")
-	@Operation(summary = "Add a room to a restaurant", description = "Aggiungi una sala a un ristorante")
+	@Operation(summary = "Add a room to a restaurant", description = "Add a new room to a restaurant")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class))),
-			@ApiResponse(responseCode = "404", description = "Ristorante non trovato"),
-			@ApiResponse(responseCode = "400", description = "Richiesta non valida")
+			@ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class))),
+			@ApiResponse(responseCode = "404", description = "Restaurant not found"),
+			@ApiResponse(responseCode = "400", description = "Invalid request"),
+			@ApiResponse(responseCode = "401", description = "Unauthorized"),
+			@ApiResponse(responseCode = "405", description = "Method not allowed"),
+			@ApiResponse(responseCode = "500", description = "Internal server error")
 	})
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
 	public GenericResponse addRoom(@PathVariable Long restaurantId, @RequestBody NewRoomDTO roomDto) {
@@ -242,11 +247,14 @@ public class AdminRestaurantController {
 	}
 
 	@PostMapping(value = "/{restaurantId}/table")
-	@Operation(summary = "Add a table to a room", description = "Aggiungi un tavolo a una sala")
+	@Operation(summary = "Add a table to a room", description = "Add a new table to a room")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class))),
-			@ApiResponse(responseCode = "404", description = "Ristorante o sala non trovato"),
-			@ApiResponse(responseCode = "400", description = "Richiesta non valida")
+			@ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class))),
+			@ApiResponse(responseCode = "404", description = "Restaurant or room not found"),
+			@ApiResponse(responseCode = "400", description = "Invalid request"),
+			@ApiResponse(responseCode = "401", description = "Unauthorized"),
+			@ApiResponse(responseCode = "405", description = "Method not allowed"),
+			@ApiResponse(responseCode = "500", description = "Internal server error")
 	})
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
 	public GenericResponse addTable(@PathVariable Long restaurantId, @RequestParam NewTableDTO tableDto) {
@@ -254,11 +262,14 @@ public class AdminRestaurantController {
 		return new GenericResponse("success");
 	}
 
-	@Operation(summary = "Set no show time limit", description = "Imposta il limite di tempo per il no show")
+	@Operation(summary = "Set no show time limit", description = "Set the no-show time limit for reservations")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class))),
-			@ApiResponse(responseCode = "404", description = "Ristorante non trovato"),
-			@ApiResponse(responseCode = "400", description = "Richiesta non valida")
+			@ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class))),
+			@ApiResponse(responseCode = "404", description = "Restaurant not found"),
+			@ApiResponse(responseCode = "400", description = "Invalid request"),
+			@ApiResponse(responseCode = "401", description = "Unauthorized"),
+			@ApiResponse(responseCode = "405", description = "Method not allowed"),
+			@ApiResponse(responseCode = "500", description = "Internal server error")
 	})
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
 	@PostMapping(value = "{restaurantId}/no_show_time_limit")
@@ -268,11 +279,14 @@ public class AdminRestaurantController {
 	}
 
 	@GetMapping(value = "{restaurantId}/categories")
-	@Operation(summary = "Get types of a restaurant", description = "Ottieni i tipi di un ristorante")
+	@Operation(summary = "Get types of a restaurant", description = "Retrieve the types of a restaurant")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = String.class)))),
-			@ApiResponse(responseCode = "404", description = "Ristorante non trovato"),
-			@ApiResponse(responseCode = "400", description = "Richiesta non valida")
+			@ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = String.class)))),
+			@ApiResponse(responseCode = "404", description = "Restaurant not found"),
+			@ApiResponse(responseCode = "400", description = "Invalid request"),
+			@ApiResponse(responseCode = "401", description = "Unauthorized"),
+			@ApiResponse(responseCode = "405", description = "Method not allowed"),
+			@ApiResponse(responseCode = "500", description = "Internal server error")
 	})
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
 	public ResponseEntity<Collection<String>> getRestaurantTypesNames(@PathVariable Long restaurantId) {
@@ -281,9 +295,14 @@ public class AdminRestaurantController {
 	}
 
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
-	@Operation(summary = "Create category", description = "Creates a new category for the specified restaurant by its ID")
-	@ApiResponse(responseCode = "200", description = "Category created successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
-	@ApiResponse(responseCode = "400", description = "Invalid request")
+	@Operation(summary = "Create category", description = "Create a new category for the specified restaurant")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Category created successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class))),
+		@ApiResponse(responseCode = "400", description = "Invalid request"),
+		@ApiResponse(responseCode = "401", description = "Unauthorized"),
+		@ApiResponse(responseCode = "405", description = "Method not allowed"),
+		@ApiResponse(responseCode = "500", description = "Internal server error")
+	})
 	@PostMapping("/category/new")
 	public GenericResponse createCategory(@RequestBody RestaurantCategoryDTO restaurantCategoryDto) {
 		restaurantService.createRestaurantCategory(restaurantCategoryDto);
@@ -291,9 +310,14 @@ public class AdminRestaurantController {
 	}
 
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
-	@Operation(summary = "Delete category", description = "Deletes a category by its ID")
-	@ApiResponse(responseCode = "200", description = "Category deleted successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
-	@ApiResponse(responseCode = "400", description = "Invalid request")
+	@Operation(summary = "Delete category", description = "Delete a category by its ID")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Category deleted successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class))),
+		@ApiResponse(responseCode = "400", description = "Invalid request"),
+		@ApiResponse(responseCode = "401", description = "Unauthorized"),
+		@ApiResponse(responseCode = "405", description = "Method not allowed"),
+		@ApiResponse(responseCode = "500", description = "Internal server error")
+	})
 	@DeleteMapping("/category/{categoryId}/delete")
 	public GenericResponse deleteCategory(@PathVariable Long categoryId) {
 		restaurantService.deleteRestaurantCategory(categoryId);
@@ -301,9 +325,14 @@ public class AdminRestaurantController {
 	}
 
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
-	@Operation(summary = "Update category", description = "Updates an existing category by its ID")
-	@ApiResponse(responseCode = "200", description = "Category updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
-	@ApiResponse(responseCode = "400", description = "Invalid request")
+	@Operation(summary = "Update category", description = "Update an existing category by its ID")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Category updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class))),
+		@ApiResponse(responseCode = "400", description = "Invalid request"),
+		@ApiResponse(responseCode = "401", description = "Unauthorized"),
+		@ApiResponse(responseCode = "405", description = "Method not allowed"),
+		@ApiResponse(responseCode = "500", description = "Internal server error")
+	})
 	@PutMapping("/category/{categoryId}/update")
 	public GenericResponse updateCategory(@PathVariable Long categoryId,
 			@RequestBody RestaurantCategoryDTO restaurantCategoryDto) {
@@ -312,9 +341,14 @@ public class AdminRestaurantController {
 	}
 
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
-	@Operation(summary = "Enable restaurant", description = "Enables a restaurant by its primary email")
-	@ApiResponse(responseCode = "200", description = "Restaurant enabled successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
-	@ApiResponse(responseCode = "400", description = "Invalid request")
+	@Operation(summary = "Enable restaurant", description = "Enable a restaurant by its primary email")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Restaurant enabled successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class))),
+		@ApiResponse(responseCode = "400", description = "Invalid request"),
+		@ApiResponse(responseCode = "401", description = "Unauthorized"),
+		@ApiResponse(responseCode = "405", description = "Method not allowed"),
+		@ApiResponse(responseCode = "500", description = "Internal server error")
+	})
 	@PutMapping("/{restaurantId}/enable_restaurant")
 	public GenericResponse enableRestaurant(@PathVariable Long restaurantId) {
 		restaurantService.enableRestaurant(restaurantId);
@@ -322,9 +356,14 @@ public class AdminRestaurantController {
 	}
 
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
-	@Operation(summary = "Create restaurant", description = "Creates a new restaurant")
-	@ApiResponse(responseCode = "200", description = "Restaurant created successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
-	@ApiResponse(responseCode = "400", description = "Invalid request")
+	@Operation(summary = "Create restaurant", description = "Create a new restaurant")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Restaurant created successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class))),
+		@ApiResponse(responseCode = "400", description = "Invalid request"),
+		@ApiResponse(responseCode = "401", description = "Unauthorized"),
+		@ApiResponse(responseCode = "405", description = "Method not allowed"),
+		@ApiResponse(responseCode = "500", description = "Internal server error")
+	})
 	@PostMapping("/new")
 	public GenericResponse createRestaurant(@RequestBody RestaurantDTO restaurantDto) {
 		restaurantService.createRestaurant(restaurantDto);
@@ -332,9 +371,14 @@ public class AdminRestaurantController {
 	}
 
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
-	@Operation(summary = "Change restaurant email", description = "Changes the email of a restaurant by its ID")
-	@ApiResponse(responseCode = "200", description = "Restaurant email changed successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
-	@ApiResponse(responseCode = "400", description = "Invalid request")
+	@Operation(summary = "Change restaurant email", description = "Change the email of a restaurant by its ID")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Restaurant email changed successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class))),
+		@ApiResponse(responseCode = "400", description = "Invalid request"),
+		@ApiResponse(responseCode = "401", description = "Unauthorized"),
+		@ApiResponse(responseCode = "405", description = "Method not allowed"),
+		@ApiResponse(responseCode = "500", description = "Internal server error")
+	})
 	@PutMapping("/{restaurantId}/change_email")
 	public GenericResponse changeRestaurantEmail(@PathVariable Long restaurantId, @RequestBody String newEmail) {
 		restaurantService.changeRestaurantEmail(restaurantId, newEmail);
@@ -342,9 +386,14 @@ public class AdminRestaurantController {
 	}
 
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
-	@Operation(summary = "Mark restaurant as deleted", description = "Marks a restaurant as deleted similar to disable by its ID")
-	@ApiResponse(responseCode = "200", description = "Restaurant marked as deleted successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
-	@ApiResponse(responseCode = "400", description = "Invalid request")
+	@Operation(summary = "Mark restaurant as deleted", description = "Mark a restaurant as deleted or disabled by its ID")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Restaurant marked as deleted successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class))),
+		@ApiResponse(responseCode = "400", description = "Invalid request"),
+		@ApiResponse(responseCode = "401", description = "Unauthorized"),
+		@ApiResponse(responseCode = "405", description = "Method not allowed"),
+		@ApiResponse(responseCode = "500", description = "Internal server error")
+	})
 	@DeleteMapping("/{restaurantId}/delete")
 	public GenericResponse markRestaurantAsDeleted(@PathVariable Long restaurantId, @RequestParam boolean deleted) {
 		restaurantService.setRestaurantDeleted(restaurantId, deleted);

@@ -49,7 +49,7 @@ public class RestaurantReservationController {
 			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
 	})
 	@PostMapping("/new")
-	@PreAuthorize("authentication.principal.isEnabled() & hasAuthority('PRIVILEGE_RESTAURANT_USER_RESERVATION_WRITE')")
+	@PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_RESERVATION_WRITE')")
 	public ResponseEntity<?> createReservation(@RequestBody RestaurantNewReservationDTO dto) {
 		//TODO: rivedere i permessi va bene che controllo il ristorante
 		// ma devo controllare enabled e che abbia il permesso di scrivere
