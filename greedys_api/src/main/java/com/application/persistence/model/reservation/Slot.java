@@ -2,6 +2,13 @@ package com.application.persistence.model.reservation;
 
 import java.time.LocalTime;
 
+import com.application.mapper.Mapper.Weekday;
+import com.application.web.dto.get.LocalTimeSerializer;
+import com.application.web.dto.post.LocalTimeDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -13,14 +20,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-
-import com.application.mapper.Mapper.Weekday;
-import com.application.web.dto.get.LocalTimeSerializer;
-import com.application.web.dto.post.LocalTimeDeserializer;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
-import io.swagger.v3.oas.annotations.media.Schema;
 
 @Entity
 @Table(name = "slot")
@@ -37,7 +36,6 @@ public class Slot {
     @JsonSerialize(using = LocalTimeSerializer.class)
 	@Schema(type = "string", format = "time", example = "15:30")
 	LocalTime end;
-
 	@Column(name="weekday")
 	@Enumerated(EnumType.STRING)
 	Weekday weekday;

@@ -44,6 +44,7 @@ public class AdminReservationController {
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Reservation created successfully"),
 			@ApiResponse(responseCode = "400", description = "Invalid input", content = @Content),
+			@ApiResponse(responseCode = "401", description = "Unauthorized access", content = @Content),
 			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
 	})
 	@PostMapping("/new")
@@ -57,6 +58,7 @@ public class AdminReservationController {
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Reservation accepted successfully"),
 			@ApiResponse(responseCode = "400", description = "Invalid reservation ID", content = @Content),
+			@ApiResponse(responseCode = "401", description = "Unauthorized access", content = @Content),
 			@ApiResponse(responseCode = "404", description = "Reservation not found", content = @Content),
 			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
 	})
@@ -68,8 +70,15 @@ public class AdminReservationController {
 	}
 
 	@Operation(summary = "Reject a reservation", description = "Endpoint to reject a reservation by its ID")
-	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_WRITE')")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Reservation rejected successfully"),
+			@ApiResponse(responseCode = "400", description = "Invalid reservation ID", content = @Content),
+			@ApiResponse(responseCode = "401", description = "Unauthorized access", content = @Content),
+			@ApiResponse(responseCode = "404", description = "Reservation not found", content = @Content),
+			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
+	})
 	@PutMapping("/{reservationId}/reject")
+	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_WRITE')")
 	public ResponseEntity<?> rejectReservation(@PathVariable Long reservationId, @RequestParam Boolean rejected) {
 		reservationService.adminMarkReservationRejected(reservationId, rejected);
 		return ResponseEntity.ok().build();
@@ -79,6 +88,7 @@ public class AdminReservationController {
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Reservation marked as no show successfully"),
 			@ApiResponse(responseCode = "400", description = "Invalid reservation ID", content = @Content),
+			@ApiResponse(responseCode = "401", description = "Unauthorized access", content = @Content),
 			@ApiResponse(responseCode = "404", description = "Reservation not found", content = @Content),
 			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
 	})
@@ -93,6 +103,7 @@ public class AdminReservationController {
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Reservation marked as seated successfully"),
 			@ApiResponse(responseCode = "400", description = "Invalid reservation ID", content = @Content),
+			@ApiResponse(responseCode = "401", description = "Unauthorized access", content = @Content),
 			@ApiResponse(responseCode = "404", description = "Reservation not found", content = @Content),
 			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
 	})
@@ -107,6 +118,7 @@ public class AdminReservationController {
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Reservation deleted successfully"),
 			@ApiResponse(responseCode = "400", description = "Invalid reservation ID", content = @Content),
+			@ApiResponse(responseCode = "401", description = "Unauthorized access", content = @Content),
 			@ApiResponse(responseCode = "404", description = "Reservation not found", content = @Content),
 			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
 	})
@@ -121,6 +133,7 @@ public class AdminReservationController {
 	@ApiResponses(value = {
 		@ApiResponse(responseCode = "200", description = "Reservation retrieved successfully"),
 		@ApiResponse(responseCode = "400", description = "Invalid reservation ID", content = @Content),
+		@ApiResponse(responseCode = "401", description = "Unauthorized access", content = @Content),
 		@ApiResponse(responseCode = "404", description = "Reservation not found", content = @Content),
 		@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
 	})
@@ -139,6 +152,7 @@ public class AdminReservationController {
 	@ApiResponses(value = {
 		@ApiResponse(responseCode = "200", description = "Reservations retrieved successfully"),
 		@ApiResponse(responseCode = "400", description = "Invalid customer ID", content = @Content),
+		@ApiResponse(responseCode = "401", description = "Unauthorized access", content = @Content),
 		@ApiResponse(responseCode = "404", description = "Customer not found", content = @Content),
 		@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
 	})
@@ -157,6 +171,7 @@ public class AdminReservationController {
 	@ApiResponses(value = {
 		@ApiResponse(responseCode = "200", description = "Reservations retrieved successfully"),
 		@ApiResponse(responseCode = "400", description = "Invalid customer ID", content = @Content),
+		@ApiResponse(responseCode = "401", description = "Unauthorized access", content = @Content),
 		@ApiResponse(responseCode = "404", description = "Customer not found", content = @Content),
 		@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
 	})

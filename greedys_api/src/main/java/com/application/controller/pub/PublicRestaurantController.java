@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.application.persistence.model.reservation.Slot;
 import com.application.service.RestaurantService;
 import com.application.service.RoomService;
 import com.application.service.SlotService;
@@ -168,14 +167,16 @@ public class PublicRestaurantController {
 		List<String> types = restaurantService.getRestaurantTypesNames(restaurantId);
 		return new ResponseEntity<>(types, HttpStatus.OK);
 	}
-
-	@GetMapping(value = "/public/restaurant/slots")
-	@Operation(summary = "Get all slots", description = "Retrieve all available slots")
+	@GetMapping(value = "/public/restaurant/{restaurantId}/slots")
+	@Operation(summary = "Get all slots by restaurant ID", description = "Retrieve all available slots for a specific restaurant")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Operation successful")
+			@ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = SlotDTO.class)))),
+			@ApiResponse(responseCode = "404", description = "Restaurant not found"),
+			@ApiResponse(responseCode = "400", description = "Invalid request")
 	})
-	public Collection<Slot> getAllSlots() {
-		return slotService.findAll();
+	public ResponseEntity<?> getAllSlotsByRestaurantId(@PathVariable Long restaurantId) {
+		List<SlotDTO> slots = slotService.findSlotsByRestaurantId(restaurantId);
+		return new ResponseEntity<>(slots, HttpStatus.OK);
 	}
 
 	@Operation(summary = "Get slot by id", description = "Retrieve a slot by its ID")

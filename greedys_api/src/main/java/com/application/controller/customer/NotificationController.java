@@ -7,7 +7,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -71,7 +70,7 @@ public class NotificationController {
      * return ResponseEntity.ok().body("Notification list page");
      * }
      */
-    @PreAuthorize("authentication.principal.isEnabled()")
+
     @Operation(summary = "Get unread notifications", description = "Returns a pageable list of unread notifications")
     @GetMapping("/unread/{page}/{size}")
     public ResponseEntity<Page<Notification>> getUnreadNotifications(@PathVariable int page,
@@ -81,9 +80,6 @@ public class NotificationController {
         return ResponseEntity.ok().body(unreadNotifications);
     }
 
-    
-
-    @PreAuthorize("authentication.principal.isEnabled()")
     @Operation(summary = "Get all notifications", description = "Returns a pageable list of all notifications")
     @GetMapping("/all/{page}/{size}")
     public ResponseEntity<Page<Notification>> getAllNotifications(@PathVariable int page,
@@ -93,7 +89,6 @@ public class NotificationController {
         return ResponseEntity.ok().body(allNotifications);
     }
 
-    @PreAuthorize("authentication.principal.isEnabled()")
     @Operation(summary = "Set notification as read", description = "Sets the notification with the given ID as the given read boolean")
     @PutMapping("/read")
     public ResponseEntity<Void> setNotificationAsRead(@RequestParam Long notificationId, @RequestParam Boolean read) {
@@ -101,7 +96,6 @@ public class NotificationController {
         return ResponseEntity.ok().build();
     }
 
-    @PreAuthorize("authentication.principal.isEnabled()")
     @Operation(summary = "Register a user's FCM token", description = "Registers a user's FCM token")
     @PostMapping("/token")
     public ResponseEntity<Void> registerUserFcmToken(
@@ -110,7 +104,6 @@ public class NotificationController {
         return ResponseEntity.ok().build();
     }
 
-    @PreAuthorize("authentication.principal.isEnabled()")
     @Operation(summary = "Update a user's FCM token", description = "Updates a user's FCM token")
     @PutMapping("/token")
     public ResponseEntity<Void> updateUserFcmToken(
@@ -120,7 +113,6 @@ public class NotificationController {
         return ResponseEntity.ok().build();
     }
 
-    @PreAuthorize("authentication.principal.isEnabled()")
     @Operation(summary = "Check if a device's token is present", description = "Checks if a device's token is present")
     @GetMapping("/token/present")
     public ResponseEntity<String> isDeviceTokenPresent(
@@ -135,7 +127,6 @@ public class NotificationController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Token not present");
     }
 
-    @PreAuthorize("authentication.principal.isEnabled()")
     @Operation(summary = "Verify a device's token", description = "Verifies a device's token and returns the status")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "406", description = "Token expired")

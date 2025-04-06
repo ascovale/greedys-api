@@ -12,7 +12,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -60,7 +59,7 @@ public class RestaurantAuthenticationController {
 
     private Environment env;
 
-    //private EmailService mailService;
+    // private EmailService mailService;
 
     private JwtUtil jwtUtil;
 
@@ -71,13 +70,13 @@ public class RestaurantAuthenticationController {
             RestaurantUserService restaurantUserService,
             MessageSource messages,
             Environment env,
-            //EmailService mailService,
+            // EmailService mailService,
             JwtUtil jwtUtil) {
         this.restaurantService = restaurantService;
         this.restaurantUserService = restaurantUserService;
         this.messages = messages;
         this.env = env;
-        //this.mailService = mailService;
+        // this.mailService = mailService;
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
     }
@@ -95,41 +94,58 @@ public class RestaurantAuthenticationController {
         restaurantService.registerRestaurant(restaurantDto);
         return new GenericResponse("success");
     }
-/* 
-    @Operation(summary = "Apply for a restaurant")
-    @PostMapping("/user")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Registrazione ", content = {
-                    @Content(mediaType = "application/json", schema = @Schema(implementation = NewRestaurantDTO.class)) }),
-    })
-    public GenericResponse applyForRestaurant(@RequestBody NewRestaurantUserDTO userDTO) {
-
-        restaurantUserService.registerRestaurantUser(userDTO);
-
-        return new GenericResponse("success");
-    }
-
-    @RequestMapping(value = "/user/resend_token", method = RequestMethod.GET)
-    @ResponseBody
-    public GenericResponse resendRegistrationToken(final HttpServletRequest request,
-            @RequestParam("token") final String existingToken) {
-        RestaurantUser restaurantUser = restaurantUserService.getRestaurantUser(existingToken);
-        if (restaurantUser.getRestaurant() != null && restaurantUser.getRestaurant().getStatus().equals(Restaurant.Status.ENABLED) && restaurantUser.isEnabled()) {
-            final RestaurantUserVerificationToken newToken = restaurantUserService
-                .generateNewVerificationToken(existingToken);
-            mailService.sendEmail(constructResendVerificationTokenEmail(getAppUrl(request), request.getLocale(), newToken,
-                restaurantUser));
-            return new GenericResponse(messages.getMessage("message.resendToken", null, request.getLocale()));
-        } else {
-            return new GenericResponse(messages.getMessage("message.restaurantOrRestaurantUserNotEnabled", null, request.getLocale()));
-        }
-    }
-
-    private String getAppUrl(HttpServletRequest request) {
-        return request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort()
-                + request.getContextPath();
-    }
-*/
+    /*
+     * @Operation(summary = "Apply for a restaurant")
+     * 
+     * @PostMapping("/user")
+     * 
+     * @ApiResponses(value = {
+     * 
+     * @ApiResponse(responseCode = "200", description = "Registrazione ", content =
+     * {
+     * 
+     * @Content(mediaType = "application/json", schema = @Schema(implementation =
+     * NewRestaurantDTO.class)) }),
+     * })
+     * public GenericResponse applyForRestaurant(@RequestBody NewRestaurantUserDTO
+     * userDTO) {
+     * 
+     * restaurantUserService.registerRestaurantUser(userDTO);
+     * 
+     * return new GenericResponse("success");
+     * }
+     * 
+     * @RequestMapping(value = "/user/resend_token", method = RequestMethod.GET)
+     * 
+     * @ResponseBody
+     * public GenericResponse resendRegistrationToken(final HttpServletRequest
+     * request,
+     * 
+     * @RequestParam("token") final String existingToken) {
+     * RestaurantUser restaurantUser =
+     * restaurantUserService.getRestaurantUser(existingToken);
+     * if (restaurantUser.getRestaurant() != null &&
+     * restaurantUser.getRestaurant().getStatus().equals(Restaurant.Status.ENABLED)
+     * && restaurantUser.isEnabled()) {
+     * final RestaurantUserVerificationToken newToken = restaurantUserService
+     * .generateNewVerificationToken(existingToken);
+     * mailService.sendEmail(constructResendVerificationTokenEmail(getAppUrl(request
+     * ), request.getLocale(), newToken,
+     * restaurantUser));
+     * return new GenericResponse(messages.getMessage("message.resendToken", null,
+     * request.getLocale()));
+     * } else {
+     * return new GenericResponse(messages.getMessage(
+     * "message.restaurantOrRestaurantUserNotEnabled", null, request.getLocale()));
+     * }
+     * }
+     * 
+     * private String getAppUrl(HttpServletRequest request) {
+     * return request.getScheme() + "://" + request.getServerName() + ":" +
+     * request.getServerPort()
+     * + request.getContextPath();
+     * }
+     */
     /*
      * @RequestMapping(value = "/user/update/2fa", method = RequestMethod.POST)
      * 
@@ -145,14 +161,18 @@ public class RestaurantAuthenticationController {
      */
 
     // ============== NON-API ============
-/* 
-    private SimpleMailMessage constructResendVerificationTokenEmail(final String contextPath, final Locale locale,
-            final RestaurantUserVerificationToken newToken, final RestaurantUser user) {
-        final String confirmationUrl = contextPath + "/registrationConfirm.html?token=" + newToken.getToken();
-        final String message = messages.getMessage("message.resendToken", null, locale);
-        return constructEmail("Resend Registration Token", message + " \r\n" + confirmationUrl, user);
-    }
-*/
+    /*
+     * private SimpleMailMessage constructResendVerificationTokenEmail(final String
+     * contextPath, final Locale locale,
+     * final RestaurantUserVerificationToken newToken, final RestaurantUser user) {
+     * final String confirmationUrl = contextPath +
+     * "/registrationConfirm.html?token=" + newToken.getToken();
+     * final String message = messages.getMessage("message.resendToken", null,
+     * locale);
+     * return constructEmail("Resend Registration Token", message + " \r\n" +
+     * confirmationUrl, user);
+     * }
+     */
     @SuppressWarnings("unused")
 
     private SimpleMailMessage constructResetTokenEmail(final String contextPath, final Locale locale,
@@ -197,48 +217,47 @@ public class RestaurantAuthenticationController {
     @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Authentication request", required = true, content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthRequestDTO.class)))
     @PostMapping(value = "/login", produces = "application/json")
     public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthRequestDTO authenticationRequest) {
-        try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(),
-                            authenticationRequest.getPassword()));
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(),
+                        authenticationRequest.getPassword()));
 
-            final RestaurantUser userDetails = restaurantUserService
-                    .findRestaurantUserByEmail(authenticationRequest.getUsername());
-            final String jwt = jwtUtil.generateToken(userDetails);
-            final RestaurantUserAuthResponseDTO responseDTO = new RestaurantUserAuthResponseDTO(jwt,
-                    new RestaurantUserDTO(userDetails));
+        final RestaurantUser userDetails = restaurantUserService
+                .findRestaurantUserByEmail(authenticationRequest.getUsername());
+        final String jwt = jwtUtil.generateToken(userDetails);
+        final RestaurantUserAuthResponseDTO responseDTO = new RestaurantUserAuthResponseDTO(jwt,
+                new RestaurantUserDTO(userDetails));
 
-            return ResponseEntity.ok(responseDTO);
-        } catch (DisabledException e) {
-            LOGGER.error("Authentication failed: User is disabled", e);
-            return ResponseEntity.status(403).body(new GenericResponse("User is disabled"));
-        } catch (Exception e) {
-            LOGGER.error("Authentication failed", e);
-            return ResponseEntity.status(401).body(new GenericResponse("Authentication failed"));
-        }
+        return ResponseEntity.ok(responseDTO);
     }
-/* 
-    @Operation(summary = "Confirm restaurant user registration", description = "Conferma la registrazione")
-    @RequestMapping(value = "/user/confirm_restaurant_user", method = RequestMethod.GET)
-    public String confirmRestaurantUserRegistration(final HttpServletRequest request, final Model model,
-            @RequestParam final String token) throws UnsupportedEncodingException {
-        Locale locale = request.getLocale();
-        final String result = restaurantUserService.validateVerificationToken(token);
-        if (result.equals("valid")) {
-            final RestaurantUser user = restaurantUserService.getRestaurantUser(token);
-            // if (user.isUsing2FA()) {
-            // model.addAttribute("qr", userService.generateQRUrl(user));
-            // return "redirect:/qrcode.html?lang=" + locale.getLanguage();
-            // }
-            authWithoutPassword(user);
-            model.addAttribute("message", messages.getMessage("message.accountVerified", null, locale));
-            return "redirect:/console.html?lang=" + locale.getLanguage();
-        }
-
-        model.addAttribute("message", messages.getMessage("auth.message." + result, null, locale));
-        model.addAttribute("expired", "expired".equals(result));
-        model.addAttribute("token", token);
-        return "redirect:/badUser.html?lang=" + locale.getLanguage();
-    }
-*/
+    /*
+     * @Operation(summary = "Confirm restaurant user registration", description =
+     * "Conferma la registrazione")
+     * 
+     * @RequestMapping(value = "/user/confirm_restaurant_user", method =
+     * RequestMethod.GET)
+     * public String confirmRestaurantUserRegistration(final HttpServletRequest
+     * request, final Model model,
+     * 
+     * @RequestParam final String token) throws UnsupportedEncodingException {
+     * Locale locale = request.getLocale();
+     * final String result = restaurantUserService.validateVerificationToken(token);
+     * if (result.equals("valid")) {
+     * final RestaurantUser user = restaurantUserService.getRestaurantUser(token);
+     * // if (user.isUsing2FA()) {
+     * // model.addAttribute("qr", userService.generateQRUrl(user));
+     * // return "redirect:/qrcode.html?lang=" + locale.getLanguage();
+     * // }
+     * authWithoutPassword(user);
+     * model.addAttribute("message", messages.getMessage("message.accountVerified",
+     * null, locale));
+     * return "redirect:/console.html?lang=" + locale.getLanguage();
+     * }
+     * 
+     * model.addAttribute("message", messages.getMessage("auth.message." + result,
+     * null, locale));
+     * model.addAttribute("expired", "expired".equals(result));
+     * model.addAttribute("token", token);
+     * return "redirect:/badUser.html?lang=" + locale.getLanguage();
+     * }
+     */
 }

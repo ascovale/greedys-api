@@ -43,12 +43,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class ReservationController {
 	@Autowired
 	private ReservationService reservationService;
-	
-	@Operation(summary = "The customer user ask for a reservation", description = "Endpoint to ask for a reservation")
+
+	@Operation(summary = "The customer user asks for a reservation", description = "Endpoint for the customer to request a reservation")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Reservation requested successfully", 
-						 content = @Content(mediaType = "application/json", schema = @Schema(implementation = ReservationDTO.class))),
+			@ApiResponse(responseCode = "200", description = "Reservation requested successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ReservationDTO.class))),
 			@ApiResponse(responseCode = "400", description = "Invalid input", content = @Content),
+			@ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
 			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
 	})
 	@PostMapping("/ask")
@@ -58,11 +58,12 @@ public class ReservationController {
 	}
 
 	@PreAuthorize("authentication.principal.isEnabled() and @customerSecurityService.hasPermissionOnReservation(#reservationId)")
-	@Operation(summary = "The customer user deletes a reservation", description = "Endpoint to delete a reservation")
+	@Operation(summary = "The customer user deletes a reservation", description = "Endpoint for the customer to delete a reservation")
 	@ApiResponses(value = {
-		@ApiResponse(responseCode = "200", description = "Reservation deleted successfully"),
-		@ApiResponse(responseCode = "400", description = "Invalid input", content = @Content),
-		@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
+			@ApiResponse(responseCode = "200", description = "Reservation deleted successfully"),
+			@ApiResponse(responseCode = "400", description = "Invalid input", content = @Content),
+			@ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
 	})
 	@PostMapping("/{reservationId}/delete")
 	public ResponseEntity<?> deleteReservation(@PathVariable Long reservationId) {
@@ -71,24 +72,27 @@ public class ReservationController {
 	}
 
 	@PreAuthorize("authentication.principal.isEnabled() and @customerSecurityService.hasPermissionOnReservation(#reservationId)")
-	@Operation(summary = "The customer user requests a reservation modification", description = "Endpoint to request a reservation modification")
+	@Operation(summary = "The customer user requests a reservation modification", description = "Endpoint for the customer to request a reservation modification")
 	@ApiResponses(value = {
-		@ApiResponse(responseCode = "200", description = "Reservation modification requested successfully"),
-		@ApiResponse(responseCode = "400", description = "Invalid input", content = @Content),
-		@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
+			@ApiResponse(responseCode = "200", description = "Reservation modification requested successfully"),
+			@ApiResponse(responseCode = "400", description = "Invalid input", content = @Content),
+			@ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
 	})
 	@PostMapping("/{reservationId}/request_modify")
-	public ResponseEntity<?> requestModifyReservation(@PathVariable Long reservationId,@RequestBody CustomerNewReservationDTO DTO) {
-		reservationService.requestModifyReservation(reservationId,DTO);
+	public ResponseEntity<?> requestModifyReservation(@PathVariable Long reservationId,
+			@RequestBody CustomerNewReservationDTO DTO) {
+		reservationService.requestModifyReservation(reservationId, DTO);
 		return ResponseEntity.ok().build();
 	}
 
 	@PreAuthorize("authentication.principal.isEnabled() and @customerSecurityService.hasPermissionOnReservation(#reservationId)")
-	@Operation(summary = "The customer user rejects a reservation", description = "Endpoint User reject a reservation created by the restaurant or admin")
+	@Operation(summary = "The customer user rejects a reservation", description = "Endpoint for the customer to reject a reservation created by the restaurant or admin")
 	@ApiResponses(value = {
-		@ApiResponse(responseCode = "200", description = "Reservation rejected successfully"),
-		@ApiResponse(responseCode = "400", description = "Invalid input", content = @Content),
-		@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
+			@ApiResponse(responseCode = "200", description = "Reservation rejected successfully"),
+			@ApiResponse(responseCode = "400", description = "Invalid input", content = @Content),
+			@ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
 	})
 	@PutMapping("/{reservationId}/reject")
 	public ResponseEntity<?> rejectReservationCreatedByAdminOrRestaurant(@PathVariable Long reservationId) {
@@ -96,32 +100,32 @@ public class ReservationController {
 		return ResponseEntity.ok().build();
 	}
 
-	@PreAuthorize("authentication.principal.isEnabled()")
-	@Operation(summary = "Get user's reservations", description = "Recupera l'elenco delle prenotazioni dell'utente")
-    @ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ReservationDTO.class))))
-    @ApiResponse(responseCode = "404", description = "Utente non trovato")
-    @GetMapping("/reservations")
-    public Collection<ReservationDTO> getCustomerReservations() {
+	@Operation(summary = "Get user's reservations", description = "Retrieve the list of reservations for the user")
+	@ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ReservationDTO.class))))
+	@ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+	@ApiResponse(responseCode = "404", description = "User not found")
+	@GetMapping("/reservations")
+	public Collection<ReservationDTO> getCustomerReservations() {
 		System.out.println("->->->      Getting customer reservations");
-        return reservationService.findAllCustomerReservations(getUserId());
-    }
+		return reservationService.findAllCustomerReservations(getUserId());
+	}
 
 	public Long getUserId() {
-			Customer currentUser = getCurrentCustomer();
-			if (currentUser == null) {
-				throw new RuntimeException("Current user is null");
-			}
-			System.out.println(".-.-.-.-.-.-. Current user: " + currentUser.getId());
-			return currentUser.getId();
+		Customer currentUser = getCurrentCustomer();
+		if (currentUser == null) {
+			throw new RuntimeException("Current user is null");
 		}
+		System.out.println(".-.-.-.-.-.-. Current user: " + currentUser.getId());
+		return currentUser.getId();
+	}
 
-    private Customer getCurrentCustomer() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.getPrincipal() instanceof Customer) {
-            return (Customer) authentication.getPrincipal();
-        } else{
+	private Customer getCurrentCustomer() {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		if (authentication != null && authentication.getPrincipal() instanceof Customer) {
+			return (Customer) authentication.getPrincipal();
+		} else {
 			Logger.getLogger(ReservationController.class.getName()).warning("User not found in SecurityContextHolder");
 			throw new RuntimeException("User not found");
 		}
-    }
+	}
 }

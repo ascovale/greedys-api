@@ -32,7 +32,7 @@ public class RestaurantSlotController {
             @ApiResponse(responseCode = "200", description = "Slot created", content = @Content(mediaType = "application/json", schema = @Schema(implementation = NewSlotDTO.class))),
 
     })
-    @PreAuthorize("authentication.principal.isEnabled() & hasAuthority('PRIVILEGE_RESTAURANT_USER_SLOT_WRITE')")
+    @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SLOT_WRITE')")
     @PostMapping("/new")
     public ResponseEntity<String> newSlot( @RequestBody RestaurantNewSlotDTO slotDto) {
         slotService.addSlot(ControllerUtils.getCurrentRestaurantUser().getId(),slotDto);
@@ -43,7 +43,7 @@ public class RestaurantSlotController {
         @ApiResponse(responseCode = "200", description = "Slot canceled", content = @Content(mediaType = "application/json")),
         @ApiResponse(responseCode = "404", description = "Slot not found", content = @Content(mediaType = "application/json"))
     })
-    @PreAuthorize("authentication.principal.isEnabled() & hasAuthority('PRIVILEGE_RESTAURANT_USER_SLOT_WRITE')")
+    @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SLOT_WRITE')")
     @PostMapping("/cancel")
     public ResponseEntity<String> cancelSlot(@RequestBody Long slotId) {
         boolean isCanceled = slotService.cancelSlot(ControllerUtils.getCurrentRestaurantUser().getId(), slotId);

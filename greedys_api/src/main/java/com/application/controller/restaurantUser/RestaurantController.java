@@ -10,7 +10,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -44,13 +43,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "Restaurant", description = "Controller per la gestione dei ristoranti")
 @RestController
 @RequestMapping("/restaurant")
-//@PreAuthorize("@securityService.isRestaurantUserPermission(#idRestaurantUser)")
+// @PreAuthorize("@securityService.isRestaurantUserPermission(#idRestaurantUser)")
 @SecurityRequirement(name = "restaurantBearerAuth")
 public class RestaurantController {
 
-
-	//Creare un tester che fa le richieste all'api e ne verifica la correttezza dei risultati.
-
+	// Creare un tester che fa le richieste all'api e ne verifica la correttezza dei
+	// risultati.
 
 	private final RestaurantService restaurantService;
 	private final ReservationService reservationService;
@@ -66,13 +64,12 @@ public class RestaurantController {
 		this.tableService = tableService;
 	}
 
-	@PreAuthorize("authentication.principal.isEnabled()")
-	@Operation(summary = "Get all reservations of a restaurant", description = "Ottieni tutte le prenotazioni di un ristorante", tags = {"restaurant-api"}
-	)
+	@Operation(summary = "Get all reservations of a restaurant", description = "Ottieni tutte le prenotazioni di un ristorante", tags = {
+			"restaurant-api" })
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ReservationDTO.class)))),
 			@ApiResponse(responseCode = "404", description = "Ristorante non trovato")
-			
+
 	})
 	@GetMapping(value = "/reservations")
 	public Collection<ReservationDTO> getReservations(
@@ -82,8 +79,8 @@ public class RestaurantController {
 		return reservations;
 	}
 
-	@PreAuthorize("authentication.principal.isEnabled()")
-	@Operation(summary = "Get all accepted reservations of a restaurant", description = "Ottieni tutte le prenotazioni accettate di un ristorante", tags = {"restaurant-api"})
+	@Operation(summary = "Get all accepted reservations of a restaurant", description = "Ottieni tutte le prenotazioni accettate di un ristorante", tags = {
+			"restaurant-api" })
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ReservationDTO.class)))),
 			@ApiResponse(responseCode = "404", description = "Ristorante non trovato")
@@ -97,8 +94,8 @@ public class RestaurantController {
 		return reservations;
 	}
 
-	@PreAuthorize("authentication.principal.isEnabled()")
-	@Operation(summary = "Get all reservations of a restaurant with pagination", description = "Ottieni tutte le prenotazioni di un ristorante con paginazione", tags = {"restaurant-api"})
+	@Operation(summary = "Get all reservations of a restaurant with pagination", description = "Ottieni tutte le prenotazioni di un ristorante con paginazione", tags = {
+			"restaurant-api" })
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ReservationDTO.class)))),
 			@ApiResponse(responseCode = "404", description = "Ristorante non trovato")
@@ -115,8 +112,8 @@ public class RestaurantController {
 		return new ResponseEntity<>(reservations, HttpStatus.OK);
 	}
 
-	@PreAuthorize("authentication.principal.isEnabled()")
-	@Operation(summary = "Get all pending reservations of a restaurant", description = "Ottieni tutte le prenotazioni in attesa di un ristorante", tags = {"restaurant-api"})
+	@Operation(summary = "Get all pending reservations of a restaurant", description = "Ottieni tutte le prenotazioni in attesa di un ristorante", tags = {
+			"restaurant-api" })
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ReservationDTO.class)))),
 			@ApiResponse(responseCode = "404", description = "Ristorante non trovato")
@@ -134,16 +131,18 @@ public class RestaurantController {
 		} else if (end != null) {
 			throw new IllegalArgumentException("end cannot be null if start is not null");
 		} else {
-			reservations = reservationService.getPendingReservationsFromRestaurantUser(ControllerUtils.getCurrentRestaurantUser().getId());
+			reservations = reservationService
+					.getPendingReservationsFromRestaurantUser(ControllerUtils.getCurrentRestaurantUser().getId());
 		}
 		return reservations;
 	}
 
 	// questo metodo forse dovrebbe essere public tranne che questo può vedere anche
 	// quelli disabilitati
-	@PreAuthorize("authentication.principal.isEnabled()")
+
 	@GetMapping(value = "/services")
-	@Operation(summary = "Get services of a restaurant", description = "Ottieni i servizi di un ristorante", tags = {"restaurant-api"})
+	@Operation(summary = "Get services of a restaurant", description = "Ottieni i servizi di un ristorante", tags = {
+			"restaurant-api" })
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ServiceDTO.class)))),
 			@ApiResponse(responseCode = "404", description = "Ristorante non trovato"),
@@ -155,9 +154,10 @@ public class RestaurantController {
 	}
 
 	/* -- === *** ROOMS AND TABLES *** === --- */
-	@PreAuthorize("authentication.principal.isEnabled()")
+
 	@GetMapping(value = "/rooms")
-	@Operation(summary = "Get rooms of a restaurant", description = "Ottieni le sale di un ristorante", tags = {"restaurant-api"})
+	@Operation(summary = "Get rooms of a restaurant", description = "Ottieni le sale di un ristorante", tags = {
+			"restaurant-api" })
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = RoomDTO.class)))),
 			@ApiResponse(responseCode = "404", description = "Ristorante non trovato"),
@@ -168,49 +168,51 @@ public class RestaurantController {
 		return new ResponseEntity<>(rooms, HttpStatus.OK);
 	}
 
-	@PreAuthorize("authentication.principal.isEnabled()")
 	@GetMapping(value = "/room/{roomId}/tables")
-	@Operation(summary = "Get tables of a room", description = "Ottieni i tavoli di una sala", tags = {"restaurant-api"})
+	@Operation(summary = "Get tables of a room", description = "Ottieni i tavoli di una sala", tags = {
+			"restaurant-api" })
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = TableDTO.class)))),
 			@ApiResponse(responseCode = "404", description = "Ristorante o sala non trovato"),
 			@ApiResponse(responseCode = "400", description = "Richiesta non valida")
 	})
 	public ResponseEntity<Collection<TableDTO>> getTables(@PathVariable Long roomId) {
-		//TODO: restituisce tutti i tavoli non di un ristorante specifico credo non lo ho fatto io
+		// TODO: restituisce tutti i tavoli non di un ristorante specifico credo non lo
+		// ho fatto io
 		Collection<TableDTO> tables = tableService.findByRoom(roomId);
 		return new ResponseEntity<>(tables, HttpStatus.OK);
 	}
 
-	@PreAuthorize("authentication.principal.isEnabled()")
 	@PostMapping(value = "/room")
-	@Operation(summary = "Add a room to a restaurant", description = "Aggiungi una sala a un ristorante", tags = {"restaurant-api"})
+	@Operation(summary = "Add a room to a restaurant", description = "Aggiungi una sala a un ristorante", tags = {
+			"restaurant-api" })
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class))),
 			@ApiResponse(responseCode = "404", description = "Ristorante non trovato"),
 			@ApiResponse(responseCode = "400", description = "Richiesta non valida")
 	})
 	public GenericResponse addRoom(@RequestBody NewRoomDTO roomDto) {
-		//TODO: a quale ristorante associa la stanza
+		// TODO: a quale ristorante associa la stanza
 		roomService.createRoom(roomDto);
 		return new GenericResponse("success");
 	}
-	@PreAuthorize("authentication.principal.isEnabled()")
+
 	@PostMapping(value = "/table")
-	@Operation(summary = "Add a table to a room", description = "Aggiungi un tavolo a una sala", tags = {"restaurant-api"})
+	@Operation(summary = "Add a table to a room", description = "Aggiungi un tavolo a una sala", tags = {
+			"restaurant-api" })
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class))),
 			@ApiResponse(responseCode = "404", description = "Ristorante o sala non trovato"),
 			@ApiResponse(responseCode = "400", description = "Richiesta non valida")
 	})
 	public GenericResponse addTable(@RequestParam NewTableDTO tableDto) {
-		//TODO: a quale ristorante associa il tavolo
+		// TODO: a quale ristorante associa il tavolo
 		tableService.createTable(tableDto);
 		return new GenericResponse("success");
 	}
 
-	@PreAuthorize("authentication.principal.isEnabled()")
-	@Operation(summary = "Set no show time limit", description = "Imposta il limite di tempo per il no show", tags = {"restaurant-api"})
+	@Operation(summary = "Set no show time limit", description = "Imposta il limite di tempo per il no show", tags = {
+			"restaurant-api" })
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class))),
 			@ApiResponse(responseCode = "404", description = "Ristorante non trovato"),
@@ -222,9 +224,9 @@ public class RestaurantController {
 		return new GenericResponse("success");
 	}
 
-	@PreAuthorize("authentication.principal.isEnabled()")
 	@GetMapping(value = "/types")
-	@Operation(summary = "Get types of a restaurant", description = "Ottieni i tipi di un ristorante", tags = {"restaurant-api"})
+	@Operation(summary = "Get types of a restaurant", description = "Ottieni i tipi di un ristorante", tags = {
+			"restaurant-api" })
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = String.class)))),
 			@ApiResponse(responseCode = "404", description = "Ristorante non trovato"),
