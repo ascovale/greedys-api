@@ -17,11 +17,13 @@ import com.application.persistence.dao.restaurant.RestaurantDAO;
 import com.application.persistence.dao.restaurant.RestaurantPrivilegeDAO;
 import com.application.persistence.dao.restaurant.RestaurantRoleDAO;
 import com.application.persistence.dao.restaurant.RestaurantUserDAO;
+import com.application.persistence.dao.restaurant.RestaurantUserPasswordResetTokenDAO;
 import com.application.persistence.dao.restaurant.RestaurantUserVerificationTokenDAO;
 import com.application.persistence.model.restaurant.Restaurant;
 import com.application.persistence.model.restaurant.user.RestaurantPrivilege;
 import com.application.persistence.model.restaurant.user.RestaurantRole;
 import com.application.persistence.model.restaurant.user.RestaurantUser;
+import com.application.persistence.model.restaurant.user.RestaurantUserPasswordResetToken;
 import com.application.persistence.model.restaurant.user.RestaurantUserVerificationToken;
 import com.application.security.user.restaurant.RestaurantUserDetailsService;
 import com.application.web.dto.get.RestaurantUserDTO;
@@ -46,6 +48,8 @@ public class RestaurantUserService {
     private RestaurantRoleDAO rrDAO;
     private RestaurantPrivilegeDAO rpDAO;
     private PasswordEncoder passwordEncoder;
+    private final RestaurantUserPasswordResetTokenDAO passwordTokenRepository;
+
 
     public RestaurantUserService(
             RestaurantUserVerificationTokenDAO tokenDAO,
@@ -55,7 +59,8 @@ public class RestaurantUserService {
             RestaurantDAO restaurantDAO,
             RestaurantRoleDAO rrDAO,
             RestaurantPrivilegeDAO rpDAO,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder,
+            RestaurantUserPasswordResetTokenDAO passwordTokenRepository) {
         this.tokenDAO = tokenDAO;
         this.userDetailsService = userDetailsService;
         this.emailService = emailService;
@@ -64,6 +69,7 @@ public class RestaurantUserService {
         this.rrDAO = rrDAO;
         this.rpDAO = rpDAO;
         this.passwordEncoder = passwordEncoder;
+        this.passwordTokenRepository = passwordTokenRepository;
     }
 
     // TODO QUANDO CREO UN UTENTE DEVO SPECIFICARE IL RUOLO CHE HA NEL RISTORANTE
@@ -108,15 +114,15 @@ public class RestaurantUserService {
         newOwner.setStatus(RestaurantUser.Status.ENABLED);
         Hibernate.initialize(newOwner.getRestaurantRoles());
         newOwner.addRestaurantRole(new RestaurantRole("ROLE_OWNER"));
-        
+
         oldOwner.removeRole(ownerRole);
         ruDAO.save(oldOwner);
         ruDAO.save(newOwner);
 
     }
 
-    
-    public RestaurantUser registerRestaurantUser(NewRestaurantUserDTO restaurantUserDTO, Restaurant restaurant, RestaurantRole rr) {
+    public RestaurantUser registerRestaurantUser(NewRestaurantUserDTO restaurantUserDTO, Restaurant restaurant,
+            RestaurantRole rr) {
         System.out.println("Registering restaurant user with information:" + restaurantUserDTO.getRestaurantId() + " ");
         RestaurantUser ru = new RestaurantUser();
         Hibernate.initialize(ru.getRestaurantRoles());
@@ -140,7 +146,7 @@ public class RestaurantUserService {
         return ru;
     }
 
-    //Add restaurant user bisogna verificare che il ristorante esista
+    // Add restaurant user bisogna verificare che il ristorante esista
 
     public RestaurantUserDTO addRestaurantUserRole(Long idRestaurantUser, String string) {
         RestaurantUser ru = ruDAO.findById(idRestaurantUser)
@@ -187,7 +193,8 @@ public class RestaurantUserService {
     }
 
     public RestaurantUserDTO changeRestaurantUserRole(Long idRestaurantUser, Long idUser, String string) {
-        //TODO implementare una logica che capisca se il primo user ha ruolo per cambiare il ruolo del secondo
+        // TODO implementare una logica che capisca se il primo user ha ruolo per
+        // cambiare il ruolo del secondo
         RestaurantUser ru = ruDAO.findById(idRestaurantUser)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid restaurant user ID: " + idRestaurantUser));
         RestaurantRole role = rrDAO.findByName(string);
@@ -204,6 +211,26 @@ public class RestaurantUserService {
         ruDAO.save(ru);
         return new RestaurantUserDTO(ru);
     }
+
+    public boolean checkIfValidOldPassword(final Long id, final String oldPassword) {
+        return passwordEncoder.matches(oldPassword, ruDAO.findById(id).get().getPassword());
+    }
+
+    public void changeRestaurantUserPassword(final Long id, final String password) {
+        final RestaurantUser ru = ruDAO.findById(id).get();
+        ru.setPassword(passwordEncoder.encode(password));
+        ruDAO.save(ru);
+    }
+
+    public void createPasswordResetTokenForRestaurantUser(final RestaurantUser ru, final String token) {
+		final RestaurantUserPasswordResetToken myToken = new RestaurantUserPasswordResetToken(token, ru);
+		passwordTokenRepository.save(myToken);
+		try{
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
     public void generateDefaultPrivilegesAndRoles() {
         String[] privilegeNames = {
@@ -249,7 +276,7 @@ public class RestaurantUserService {
             }
             privilegeMap.put(privilegeName, privilege);
         }
-        //TODO: MANCA IL METODO AGGIUNGI PRIVILEGIO E TOGLIO PRIVILEGIO A RUOLO
+        // TODO: MANCA IL METODO AGGIUNGI PRIVILEGIO E TOGLIO PRIVILEGIO A RUOLO
 
         // Associating privileges to roles
         RestaurantRole ownerRole = rrDAO.findByName("ROLE_OWNER");
@@ -384,4 +411,47 @@ public class RestaurantUserService {
 
         // rifare jwt
     }
+
+
+    @Transactional
+    public RestaurantUserDTO addRestaurantUserToRestaurant(NewRestaurantUserDTO restaurantUserDTO, Long restaurantId) {
+        Restaurant restaurant = restaurantDAO.findById(restaurantId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid restaurant ID: " + restaurantId));
+        RestaurantUser restaurantUser = registerRestaurantUser(restaurantUserDTO, restaurant);
+        
+        // Generate and send verification token
+        String token = UUID.randomUUID().toString();
+        createVerificationTokenForRestaurantUser(restaurantUser, token);
+        //TODO: Verificare invio mail
+        //final SimpleMailMessage email = constructEmailMessage(event, restaurantUser, token);
+		//mailSender.send(email);
+        
+        return new RestaurantUserDTO(restaurantUser);
+    }
+
+    @Transactional
+    public RestaurantUserDTO addRestaurantUserToRestaurantWithRole(NewRestaurantUserDTO restaurantUserDTO, Long restaurantId, String roleName) {
+        Restaurant restaurant = restaurantDAO.findById(restaurantId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid restaurant ID: " + restaurantId));
+        RestaurantRole role = rrDAO.findByName(roleName);
+        if (role == null) {
+            throw new IllegalArgumentException("Role not found: " + roleName);
+        }
+        RestaurantUser restaurantUser = registerRestaurantUser(restaurantUserDTO, restaurant, role);
+        
+        // Generate and send verification token
+        String token = UUID.randomUUID().toString();
+        createVerificationTokenForRestaurantUser(restaurantUser, token);
+        //TODO: Verificare invio mail
+        //final SimpleMailMessage email = constructEmailMessage(event, restaurantUser, token);
+		//mailSender.send(email);
+        
+        return new RestaurantUserDTO(restaurantUser);
+    }
+
+    public void createVerificationTokenForRestaurantUser(final RestaurantUser user, final String token) {
+		final RestaurantUserVerificationToken myToken = new RestaurantUserVerificationToken(token, user);
+		tokenDAO.save(myToken);
+	}
+
 }

@@ -335,6 +335,9 @@ public class ReservationService {
         Customer currentUser = getCurrentUser();
         Reservation reservation = reservationDAO.findById(oldReservationId)
                 .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
+        if (reservation.getRejected() == true || reservation.getSeated() == true || reservation.getDeleted() == true || reservation.getNoShow() == true) {
+            throw new IllegalStateException("Cannot modify a reservation with status REJECTED, SEATED, DELETED, or NO SHOW");
+        }
         ReservationRequest reservationRequest = new ReservationRequest();
         reservationRequest.setPax(dTO.getPax());
         reservationRequest.setKids(dTO.getKids());

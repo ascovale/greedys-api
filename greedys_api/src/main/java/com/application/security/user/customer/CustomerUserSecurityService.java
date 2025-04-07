@@ -28,9 +28,9 @@ public class CustomerUserSecurityService implements ISecurityUserService {
     // API
 
     @Override
-    public String validatePasswordResetToken(long id, String token) {
+    public String validatePasswordResetToken(String token) {
         final PasswordResetToken passToken = passwordTokenRepository.findByToken(token);
-        if ((passToken == null) || (passToken.getCustomer().getId() != id)) {
+        if ((passToken == null) ) {
             return "invalidToken";
         }
         final LocalDateTime now = LocalDateTime.now();
