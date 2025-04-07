@@ -47,7 +47,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 
-//TODO: questo non va in public ma in admin un admin è creato di default
+//TODO: bisogna implementare che qualche utente può modificare le password degli admin
+// creare un permesso specifico per questo
 @RestController
 @RequestMapping("/admin/register")
 public class AdminRegistrationController {
@@ -77,18 +78,15 @@ public class AdminRegistrationController {
     }
 
     // Registration
-    @Operation(summary = "Register a new admin")
+    @Operation(summary = "Registra un nuovo admin")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Admin successfully registered",
+        @ApiResponse(responseCode = "200", description = "Customer registrato con successo",
                      content = { @Content(mediaType = "application/json",
                      schema = @Schema(implementation = NewAdminDTO.class)) }),
-        @ApiResponse(responseCode = "400", description = "Invalid request",
+        @ApiResponse(responseCode = "400", description = "Richiesta non valida",
                      content = @Content),
-        @ApiResponse(responseCode = "401", description = "Unauthorized",
-                     content = @Content),
-        @ApiResponse(responseCode = "500", description = "Internal server error",
-                     content = @Content)
-    })
+        @ApiResponse(responseCode = "500", description = "Errore interno del server",
+                     content = @Content) })
     @PostMapping("/")
     public ResponseEntity<String> registerUserAccount(@Valid @RequestBody NewAdminDTO accountDto, HttpServletRequest request) {
         try {
@@ -102,17 +100,6 @@ public class AdminRegistrationController {
     }
 
 
-    @Operation(summary = "Confirm admin registration")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Registration successfully confirmed",
-                     content = @Content),
-        @ApiResponse(responseCode = "400", description = "Invalid request",
-                     content = @Content),
-        @ApiResponse(responseCode = "401", description = "Unauthorized",
-                     content = @Content),
-        @ApiResponse(responseCode = "500", description = "Internal server error",
-                     content = @Content)
-    })
     @RequestMapping(value = "/confirm", method = RequestMethod.GET)
     public String confirmRegistration(final HttpServletRequest request, final Model model, @RequestParam final String token) throws UnsupportedEncodingException {
         Locale locale = request.getLocale();
@@ -136,17 +123,6 @@ public class AdminRegistrationController {
 
     // user activation - verification
 
-    @Operation(summary = "Resend registration token")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Token successfully resent",
-                     content = @Content),
-        @ApiResponse(responseCode = "400", description = "Invalid request",
-                     content = @Content),
-        @ApiResponse(responseCode = "401", description = "Unauthorized",
-                     content = @Content),
-        @ApiResponse(responseCode = "500", description = "Internal server error",
-                     content = @Content)
-    })
     @RequestMapping(value = "/resend_token", method = RequestMethod.GET)
     @ResponseBody
     public GenericResponse resendRegistrationToken(final HttpServletRequest request, @RequestParam("token") final String existingToken) {

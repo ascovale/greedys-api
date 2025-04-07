@@ -28,9 +28,9 @@ public class AdminUserSecurityService implements ISecurityUserService {
     // API
 
     @Override
-    public String validatePasswordResetToken(long id, String token) {
+    public String validatePasswordResetToken(String token) {
         final AdminPasswordResetToken passToken = passwordTokenRepository.findByToken(token);
-        if ((passToken == null) || (passToken.getAdmin().getId() != id)) {
+        if ((passToken == null) ) {
             return "invalidToken";
         }
         final LocalDateTime now = LocalDateTime.now();

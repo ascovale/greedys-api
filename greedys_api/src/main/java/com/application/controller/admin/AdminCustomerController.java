@@ -175,7 +175,7 @@ public class AdminCustomerController {
     public UserDTO getUser(@PathVariable Long id) {
         return customerService.findById(id);
     }
-
+    //TODO: Fare metodo per Admin per ripristinare propria password
     // ------------------- Password Management ----------------------------- //
     @Operation(summary = "Reset user password by email", description = "Invia un'email per il reset della password all'utente specificato tramite email")
     @ApiResponse(responseCode = "200", description = "Email per il reset della password inviata con successo", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))

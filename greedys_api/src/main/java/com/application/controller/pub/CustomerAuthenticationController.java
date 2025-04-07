@@ -26,6 +26,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -38,6 +39,7 @@ import com.application.persistence.model.customer.Privilege;
 import com.application.persistence.model.customer.VerificationToken;
 import com.application.registration.CustomerOnRegistrationCompleteEvent;
 import com.application.security.jwt.JwtUtil;
+import com.application.security.user.ISecurityUserService;
 import com.application.service.CustomerService;
 import com.application.service.EmailService;
 import com.application.web.dto.AuthRequestGoogleDTO;
@@ -52,6 +54,7 @@ import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -68,17 +71,12 @@ public class CustomerAuthenticationController {
     private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
     private CustomerService customerService;
-
     private MessageSource messages;
-
     private ApplicationEventPublisher eventPublisher;
-
     private Environment env;
-
     private EmailService mailService;
-
     private AuthenticationManager authenticationManager;
-
+    private final ISecurityUserService securityCustomerService;
     private JwtUtil jwtUtil;
 
     private static final Logger logger = LoggerFactory.getLogger(CustomerAuthenticationController.class);
@@ -87,7 +85,8 @@ public class CustomerAuthenticationController {
     public CustomerAuthenticationController(CustomerService customerService, MessageSource messages,
             ApplicationEventPublisher eventPublisher, Environment env, EmailService mailService,
             @Qualifier("customerAuthenticationManager") AuthenticationManager authenticationManager,
-            JwtUtil jwtUtil) {
+            JwtUtil jwtUtil,
+            @Qualifier("customerSecurityService") ISecurityUserService securityCustomerService) {
         this.customerService = customerService;
         this.messages = messages;
         this.eventPublisher = eventPublisher;
@@ -95,19 +94,11 @@ public class CustomerAuthenticationController {
         this.mailService = mailService;
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
-        this.customerService = customerService;
+        this.securityCustomerService = securityCustomerService;
     }
 
-    public CustomerAuthenticationController() {
-        super();
-    }
+    // ------------------- API Methods ----------------------------- //
 
-    private String getAppUrl(HttpServletRequest request) {
-        return request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort()
-                + request.getContextPath();
-    }
-
-    // Registration
     @Operation(summary = "Register a new customer", description = "Registers a new customer account and sends a verification email.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Customer successfully registered", content = {
@@ -165,76 +156,24 @@ public class CustomerAuthenticationController {
         return new GenericResponse(messages.getMessage("message.resendToken", null, request.getLocale()));
     }
 
-    /*
-     * @RequestMapping(value = "/customer/update/2fa", method = RequestMethod.POST)
-     * 
-     * @ResponseBody
-     * public GenericResponse modifyUser2FA(@RequestParam("use2FA") final boolean
-     * use2FA) throws UnsupportedEncodingException {
-     * final User customer = customerService.updateUser2FA(use2FA);
-     * if (use2FA) {
-     * return new GenericResponse(customerService.generateQRUrl(customer));
-     * }
-     * return null;
-     * }
-     */
-
-    private SimpleMailMessage constructResendVerificationTokenEmail(final String contextPath, final Locale locale,
-            final VerificationToken newToken, final Customer customer) {
-        final String confirmationUrl = contextPath + "/registrationConfirm.html?token=" + newToken.getToken();
-        final String message = messages.getMessage("message.resendToken", null, locale);
-        return constructEmail("Resend Registration Token", message + " \r\n" + confirmationUrl, customer);
-    }
-
-    @SuppressWarnings("unused")
-    private SimpleMailMessage constructResetTokenEmail(final String contextPath, final Locale locale,
-            final String token, final Customer customer) {
-        final String url = contextPath + "/customer/changePassword?id=" + customer.getId() + "&token=" + token;
-        final String message = messages.getMessage("message.resetPassword", null, locale);
-        return constructEmail("Reset Password", message + " \r\n" + url, customer);
-    }
-
-    private SimpleMailMessage constructEmail(String subject, String body, Customer customer) {
-        final SimpleMailMessage email = new SimpleMailMessage();
-        email.setSubject(subject);
-        email.setText(body);
-        email.setTo(customer.getEmail());
-        email.setFrom("reservation@greedys.it");
-        return email;
-    }
-
-    public void authWithHttpServletRequest(HttpServletRequest request, String username, String password) {
-        try {
-            request.login(username, password);
-        } catch (ServletException e) {
-            LOGGER.error("Error while login ", e);
+    @Operation(summary = "Send password reset email", description = "Sends an email with a password reset token to the specified customer.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Password reset email sent successfully", content = @Content),
+        @ApiResponse(responseCode = "400", description = "Invalid email address", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Customer not found", content = @Content)
+    })
+    @PostMapping("/password/forgot")
+    public ResponseEntity<String> sendPasswordResetEmail(@RequestParam("email") String email, HttpServletRequest request) {
+        Customer customer = customerService.findCustomerByEmail(email);
+        if (customer == null) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Customer not found");
         }
-    }
 
-    /*
-     * 
-     * public void authWithAuthManager(HttpServletRequest request, String username,
-     * String password) {
-     * UsernamePasswordAuthenticationToken authToken = new
-     * UsernamePasswordAuthenticationToken(username, password);
-     * authToken.setDetails(new WebAuthenticationDetails(request));
-     * Authentication authentication =
-     * authenticationManager.authenticate(authToken);
-     * SecurityContextHolder.getContext().setAuthentication(authentication);
-     * // request.getSession().setAttribute(HttpSessionSecurityContextRepository.
-     * SPRING_SECURITY_CONTEXT_KEY, SecurityContextHolder.getContext());
-     * }
-     */
+        String token = UUID.randomUUID().toString();
+        customerService.createPasswordResetTokenForCustomer(customer, token);
+        mailService.sendEmail(constructResetTokenEmail(getAppUrl(request), request.getLocale(), token, customer));
 
-    public void authWithoutPassword(Customer customer) {
-        List<Privilege> privileges = customer.getRoles().stream().map(role -> role.getPrivileges())
-                .flatMap(list -> list.stream()).distinct().collect(Collectors.toList());
-        List<GrantedAuthority> authorities = privileges.stream().map(p -> new SimpleGrantedAuthority(p.getName()))
-                .collect(Collectors.toList());
-
-        Authentication authentication = new UsernamePasswordAuthenticationToken(customer, null, authorities);
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        return ResponseEntity.ok("Password reset email sent successfully");
     }
 
     @Operation(summary = "Create an authentication token", description = "Authenticates a customer and returns a JWT token.")
@@ -246,17 +185,17 @@ public class CustomerAuthenticationController {
     @PostMapping(value = "/login", produces = "application/json")
     public ResponseEntity<?> createAuthenticationToken(
             @RequestBody AuthRequestDTO authenticationRequest) {
-        
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(),
-                            authenticationRequest.getPassword()));
 
-            final Customer customerDetails = customerService.findCustomerByEmail(authenticationRequest.getUsername());
-            final String jwt = jwtUtil.generateToken(customerDetails);
-            final AuthResponseDTO responseDTO = new AuthResponseDTO(jwt, new CustomerDTO(customerDetails));
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(),
+                        authenticationRequest.getPassword()));
 
-            return ResponseEntity.ok(responseDTO);
-      
+        final Customer customerDetails = customerService.findCustomerByEmail(authenticationRequest.getUsername());
+        final String jwt = jwtUtil.generateToken(customerDetails);
+        final AuthResponseDTO responseDTO = new AuthResponseDTO(jwt, new CustomerDTO(customerDetails));
+
+        return ResponseEntity.ok(responseDTO);
+
     }
 
     @Operation(summary = "Authenticate with Google", description = "Authenticates a customer using a Google token and returns a JWT token.")
@@ -292,6 +231,86 @@ public class CustomerAuthenticationController {
             logger.warn("Google token verification failed.");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+    }
+
+    @Operation(summary = "Reset customer password by email", description = "Sends an email to reset the password for the specified user by email")
+    @ApiResponse(responseCode = "200", description = "Password reset email sent successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
+    @ApiResponse(responseCode = "400", description = "Invalid request")
+    @ApiResponse(responseCode = "401", description = "Unauthorized")
+    @PostMapping(value = "/password/reset")
+    public GenericResponse resetPassword(final HttpServletRequest request,
+            @Parameter(description = "Email of the user to reset the password for") @RequestParam("email") final String customerEmail) {
+        final Customer customer = customerService.findCustomerByEmail(customerEmail);
+        if (customer != null) {
+            // TODO: write method sendPasswordResetTokenForCustomer
+            final String token = UUID.randomUUID().toString();
+            customerService.createPasswordResetTokenForCustomer(customer, token);
+            // mailSender.send(constructResetTokenEmail(getAppUrl(request),
+            // request.getLocale(), token, customer));
+        }
+        return new GenericResponse(messages.getMessage("message.resetPasswordEmail", null, request.getLocale()));
+    }
+
+    @Operation(summary = "Confirm password change with token", description = "Confirms the password change using a token")
+    @ApiResponse(responseCode = "200", description = "Password changed successfully or invalid token", content = @Content(mediaType = "text/plain", schema = @Schema(type = "string")))
+    @ApiResponse(responseCode = "401", description = "Unauthorized")
+    @PutMapping(value = "/password/confirm")
+    public String confirmPasswordChange(
+            @Parameter(description = "Password reset token") @RequestParam final String token) {
+        final String result = securityCustomerService.validatePasswordResetToken(token);
+        if (result != null) {
+            return "invalidToken";
+        }
+        return "success";
+    }
+
+    // ------------------- Private Methods ----------------------------- //
+
+    private String getAppUrl(HttpServletRequest request) {
+        return request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort()
+                + request.getContextPath();
+    }
+
+    private SimpleMailMessage constructResendVerificationTokenEmail(final String contextPath, final Locale locale,
+            final VerificationToken newToken, final Customer customer) {
+        final String confirmationUrl = contextPath + "/registrationConfirm.html?token=" + newToken.getToken();
+        final String message = messages.getMessage("message.resendToken", null, locale);
+        return constructEmail("Resend Registration Token", message + " \r\n" + confirmationUrl, customer);
+    }
+
+    private SimpleMailMessage constructResetTokenEmail(final String contextPath, final Locale locale,
+            final String token, final Customer customer) {
+        final String url = contextPath + "/customer/changePassword?id=" + customer.getId() + "&token=" + token;
+        final String message = messages.getMessage("message.resetPassword", null, locale);
+        return constructEmail("Reset Password", message + " \r\n" + url, customer);
+    }
+
+    private SimpleMailMessage constructEmail(String subject, String body, Customer customer) {
+        final SimpleMailMessage email = new SimpleMailMessage();
+        email.setSubject(subject);
+        email.setText(body);
+        email.setTo(customer.getEmail());
+        email.setFrom("reservation@greedys.it");
+        return email;
+    }
+
+    public void authWithHttpServletRequest(HttpServletRequest request, String username, String password) {
+        try {
+            request.login(username, password);
+        } catch (ServletException e) {
+            LOGGER.error("Error while login ", e);
+        }
+    }
+
+    public void authWithoutPassword(Customer customer) {
+        List<Privilege> privileges = customer.getRoles().stream().map(role -> role.getPrivileges())
+                .flatMap(list -> list.stream()).distinct().collect(Collectors.toList());
+        List<GrantedAuthority> authorities = privileges.stream().map(p -> new SimpleGrantedAuthority(p.getName()))
+                .collect(Collectors.toList());
+
+        Authentication authentication = new UsernamePasswordAuthenticationToken(customer, null, authorities);
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
     private GoogleIdToken verifyGoogleToken(String token) throws Exception {
@@ -330,5 +349,4 @@ public class CustomerAuthenticationController {
         // Implement a method to generate a random password
         return UUID.randomUUID().toString();
     }
-
 }

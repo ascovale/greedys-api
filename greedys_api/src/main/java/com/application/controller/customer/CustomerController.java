@@ -1,9 +1,7 @@
 package com.application.controller.customer;
 
 import java.util.Locale;
-import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.MessageSource;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.persistence.model.customer.Customer;
-import com.application.security.user.ISecurityUserService;
 import com.application.service.CustomerService;
 import com.application.web.dto.get.CustomerDTO;
 import com.application.web.dto.put.UpdatePasswordDTO;
@@ -30,7 +27,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 @Tag(name = "Customer", description = "Controller for managing customers")
@@ -40,16 +36,14 @@ import jakarta.validation.Valid;
 public class CustomerController {
     private final CustomerService customerService;
     private final MessageSource messages;
-    private final ISecurityUserService securityCustomerService;
 
-    // TODO Emails should be sent in the service layer
+    //TODO: Emails should be sent in the service layer
+    //TODO: Implementare tutti i metodi per la configurazione delle notifiche del customer
 
     public CustomerController(CustomerService customerService,
-            MessageSource messages,
-            @Qualifier("customerSecurityService") ISecurityUserService securityCustomerService) {
+            MessageSource messages) {
         this.customerService = customerService;
         this.messages = messages;
-        this.securityCustomerService = securityCustomerService;
     }
 
     @Operation(summary = "Get Customer ID", description = "Retrieves the ID of the current customer", responses = {
@@ -103,32 +97,13 @@ public class CustomerController {
     // TODO: Implement customerStats to view characteristics like no-show, etc.
     // TODO: Implement restaurantStats
 
-    @Operation(summary = "Get customer by ID", description = "Retrieves a specific customer by their ID")
+    @Operation(summary = "Get current customer", description = "Retrieves the current authenticated customer")
     @ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = CustomerDTO.class)))
     @ApiResponse(responseCode = "401", description = "Unauthorized")
     @ApiResponse(responseCode = "404", description = "User not found")
     @GetMapping("/get")
     public CustomerDTO getCustomer() {
         return new CustomerDTO(getCurrentCustomer());
-    }
-
-    // ------------------- Password Management ----------------------------- //
-    @Operation(summary = "Reset customer password by email", description = "Sends an email to reset the password for the specified user by email")
-    @ApiResponse(responseCode = "200", description = "Password reset email sent successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
-    @ApiResponse(responseCode = "400", description = "Invalid request")
-    @ApiResponse(responseCode = "401", description = "Unauthorized")
-    @PostMapping(value = "/password/reset")
-    public GenericResponse resetPassword(final HttpServletRequest request,
-            @Parameter(description = "Email of the user to reset the password for") @RequestParam("email") final String customerEmail) {
-        final Customer customer = customerService.findCustomerByEmail(customerEmail);
-        if (customer != null) {
-            // TODO: write method sendPasswordResetTokenForCustomer
-            final String token = UUID.randomUUID().toString();
-            customerService.createPasswordResetTokenForCustomer(customer, token);
-            // mailSender.send(constructResetTokenEmail(getAppUrl(request),
-            // request.getLocale(), token, customer));
-        }
-        return new GenericResponse(messages.getMessage("message.resetPasswordEmail", null, request.getLocale()));
     }
 
     @Operation(summary = "Generate new token for password change", description = "Changes the user's password after verifying the old password")
@@ -146,18 +121,6 @@ public class CustomerController {
         return new GenericResponse(messages.getMessage("message.updatePasswordSuc", null, locale));
     }
 
-    @Operation(summary = "Confirm password change with token", description = "Confirms the password change using a token")
-    @ApiResponse(responseCode = "200", description = "Password changed successfully or invalid token", content = @Content(mediaType = "text/plain", schema = @Schema(type = "string")))
-    @ApiResponse(responseCode = "401", description = "Unauthorized")
-    @PutMapping(value = "/password/confirm")
-    public String confirmPasswordChange(
-            @Parameter(description = "Password reset token") @RequestParam final String token) {
-        final String result = securityCustomerService.validatePasswordResetToken(getCustomerId(), token);
-        if (result != null) {
-            return "invalidToken";
-        }
-        return "success";
-    }
     // TODO: Consider that when the customer is marked as deleted and then restored, it should be possible to confirm the token or regenerate it if the same email is used
     // Study carefully what to do
 
