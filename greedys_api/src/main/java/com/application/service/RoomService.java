@@ -1,5 +1,8 @@
 package com.application.service;
 
+import java.util.Collection;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -11,10 +14,6 @@ import com.application.web.dto.post.NewRoomDTO;
 
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
-
-import java.util.stream.Collectors;
-
-import java.util.Collection;
 
 @Service
 @Transactional
@@ -46,5 +45,11 @@ public class RoomService {
 
     public Collection<RoomDTO> findByRestaurant(Long idRestaurant) {
         return roomDAO.findByRestaurant_Id(idRestaurant).stream().map(room -> new RoomDTO(room) ).collect(Collectors.toList());
+    }
+
+    public void deleteRoom(Long roomId) {
+        
+        Room room = roomDAO.findById(roomId).orElseThrow(() -> new IllegalArgumentException("Room not found"));
+        roomDAO.delete(room);
     }
 }

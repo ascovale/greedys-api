@@ -12,6 +12,8 @@ import com.application.persistence.model.restaurant.user.RestaurantUser;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -46,11 +48,20 @@ public class Reservation {
 	private Integer pax;
 	private Integer kids = 0;
 	private String notes;
-	private Boolean rejected = false;
-	private Boolean accepted = false;
-	private Boolean seated = false;
-	private Boolean noShow = false;
-	private Boolean deleted = false;
+
+	public enum Status {
+		NOT_ACCEPTED,
+		ACCEPTED,
+		REJECTED,
+		SEATED,
+		NO_SHOW,
+		DELETED
+	}
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "status", nullable = false)
+	private Status status = Status.NOT_ACCEPTED;
+
 	Integer version=1;
 	@DateTimeFormat(pattern = "yyyy/MM/dd/HH:mm")
 	private LocalDateTime lastModificationTime;
@@ -174,11 +185,11 @@ public class Reservation {
 	}
 
 	public Boolean getSeated() {
-		return seated;
+		return status == Status.SEATED;
 	}
 
 	public void setSeated(Boolean seated) {
-		this.seated = seated;
+		this.status = seated ? Status.SEATED : Status.NOT_ACCEPTED;
 	}
 
 	public Long getCustomerId() {
@@ -241,27 +252,27 @@ public class Reservation {
 	}
 
 	public Boolean getRejected() {
-		return rejected;
+		return status == Status.REJECTED;
 	}
 
 	public void setRejected(Boolean rejected) {
-		this.rejected = rejected;
+		this.status = rejected ? Status.REJECTED : Status.NOT_ACCEPTED;
 	}
 
 	public Boolean getAccepted() {
-		return accepted;
+		return status == Status.ACCEPTED;
 	}
 
 	public void setAccepted(Boolean accepted) {
-		this.accepted = accepted;
+		this.status = accepted ? Status.ACCEPTED : Status.NOT_ACCEPTED;
 	}
 
 	public Boolean getNoShow() {
-		return noShow;
+		return status == Status.NO_SHOW;
 	}
 
 	public void setNoShow(Boolean noShow) {
-		this.noShow = noShow;
+		this.status = noShow ? Status.NO_SHOW : Status.NOT_ACCEPTED;
 	}
 
 	public LocalDateTime getLastModificationTime() {
@@ -297,11 +308,11 @@ public class Reservation {
 	}
 
 	public Boolean getDeleted() {
-		return deleted;
+		return status == Status.DELETED;
 	}
 
 	public void setDeleted(Boolean deleted) {
-		this.deleted = deleted;
+		this.status = deleted ? Status.DELETED : Status.NOT_ACCEPTED;
 	}
 
 	public Integer getVersion() {
@@ -398,5 +409,13 @@ public class Reservation {
 
 	public void setAcceptorAdmin(Admin acceptorAdmin) {
 		this.acceptorAdmin = acceptorAdmin;
+	}
+
+	public Status getStatus() {
+		return status;
+	}
+
+	public void setStatus(Status status) {
+		this.status = status;
 	}
 }

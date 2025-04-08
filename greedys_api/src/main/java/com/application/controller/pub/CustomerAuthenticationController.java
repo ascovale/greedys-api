@@ -105,7 +105,7 @@ public class CustomerAuthenticationController {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = NewCustomerDTO.class)) }),
             @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
             @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content) })
-    @PostMapping("/new_customer")
+    @PostMapping("/new")
     public ResponseEntity<String> registerCustomerAccount(@Valid @RequestBody NewCustomerDTO accountDto,
             HttpServletRequest request) {
         try {

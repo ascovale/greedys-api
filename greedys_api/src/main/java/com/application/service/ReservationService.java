@@ -610,6 +610,8 @@ public class ReservationService {
                 .collect(Collectors.toList());
     }
 
+    //TODO: Da verificare
+
     public Page<ReservationDTO> getCustomerReservationsPaginated(Long customerId, Pageable pageable) {
         Page<Reservation> page = reservationDAO.findByCustomer(customerId, pageable);
         return page.map(ReservationDTO::new);
@@ -649,6 +651,12 @@ public class ReservationService {
     public Page<ReservationDTO> getPendingReservationsPageable(Long idRestaurant, Pageable pageable) {
         return reservationDAO.findByRestaurantIdAndPending(idRestaurant, pageable)
                 .map(ReservationDTO::new);
+    }
+
+    public ReservationDTO findReservationById(Long reservationId) {
+        Reservation reservation = reservationDAO.findById(reservationId)
+            .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
+        return new ReservationDTO(reservation);
     }
 
 }

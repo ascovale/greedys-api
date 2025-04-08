@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.persistence.model.restaurant.user.RestaurantUser;
@@ -24,9 +25,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "adminBearerAuth")
 @Tag(name = "Admin RestaurantUser", description = "Admin management APIs for the RestaurantUser")
 public class AdminRestaurantUserController {
-    //TODO: aggiungere ruoli e permessi ai ruoli come metodi
+    // TODO: aggiungere ruoli e permessi ai ruoli come metodi
 
-    //TODO Forse manca il delete restaurant user e quindi anche altri utenti
+    // TODO Forse manca il delete restaurant user e quindi anche altri utenti
 
     private final RestaurantUserService restaurantUserService;
 
@@ -55,9 +56,9 @@ public class AdminRestaurantUserController {
         return new GenericResponse("Restaurant user enabled successfully");
     }
 
-    //TODO: perchè voglio dire idOldOwner
-    //scrivere newOwnerId
-    //non basta passare forse bisogna cambiare solo mail?
+    // TODO: perchè voglio dire idOldOwner
+    // scrivere newOwnerId
+    // non basta passare forse bisogna cambiare solo mail?
 
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_USER_WRITE')")
     @Operation(summary = "Change restaurant owner", description = "Changes the owner of a restaurant")
@@ -66,7 +67,7 @@ public class AdminRestaurantUserController {
     @PutMapping("/{restaurantId}/changeOwner/{idOldOwner}/{idNewOwner}")
     public GenericResponse changeRestaurantOwner(@PathVariable Long restaurantId, @PathVariable Long idOldOwner,
             @PathVariable Long idNewOwner) {
-                //TODO updateRestaurantUserStatus
+        // TODO updateRestaurantUserStatus
         restaurantUserService.changeRestaurantOwner(restaurantId, idOldOwner, idNewOwner);
         return new GenericResponse("Restaurant owner changed successfully");
     }
@@ -74,17 +75,19 @@ public class AdminRestaurantUserController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_SWITCH_TO_RESTAURANT_USER')")
     @Operation(summary = "Switch to restaurant user", description = "Switches to restaurant user mode")
     @ApiResponse(responseCode = "200", description = "Switched to restaurant user mode successfully")
-    @GetMapping("/switch_to_restaurantUser")
-    public String switchToRestaurantUser() {
-        return "redirect:/admin/home";
+    @GetMapping("/switch/{restaurantUserId}")
+    public String switchUser(@RequestParam Long restaurantUserId) {
+        restaurantUserService.switchToRestaurantUserAdmin(restaurantUserId);
+        return "User switched to: " + restaurantUserId;
     }
 
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_SWITCH_TO_RESTAURANT_USER')")
     @Operation(summary = "Exit restaurant user", description = "Exits the restaurant user mode and redirects to admin home")
     @ApiResponse(responseCode = "200", description = "Exited restaurant user mode successfully")
-    @GetMapping("/exit_restaurantUser")
-    public String exitRestaurantUser() {
-        return "redirect:/admin/home";
+    @GetMapping("/disconnect")
+    public String disconnectUser() {
+        restaurantUserService.disconnectRestaurantUserAdmin();
+        return "Restaurant user disconnected successfully";
     }
 
 }

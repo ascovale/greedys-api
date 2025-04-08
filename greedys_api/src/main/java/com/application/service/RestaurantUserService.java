@@ -1,11 +1,15 @@
 package com.application.service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import org.hibernate.Hibernate;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -149,6 +153,10 @@ public class RestaurantUserService {
     // Add restaurant user bisogna verificare che il ristorante esista
 
     public RestaurantUserDTO addRestaurantUserRole(Long idRestaurantUser, String string) {
+        if ("ROLE_OWNER".equals(string)) {
+            throw new IllegalArgumentException("Cannot add the ROLE_OWNER role to a user.");
+        }
+
         RestaurantUser ru = ruDAO.findById(idRestaurantUser)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid restaurant user ID: " + idRestaurantUser));
         Restaurant restaurant = ru.getRestaurant();
@@ -382,9 +390,14 @@ public class RestaurantUserService {
         if (userDetails == null) {
             throw new UsernameNotFoundException("No user found with username: " + restaurantUserId.toString());
         }
+
+        // Add PRIVILEGE_SWITCH_TO_RESTAURANT_USER to the authorities
+        GrantedAuthority switchPrivilege = new SimpleGrantedAuthority("PRIVILEGE_SWITCH_TO_RESTAURANT_USER");
+        List<GrantedAuthority> updatedAuthorities = new ArrayList<>(userDetails.getAuthorities());
+        updatedAuthorities.add(switchPrivilege);
         SecurityContextHolder.getContext().setAuthentication(
                 new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
-                        userDetails, userDetails.getPassword(), userDetails.getAuthorities()));
+                        userDetails, userDetails.getPassword(), updatedAuthorities));
     }
 
     public void disconnectRestaurantUser(Long restaurantUserId) {
@@ -392,9 +405,38 @@ public class RestaurantUserService {
         if (userDetails == null) {
             throw new UsernameNotFoundException("No user found with username: " + restaurantUserId.toString());
         }
+        // Retain only PRIVILEGE_SWITCH_TO_RESTAURANT_USER
+        GrantedAuthority switchPrivilege = new SimpleGrantedAuthority("PRIVILEGE_SWITCH_TO_RESTAURANT_USER");
+        List<GrantedAuthority> updatedAuthorities = new ArrayList<>();
+        updatedAuthorities.add(switchPrivilege);
+
         SecurityContextHolder.getContext().setAuthentication(
                 new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
-                        userDetails, userDetails.getPassword(), userDetails.getAuthorities()));
+                        userDetails, userDetails.getPassword(), updatedAuthorities));
+    }
+
+    public void switchToRestaurantUserAdmin(Long restaurantUserId) {
+        UserDetails userDetails = userDetailsService.loadUserById(restaurantUserId);
+        if (userDetails == null) {
+            throw new UsernameNotFoundException("No user found with ID: " + restaurantUserId);
+        }
+
+        // Add PRIVILEGE_SWITCH_TO_RESTAURANT_USER_ADMIN to the authorities
+        GrantedAuthority switchPrivilege = new SimpleGrantedAuthority("PRIVILEGE_SWITCH_TO_RESTAURANT_USER_ADMIN");
+        List<GrantedAuthority> updatedAuthorities = new ArrayList<>(userDetails.getAuthorities());
+        updatedAuthorities.add(switchPrivilege);
+
+        SecurityContextHolder.getContext().setAuthentication(
+                new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
+                        userDetails, userDetails.getPassword(), updatedAuthorities));
+    }
+
+    public void disconnectRestaurantUserAdmin() {
+        UserDetails adminDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        // Restore admin identity
+        SecurityContextHolder.getContext().setAuthentication(
+                new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
+                        adminDetails, adminDetails.getPassword(), adminDetails.getAuthorities()));
     }
 
     public RestaurantUser findRestaurantUserByEmail(String userEmail) {
@@ -431,6 +473,10 @@ public class RestaurantUserService {
 
     @Transactional
     public RestaurantUserDTO addRestaurantUserToRestaurantWithRole(NewRestaurantUserDTO restaurantUserDTO, Long restaurantId, String roleName) {
+        if ("ROLE_OWNER".equals(roleName)) {
+            throw new IllegalArgumentException("Cannot assign the ROLE_OWNER role to a user.");
+        }
+
         Restaurant restaurant = restaurantDAO.findById(restaurantId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid restaurant ID: " + restaurantId));
         RestaurantRole role = rrDAO.findByName(roleName);
@@ -453,5 +499,29 @@ public class RestaurantUserService {
 		final RestaurantUserVerificationToken myToken = new RestaurantUserVerificationToken(token, user);
 		tokenDAO.save(myToken);
 	}
+
+    public RestaurantUserDTO removeRestaurantUserRole(Long restaurantUserId, String string) {
+        if ("ROLE_OWNER".equals(string)) {
+            throw new IllegalArgumentException("Cannot remove the ROLE_OWNER role from a user.");
+        }
+
+        RestaurantUser ru = ruDAO.findById(restaurantUserId)
+            .orElseThrow(() -> new IllegalArgumentException("Invalid restaurant user ID: " + restaurantUserId));
+
+        RestaurantRole role = rrDAO.findByName(string);
+        if (role == null) {
+            throw new IllegalArgumentException("Role not found: " + string);
+        }
+
+        if (ru.getRestaurantRoles().stream().noneMatch(r -> r.getName().equals(string))) {
+            throw new IllegalArgumentException("User does not have the role: " + string);
+        }
+
+        Hibernate.initialize(ru.getRestaurantRoles());
+        ru.removeRole(role);
+        ruDAO.save(ru);
+
+        return new RestaurantUserDTO(ru);
+    }
 
 }

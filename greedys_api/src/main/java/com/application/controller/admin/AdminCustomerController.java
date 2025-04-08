@@ -101,6 +101,8 @@ public class AdminCustomerController {
         return "users";
     }
 
+    //TODO: Da verificare
+
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_READ')")
     @Operation(summary = "List users with pagination", description = "Returns a paginated list of users")
     @ApiResponse(responseCode = "200", description = "Users retrieved successfully", content = @Content(mediaType = "application/json"))
