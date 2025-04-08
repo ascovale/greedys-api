@@ -1,5 +1,6 @@
 package com.application.controller.restaurantUser;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,6 +17,7 @@ import com.application.web.dto.get.RestaurantUserDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Tag(name = "Multi Restaurant User", description = "Management of multi-restaurant users. Allows operations such as switching users and disconnecting them.")
 @RestController
@@ -31,17 +33,8 @@ public class MultiRestaurantUserController {
         @PreAuthorize("hasAuthority('PRIVILEGE_SWITCH_TO_RESTAURANT_USER') and @securityRestaurantUserService.hasRestaurantUserId(authentication, #restaurantUserId)")
         @PostMapping("/switch/{restaurantUserId}")
         @Operation(summary = "Switch restaurant user", description = "Allows switching the active user to the specified restaurant user by its ID.")
-        public String switchUser(@RequestParam Long restaurantUserId) {
-                restaurantUserService.switchToRestaurantUser(restaurantUserId);
-                return "User switched to: " + restaurantUserId;
-        }
-
-        @PreAuthorize("hasAuthority('PRIVILEGE_SWITCH_TO_RESTAURANT_USER') and @securityRestaurantUserService.hasRestaurantUserId(authentication, #restaurantUserId)")
-        @PostMapping("/disconnect")
-        @Operation(summary = "Disconnect restaurant user", description = "Removes the user associated with the specified restaurant user ID.")
-        public String removeUser(@RequestParam Long restaurantUserId) {
-                restaurantUserService.disconnectRestaurantUser(restaurantUserId);
-                return "User removed from restaurant user ID: " + restaurantUserId;
+        public ResponseEntity<?> loginRestaurantUser(@RequestParam Long restaurantUserId, HttpServletRequest request) {
+                return ResponseEntity.ok(restaurantUserService.loginRestaurantUser(restaurantUserId,request));
         }
 
         @PreAuthorize("hasAuthority('PRIVILEGE_SWITCH_TO_RESTAURANT_USER'")
