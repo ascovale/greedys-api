@@ -22,9 +22,13 @@ public interface RestaurantUserDAO extends JpaRepository<RestaurantUser, Long>{
 
     RestaurantUser findByEmail(String email);
 
+    RestaurantUser findFirstByEmailOrderByIdAsc(@Param("email") String email);
+
     @Query("SELECT COUNT(ru) > 1 FROM RestaurantUser ru WHERE ru.email = :email")
     boolean isMultiRestaurantUser(@Param("email") String email);
+    @Query("SELECT COUNT(ru) > 1 FROM RestaurantUser ru WHERE ru.email = (SELECT email FROM RestaurantUser WHERE id = :restaurantUserId)")
+    boolean isMultiRestaurantUser(@Param("restaurantUserId") Long restaurantUserId);
 
     Optional<RestaurantUser> findRestaurantUserByIdAndEmail(Long userId, String email);
 
-} 
+}
