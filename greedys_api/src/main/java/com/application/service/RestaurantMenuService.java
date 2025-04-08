@@ -1,5 +1,7 @@
 package com.application.service;
 
+import java.util.Collection;
+
 import org.springframework.stereotype.Service;
 
 import com.application.persistence.dao.menu.MenuItemDAO;
@@ -19,8 +21,6 @@ import com.application.web.dto.post.NewRestaurantMenuDTO;
 
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
-
-import java.util.Collection;
 
 @Service
 @Transactional

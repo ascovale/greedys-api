@@ -53,4 +53,9 @@ public class TableService {
         return tableDAO.findByRoom_Id(idRoom).stream().map(table -> new TableDTO(table) ).collect(Collectors.toList());
     }
 
+    public void deleteTable(Long tableId) {
+        Table table = tableDAO.findById(tableId).orElseThrow(() -> new IllegalArgumentException("Table not found with id: " + tableId));
+        tableDAO.delete(table);
+    }
+
 }

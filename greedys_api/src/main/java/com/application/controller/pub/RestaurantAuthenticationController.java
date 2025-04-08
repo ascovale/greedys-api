@@ -96,7 +96,7 @@ public class RestaurantAuthenticationController {
             @ApiResponse(responseCode = "200", description = "Restaurant registered successfully", content = {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = NewRestaurantDTO.class)) }),
     })
-    @PostMapping(value = "/new_restaurant")
+    @PostMapping(value = "/new")
     public GenericResponse registerRestaurant(@RequestBody NewRestaurantDTO restaurantDto) {
         LOGGER.debug("Registering restaurant with information:", restaurantDto);
         System.out.println("Registering restaurant with information:" + restaurantDto.getName());
@@ -165,7 +165,7 @@ public class RestaurantAuthenticationController {
     }
 
     @Operation(summary = "Confirm restaurant user registration", description = "Conferma la registrazione")
-    @GetMapping(value = "/user/confirm_restaurant_user")
+    @GetMapping(value = "/user/confirm")
     public String confirmRestaurantUserRegistration(final HttpServletRequest request, final Model model,
             @RequestParam final String token) throws UnsupportedEncodingException {
         Locale locale = request.getLocale();

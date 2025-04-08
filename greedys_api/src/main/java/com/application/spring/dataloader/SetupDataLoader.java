@@ -144,18 +144,19 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
                 "PRIVILEGE_ADMIN_RESTAURANT_USER_READ");
         final AdminPrivilege adminRestaurantUserWrite = createAdminPrivilegeIfNotFound(
                 "PRIVILEGE_ADMIN_RESTAURANT_USER_WRITE");
+        final AdminPrivilege adminSwitchToRestaurantUserAdmin = createAdminPrivilegeIfNotFound(
+                    "PRIVILEGE_SWITCH_TO_RESTAURANT_USER_ADMIN");
         final AdminPrivilege adminRestaurantRead = createAdminPrivilegeIfNotFound("PRIVILEGE_ADMIN_RESTAURANT_READ");
         final AdminPrivilege adminRestaurantWrite = createAdminPrivilegeIfNotFound("PRIVILEGE_ADMIN_RESTAURANT_WRITE");
         final AdminPrivilege adminCustomerRead = createAdminPrivilegeIfNotFound("PRIVILEGE_ADMIN_CUSTOMER_READ");
         final AdminPrivilege adminCustomerWrite = createAdminPrivilegeIfNotFound("PRIVILEGE_ADMIN_CUSTOMER_WRITE");
-
         // == ADMIN: Create initial admin roles
         final List<AdminPrivilege> adminPrivileges = new ArrayList<>(Arrays.asList(
                 adminReservationCustomerWrite, adminReservationCustomerRead,
                 adminReservationRestaurantWrite, adminReservationRestaurantRead,
                 adminRestaurantUserRead, adminRestaurantUserWrite,
                 adminRestaurantRead, adminRestaurantWrite,
-                adminCustomerRead, adminCustomerWrite));
+                adminCustomerRead, adminCustomerWrite,adminSwitchToRestaurantUserAdmin));
 
         createAdminRoleIfNotFound("ROLE_SUPER_ADMIN", new ArrayList<>(adminPrivileges));
         createAdminRoleIfNotFound("ROLE_ADMIN_MANAGER", new ArrayList<>(Arrays.asList(

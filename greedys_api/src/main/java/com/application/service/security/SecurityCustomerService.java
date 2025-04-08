@@ -1,4 +1,4 @@
-package com.application.service;
+package com.application.service.security;
 
 import java.util.Optional;
 
@@ -12,7 +12,7 @@ import com.application.persistence.model.customer.Customer;
 import com.application.persistence.model.reservation.Reservation;
 
 @Service
-public class CustomerSecurityService {
+public class SecurityCustomerService {
 
     @Autowired 
     private ReservationDAO reservationRepository;

@@ -1,4 +1,4 @@
-package com.application.service;
+package com.application.service.security;
 
 import java.util.Optional;
 
@@ -15,7 +15,7 @@ import com.application.persistence.model.restaurant.user.RestaurantUser;
 
 @Service("securityRestaurantUserService")
 public class SecurityRestaurantUserService {
-
+    
     @Autowired 
     private ReservationDAO reservationRepository;
     @Autowired 

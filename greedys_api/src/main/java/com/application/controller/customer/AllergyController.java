@@ -70,6 +70,7 @@ public class AllergyController {
     public List<AllergyDTO> getAllergiesOfCustomer() {
         return customerService.getAllergies(getCurrentCustomer().getId());
     }
+    //TODO: Da verificare tutti i metodi con pagine
 
     @Operation(summary = "Get paginated allergies of customer", description = "Returns paginated allergies of the currently authenticated customer")
     @ApiResponse(responseCode = "200", description = "Allergies successfully retrieved", content = @Content(mediaType = "application/json", schema = @Schema(implementation = List.class)))

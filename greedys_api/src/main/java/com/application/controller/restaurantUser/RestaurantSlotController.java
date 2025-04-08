@@ -3,6 +3,7 @@ package com.application.controller.restaurantUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -44,7 +45,7 @@ public class RestaurantSlotController {
         @ApiResponse(responseCode = "404", description = "Slot not found", content = @Content(mediaType = "application/json"))
     })
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SLOT_WRITE')")
-    @PostMapping("/cancel")
+    @DeleteMapping("/cancel")
     public ResponseEntity<String> cancelSlot(@RequestBody Long slotId) {
         boolean isCanceled = slotService.cancelSlot(ControllerUtils.getCurrentRestaurantUser().getId(), slotId);
         if (isCanceled) {
