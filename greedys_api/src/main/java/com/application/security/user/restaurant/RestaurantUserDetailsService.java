@@ -3,7 +3,6 @@ package com.application.security.user.restaurant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -26,7 +25,6 @@ public class RestaurantUserDetailsService implements UserDetailsService {
     private final RestaurantUserDAO restaurantUserDAO;
     private final LoginAttemptService loginAttemptService;
     private final HttpServletRequest request;
-    private final ConcurrentHashMap<String, UserDetails> userCache = new ConcurrentHashMap<>();
 
     public RestaurantUserDetailsService(RestaurantUserDAO restaurantUserDAO, LoginAttemptService loginAttemptService,
             HttpServletRequest request) {
@@ -74,8 +72,6 @@ public class RestaurantUserDetailsService implements UserDetailsService {
             //}
             System.out.println("\n\n\n 2Loaded user by email: " + email);
 
-            // Cache the user
-            userCache.put(email, user);
 
             return user;
         } catch (final Exception e) {
