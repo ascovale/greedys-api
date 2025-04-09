@@ -276,6 +276,8 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
         final RestaurantPrivilege slotWritePrivilege = createRestaurantPrivilegeIfNotFound(
                 "PRIVILEGE_RESTAURANT_USER_SLOT_WRITE");
 
+        /* PRIVILEGE_VIEW_USERS PRIVILEGE_ADD_MANAGER PRIVILEGE_ADD_CHEF PRIVILEGE_ADD_WAITER PRIVILEGE_ADD_VIEWER PRIVILEGE_DISABLE_MANAGER PRIVILEGE_DISABLE_CHEF PRIVILEGE_DISABLE_WAITER PRIVILEGE_DISABLE_VIEWER PRIVILEGE_CHANGE_ROLE_TO_CHEF PRIVILEGE_CHANGE_ROLE_TO_WAITER PRIVILEGE_CHANGE_ROLE_TO_VIEWER PRIVILEGE_CHANGE_ROLE_TO_MANAGER PRIVILEGE_MODIFY_RESERVATION PRIVILEGE_CANCEL_RESERVATION PRIVILEGE_CHAT_WITH_CUSTOMERS PRIVILEGE_SERVICE_MANAGMENT */
+
         // Lista dei privilegi per i ruoli dei ristoranti
         final List<RestaurantPrivilege> ownerPrivileges = new ArrayList<>(Arrays.asList(
                 managerWritePrivilege, chefWritePrivilege, waiterWritePrivilege, viewerWritePrivilege,

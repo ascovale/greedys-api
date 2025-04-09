@@ -3,6 +3,7 @@ package com.application.controller.admin;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -28,6 +29,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 
 @RequestMapping("/admin/customer")
 @RestController
@@ -113,22 +115,12 @@ public class AdminCustomerController {
         return customerService.findAll(pageable);
     }
 
-    @PreAuthorize("hasAuthority('PRIVILEGE_SWITCH_TO_CUSTOMER')")
-    @Operation(summary = "Switch to customer user", description = "Switches the current admin user to a customer user")
-    @ApiResponse(responseCode = "200", description = "Switched to customer user successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
-    @ApiResponse(responseCode = "400", description = "Invalid request")
-    @GetMapping("/admin/switch_to_customer_user")
-    public String switchToCustomerUser() {
-        return "redirect:/admin/home";
-    }
-
-    @PreAuthorize("hasAuthority('PRIVILEGE_SWITCH_TO_CUSTOMER')")
-    @Operation(summary = "Exit customer user", description = "Exits the current customer user session and returns to admin user")
-    @ApiResponse(responseCode = "200", description = "Exited customer user successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
-    @ApiResponse(responseCode = "400", description = "Invalid request")
-    @GetMapping("/admin/exit_customer_user")
-    public String exitCustomerUser() {
-        return "redirect:/admin/home";
+    @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_SWITCH_TO_CUSTOMER')")
+    @Operation(summary = "Get JWT Token of a customer", description = "Get JWT Token of a customer")
+    @ApiResponse(responseCode = "200", description = "Token retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
+    @GetMapping("/login/{customerId}")
+    public ResponseEntity<?> loginTokenHasRestaurantUser(@RequestParam Long customerId, HttpServletRequest request) {
+        return ResponseEntity.ok(customerService.adminLoginToCustomer(customerId,request));
     }
 
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_WRITE')")

@@ -1,6 +1,7 @@
 package com.application.service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -8,10 +9,17 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.hibernate.Hibernate;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,13 +36,16 @@ import com.application.persistence.model.customer.PasswordResetToken;
 import com.application.persistence.model.customer.Privilege;
 import com.application.persistence.model.customer.Role;
 import com.application.persistence.model.customer.VerificationToken;
+import com.application.security.jwt.JwtUtil;
 import com.application.web.dto.get.AllergyDTO;
 import com.application.web.dto.get.CustomerDTO;
+import com.application.web.dto.post.AuthResponseDTO;
 import com.application.web.dto.post.NewCustomerDTO;
 import com.application.web.error.UserAlreadyExistException;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Service
 @Transactional
@@ -55,28 +66,34 @@ public class CustomerService {
 	private final EntityManager entityManager;
 	private final AllergyDAO allergyDAO;
 	private final PrivilegeDAO privilegeDAO;
-	
-		public CustomerService(CustomerDAO customerDAO, VerificationTokenDAO tokenDAO,
-				PasswordResetTokenDAO passwordTokenRepository,
-				PasswordEncoder passwordEncoder,
-				RoleDAO roleRepository,
-				EntityManager entityManager,
-				AllergyDAO allergyDAO,
-				PrivilegeDAO privilegeDAO
-		) {
-			this.customerDAO = customerDAO;
-			this.tokenDAO = tokenDAO;
-			this.passwordTokenRepository = passwordTokenRepository;
-			this.passwordEncoder = passwordEncoder;
-			this.roleRepository = roleRepository;
-			this.entityManager = entityManager;
-			this.privilegeDAO = privilegeDAO;
-			this.allergyDAO = allergyDAO;
+	private final AuthenticationManager authenticationManager;
+    private final JwtUtil jwtUtil;
+
+	public CustomerService(CustomerDAO customerDAO, VerificationTokenDAO tokenDAO,
+			PasswordResetTokenDAO passwordTokenRepository,
+			PasswordEncoder passwordEncoder,
+			RoleDAO roleRepository,
+			EntityManager entityManager,
+			AllergyDAO allergyDAO,
+			PrivilegeDAO privilegeDAO,
+			@Qualifier("customerAuthenticationManager") AuthenticationManager authenticationManager,
+			JwtUtil jwtUtil) {
+		this.customerDAO = customerDAO;
+		this.tokenDAO = tokenDAO;
+		this.passwordTokenRepository = passwordTokenRepository;
+		this.passwordEncoder = passwordEncoder;
+		this.roleRepository = roleRepository;
+		this.entityManager = entityManager;
+		this.privilegeDAO = privilegeDAO;
+		this.allergyDAO = allergyDAO;
+		this.authenticationManager = authenticationManager;
+		this.jwtUtil = jwtUtil;
 
 	}
 
 	public CustomerDTO findById(long id) {
-		Customer customer = customerDAO.findById(id).orElseThrow(() -> new EntityNotFoundException("Customer not found"));
+		Customer customer = customerDAO.findById(id)
+				.orElseThrow(() -> new EntityNotFoundException("Customer not found"));
 		return new CustomerDTO(customer);
 	}
 
@@ -141,7 +158,7 @@ public class CustomerService {
 	public void createPasswordResetTokenForCustomer(final Customer customer, final String token) {
 		final PasswordResetToken myToken = new PasswordResetToken(token, customer);
 		passwordTokenRepository.save(myToken);
-		try{
+		try {
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -204,7 +221,8 @@ public class CustomerService {
 	 * currentCustomer = (Customer) curAuth.getPrincipal(); //
 	 * currentCustomer.setUsing2FA(use2FA); currentCustomer =
 	 * companycustomerDAO.save(currentCustomer); final Authentication auth = new
-	 * CustomernamePasswordAuthenticationToken(currentCustomer, currentCustomer.getPassword(),
+	 * CustomernamePasswordAuthenticationToken(currentCustomer,
+	 * currentCustomer.getPassword(),
 	 * curAuth.getAuthorities()); SecurityContextHolder.getContext()
 	 * .setAuthentication(auth); return currentCustomer; }
 	 */
@@ -230,12 +248,14 @@ public class CustomerService {
 	}
 
 	public void deleteCustomerById(Long id) {
-		Customer customer = customerDAO.findById(id).orElseThrow(() -> new EntityNotFoundException("Customer not found"));
+		Customer customer = customerDAO.findById(id)
+				.orElseThrow(() -> new EntityNotFoundException("Customer not found"));
 		deleteCustomer(customer);
 	}
 
 	public Customer updateCustomer(Long id, NewCustomerDTO customerDto) {
-		Customer customer = customerDAO.findById(id).orElseThrow(() -> new EntityNotFoundException("Customer not found"));
+		Customer customer = customerDAO.findById(id)
+				.orElseThrow(() -> new EntityNotFoundException("Customer not found"));
 		if (customerDto.getFirstName() != null) {
 			customer.setName(customerDto.getFirstName());
 		}
@@ -266,7 +286,7 @@ public class CustomerService {
 	@Transactional
 	public void removeAllergy(Long idAllergy) {
 		Customer customer = customerDAO.findById(getCurrentCustomer().getId())
-		.orElseThrow(() -> new EntityNotFoundException("Customer not found"));
+				.orElseThrow(() -> new EntityNotFoundException("Customer not found"));
 		Allergy allergy = allergyDAO.findById(idAllergy)
 				.orElseThrow(() -> new EntityNotFoundException("Allergy not found"));
 		customer.getAllergies().remove(allergy);
@@ -283,10 +303,10 @@ public class CustomerService {
 		}
 	}
 
-
 	@Transactional
 	public void enableCustomer(Long customerId) {
-		Customer customer = customerDAO.findById(customerId).orElseThrow(() -> new EntityNotFoundException("Customer not found"));
+		Customer customer = customerDAO.findById(customerId)
+				.orElseThrow(() -> new EntityNotFoundException("Customer not found"));
 		customer.setStatus(Customer.Status.ENABLED);
 		customerDAO.save(customer);
 	}
@@ -300,7 +320,8 @@ public class CustomerService {
 	 */
 
 	public void blockCustomer(Long customerId) {
-		Customer customer = customerDAO.findById(customerId).orElseThrow(() -> new EntityNotFoundException("Customer not found"));
+		Customer customer = customerDAO.findById(customerId)
+				.orElseThrow(() -> new EntityNotFoundException("Customer not found"));
 		customer.setStatus(Customer.Status.DISABLED);
 		customerDAO.save(customer);
 	}
@@ -321,7 +342,8 @@ public class CustomerService {
 
 	@Transactional
 	public List<AllergyDTO> getAllergies(Long customerId) {
-		Customer customer = customerDAO.findById(customerId).orElseThrow(() -> new EntityNotFoundException("Customer not found"));
+		Customer customer = customerDAO.findById(customerId)
+				.orElseThrow(() -> new EntityNotFoundException("Customer not found"));
 		return customer.getAllergies().stream()
 				.map(AllergyDTO::new)
 				.collect(Collectors.toList());
@@ -416,5 +438,41 @@ public class CustomerService {
 		customerDAO.save(customer);
 	}
 
-	
+	public Object adminLoginToCustomer(Long customerId, HttpServletRequest request) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'adminLoginToCustomer'");
+	}
+
+	private List<? extends GrantedAuthority> getSwitchUserAuthoritiesAdmin() {
+		List<GrantedAuthority> authorities = new ArrayList<>();
+		authorities.add(new SimpleGrantedAuthority("PRIVILEGE_ADMIN_SWITCH_TO_RESTAURANT_USER"));
+		return authorities;
+	}
+
+	public AuthResponseDTO loginRestaurantUser(Long customerId, HttpServletRequest request) {
+
+		Customer user = customerDAO.findById(customerId)
+				.orElseThrow(() -> new UsernameNotFoundException("No user found with ID: " + customerId));
+		authenticationManager.authenticate(
+				new UsernamePasswordAuthenticationToken(user.getEmail(), null));
+
+		final Customer customerDetails = customerDAO.findById(customerId)
+				.orElseThrow(() -> new UsernameNotFoundException("No user found with ID: " + customerId));
+		final String jwt = jwtUtil.generateToken(customerDetails);
+		// Combine authorities from getSwitchUserAuthorities() and user.getAuthorities()
+		List<GrantedAuthority> combinedAuthorities = new ArrayList<>();
+		combinedAuthorities.addAll(getSwitchUserAuthoritiesAdmin());
+		combinedAuthorities.addAll(user.getAuthorities());
+
+		UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
+				user, null, combinedAuthorities);
+		usernamePasswordAuthenticationToken
+				.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+		SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+		AuthResponseDTO responseDTO = new AuthResponseDTO(jwt,
+				new CustomerDTO(customerDetails));
+		return responseDTO;
+
+	}
+
 }
