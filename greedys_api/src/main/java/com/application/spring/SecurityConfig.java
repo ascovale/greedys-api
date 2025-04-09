@@ -33,8 +33,6 @@ import com.application.security.user.restaurant.RestaurantUserRememberMeServices
 import com.application.spring.requestfilter.AdminRequestFilter;
 import com.application.spring.requestfilter.CustomerRequestFilter;
 import com.application.spring.requestfilter.RestaurantUserRequestFilter;
-import com.application.spring.switchfilter.SwitchAdminToCustomerUserFilter;
-import com.application.spring.switchfilter.SwitchAdminToRestaurantUserFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -151,24 +149,13 @@ public class SecurityConfig {
                                 .sessionManagement(management -> management
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                                 .addFilterBefore(adminJwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
-                                .addFilterAfter(switchAdminToRestaurantUserFilter(),
-                                                UsernamePasswordAuthenticationFilter.class)
-                                .addFilterAfter(switchAdminToCustomerUserFilter(),
-                                                UsernamePasswordAuthenticationFilter.class)
+                                
                                 .authenticationManager(authenticationManager);
 
                 return http.build();
         }
 
-        @Bean
-        public SwitchAdminToRestaurantUserFilter switchAdminToRestaurantUserFilter() {
-                return new SwitchAdminToRestaurantUserFilter(restaurantUserDetailsService);
-        }
 
-        @Bean
-        public SwitchAdminToCustomerUserFilter switchAdminToCustomerUserFilter() {
-                return new SwitchAdminToCustomerUserFilter(customerUserDetailsService);
-        }
 
         @Bean
         CorsConfigurationSource corsConfigurationSource() {

@@ -2,18 +2,19 @@ package com.application.service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import org.hibernate.Hibernate;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,14 +25,17 @@ import com.application.persistence.dao.restaurant.RestaurantUserDAO;
 import com.application.persistence.dao.restaurant.RestaurantUserPasswordResetTokenDAO;
 import com.application.persistence.dao.restaurant.RestaurantUserVerificationTokenDAO;
 import com.application.persistence.model.restaurant.Restaurant;
-import com.application.persistence.model.restaurant.user.RestaurantPrivilege;
 import com.application.persistence.model.restaurant.user.RestaurantRole;
 import com.application.persistence.model.restaurant.user.RestaurantUser;
 import com.application.persistence.model.restaurant.user.RestaurantUserPasswordResetToken;
 import com.application.persistence.model.restaurant.user.RestaurantUserVerificationToken;
+import com.application.security.jwt.JwtUtil;
 import com.application.security.user.restaurant.RestaurantUserDetailsService;
+import com.application.web.dto.RestaurantUserAuthResponseDTO;
 import com.application.web.dto.get.RestaurantUserDTO;
 import com.application.web.dto.post.NewRestaurantUserDTO;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 @Service
 @Transactional
@@ -53,7 +57,8 @@ public class RestaurantUserService {
     private RestaurantPrivilegeDAO rpDAO;
     private PasswordEncoder passwordEncoder;
     private final RestaurantUserPasswordResetTokenDAO passwordTokenRepository;
-
+    private AuthenticationManager authenticationManager;
+    private JwtUtil jwtUtil;
 
     public RestaurantUserService(
             RestaurantUserVerificationTokenDAO tokenDAO,
@@ -64,7 +69,9 @@ public class RestaurantUserService {
             RestaurantRoleDAO rrDAO,
             RestaurantPrivilegeDAO rpDAO,
             PasswordEncoder passwordEncoder,
-            RestaurantUserPasswordResetTokenDAO passwordTokenRepository) {
+            RestaurantUserPasswordResetTokenDAO passwordTokenRepository,
+            @Qualifier("restaurantAuthenticationManager") AuthenticationManager authenticationManager,
+            JwtUtil jwtUtil) {
         this.tokenDAO = tokenDAO;
         this.userDetailsService = userDetailsService;
         this.emailService = emailService;
@@ -74,6 +81,8 @@ public class RestaurantUserService {
         this.rpDAO = rpDAO;
         this.passwordEncoder = passwordEncoder;
         this.passwordTokenRepository = passwordTokenRepository;
+        this.authenticationManager = authenticationManager;
+        this.jwtUtil = jwtUtil;
     }
 
     // TODO QUANDO CREO UN UTENTE DEVO SPECIFICARE IL RUOLO CHE HA NEL RISTORANTE
@@ -231,127 +240,16 @@ public class RestaurantUserService {
     }
 
     public void createPasswordResetTokenForRestaurantUser(final RestaurantUser ru, final String token) {
-		final RestaurantUserPasswordResetToken myToken = new RestaurantUserPasswordResetToken(token, ru);
-		passwordTokenRepository.save(myToken);
-		try{
+        final RestaurantUserPasswordResetToken myToken = new RestaurantUserPasswordResetToken(token, ru);
+        passwordTokenRepository.save(myToken);
+        try {
 
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-    public void generateDefaultPrivilegesAndRoles() {
-        String[] privilegeNames = {
-                "PRIVILEGE_VIEW_USERS",
-                "PRIVILEGE_ADD_MANAGER",
-                "PRIVILEGE_ADD_CHEF",
-                "PRIVILEGE_ADD_WAITER",
-                "PRIVILEGE_ADD_VIEWER",
-                "PRIVILEGE_DISABLE_MANAGER",
-                "PRIVILEGE_DISABLE_CHEF",
-                "PRIVILEGE_DISABLE_WAITER",
-                "PRIVILEGE_DISABLE_VIEWER",
-                "PRIVILEGE_CHANGE_ROLE_TO_CHEF",
-                "PRIVILEGE_CHANGE_ROLE_TO_WAITER",
-                "PRIVILEGE_CHANGE_ROLE_TO_VIEWER",
-                "PRIVILEGE_CHANGE_ROLE_TO_MANAGER",
-                "PRIVILEGE_ADD_RESERVATION",
-                "PRIVILEGE_MODIFY_RESERVATION",
-                "PRIVILEGE_CANCEL_RESERVATION",
-                "PRIVILEGE_CHAT_WITH_CUSTOMERS"
-        };
-
-        String[] roleNames = {
-                "ROLE_OWNER",
-                "ROLE_MANAGER",
-                "ROLE_CHEF",
-                "ROLE_WAITER",
-                "ROLE_VIEWER"
-        };
-
-        for (String roleName : roleNames) {
-            if (rrDAO.findByName(roleName) == null) {
-                RestaurantRole role = new RestaurantRole(roleName);
-                rrDAO.save(role);
-            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        Map<String, RestaurantPrivilege> privilegeMap = new HashMap<>();
-        for (String privilegeName : privilegeNames) {
-            RestaurantPrivilege privilege = rpDAO.findByName(privilegeName);
-            if (privilege == null) {
-                privilege = new RestaurantPrivilege(privilegeName);
-                rpDAO.save(privilege);
-            }
-            privilegeMap.put(privilegeName, privilege);
-        }
-        // TODO: MANCA IL METODO AGGIUNGI PRIVILEGIO E TOGLIO PRIVILEGIO A RUOLO
-
-        // Associating privileges to roles
-        RestaurantRole ownerRole = rrDAO.findByName("ROLE_OWNER");
-        RestaurantRole managerRole = rrDAO.findByName("ROLE_MANAGER");
-        RestaurantRole chefRole = rrDAO.findByName("ROLE_CHEF");
-        RestaurantRole waiterRole = rrDAO.findByName("ROLE_WAITER");
-        RestaurantRole viewerRole = rrDAO.findByName("ROLE_VIEWER");
-        Hibernate.initialize(ownerRole.getRestaurantPrivileges());
-        ownerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_VIEW_USERS"));
-        ownerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_ADD_MANAGER"));
-        ownerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_ADD_CHEF"));
-        ownerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_ADD_WAITER"));
-        ownerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_ADD_VIEWER"));
-        ownerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_DISABLE_MANAGER"));
-        ownerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_DISABLE_CHEF"));
-        ownerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_DISABLE_WAITER"));
-        ownerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_DISABLE_VIEWER"));
-        ownerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_CHANGE_ROLE_TO_CHEF"));
-        ownerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_CHANGE_ROLE_TO_WAITER"));
-        ownerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_CHANGE_ROLE_TO_VIEWER"));
-        ownerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_CHANGE_ROLE_TO_MANAGER"));
-        ownerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_ADD_RESERVATION"));
-        ownerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_MODIFY_RESERVATION"));
-        ownerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_CANCEL_RESERVATION"));
-        ownerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_CHAT_WITH_CUSTOMERS"));
-        ownerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_GESTIONE_SERVIZI"));
-
-        managerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_VIEW_USERS"));
-        managerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_ADD_CHEF"));
-        managerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_ADD_WAITER"));
-        managerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_ADD_VIEWER"));
-        managerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_DISABLE_CHEF"));
-        managerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_DISABLE_WAITER"));
-        managerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_DISABLE_VIEWER"));
-        managerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_CHANGE_ROLE_TO_CHEF"));
-        managerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_CHANGE_ROLE_TO_WAITER"));
-        managerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_CHANGE_ROLE_TO_VIEWER"));
-        managerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_ADD_RESERVATION"));
-        managerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_MODIFY_RESERVATION"));
-        managerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_CANCEL_RESERVATION"));
-        managerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_CHAT_WITH_CUSTOMERS"));
-        managerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_GESTIONE_SERVIZI"));
-
-        chefRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_VIEW_USERS"));
-        chefRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_CHANGE_ROLE_TO_WAITER"));
-        chefRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_CHANGE_ROLE_TO_VIEWER"));
-        chefRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_ADD_RESERVATION"));
-        chefRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_MODIFY_RESERVATION"));
-        chefRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_CANCEL_RESERVATION"));
-        chefRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_CHAT_WITH_CUSTOMERS"));
-
-        waiterRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_VIEW_USERS"));
-        waiterRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_ADD_RESERVATION"));
-        waiterRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_MODIFY_RESERVATION"));
-        waiterRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_CANCEL_RESERVATION"));
-        waiterRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_CHAT_WITH_CUSTOMERS"));
-
-        viewerRole.addRestaurantPrivilege(privilegeMap.get("PRIVILEGE_VIEW_USERS"));
-
-        rrDAO.save(ownerRole);
-        rrDAO.save(managerRole);
-        rrDAO.save(chefRole);
-        rrDAO.save(waiterRole);
-        rrDAO.save(viewerRole);
     }
 
-    public String validateVerificationToken(String token) {
+       public String validateVerificationToken(String token) {
         final RestaurantUserVerificationToken verificationToken = tokenDAO.findByToken(token);
         if (verificationToken == null) {
             return TOKEN_INVALID;
@@ -385,58 +283,70 @@ public class RestaurantUserService {
         return vToken;
     }
 
-    public void switchToRestaurantUser(Long restaurantUserId) {
-        UserDetails userDetails = userDetailsService.loadUserById(restaurantUserId);
-        if (userDetails == null) {
-            throw new UsernameNotFoundException("No user found with username: " + restaurantUserId.toString());
-        }
-
-        // Add PRIVILEGE_SWITCH_TO_RESTAURANT_USER to the authorities
-        GrantedAuthority switchPrivilege = new SimpleGrantedAuthority("PRIVILEGE_SWITCH_TO_RESTAURANT_USER");
-        List<GrantedAuthority> updatedAuthorities = new ArrayList<>(userDetails.getAuthorities());
-        updatedAuthorities.add(switchPrivilege);
-        SecurityContextHolder.getContext().setAuthentication(
-                new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
-                        userDetails, userDetails.getPassword(), updatedAuthorities));
+    private List<? extends GrantedAuthority> getSwitchUserAuthorities() {
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority("PRIVILEGE_SWITCH_TO_RESTAURANT_USER"));
+        return authorities;
+    }
+    private List<? extends GrantedAuthority> getSwitchUserAuthoritiesAdmin() {
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority("PRIVILEGE_ADMIN_SWITCH_TO_RESTAURANT_USER"));
+        return authorities;
     }
 
-    public void disconnectRestaurantUser(Long restaurantUserId) {
-        UserDetails userDetails = userDetailsService.loadSwitchUserById(restaurantUserId);
-        if (userDetails == null) {
-            throw new UsernameNotFoundException("No user found with username: " + restaurantUserId.toString());
-        }
-        // Retain only PRIVILEGE_SWITCH_TO_RESTAURANT_USER
-        GrantedAuthority switchPrivilege = new SimpleGrantedAuthority("PRIVILEGE_SWITCH_TO_RESTAURANT_USER");
-        List<GrantedAuthority> updatedAuthorities = new ArrayList<>();
-        updatedAuthorities.add(switchPrivilege);
+    public RestaurantUserAuthResponseDTO loginRestaurantUser(Long restaurantUserId, HttpServletRequest request) {
+        if (ruDAO.isMultiRestaurantUser(restaurantUserId)) {
+            RestaurantUser user = ruDAO.findById(restaurantUserId)
+                    .orElseThrow(() -> new UsernameNotFoundException("No user found with ID: " + restaurantUserId));
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(user.getEmail(), null));
 
-        SecurityContextHolder.getContext().setAuthentication(
-                new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
-                        userDetails, userDetails.getPassword(), updatedAuthorities));
+            final RestaurantUser customerDetails = ruDAO.findById(restaurantUserId)
+                    .orElseThrow(() -> new UsernameNotFoundException("No user found with ID: " + restaurantUserId));
+            final String jwt = jwtUtil.generateToken(customerDetails);
+            // Combine authorities from getSwitchUserAuthorities() and user.getAuthorities()
+            List<GrantedAuthority> combinedAuthorities = new ArrayList<>();
+            combinedAuthorities.addAll(getSwitchUserAuthorities());
+            combinedAuthorities.addAll(user.getAuthorities());
+
+            UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
+                    user, null, combinedAuthorities);
+            usernamePasswordAuthenticationToken
+                    .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+            RestaurantUserAuthResponseDTO responseDTO = new RestaurantUserAuthResponseDTO(jwt,
+                    new RestaurantUserDTO(customerDetails));
+            return responseDTO;
+        }
+        throw new IllegalArgumentException("User is not a multi-restaurant user with ID: " + restaurantUserId);
     }
 
-    public void switchToRestaurantUserAdmin(Long restaurantUserId) {
-        UserDetails userDetails = userDetailsService.loadUserById(restaurantUserId);
-        if (userDetails == null) {
-            throw new UsernameNotFoundException("No user found with ID: " + restaurantUserId);
-        }
+    public RestaurantUserAuthResponseDTO adminLoginToRestaurantUser(Long restaurantUserId, HttpServletRequest request) {
+        RestaurantUser user = ruDAO.findById(restaurantUserId)
+                    .orElseThrow(() -> new UsernameNotFoundException("No user found with ID: " + restaurantUserId));
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(user.getEmail(), null));
 
-        // Add PRIVILEGE_SWITCH_TO_RESTAURANT_USER_ADMIN to the authorities
-        GrantedAuthority switchPrivilege = new SimpleGrantedAuthority("PRIVILEGE_SWITCH_TO_RESTAURANT_USER_ADMIN");
-        List<GrantedAuthority> updatedAuthorities = new ArrayList<>(userDetails.getAuthorities());
-        updatedAuthorities.add(switchPrivilege);
+            final RestaurantUser customerDetails = ruDAO.findById(restaurantUserId)
+                    .orElseThrow(() -> new UsernameNotFoundException("No user found with ID: " + restaurantUserId));
+            final String jwt = jwtUtil.generateToken(customerDetails);
+            // Combine authorities from getSwitchUserAuthorities() and user.getAuthorities()
+            List<GrantedAuthority> combinedAuthorities = new ArrayList<>();
+            combinedAuthorities.addAll(getSwitchUserAuthoritiesAdmin());
+            combinedAuthorities.addAll(user.getAuthorities());
 
-        SecurityContextHolder.getContext().setAuthentication(
-                new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
-                        userDetails, userDetails.getPassword(), updatedAuthorities));
+            UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
+                    user, null, combinedAuthorities);
+            usernamePasswordAuthenticationToken
+                    .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+            RestaurantUserAuthResponseDTO responseDTO = new RestaurantUserAuthResponseDTO(jwt,
+                    new RestaurantUserDTO(customerDetails));
+            return responseDTO;
     }
 
     public void disconnectRestaurantUserAdmin() {
-        UserDetails adminDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        // Restore admin identity
-        SecurityContextHolder.getContext().setAuthentication(
-                new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
-                        adminDetails, adminDetails.getPassword(), adminDetails.getAuthorities()));
+       //TODO: Da Riscrivere
     }
 
     public RestaurantUser findRestaurantUserByEmail(String userEmail) {
@@ -454,25 +364,26 @@ public class RestaurantUserService {
         // rifare jwt
     }
 
-
     @Transactional
     public RestaurantUserDTO addRestaurantUserToRestaurant(NewRestaurantUserDTO restaurantUserDTO, Long restaurantId) {
         Restaurant restaurant = restaurantDAO.findById(restaurantId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid restaurant ID: " + restaurantId));
         RestaurantUser restaurantUser = registerRestaurantUser(restaurantUserDTO, restaurant);
-        
+
         // Generate and send verification token
         String token = UUID.randomUUID().toString();
         createVerificationTokenForRestaurantUser(restaurantUser, token);
-        //TODO: Verificare invio mail
-        //final SimpleMailMessage email = constructEmailMessage(event, restaurantUser, token);
-		//mailSender.send(email);
-        
+        // TODO: Verificare invio mail
+        // final SimpleMailMessage email = constructEmailMessage(event, restaurantUser,
+        // token);
+        // mailSender.send(email);
+
         return new RestaurantUserDTO(restaurantUser);
     }
 
     @Transactional
-    public RestaurantUserDTO addRestaurantUserToRestaurantWithRole(NewRestaurantUserDTO restaurantUserDTO, Long restaurantId, String roleName) {
+    public RestaurantUserDTO addRestaurantUserToRestaurantWithRole(NewRestaurantUserDTO restaurantUserDTO,
+            Long restaurantId, String roleName) {
         if ("ROLE_OWNER".equals(roleName)) {
             throw new IllegalArgumentException("Cannot assign the ROLE_OWNER role to a user.");
         }
@@ -484,21 +395,22 @@ public class RestaurantUserService {
             throw new IllegalArgumentException("Role not found: " + roleName);
         }
         RestaurantUser restaurantUser = registerRestaurantUser(restaurantUserDTO, restaurant, role);
-        
+
         // Generate and send verification token
         String token = UUID.randomUUID().toString();
         createVerificationTokenForRestaurantUser(restaurantUser, token);
-        //TODO: Verificare invio mail
-        //final SimpleMailMessage email = constructEmailMessage(event, restaurantUser, token);
-		//mailSender.send(email);
-        
+        // TODO: Verificare invio mail
+        // final SimpleMailMessage email = constructEmailMessage(event, restaurantUser,
+        // token);
+        // mailSender.send(email);
+
         return new RestaurantUserDTO(restaurantUser);
     }
 
     public void createVerificationTokenForRestaurantUser(final RestaurantUser user, final String token) {
-		final RestaurantUserVerificationToken myToken = new RestaurantUserVerificationToken(token, user);
-		tokenDAO.save(myToken);
-	}
+        final RestaurantUserVerificationToken myToken = new RestaurantUserVerificationToken(token, user);
+        tokenDAO.save(myToken);
+    }
 
     public RestaurantUserDTO removeRestaurantUserRole(Long restaurantUserId, String string) {
         if ("ROLE_OWNER".equals(string)) {
@@ -506,7 +418,7 @@ public class RestaurantUserService {
         }
 
         RestaurantUser ru = ruDAO.findById(restaurantUserId)
-            .orElseThrow(() -> new IllegalArgumentException("Invalid restaurant user ID: " + restaurantUserId));
+                .orElseThrow(() -> new IllegalArgumentException("Invalid restaurant user ID: " + restaurantUserId));
 
         RestaurantRole role = rrDAO.findByName(string);
         if (role == null) {
@@ -522,6 +434,12 @@ public class RestaurantUserService {
         ruDAO.save(ru);
 
         return new RestaurantUserDTO(ru);
+    }
+
+    public List<RestaurantUserDTO> getRestaurantUsersByRestaurantId(Long restaurantId) {
+        return ruDAO.findByRestaurantId(restaurantId).stream()
+            .map(RestaurantUserDTO::new)
+            .toList();
     }
 
 }

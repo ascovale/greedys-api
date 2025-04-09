@@ -1,6 +1,7 @@
 package com.application.controller.admin;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,6 +20,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 
 @RequestMapping("/admin/restaurant/user")
 @RestController
@@ -73,21 +75,20 @@ public class AdminRestaurantUserController {
     }
 
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_SWITCH_TO_RESTAURANT_USER')")
-    @Operation(summary = "Switch to restaurant user", description = "Switches to restaurant user mode")
-    @ApiResponse(responseCode = "200", description = "Switched to restaurant user mode successfully")
-    @GetMapping("/switch/{restaurantUserId}")
-    public String switchUser(@RequestParam Long restaurantUserId) {
-        restaurantUserService.switchToRestaurantUserAdmin(restaurantUserId);
-        return "User switched to: " + restaurantUserId;
+    @Operation(summary = "Get JWT Token of a restaurant user", description = "Returns the JWT token of a restaurant user")
+    @ApiResponse(responseCode = "200", description = "JWT token of restaurant user successfully given")
+    @GetMapping("/login/{restaurantUserId}")
+    public ResponseEntity<?> loginTokenHasRestaurantUser(@RequestParam Long restaurantUserId, HttpServletRequest request) {
+        return ResponseEntity.ok(restaurantUserService.adminLoginToRestaurantUser(restaurantUserId,request));
     }
 
-    @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_SWITCH_TO_RESTAURANT_USER')")
-    @Operation(summary = "Exit restaurant user", description = "Exits the restaurant user mode and redirects to admin home")
-    @ApiResponse(responseCode = "200", description = "Exited restaurant user mode successfully")
-    @GetMapping("/disconnect")
-    public String disconnectUser() {
-        restaurantUserService.disconnectRestaurantUserAdmin();
-        return "Restaurant user disconnected successfully";
+    @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_USER_READ')")
+    @Operation(summary = "Get restaurant users", description = "Retrieves the list of users for a specific restaurant")
+    @ApiResponse(responseCode = "200", description = "List of restaurant users retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = RestaurantUser.class)))
+    @ApiResponse(responseCode = "400", description = "Invalid request")
+    @GetMapping("/{restaurantId}/users")
+    public ResponseEntity<?> getRestaurantUsers(@PathVariable Long restaurantId) {
+        return ResponseEntity.ok(restaurantUserService.getRestaurantUsersByRestaurantId(restaurantId));
     }
 
 }

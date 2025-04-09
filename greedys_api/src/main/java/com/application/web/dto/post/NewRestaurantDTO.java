@@ -22,8 +22,16 @@ public class NewRestaurantDTO {
 	private Long ownerId;
 	//TODO: private String phoneNumber;
 	private String password;
+	public NewRestaurantDTO() {
+	}
+	public NewRestaurantDTO(String name, String address, String email, String password) {
+		this.name = name;
+		this.address = address;
+		this.email = email;
+		this.password = password;
+	}
 
-	public String getPassword() {
+    public String getPassword() {
 		return password;
 	}
 

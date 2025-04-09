@@ -12,7 +12,7 @@ import com.application.persistence.model.customer.Customer;
 
 //@Component
 public class UserAuthenticationProvider extends DaoAuthenticationProvider {
-
+    //TODO DA ELIMINARE CLASSE
     @Autowired
     private CustomerDAO userRepository;
 
