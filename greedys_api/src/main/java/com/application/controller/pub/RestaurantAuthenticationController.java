@@ -154,13 +154,16 @@ public class RestaurantAuthenticationController {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(),
                         authenticationRequest.getPassword()));
-
+        System.out.println("\n\n\\n\n 1 Qua ci arrivo");
         final RestaurantUser userDetails = restaurantUserService
                 .findRestaurantUserByEmail(authenticationRequest.getUsername());
+        System.out.println("\n\n\\n\n 2 Qua ci arrivo");
+
         final String jwt = jwtUtil.generateToken(userDetails);
+        System.out.println("\n\n\\n\n 3 Qua ci arrivo");
         final RestaurantUserAuthResponseDTO responseDTO = new RestaurantUserAuthResponseDTO(jwt,
                 new RestaurantUserDTO(userDetails));
-
+        System.out.println("\n\n\\n\n 4 Qua ci arrivo");
         return ResponseEntity.ok(responseDTO);
     }
 

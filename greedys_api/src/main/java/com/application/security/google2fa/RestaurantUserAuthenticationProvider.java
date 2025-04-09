@@ -13,6 +13,7 @@ import com.application.persistence.model.restaurant.user.RestaurantUser;
 //@Component
 public class RestaurantUserAuthenticationProvider extends DaoAuthenticationProvider {
     //TODO forse non serve questa classe perchè non è nel security config
+    //TODO DA ELIOMINARE CLASSE
     @Autowired
     private RestaurantUserDAO userRepository;
 
