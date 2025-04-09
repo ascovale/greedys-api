@@ -41,7 +41,6 @@ import com.application.service.RestaurantUserService;
 import com.application.web.dto.RestaurantUserAuthResponseDTO;
 import com.application.web.dto.get.RestaurantUserDTO;
 import com.application.web.dto.post.AuthRequestDTO;
-import com.application.web.dto.post.AuthResponseDTO;
 import com.application.web.dto.post.NewRestaurantDTO;
 import com.application.web.util.GenericResponse;
 
@@ -145,12 +144,12 @@ public class RestaurantAuthenticationController {
 
     @Operation(summary = "Generate an authentication token", description = "Authenticates a user and returns a JWT token")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Authentication successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthResponseDTO.class))),
+            @ApiResponse(responseCode = "200", description = "Authentication successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = RestaurantUserAuthResponseDTO.class))),
             @ApiResponse(responseCode = "401", description = "Authentication failed", content = @Content(mediaType = "application/json"))
     })
     @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Authentication request", required = true, content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthRequestDTO.class)))
     @PostMapping(value = "/user/login", produces = "application/json")
-    public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthRequestDTO authenticationRequest) {
+    public String createAuthenticationToken(@RequestBody AuthRequestDTO authenticationRequest) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(),
                         authenticationRequest.getPassword()));
@@ -164,7 +163,8 @@ public class RestaurantAuthenticationController {
         final RestaurantUserAuthResponseDTO responseDTO = new RestaurantUserAuthResponseDTO(jwt,
                 new RestaurantUserDTO(userDetails));
         System.out.println("\n\n\\n\n 4 Qua ci arrivo");
-        return ResponseEntity.ok(responseDTO);
+        return "ok";
+        //return ResponseEntity.ok(responseDTO);
     }
 
     @Operation(summary = "Confirm restaurant user registration", description = "Conferma la registrazione")
