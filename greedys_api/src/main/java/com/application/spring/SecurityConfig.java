@@ -25,8 +25,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import com.application.security.google2fa.CustomerAuthenticationProvider;
 import com.application.security.google2fa.RestaurantUserAuthenticationProvider;
-import com.application.security.google2fa.UserAuthenticationProvider.CustomerAuthenticationProvider;
 import com.application.security.user.admin.AdminUserDetailsService;
 import com.application.security.user.admin.AdminUserRememberMeServices;
 import com.application.security.user.customer.CustomerUserDetailsService;
