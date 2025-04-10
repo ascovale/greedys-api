@@ -37,7 +37,7 @@ public class MultiRestaurantUserController {
                 return ResponseEntity.ok(restaurantUserService.loginRestaurantUser(restaurantUserId,request));
         }
 
-        @PreAuthorize("hasAuthority('PRIVILEGE_SWITCH_TO_RESTAURANT_USER'")
+        @PreAuthorize("hasAuthority('PRIVILEGE_SWITCH_TO_RESTAURANT_USER')")
         @GetMapping("/current_user")
         @Operation(summary = "Get current restaurant user", description = "Returns the details of the currently logged-in restaurant user.")
         public RestaurantUserDTO getCurrentUser() {
