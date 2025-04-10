@@ -34,19 +34,12 @@ public class RestaurantUserDetailsService implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(final String email) throws UsernameNotFoundException {
-        System.out.println("loadUserByUsername called by: " + Thread.currentThread().getStackTrace()[2]);
-        System.out.println("Current thread: " + Thread.currentThread().getName());
-        System.out.println("Email: " + email);
-
-
-
+    public UserDetails loadUserByUsername(final String email)  {
         final String ip = getClientIP();
         if (loginAttemptService.isBlocked(ip)) {
             throw new RuntimeException("blocked");
         }
-        try {
-            System.out.println("\n\n\n1 Loading user by email: " + email);
+        
             Collection<? extends GrantedAuthority> authorities;
             RestaurantUser user = new RestaurantUser();
           /*   if (isMultiRestaurantUser(email)) {
@@ -74,12 +67,7 @@ public class RestaurantUserDetailsService implements UserDetailsService {
 
 
             return user;
-        } catch (final Exception e) {
-            System.out.println("\n\n\nERRORRE Loaded user by email: " + email);
-            e.printStackTrace();
-
-            throw new RuntimeException(e);
-        }
+        
     }
 
     public UserDetails loadUserById(final Long restaurantUserId) throws UsernameNotFoundException {
