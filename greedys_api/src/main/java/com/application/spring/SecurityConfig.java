@@ -8,6 +8,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -24,6 +25,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import com.application.security.google2fa.RestaurantUserAuthenticationProvider;
+import com.application.security.google2fa.UserAuthenticationProvider.CustomerAuthenticationProvider;
 import com.application.security.user.admin.AdminUserDetailsService;
 import com.application.security.user.admin.AdminUserRememberMeServices;
 import com.application.security.user.customer.CustomerUserDetailsService;
@@ -85,7 +88,7 @@ public class SecurityConfig {
                                                                  */
                                                                 "/doc**", "/swagger-ui/**",
                                                                 "/register/**", "/v3/api-docs*/**", "/api/**",
-                                                                "/auth/**", 
+                                                                "/auth/**",
                                                                 "/reservation/**", "/error*", "/actuator/health",
                                                                 "/public/**")
                                                 .permitAll().requestMatchers("/restaurant_user/**").authenticated())
@@ -141,7 +144,7 @@ public class SecurityConfig {
                                                 .requestMatchers(
                                                                 "/doc**", "/swagger-ui/**",
                                                                 "/register/**", "/v3/api-docs*/**", "/api/**",
-                                                                "/auth/**", 
+                                                                "/auth/**",
                                                                 "/reservation/**", "/error*", "/actuator/health",
                                                                 "/public/**")
                                                 .permitAll()
@@ -149,13 +152,19 @@ public class SecurityConfig {
                                 .sessionManagement(management -> management
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                                 .addFilterBefore(adminJwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
-                                
                                 .authenticationManager(authenticationManager);
 
                 return http.build();
         }
 
-
+        @Bean
+        @Primary
+        public AuthenticationManager fallbackAuthenticationManager() {
+                return authentication -> {
+                        throw new UnsupportedOperationException(
+                                        "No global AuthenticationManager configured. Use specific ones with @Qualifier.");
+                };
+        }
 
         @Bean
         CorsConfigurationSource corsConfigurationSource() {
@@ -172,33 +181,42 @@ public class SecurityConfig {
         }
 
         @Bean
-        @Primary
         @Qualifier("restaurantAuthenticationManager")
         AuthenticationManager restaurantAuthenticationManager(HttpSecurity http) throws Exception {
                 AuthenticationManagerBuilder auth = http.getSharedObject(AuthenticationManagerBuilder.class);
-                auth.userDetailsService(restaurantUserDetailsService)
-                                .passwordEncoder(passwordEncoder());
-
+                auth.authenticationProvider(restaurantUserAuthenticationProvider());
                 return auth.build();
+        }
+
+        @Bean
+        public RestaurantUserAuthenticationProvider restaurantUserAuthenticationProvider() {
+                RestaurantUserAuthenticationProvider provider = new RestaurantUserAuthenticationProvider();
+                provider.setUserDetailsService(restaurantUserDetailsService);
+                provider.setPasswordEncoder(passwordEncoder());
+                return provider;
         }
 
         @Bean
         @Qualifier("customerAuthenticationManager")
         AuthenticationManager customerAuthenticationManager(HttpSecurity http) throws Exception {
                 AuthenticationManagerBuilder auth = http.getSharedObject(AuthenticationManagerBuilder.class);
-                auth.userDetailsService(customerUserDetailsService)
-                                .passwordEncoder(passwordEncoder());
-
+                auth.authenticationProvider(customerAuthenticationProvider());
                 return auth.build();
+        }
+
+        @Bean
+        public CustomerAuthenticationProvider customerAuthenticationProvider() {
+                CustomerAuthenticationProvider provider = new CustomerAuthenticationProvider();
+                provider.setUserDetailsService(customerUserDetailsService);
+                provider.setPasswordEncoder(passwordEncoder());
+                return provider;
         }
 
         @Bean
         @Qualifier("adminAuthenticationManager")
         AuthenticationManager adminAuthenticationManager(HttpSecurity http) throws Exception {
                 AuthenticationManagerBuilder auth = http.getSharedObject(AuthenticationManagerBuilder.class);
-                auth.userDetailsService(adminUserDetailsService)
-                                .passwordEncoder(passwordEncoder());
-
+                auth.authenticationProvider(adminAuthenticationProvider());
                 return auth.build();
         }
 
@@ -208,6 +226,13 @@ public class SecurityConfig {
                 return new BCryptPasswordEncoder();
         }
 
+        @Bean
+        public DaoAuthenticationProvider adminAuthenticationProvider() {
+                DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+                provider.setUserDetailsService(adminUserDetailsService);
+                provider.setPasswordEncoder(passwordEncoder());
+                return provider;
+        }
 
         @Bean(name = "customerUserRememberMe")
         RememberMeServices rememberMeServices1() {
@@ -231,5 +256,4 @@ public class SecurityConfig {
         HttpSessionEventPublisher httpSessionEventPublisher() {
                 return new HttpSessionEventPublisher();
         }
-
 }
