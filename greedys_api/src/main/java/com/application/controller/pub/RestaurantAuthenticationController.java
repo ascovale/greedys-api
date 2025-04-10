@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.MessageSource;
+import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
@@ -88,6 +89,13 @@ public class RestaurantAuthenticationController {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.securityRestaurantUserService = securityRestaurantUserService;
+    }
+
+    @Bean
+    public AuthenticationManager noOpAuthenticationManager() {
+        return authentication -> {
+            throw new UnsupportedOperationException("No global AuthenticationManager configured");
+        };
     }
 
     // Public API methods

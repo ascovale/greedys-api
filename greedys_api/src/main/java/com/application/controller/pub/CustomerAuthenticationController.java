@@ -186,16 +186,31 @@ public class CustomerAuthenticationController {
     public ResponseEntity<?> createAuthenticationToken(
             @RequestBody AuthRequestDTO authenticationRequest) {
 
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(),
-                        authenticationRequest.getPassword()));
+        logger.debug("Authentication request received for username: {}", authenticationRequest.getUsername());
 
-        final Customer customerDetails = customerService.findCustomerByEmail(authenticationRequest.getUsername());
-        final String jwt = jwtUtil.generateToken(customerDetails);
-        final AuthResponseDTO responseDTO = new AuthResponseDTO(jwt, new CustomerDTO(customerDetails));
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(),
+                            authenticationRequest.getPassword()));
 
-        return ResponseEntity.ok(responseDTO);
+            logger.debug("Authentication successful for username: {}", authenticationRequest.getUsername());
 
+            final Customer customerDetails = customerService.findCustomerByEmail(authenticationRequest.getUsername());
+            if (customerDetails == null) {
+                logger.warn("No customer found with email: {}", authenticationRequest.getUsername());
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+            }
+
+            final String jwt = jwtUtil.generateToken(customerDetails);
+            logger.debug("JWT generated for username: {}", authenticationRequest.getUsername());
+
+            final AuthResponseDTO responseDTO = new AuthResponseDTO(jwt, new CustomerDTO(customerDetails));
+            return ResponseEntity.ok(responseDTO);
+
+        } catch (Exception e) {
+            logger.error("Authentication failed for username: {}. Error: {}", authenticationRequest.getUsername(), e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed");
+        }
     }
 
     @Operation(summary = "Authenticate with Google", description = "Authenticates a customer using a Google token and returns a JWT token.")

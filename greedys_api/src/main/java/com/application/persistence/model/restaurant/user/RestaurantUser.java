@@ -13,6 +13,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -30,15 +31,15 @@ public class RestaurantUser implements UserDetails {
     @Column(unique = true, nullable = false)
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    @ManyToOne(targetEntity = Restaurant.class)
+    @ManyToOne(targetEntity = Restaurant.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "restaurant_id")
     private Restaurant restaurant;
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "restaurant_user_has_role", 
         joinColumns = @JoinColumn(name = "restaurant_user_id"), 
         inverseJoinColumns = @JoinColumn(name = "restaurant_role_id"))
     private List<RestaurantRole> restaurantRoles = new ArrayList<>();
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     private RestaurantUserOptions options;
     @Enumerated(EnumType.STRING)
     @Column(name = "status")

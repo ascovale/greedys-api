@@ -23,7 +23,14 @@ public class NewRestaurantDTO {
 	//TODO: private String phoneNumber;
 	private String password;
 
-	public String getPassword() {
+	public NewRestaurantDTO(String name, String address, String email, String password) {
+		this.name = name;
+		this.address = address;
+		this.email = email;
+		this.password = password;
+	}
+	public NewRestaurantDTO(){}
+    public String getPassword() {
 		return password;
 	}
 

@@ -34,12 +34,12 @@ public class RestaurantUserDetailsService implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(final String email) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(final String email)  {
         final String ip = getClientIP();
         if (loginAttemptService.isBlocked(ip)) {
             throw new RuntimeException("blocked");
         }
-        try {
+        
             Collection<? extends GrantedAuthority> authorities;
             final RestaurantUser user = restaurantUserDAO.findByEmail(email);
             if (user == null) {
@@ -62,9 +62,7 @@ public class RestaurantUserDetailsService implements UserDetailsService {
             }
     
             return user;
-        } catch (final Exception e) {
-            throw new RuntimeException(e);
-        }
+        
     }
 
     
