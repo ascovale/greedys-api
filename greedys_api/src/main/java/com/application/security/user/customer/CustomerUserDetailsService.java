@@ -34,6 +34,7 @@ public class CustomerUserDetailsService implements UserDetailsService {
             throw new RuntimeException("blocked");
         }
         try {
+            System.out.println("\n\n\n 1: STO QUI\n\n\n\n\n");
             final Customer customer = custumerDAO.findByEmail(email);
             if (customer == null) {
                 throw new UsernameNotFoundException("No user found with username: " + email);
@@ -41,6 +42,7 @@ public class CustomerUserDetailsService implements UserDetailsService {
 
             // Forza il caricamento lazy delle autorità
             customer.getAuthorities().size();
+            System.out.println("\n\n\n 2: STO QUI\n\n\n\n\n");
 
             return customer;
         } catch (final Exception e) {

@@ -67,9 +67,9 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
     @Autowired
     private AdminPrivilegeDAO adminPrivilegeDAO;
     @Autowired
-    RestaurantRoleDAO restaurantRoleDAO;
+    private RestaurantRoleDAO restaurantRoleDAO;
     @Autowired
-    RestaurantPrivilegeDAO restaurantPrivilegeDAO;
+    private RestaurantPrivilegeDAO restaurantPrivilegeDAO;
     @Autowired
     private SetupConfigDAO setupConfigDAO;
     @Autowired
@@ -85,9 +85,9 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
     @Autowired
     private SlotDAO slotDAO;
     @Autowired
-    AdminService adminService;
+    private AdminService adminService;
     @Autowired
-    RestaurantService restaurantService;
+    private RestaurantService restaurantService;
     @Autowired
     private AllergyService allergyService;
     @Autowired
@@ -98,12 +98,9 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
     @Override
     @Transactional
     public void onApplicationEvent(final ContextRefreshedEvent event) {
-
         SetupConfig setupConfig = setupConfigDAO.findById(1L).orElse(new SetupConfig());
         if (!setupConfig.isAlreadySetup()) {
-
-            logger.info("    >>>  ---   Setup started   ---  <<< ");
-            setupConfig = new SetupConfig();
+            logger.info(">>> --- Setup started --- <<<");
             setupConfig.setId(1L);
             setupConfig.setAlreadySetup(true);
             setupConfigDAO.save(setupConfig);
@@ -111,11 +108,10 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
             adminSetup();
             customerSetup();
             createRestaurantPrivilegesAndRoles();
-            logger.info("    >>>  ---   Setup finished   ---  <<< ");
+            logger.info(">>> --- Setup finished --- <<<");
         }
         if (!setupConfig.isDataUploaded()) {
-
-            logger.info("    >>>  ---   Creating Test data  ---  <<< ");
+            logger.info(">>> --- Creating Test data --- <<<");
             setupConfig.setAlreadySetup(true);
             setupConfig.setDataUploaded(true);
             createSomeAdmin();
@@ -124,85 +120,71 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
             createAllergies();
             createRestaurantCategories();
             assignCategoriesToLaSoffittaRenovatio();
-            logger.info("    >>>  ---   Test data Created   ---  <<< ");
+            createAdditionalRestaurants();
+            logger.info(">>> --- Test data Created --- <<<");
         }
     }
 
     @Transactional
     public void adminSetup() {
-        logger.info("    >>>  ---   Admin Setup   ---  <<< ");
-        // == ADMIN: create initial privileges
-        final AdminPrivilege adminReservationCustomerWrite = createAdminPrivilegeIfNotFound(
-                "PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_WRITE");
-        final AdminPrivilege adminReservationCustomerRead = createAdminPrivilegeIfNotFound(
-                "PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_READ");
-        final AdminPrivilege adminReservationRestaurantWrite = createAdminPrivilegeIfNotFound(
-                "PRIVILEGE_ADMIN_RESERVATION_RESTAURANT_WRITE");
-        final AdminPrivilege adminReservationRestaurantRead = createAdminPrivilegeIfNotFound(
-                "PRIVILEGE_ADMIN_RESERVATION_RESTAURANT_READ");
-        final AdminPrivilege adminRestaurantUserRead = createAdminPrivilegeIfNotFound(
-                "PRIVILEGE_ADMIN_RESTAURANT_USER_READ");
-        final AdminPrivilege adminRestaurantUserWrite = createAdminPrivilegeIfNotFound(
-                "PRIVILEGE_ADMIN_RESTAURANT_USER_WRITE");
-        final AdminPrivilege adminSwitchToRestaurantUserAdmin = createAdminPrivilegeIfNotFound(
-                    "PRIVILEGE_SWITCH_TO_RESTAURANT_USER_ADMIN");
+        logger.info(">>> --- Admin Setup --- <<<");
+        final AdminPrivilege adminReservationCustomerWrite = createAdminPrivilegeIfNotFound("PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_WRITE");
+        final AdminPrivilege adminReservationCustomerRead = createAdminPrivilegeIfNotFound("PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_READ");
+        final AdminPrivilege adminReservationRestaurantWrite = createAdminPrivilegeIfNotFound("PRIVILEGE_ADMIN_RESERVATION_RESTAURANT_WRITE");
+        final AdminPrivilege adminReservationRestaurantRead = createAdminPrivilegeIfNotFound("PRIVILEGE_ADMIN_RESERVATION_RESTAURANT_READ");
+        final AdminPrivilege adminRestaurantUserRead = createAdminPrivilegeIfNotFound("PRIVILEGE_ADMIN_RESTAURANT_USER_READ");
+        final AdminPrivilege adminRestaurantUserWrite = createAdminPrivilegeIfNotFound("PRIVILEGE_ADMIN_RESTAURANT_USER_WRITE");
+        final AdminPrivilege adminSwitchToRestaurantUserAdmin = createAdminPrivilegeIfNotFound("PRIVILEGE_SWITCH_TO_RESTAURANT_USER_ADMIN");
         final AdminPrivilege adminRestaurantRead = createAdminPrivilegeIfNotFound("PRIVILEGE_ADMIN_RESTAURANT_READ");
         final AdminPrivilege adminRestaurantWrite = createAdminPrivilegeIfNotFound("PRIVILEGE_ADMIN_RESTAURANT_WRITE");
         final AdminPrivilege adminCustomerRead = createAdminPrivilegeIfNotFound("PRIVILEGE_ADMIN_CUSTOMER_READ");
         final AdminPrivilege adminCustomerWrite = createAdminPrivilegeIfNotFound("PRIVILEGE_ADMIN_CUSTOMER_WRITE");
-        // == ADMIN: Create initial admin roles
+
         final List<AdminPrivilege> adminPrivileges = new ArrayList<>(Arrays.asList(
-                adminReservationCustomerWrite, adminReservationCustomerRead,
-                adminReservationRestaurantWrite, adminReservationRestaurantRead,
-                adminRestaurantUserRead, adminRestaurantUserWrite,
-                adminRestaurantRead, adminRestaurantWrite,
-                adminCustomerRead, adminCustomerWrite,adminSwitchToRestaurantUserAdmin));
+            adminReservationCustomerWrite, adminReservationCustomerRead,
+            adminReservationRestaurantWrite, adminReservationRestaurantRead,
+            adminRestaurantUserRead, adminRestaurantUserWrite,
+            adminRestaurantRead, adminRestaurantWrite,
+            adminCustomerRead, adminCustomerWrite, adminSwitchToRestaurantUserAdmin));
 
         createAdminRoleIfNotFound("ROLE_SUPER_ADMIN", new ArrayList<>(adminPrivileges));
         createAdminRoleIfNotFound("ROLE_ADMIN_MANAGER", new ArrayList<>(Arrays.asList(
-                adminReservationCustomerRead, adminReservationRestaurantRead,
-                adminRestaurantUserRead, adminRestaurantRead,
-                adminCustomerRead)));
+            adminReservationCustomerRead, adminReservationRestaurantRead,
+            adminRestaurantUserRead, adminRestaurantRead,
+            adminCustomerRead)));
         createAdminRoleIfNotFound("ROLE_ADMIN_EDITOR", new ArrayList<>(Arrays.asList(
-                adminReservationCustomerWrite, adminReservationRestaurantWrite,
-                adminRestaurantUserWrite, adminRestaurantWrite,
-                adminCustomerWrite)));
-        logger.info("    >>>  ---   Admin Setup finished  ---  <<< ");
-
+            adminReservationCustomerWrite, adminReservationRestaurantWrite,
+            adminRestaurantUserWrite, adminRestaurantWrite,
+            adminCustomerWrite)));
+        logger.info(">>> --- Admin Setup finished --- <<<");
     }
 
     public void customerSetup() {
-        logger.info("    >>>  ---   Customer Setup   ---  <<< ");
-
-        // == CUSTOMER: create initial customer privileges
+        logger.info(">>> --- Customer Setup --- <<<");
         final Privilege ureadPrivilege = createPrivilegeIfNotFound("READ_PRIVILEGE");
         final Privilege uwritePrivilege = createPrivilegeIfNotFound("WRITE_PRIVILEGE");
         final Privilege upasswordPrivilege = createPrivilegeIfNotFound("CHANGE_PASSWORD_PRIVILEGE");
 
-        // == CUSTOMER: create initial customer roles
-        final List<Privilege> uadminPrivileges = new ArrayList<Privilege>(
-                Arrays.asList(ureadPrivilege, uwritePrivilege, upasswordPrivilege));
-        final List<Privilege> userPrivileges = new ArrayList<Privilege>(
-                Arrays.asList(ureadPrivilege, upasswordPrivilege));
+        final List<Privilege> uadminPrivileges = new ArrayList<>(Arrays.asList(ureadPrivilege, uwritePrivilege, upasswordPrivilege));
+        final List<Privilege> userPrivileges = new ArrayList<>(Arrays.asList(ureadPrivilege, upasswordPrivilege));
         createRoleIfNotFound("ROLE_PREMIUM_USER", new ArrayList<>(uadminPrivileges));
         createRoleIfNotFound("ROLE_USER", new ArrayList<>(userPrivileges));
-        logger.info("    >>>  ---   Customer Setup finished   ---  <<< ");
-
+        logger.info(">>> --- Customer Setup finished --- <<<");
     }
 
     @Transactional
     public void createDefaultServiceTypes() {
-        logger.info("    >>>  ---   Creating Default Service Types   ---  <<< ");
+        logger.info(">>> --- Creating Default Service Types --- <<<");
         createServiceIfNotFound("Lunch");
         createServiceIfNotFound("Dinner");
         createServiceIfNotFound("Aperitif");
         createServiceIfNotFound("Breakfast");
         createServiceIfNotFound("After Dinner");
-        logger.info("    >>>  ---   Default Service Types Created   ---  <<< ");
+        logger.info(">>> --- Default Service Types Created --- <<<");
     }
 
     @Transactional
-    private final ServiceType createServiceIfNotFound(String name) {
+    private ServiceType createServiceIfNotFound(String name) {
         ServiceType serviceType = serviceTypeDAO.findByName(name);
         if (serviceType == null) {
             serviceType = new ServiceType(name);
@@ -212,10 +194,9 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
     }
 
     @Transactional
-    private final Privilege createPrivilegeIfNotFound(final String name) {
+    private Privilege createPrivilegeIfNotFound(final String name) {
         Privilege privilege = privilegeDAO.findByName(name);
         if (privilege == null) {
-
             privilege = new Privilege(name);
             privilege = privilegeDAO.save(privilege);
         }
@@ -223,7 +204,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
     }
 
     @Transactional
-    private final AdminPrivilege createAdminPrivilegeIfNotFound(final String name) {
+    private AdminPrivilege createAdminPrivilegeIfNotFound(final String name) {
         AdminPrivilege privilege = adminPrivilegeDAO.findByName(name);
         if (privilege == null) {
             privilege = new AdminPrivilege(name);
@@ -254,54 +235,37 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 
     @Transactional
     private void createRestaurantPrivilegesAndRoles() {
-        logger.info("    >>>  ---   Creating Restaurant Privileges and Roles   ---  <<< ");
-        // Crea i privilegi specifici per i ruoli dei ristoranti
-        final RestaurantPrivilege managerWritePrivilege = createRestaurantPrivilegeIfNotFound(
-                "PRIVILEGE_RESTAURANT_USER_MANAGER_WRITE");
-        final RestaurantPrivilege chefWritePrivilege = createRestaurantPrivilegeIfNotFound(
-                "PRIVILEGE_RESTAURANT_USER_CHEF_WRITE");
-        final RestaurantPrivilege waiterWritePrivilege = createRestaurantPrivilegeIfNotFound(
-                "PRIVILEGE_RESTAURANT_USER_WAITER_WRITE");
-        final RestaurantPrivilege viewerWritePrivilege = createRestaurantPrivilegeIfNotFound(
-                "PRIVILEGE_RESTAURANT_USER_VIEWER_WRITE");
-        final RestaurantPrivilege roleWritePrivilege = createRestaurantPrivilegeIfNotFound(
-                "PRIVILEGE_RESTAURANT_USER_ROLE_WRITE");
-        final RestaurantPrivilege reservationWritePrivilege = createRestaurantPrivilegeIfNotFound(
-                "PRIVILEGE_RESTAURANT_USER_RESERVATION_WRITE");
-        final RestaurantPrivilege serviceWritePrivilege = createRestaurantPrivilegeIfNotFound(
-                "PRIVILEGE_RESTAURANT_USER_SERVICE_WRITE");
-        final RestaurantPrivilege serviceReadPrivilege = createRestaurantPrivilegeIfNotFound(
-                "PRIVILEGE_RESTAURANT_USER_SERVICE_READ");
-        final RestaurantPrivilege slotWritePrivilege = createRestaurantPrivilegeIfNotFound(
-                "PRIVILEGE_RESTAURANT_USER_SLOT_WRITE");
+        logger.info(">>> --- Creating Restaurant Privileges and Roles --- <<<");
+        final RestaurantPrivilege managerWritePrivilege = createRestaurantPrivilegeIfNotFound("PRIVILEGE_RESTAURANT_USER_MANAGER_WRITE");
+        final RestaurantPrivilege chefWritePrivilege = createRestaurantPrivilegeIfNotFound("PRIVILEGE_RESTAURANT_USER_CHEF_WRITE");
+        final RestaurantPrivilege waiterWritePrivilege = createRestaurantPrivilegeIfNotFound("PRIVILEGE_RESTAURANT_USER_WAITER_WRITE");
+        final RestaurantPrivilege viewerWritePrivilege = createRestaurantPrivilegeIfNotFound("PRIVILEGE_RESTAURANT_USER_VIEWER_WRITE");
+        final RestaurantPrivilege roleWritePrivilege = createRestaurantPrivilegeIfNotFound("PRIVILEGE_RESTAURANT_USER_ROLE_WRITE");
+        final RestaurantPrivilege reservationWritePrivilege = createRestaurantPrivilegeIfNotFound("PRIVILEGE_RESTAURANT_USER_RESERVATION_WRITE");
+        final RestaurantPrivilege serviceWritePrivilege = createRestaurantPrivilegeIfNotFound("PRIVILEGE_RESTAURANT_USER_SERVICE_WRITE");
+        final RestaurantPrivilege serviceReadPrivilege = createRestaurantPrivilegeIfNotFound("PRIVILEGE_RESTAURANT_USER_SERVICE_READ");
+        final RestaurantPrivilege slotWritePrivilege = createRestaurantPrivilegeIfNotFound("PRIVILEGE_RESTAURANT_USER_SLOT_WRITE");
 
-        // Lista dei privilegi per i ruoli dei ristoranti
         final List<RestaurantPrivilege> ownerPrivileges = new ArrayList<>(Arrays.asList(
-                managerWritePrivilege, chefWritePrivilege, waiterWritePrivilege, viewerWritePrivilege,
-                roleWritePrivilege, reservationWritePrivilege, serviceWritePrivilege, serviceReadPrivilege,
-                slotWritePrivilege));
+            managerWritePrivilege, chefWritePrivilege, waiterWritePrivilege, viewerWritePrivilege,
+            roleWritePrivilege, reservationWritePrivilege, serviceWritePrivilege, serviceReadPrivilege,
+            slotWritePrivilege));
 
         final List<RestaurantPrivilege> managerPrivileges = new ArrayList<>(Arrays.asList(
-                chefWritePrivilege, waiterWritePrivilege, viewerWritePrivilege,
-                roleWritePrivilege, reservationWritePrivilege, serviceWritePrivilege, serviceReadPrivilege,
-                slotWritePrivilege));
+            chefWritePrivilege, waiterWritePrivilege, viewerWritePrivilege,
+            roleWritePrivilege, reservationWritePrivilege, serviceWritePrivilege, serviceReadPrivilege,
+            slotWritePrivilege));
 
-        final List<RestaurantPrivilege> viewerPrivileges = new ArrayList<>(Arrays.asList(
-                serviceReadPrivilege));
+        final List<RestaurantPrivilege> viewerPrivileges = new ArrayList<>(Arrays.asList(serviceReadPrivilege));
+        final List<RestaurantPrivilege> chefPrivileges = new ArrayList<>(Arrays.asList(serviceReadPrivilege, slotWritePrivilege));
+        final List<RestaurantPrivilege> waiterPrivileges = new ArrayList<>(Arrays.asList(serviceReadPrivilege));
 
-        final List<RestaurantPrivilege> chefPrivileges = new ArrayList<>(Arrays.asList(
-                serviceReadPrivilege, slotWritePrivilege));
-
-        final List<RestaurantPrivilege> waiterPrivileges = new ArrayList<>(Arrays.asList(
-                serviceReadPrivilege));
-
-        // Crea i ruoli predefiniti per i ristoranti
         createRestaurantRoleIfNotFound("ROLE_OWNER", ownerPrivileges);
         createRestaurantRoleIfNotFound("ROLE_MANAGER", managerPrivileges);
         createRestaurantRoleIfNotFound("ROLE_VIEWER", viewerPrivileges);
         createRestaurantRoleIfNotFound("ROLE_CHEF", chefPrivileges);
         createRestaurantRoleIfNotFound("ROLE_WAITER", waiterPrivileges);
-        logger.info("    >>>  ---   Restaurant Privileges and Roles Created   ---  <<< ");
+        logger.info(">>> --- Restaurant Privileges and Roles Created --- <<<");
     }
 
     @Transactional
@@ -315,7 +279,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
     }
 
     @Transactional
-    private RestaurantRole createRestaurantRoleIfNotFound(String name, List<RestaurantPrivilege> privileges) {
+    public RestaurantRole createRestaurantRoleIfNotFound(String name, List<RestaurantPrivilege> privileges) {
         RestaurantRole role = restaurantRoleDAO.findByName(name);
         if (role == null) {
             role = new RestaurantRole(name);
@@ -327,7 +291,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 
     @Transactional
     private void createSomeCustomer() {
-        logger.info("    >>>  ---   Creating customer  ---  <<< ");
+        logger.info(">>> --- Creating customer --- <<<");
         Customer existingCustomer = userDAO.findByEmail("info@lasoffittarenovatio.it");
         if (existingCustomer != null) {
             logger.info("Customer with email info@lasoffittarenovatio.it already exists.");
@@ -355,7 +319,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
             Role premiumRole = roleDAO.findByName("ROLE_PREMIUM_USER");
             if (premiumRole != null) {
                 Hibernate.initialize(user.getRoles());
-                List<Role> roles = new ArrayList<>(user.getRoles()); // Create a modifiable list
+                List<Role> roles = new ArrayList<>(user.getRoles());
                 if (!roles.contains(premiumRole)) {
                     roles.add(premiumRole);
                 }
@@ -370,7 +334,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 
     @Transactional
     private void createSomeAdmin() {
-        logger.info("    >>>  ---   Creating Admin  ---  <<< ");
+        logger.info(">>> --- Creating Admin --- <<<");
         Admin existingAdmin = adminDAO.findByEmail("ascolesevalentino@gmail.com");
         if (existingAdmin != null) {
             logger.info("Admin with email ascolesevalentino@gmail.com already exists.");
@@ -396,7 +360,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 
     @Transactional
     private void createRestaurantLaSoffittaRenovatio() {
-        logger.info("    >>>  ---   Creating Restaurant La Soffitta Renovatio  ---  <<< ");
+        logger.info(">>> --- Creating Restaurant La Soffitta Renovatio --- <<<");
         Restaurant restaurant = restaurantDAO.findByName("La Soffitta Renovatio");
         if (restaurant != null) {
             System.out.println("Restaurant with name La Soffitta Renovatio already exists.");
@@ -433,7 +397,6 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
             cena.addServiceType(cenaType);
             serviceDAO.save(cena);
             createSlotsForService(cena, LocalTime.of(17, 30), LocalTime.of(23, 0));
-
         }
     }
 
@@ -450,7 +413,6 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
             }
             time = time.plusMinutes(30);
         }
-        // Save slots to the database
         for (Slot slot : slots) {
             slotDAO.save(slot);
         }
@@ -461,11 +423,11 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
     private void createAllergies() {
         SetupConfig setupConfig = setupConfigDAO.findById(1L).orElse(new SetupConfig());
         if (setupConfig.isDataUploaded()) {
-            logger.info("    >>>  ---   Allergies already created, skipping   ---  <<< ");
+            logger.info(">>> --- Allergies already created, skipping --- <<<");
             return;
         }
 
-        logger.info("    >>>  ---   Creating Allergies   ---  <<< ");
+        logger.info(">>> --- Creating Allergies --- <<<");
         List<NewAllergyDTO> allergies = Arrays.asList(
             new NewAllergyDTO("Cereals", "Includes wheat, rye, barley, oats, and foods like bread, pasta, and cereals."),
             new NewAllergyDTO("Shellfish", "Includes shrimp, crab, lobster, and other crustaceans."),
@@ -498,12 +460,12 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 
         setupConfig.setDataUploaded(true);
         setupConfigDAO.save(setupConfig);
-        logger.info("    >>>  ---   Allergies Created   ---  <<< ");
+        logger.info(">>> --- Allergies Created --- <<<");
     }
 
     @Transactional
     private void createRestaurantCategories() {
-        logger.info("    >>>  ---   Creating Restaurant Categories   ---  <<< ");
+        logger.info(">>> --- Creating Restaurant Categories --- <<<");
         List<String> categories = Arrays.asList(
             "Pizzeria", "Cucina Italiana", "Cucina Romana", "Cinese", "Giapponese",
             "Sushi", "Senza Glutine", "Vegano", "Carne", "Pesce", "Fast Food",
@@ -516,8 +478,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
             "Russa", "Tedesca", "Polacca", "Ungherese", "Nordica", "Casereccia",
             "Street Food", "Paninoteca", "Enoteca", "Churrascaria", "Dim Sum",
             "Tex-Mex", "Pizza al Taglio", "Trattoria", "Osteria", "Cioccolateria",
-            "Gelateria", "Dessert Bar", "Tea House"
-        );
+            "Gelateria", "Dessert Bar", "Tea House");
 
         for (String categoryName : categories) {
             if (restaurantCategoryDAO.findByName(categoryName) == null) {
@@ -526,12 +487,12 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
                 restaurantCategoryDAO.save(category);
             }
         }
-        logger.info("    >>>  ---   Restaurant Categories Created   ---  <<< ");
+        logger.info(">>> --- Restaurant Categories Created --- <<<");
     }
 
     @Transactional
     private void assignCategoriesToLaSoffittaRenovatio() {
-        logger.info("    >>>  ---   Assigning Categories to La Soffitta Renovatio   ---  <<< ");
+        logger.info(">>> --- Assigning Categories to La Soffitta Renovatio --- <<<");
         Restaurant restaurant = restaurantDAO.findByName("La Soffitta Renovatio");
         if (restaurant == null) {
             logger.warn("Restaurant La Soffitta Renovatio not found.");
@@ -540,8 +501,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 
         List<String> categoryNames = Arrays.asList(
             "Pizzeria", "Senza Glutine", "Vegano", "Cucina Italiana", 
-            "Cucina Romana", "Carne", "Pesce"
-        );
+            "Cucina Romana", "Carne", "Pesce");
 
         for (String categoryName : categoryNames) {
             RestaurantCategory category = restaurantCategoryDAO.findByName(categoryName);
@@ -551,6 +511,39 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
         }
 
         restaurantDAO.save(restaurant);
-        logger.info("    >>>  ---   Categories Assigned to La Soffitta Renovatio   ---  <<< ");
+        logger.info(">>> --- Categories Assigned to La Soffitta Renovatio --- <<<");
+    }
+
+    @Transactional
+    private void createAdditionalRestaurants() {
+        logger.info(">>> --- Creating Additional Restaurants --- <<<");
+        List<NewRestaurantDTO> restaurants = new ArrayList<>();
+        restaurants.add(new NewRestaurantDTO("Ristorante Da Mario", "Via Roma 10", "info@damario.it", "Password123"));
+        restaurants.add(new NewRestaurantDTO("Trattoria Bella Napoli", "Piazza Garibaldi 5", "info@bellanapoli.it", "Password123"));
+        restaurants.add(new NewRestaurantDTO("Osteria La Pergola", "Via Dante 15", "info@lapergola.it", "Password123"));
+        restaurants.add(new NewRestaurantDTO("Pizzeria Il Forno", "Corso Italia 20", "info@ilforno.it", "Password123"));
+        restaurants.add(new NewRestaurantDTO("Ristorante Al Mare", "Lungomare 25", "info@almare.it", "Password123"));
+        restaurants.add(new NewRestaurantDTO("Steakhouse La Griglia", "Via Veneto 30", "info@lagriglia.it", "Password123"));
+        restaurants.add(new NewRestaurantDTO("Sushi Bar Tokyo", "Via Milano 40", "info@sushitokyo.it", "Password123"));
+        restaurants.add(new NewRestaurantDTO("Ristorante Vegetariano Verde", "Via Firenze 50", "info@verde.it", "Password123"));
+        restaurants.add(new NewRestaurantDTO("Ristorante Gourmet Stella", "Via Torino 60", "info@stellagourmet.it", "Password123"));
+        restaurants.add(new NewRestaurantDTO("Ristorante Fusion Asia", "Via Napoli 70", "info@fusionasia.it", "Password123"));
+
+        for (NewRestaurantDTO restaurantDto : restaurants) {
+            if (restaurantDAO.findByName(restaurantDto.getName()) == null) {
+                try {
+                    restaurantService.registerRestaurant(restaurantDto);
+                    Restaurant restaurant = restaurantDAO.findByName(restaurantDto.getName());
+                    if (restaurant != null) {
+                        restaurant.setStatus(Restaurant.Status.ENABLED);
+                        restaurantDAO.save(restaurant);
+                    }
+                } catch (Exception e) {
+                    logger.error("Error creating restaurant: " + restaurantDto.getName(), e);
+                }
+            }
+        }
+        logger.info(">>> --- Additional Restaurants Created --- <<<");
     }
 }
+

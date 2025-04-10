@@ -6,12 +6,13 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.stereotype.Component;
 
 import com.application.persistence.dao.customer.CustomerDAO;
 import com.application.persistence.model.customer.Customer;
 
-//@Component
-public class UserAuthenticationProvider extends DaoAuthenticationProvider {
+@Component
+public class CustomerAuthenticationProvider extends DaoAuthenticationProvider {
 
     @Autowired
     private CustomerDAO userRepository;
@@ -19,23 +20,21 @@ public class UserAuthenticationProvider extends DaoAuthenticationProvider {
     @Override
     public Authentication authenticate(Authentication auth) throws AuthenticationException {
         final Customer user = userRepository.findByEmail(auth.getName());
-        if ((user == null)) {
+        if (user == null) {
             throw new BadCredentialsException("Invalid username or password");
         }
-        // to verify verification code
-     /*   if (user.isUsing2FA()) {
-            final String verificationCode = ((CustomWebAuthenticationDetails) auth.getDetails()).getVerificationCode();
-            final Totp totp = new Totp(user.getSecret());
-            if (!isValidLong(verificationCode) || !totp.verify(verificationCode)) {
-                throw new BadCredentialsException("Invalid verfication code");
-            }
 
-        }*/
+        // Verifica esplicita della password
+        if (!getPasswordEncoder().matches(auth.getCredentials().toString(), user.getPassword())) {
+            System.out.println("\n\n\\n\n\nPassword non corrisponde: " + auth.getCredentials().toString() + " != " + user.getPassword());
+            // throw new BadCredentialsException("Invalid username or password");   
+            throw new BadCredentialsException("Invalid username or password");
+        }
+
+        // Procedi con l'autenticazione standard
         final Authentication result = super.authenticate(auth);
         return new UsernamePasswordAuthenticationToken(user, result.getCredentials(), result.getAuthorities());
     }
-    
-
 
     @Override
     public boolean supports(Class<?> authentication) {
