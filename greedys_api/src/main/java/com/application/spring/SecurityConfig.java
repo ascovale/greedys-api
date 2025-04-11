@@ -8,7 +8,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -25,6 +24,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import com.application.security.google2fa.AdminAuthenticationProvider;
 import com.application.security.google2fa.CustomerAuthenticationProvider;
 import com.application.security.google2fa.RestaurantUserAuthenticationProvider;
 import com.application.security.user.admin.AdminUserDetailsService;
@@ -227,8 +227,8 @@ public class SecurityConfig {
         }
 
         @Bean
-        public DaoAuthenticationProvider adminAuthenticationProvider() {
-                DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        public AdminAuthenticationProvider adminAuthenticationProvider() {
+                AdminAuthenticationProvider provider = new AdminAuthenticationProvider();
                 provider.setUserDetailsService(adminUserDetailsService);
                 provider.setPasswordEncoder(passwordEncoder());
                 return provider;
