@@ -8,7 +8,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.application.persistence.dao.customer.ReservationDAO;
+import com.application.persistence.dao.menu.MenuDAO;
 import com.application.persistence.dao.restaurant.RestaurantUserDAO;
+import com.application.persistence.model.menu.Menu;
 import com.application.persistence.model.reservation.Reservation;
 import com.application.persistence.model.restaurant.Restaurant;
 import com.application.persistence.model.restaurant.user.RestaurantUser;
@@ -20,6 +22,8 @@ public class SecurityRestaurantUserService {
     private ReservationDAO reservationRepository;
     @Autowired 
     private RestaurantUserDAO restaurantUserDAO;
+    @Autowired
+    private MenuDAO menuDAO;
     
     public boolean hasPermissionOnReservation(Long idReservation) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -112,5 +116,20 @@ public class SecurityRestaurantUserService {
 
         RestaurantUser foundUser = userOptional.get();
         return foundUser.isEnabled() && isRestaurantEnabled(foundUser);
+    }
+
+    public boolean isMenuOwnedByRestaurant(Long menuId, Long restaurantId) {
+        if (menuId == null || restaurantId == null) {
+            return false;
+        }
+
+        Optional<Menu> menuOptional = menuDAO.findById(menuId);
+        if (menuOptional.isEmpty()) {
+            return false;
+        }
+
+        Menu menu = menuOptional.get();
+        return menu.getServices().stream()
+                .anyMatch(service -> service.getRestaurant().getId().equals(restaurantId));
     }
 }

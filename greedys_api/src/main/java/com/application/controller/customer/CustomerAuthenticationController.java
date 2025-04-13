@@ -1,4 +1,4 @@
-package com.application.controller.pub;
+package com.application.controller.customer;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -66,7 +66,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @Tag(name = "Customer Authentication Controller", description = "Controller for managing customer authentication")
-@RequestMapping("/public/customer")
+@RequestMapping("/customer/auth")
 public class CustomerAuthenticationController {
     private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 

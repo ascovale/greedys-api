@@ -1,6 +1,7 @@
 package com.application.web.dto.get;
 
-import com.application.persistence.model.menu.MenuItem;
+import com.application.persistence.model.menu.Dish;
+import com.application.persistence.model.menu.MenuDish;
 
 /**
  * PricedMenuItemDTO is a Data Transfer Object (DTO) that represents a menu item along with its price.
@@ -17,23 +18,28 @@ import com.application.persistence.model.menu.MenuItem;
  * }
  * </pre>
  * 
- * @see MenuItemDTO
+ * @see DishDTO
  */
-public class PricedMenuItemDTO {
+public class MenuDishDTO {
 
-    private MenuItemDTO item;
-    private float price;
+    private DishDTO dishDTO;
+    private Double price;
+    
+    public MenuDishDTO(MenuDish menuDish) {
+        this.dishDTO = new DishDTO(menuDish.getDish());
+        this.price = menuDish.getPrice();  
+    }
 
-    public PricedMenuItemDTO(MenuItem menuItem, float price) {
-        this.item = new MenuItemDTO(menuItem);
+    public MenuDishDTO(Dish dish, Double price) {
+        this.dishDTO = new DishDTO(dish);
         this.price = price;
     }
 
-    public MenuItemDTO getItem() {
-        return item;
+    public DishDTO getItem() {
+        return dishDTO;
     }
 
-    public float getPrice() {
+    public Double getPrice() {
         return price;
     }
     

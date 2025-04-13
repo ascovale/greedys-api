@@ -1,36 +1,15 @@
 package com.application.web.dto.post;
 
-public class NewRestaurantMenuDTO {
+import com.fasterxml.jackson.annotation.JsonProperty;
 
+public class NewDishDTO {
+
+    @JsonProperty("name")
     private String name;
+    @JsonProperty("description")
     private String description;
-    private Float price;
+    @JsonProperty("restaurantId")
     private Long restaurantId;
-
-    
-    public String getName() {
-        return name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public Float getPrice() {
-        return price;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public void setPrice(Float price) {
-        this.price = price;
-    }
 
     public Long getRestaurantId() {
         return restaurantId;
@@ -40,5 +19,22 @@ public class NewRestaurantMenuDTO {
         this.restaurantId = restaurantId;
     }
     
-    
+    public String getName() {
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+
 }

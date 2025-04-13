@@ -90,7 +90,7 @@ public class SecurityConfig {
                                                                 "/register/**", "/v3/api-docs*/**", "/api/**",
                                                                 "/auth/**",
                                                                 "/reservation/**", "/error*", "/actuator/health",
-                                                                "/public/**")
+                                                                "/public/**","/restaurant/auth/**")
                                                 .permitAll().requestMatchers("/restaurant_user/**").authenticated())
                                 .sessionManagement(management -> management
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -119,7 +119,7 @@ public class SecurityConfig {
                                                                 "/register/**", "/v3/api-docs*/**", "/api/**",
                                                                 "/auth/**",
                                                                 "/reservation/**", "/error*", "/actuator/health",
-                                                                "/public/**")
+                                                                "/public/**","/customer/auth/**")
                                                 .permitAll()
                                                 .requestMatchers("/customer/**").authenticated())
                                 .sessionManagement(management -> management
@@ -146,7 +146,7 @@ public class SecurityConfig {
                                                                 "/register/**", "/v3/api-docs*/**", "/api/**",
                                                                 "/auth/**",
                                                                 "/reservation/**", "/error*", "/actuator/health",
-                                                                "/public/**")
+                                                                "/public/**","/admin/auth/**")
                                                 .permitAll()
                                                 .requestMatchers("/admin/**").authenticated())
                                 .sessionManagement(management -> management

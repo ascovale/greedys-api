@@ -2,8 +2,10 @@ package com.application.persistence.model.reservation;
 
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import com.application.persistence.model.menu.Menu;
 import com.application.persistence.model.restaurant.Restaurant;
 
 import jakarta.persistence.Column;
@@ -53,6 +55,15 @@ public class Service {
 
 	// colore del servizio
 	private String color;
+	@ManyToMany
+	@JoinTable(
+		name = "menu_service",
+		joinColumns = @JoinColumn(name = "service_id"),
+		inverseJoinColumns = @JoinColumn(name = "menu_id")
+	)
+	private List<Menu> menus;
+	
+
 
 	public boolean isActive() {
 		return active;
