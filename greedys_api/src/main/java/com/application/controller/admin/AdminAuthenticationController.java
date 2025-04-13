@@ -1,4 +1,4 @@
-package com.application.controller.pub;
+package com.application.controller.admin;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +25,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "Admin Authentication Controller", description = "Controller for managing Admin user authentication")
 @RestController
-@RequestMapping(value = "/public/admin", produces = "application/json")
+@RequestMapping(value = "/admin/auth", produces = "application/json")
 public class AdminAuthenticationController {
         
     private AuthenticationManager authenticationManager;

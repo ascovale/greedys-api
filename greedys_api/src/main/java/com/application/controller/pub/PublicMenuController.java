@@ -8,9 +8,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.service.RestaurantMenuService;
-import com.application.web.dto.get.MenuItemDTO;
-import com.application.web.dto.get.PricedMenuItemDTO;
-import com.application.web.dto.get.RestaurantMenuDTO;
+import com.application.web.dto.get.MenuDTO;
+import com.application.web.dto.get.MenuDishDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -29,51 +28,40 @@ public class PublicMenuController {
         this.restaurantMenuService = restaurantMenuService;
     }
 
-    @Operation(summary = "Get restaurant menus", description = "Retrieve all menus for the current restaurant")
+    @Operation(summary = "Get menus by restaurant ID", description = "Retrieve all menus for a specific restaurant by its ID")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Menus retrieved successfully"),
         @ApiResponse(responseCode = "401", description = "Unauthorized access"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/{restaurantId}/menus")
-    public Collection<RestaurantMenuDTO> getRestaurantMenus(@RequestParam Long restaurantId) {
+    public Collection<MenuDTO> getMenusByRestaurantId(@RequestParam Long restaurantId) {
         return restaurantMenuService.getMenusByRestaurant(restaurantId);
     }
 
-    @Operation(summary = "Get menu items", description = "Retrieve all items for a specific menu")
+    @Operation(summary = "Get dishes by menu ID", description = "Retrieve all dishes for a specific menu by its ID")
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Menu items retrieved successfully"),
+        @ApiResponse(responseCode = "200", description = "Dishes retrieved successfully"),
         @ApiResponse(responseCode = "400", description = "Invalid menu ID"),
         @ApiResponse(responseCode = "401", description = "Unauthorized access"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @GetMapping("/menu/{menuId}/items")
-    public Collection<PricedMenuItemDTO> getMenuItems(@RequestParam Long menuId) {
-        return restaurantMenuService.getMenuItems(menuId);
+    @GetMapping("/menus/{menuId}/dishes")
+    public Collection<MenuDishDTO> getDishesByMenuId(@RequestParam Long menuId) {
+        return restaurantMenuService.getMenuDishesByMenuId(menuId);
     }
 
-    @Operation(summary = "Get menu by ID", description = "Retrieve details of a specific menu by its ID")
+    @Operation(summary = "Get menu details by ID", description = "Retrieve details of a specific menu by its ID")
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Menu retrieved successfully"),
+        @ApiResponse(responseCode = "200", description = "Menu details retrieved successfully"),
         @ApiResponse(responseCode = "400", description = "Invalid menu ID"),
         @ApiResponse(responseCode = "401", description = "Unauthorized access"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @GetMapping("/menu/{menuId}")
-    public RestaurantMenuDTO getMenuById(@RequestParam Long menuId) {
+    @GetMapping("/menus/{menuId}")
+    public MenuDTO getMenuDetailsById(@RequestParam Long menuId) {
         return restaurantMenuService.getMenuById(menuId);
     }
 
-    @Operation(summary = "Get restaurant menu items", description = "Retrieve all menu items for the current restaurant")
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Menu items retrieved successfully"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized access"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
-    @GetMapping("/{restaurantId}/items/get")
-    public Collection<MenuItemDTO> getRestaurantMenuItems(@RequestParam Long restaurantId) {
-        return restaurantMenuService.getMenuItemsByRestaurant(restaurantId);
-    }
-
-
+   
 }

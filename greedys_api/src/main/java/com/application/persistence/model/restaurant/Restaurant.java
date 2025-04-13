@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.List;
 
 import com.application.persistence.model.Image;
+import com.application.persistence.model.menu.Dish;
 import com.application.persistence.model.reservation.Service;
 import com.application.persistence.model.restaurant.user.RestaurantUser;
 
@@ -77,6 +78,19 @@ public class Restaurant {
 	@Column(name = "status")
 	@Enumerated(EnumType.STRING)
 	private Status status;
+	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "restaurant")
+	private List<Dish> dishes;
+
+	public List<Dish> getDishes() {
+		if (dishes == null) {
+			dishes = new ArrayList<>();
+		}
+		return dishes;
+	}
+
+	public void setDishes(List<Dish> dishes) {
+		this.dishes = dishes;
+	}
 
 	public Status getStatus() {
 		return status;

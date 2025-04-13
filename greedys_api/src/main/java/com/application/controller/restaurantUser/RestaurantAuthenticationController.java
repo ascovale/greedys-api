@@ -1,4 +1,4 @@
-package com.application.controller.pub;
+package com.application.controller.restaurantUser;
 
 import java.io.UnsupportedEncodingException;
 import java.util.List;
@@ -58,7 +58,7 @@ import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @Tag(name = "Restaurant Authentication Controller", description = "Controller for restaurant creation and user authentication")
-@RequestMapping("/public/restaurant")
+@RequestMapping("/restaurant/auth")
 @SecurityRequirement(name = "bearerAuth")
 public class RestaurantAuthenticationController {
     private final Logger LOGGER = LoggerFactory.getLogger(getClass());
