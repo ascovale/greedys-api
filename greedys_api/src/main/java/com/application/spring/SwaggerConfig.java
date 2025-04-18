@@ -1,8 +1,15 @@
 package com.application.spring;
 
+import java.util.List;
+
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import com.application.persistence.model.restaurant.user.RestaurantNotification;
+import com.application.web.dto.NotificationDto;
+import com.application.web.dto.get.CustomerDTO;
+import com.application.web.dto.get.ReservationDTO;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -11,32 +18,24 @@ import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.tags.Tag;
 
 @Configuration
 public class SwaggerConfig {
     @Bean
-    OpenAPI customOpenAPI() {
+    public OpenAPI customOpenAPI() {
         return new OpenAPI()
-                .openapi("3.0.1") // Specify the OpenAPI version
                 .info(new Info()
                         .title("Greedys API")
                         .version("1.0")
                         .description("API for managing restaurant reservations"))
                 .components(new Components()
-                        .addSchemas("GenericResponse", new Schema<>()
-                                .type("object")
-                                .addProperty("message",
-                                        new Schema<String>().type("string"))
-                                .addProperty("error",
-                                        new Schema<String>().type("string"))) // Aggiunto
-                        // attributo
-                        // error
                         .addResponses("400", new ApiResponse().description("Bad Request"))
                         .addResponses("401", new ApiResponse().description("Unauthorized"))
                         .addResponses("403", new ApiResponse().description("Forbidden"))
                         .addResponses("404", new ApiResponse().description("Not Found"))
-                        .addResponses("500", new ApiResponse()
-                                .description("Internal Server Error")));
+                        .addResponses("500", new ApiResponse().description("Internal Server Error"))
+                );
     }
 
     @Bean
@@ -90,7 +89,7 @@ public class SwaggerConfig {
                                         .addProperty("notes", new Schema<String>().type("string")))
                                 .addSchemas("PageReservationDTO", new Schema<>()
                                         .type("object")
-                                        .addProperty("content", new Schema<>().type("array").items(new Schema<>().$ref("#/components/schemas/ReservationDTO")))
+                                        .addProperty("content", new Schema<List<ReservationDTO>>().type("array").items(new Schema<ReservationDTO>()))
                                         .addProperty("totalElements", new Schema<Long>().type("integer").format("int64"))
                                         .addProperty("totalPages", new Schema<Integer>().type("integer")))
                                 .addSchemas("TableDTO", new Schema<>()
@@ -127,7 +126,7 @@ public class SwaggerConfig {
                                         .addProperty("description", new Schema<String>().type("string")))
                                 .addSchemas("PageCustomerDTO", new Schema<>()
                                         .type("object")
-                                        .addProperty("content", new Schema<>().type("array").items(new Schema<>().$ref("#/components/schemas/CustomerDTO")))
+                                        .addProperty("content", new Schema<List<CustomerDTO>>().type("array").items(new Schema<CustomerDTO>()))
                                         .addProperty("totalElements", new Schema<Long>().type("integer").format("int64"))
                                         .addProperty("totalPages", new Schema<Integer>().type("integer")))
                                 .addSchemas("AllergyDTO", new Schema<>()
@@ -155,13 +154,32 @@ public class SwaggerConfig {
                                         .addProperty("lastName", new Schema<String>().type("string"))
                                         .addProperty("email", new Schema<String>().type("string"))
                                         .addProperty("status", new Schema<String>().type("string")))
+                                .addSchemas("AdminAuthResponseDTO", new Schema<>()
+                                        .type("object")
+                                        .addProperty("jwt", new Schema<String>().type("string"))
+                                        .addProperty("user", new Schema<>().$ref("#/components/schemas/AdminDTO")))
+                                .addSchemas("AdminDTO", new Schema<>()
+                                        .type("object")
+                                        .addProperty("id", new Schema<Long>().type("integer").format("int64"))
+                                        .addProperty("firstName", new Schema<String>().type("string"))
+                                        .addProperty("lastName", new Schema<String>().type("string"))
+                                        .addProperty("email", new Schema<String>().type("string")))
                                 .addResponses("400", new ApiResponse().description("Bad Request"))
                                 .addResponses("401", new ApiResponse().description("Unauthorized"))
                                 .addResponses("403", new ApiResponse().description("Forbidden"))
                                 .addResponses("404", new ApiResponse().description("Not Found"))
                                 .addResponses("500", new ApiResponse().description("Internal Server Error"))
                                 .addResponses("405", new ApiResponse().description("Method Not Allowed")))
-                        .addSecurityItem(new SecurityRequirement().addList("adminBearerAuth")))
+                        .addSecurityItem(new SecurityRequirement().addList("adminBearerAuth"))
+                        .tags(List.of(
+                                new Tag().name("1. Authentication").description("Admin Authentication Controller"),
+                                new Tag().name("2. Registration").description("Admin Registration Management"),
+                                new Tag().name("3. Users").description("Admin Users Management"),
+                                new Tag().name("4. Customer").description("Admin Customer Management"),
+                                new Tag().name("5. Restaurant").description("Admin Restaurant Management"),
+                                new Tag().name("6. Services").description("Admin Services Management"),
+                                new Tag().name("7. Reservation").description("Admin Reservation Management")
+                        )))
                 .build();
     }
 
@@ -180,7 +198,7 @@ public class SwaggerConfig {
                                                 .bearerFormat("JWT"))
                                 .addSchemas("PageNotification", new Schema<>()
                                         .type("object")
-                                        .addProperty("content", new Schema<>().type("array").items(new Schema<>().$ref("#/components/schemas/NotificationDTO")))
+                                        .addProperty("content", new Schema<List<NotificationDto>>().type("array").items(new Schema<NotificationDto>()))
                                         .addProperty("totalElements", new Schema<Long>().type("integer").format("int64"))
                                         .addProperty("totalPages", new Schema<Integer>().type("integer")))
                                 .addSchemas("UserFcmTokenDTO", new Schema<>()
@@ -208,6 +226,17 @@ public class SwaggerConfig {
                                         .addProperty("email", new Schema<String>().type("string"))
                                         .addProperty("password", new Schema<String>().type("string"))
                                         .addProperty("matchingPassword", new Schema<String>().type("string")))
+                                .addSchemas("AuthRequestDTO", new Schema<>()
+                                        .type("object")
+                                        .addProperty("username", new Schema<String>().type("string"))
+                                        .addProperty("password", new Schema<String>().type("string")))
+                                .addSchemas("AuthResponseDTO", new Schema<>()
+                                        .type("object")
+                                        .addProperty("jwt", new Schema<String>().type("string"))
+                                        .addProperty("user", new Schema<>().$ref("#/components/schemas/CustomerDTO")))
+                                .addSchemas("AuthRequestGoogleDTO", new Schema<>()
+                                        .type("object")
+                                        .addProperty("token", new Schema<String>().type("string")))
                                 .addSchemas("ReservationDTO", new Schema<>()
                                         .type("object")
                                         .addProperty("id", new Schema<Long>().type("integer").format("int64"))
@@ -235,7 +264,14 @@ public class SwaggerConfig {
                                 .addResponses("500", new ApiResponse().description("Internal Server Error"))
                                 .addResponses("405", new ApiResponse().description("Method Not Allowed")))
                         .addSecurityItem(new SecurityRequirement()
-                                .addList("customerBearerAuth")))
+                                .addList("customerBearerAuth"))
+                        .tags(List.of(
+                                new Tag().name("1. Authentication").description("Controller for managing customer authentication"),
+                                new Tag().name("2. Customer").description("Controller for managing customers"),
+                                new Tag().name("3. Reservation").description("APIs for managing reservations of the customer"),
+                                new Tag().name("4. Allergy").description("Controller for managing customer allergies"),
+                                new Tag().name("5. Notification").description("Notification management APIs for customers")
+                        )))
                 .build();
     }
 
@@ -260,7 +296,7 @@ public class SwaggerConfig {
                                         .addProperty("notes", new Schema<String>().type("string")))
                                 .addSchemas("PageReservationDTO", new Schema<>()
                                         .type("object")
-                                        .addProperty("content", new Schema<>().type("array").items(new Schema<>().$ref("#/components/schemas/ReservationDTO")))
+                                        .addProperty("content", new Schema<List<ReservationDTO>>().type("array").items(new Schema<ReservationDTO>()))
                                         .addProperty("totalElements", new Schema<Long>().type("integer").format("int64"))
                                         .addProperty("totalPages", new Schema<Integer>().type("integer")))
                                 .addSchemas("TableDTO", new Schema<>()
@@ -289,7 +325,7 @@ public class SwaggerConfig {
                                         .addProperty("positionY", new Schema<Integer>().type("integer")))
                                 .addSchemas("PageRestaurantNotification", new Schema<>()
                                         .type("object")
-                                        .addProperty("content", new Schema<>().type("array").items(new Schema<>().$ref("#/components/schemas/RestaurantNotification")))
+                                        .addProperty("content", new Schema<List<RestaurantNotification>>().type("array").items(new Schema<RestaurantNotification>()))
                                         .addProperty("totalElements", new Schema<Long>().type("integer").format("int64"))
                                         .addProperty("totalPages", new Schema<Integer>().type("integer")))
                                 .addSchemas("RestaurantNotification", new Schema<>()
@@ -363,11 +399,20 @@ public class SwaggerConfig {
                                         .addProperty("startTime", new Schema<String>().type("string").format("time"))
                                         .addProperty("endTime", new Schema<String>().type("string").format("time"))
                                         .addProperty("serviceId", new Schema<Long>().type("integer").format("int64")))
+                                .addSchemas("RestaurantUserAuthResponseDTO", new Schema<>()
+                                        .type("object")
+                                        .addProperty("jwt", new Schema<String>().type("string"))
+                                        .addProperty("user", new Schema<>().$ref("#/components/schemas/RestaurantUserDTO")))
                                 .addSchemas("NewRestaurantUserDTO", new Schema<>()
                                         .type("object")
                                         .addProperty("userId", new Schema<Long>().type("integer").format("int64"))
                                         .addProperty("restaurantId", new Schema<Long>().type("integer").format("int64"))
                                         .addProperty("role", new Schema<String>().type("string")))
+                                .addSchemas("NewRestaurantDTO", new Schema<>()
+                                        .type("object")
+                                        .addProperty("name", new Schema<String>().type("string"))
+                                        .addProperty("email", new Schema<String>().type("string"))
+                                        .addProperty("password", new Schema<String>().type("string")))
                                 .addResponses("400", new ApiResponse().description("Bad Request"))
                                 .addResponses("401", new ApiResponse().description("Unauthorized"))
                                 .addResponses("403", new ApiResponse().description("Forbidden"))
@@ -375,7 +420,18 @@ public class SwaggerConfig {
                                 .addResponses("500", new ApiResponse().description("Internal Server Error"))
                                 .addResponses("405", new ApiResponse().description("Method Not Allowed")))
                         .addSecurityItem(new SecurityRequirement()
-                                .addList("restaurantBearerAuth")))
+                                .addList("restaurantBearerAuth"))
+                        .tags(List.of(
+                                new Tag().name("1. Authentication").description("Controller for restaurant creation and user authentication"),
+                                new Tag().name("2. User Management").description("Controller for managing restaurant users"),
+                                new Tag().name("3. Multi Restaurant User").description("Management of multi-restaurant users. Allows operations such as switching users and disconnecting them."),
+                                new Tag().name("4. Reservation Management").description("APIs for managing reservations from the restaurant"),
+                                new Tag().name("5. Menu Management").description("Restaurant Menu Controller APIs"),
+                                new Tag().name("6. Notification Management").description("Restaurant Notification management APIs"),
+                                new Tag().name("7. Restaurant Management").description("Controller for managing restaurant operations"),
+                                new Tag().name("8. Service Management").description("Controller for managing services offered by restaurants"),
+                                new Tag().name("9. Slot Management").description("Controller for managing slots")
+                        )))
                 .build();
     }
 
@@ -388,41 +444,6 @@ public class SwaggerConfig {
                 .pathsToExclude("/restaurant/**", "/customer/**", "/admin/**")
                 .addOpenApiCustomizer(openApi -> openApi
                         .components(sharedComponents()
-                                .addSchemas("AuthRequestDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("username", new Schema<String>().type("string"))
-                                        .addProperty("password", new Schema<String>().type("string")))
-                                .addSchemas("AuthResponseDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("jwt", new Schema<String>().type("string"))
-                                        .addProperty("user", new Schema<>().$ref("#/components/schemas/CustomerDTO")))
-                                .addSchemas("AdminAuthResponseDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("jwt", new Schema<String>().type("string"))
-                                        .addProperty("user", new Schema<>().$ref("#/components/schemas/AdminDTO")))
-                                .addSchemas("AdminDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("id", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("firstName", new Schema<String>().type("string"))
-                                        .addProperty("lastName", new Schema<String>().type("string"))
-                                        .addProperty("email", new Schema<String>().type("string")))
-                                .addSchemas("AuthRequestGoogleDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("token", new Schema<String>().type("string")))
-                                .addSchemas("CustomerDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("id", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("firstName", new Schema<String>().type("string"))
-                                        .addProperty("lastName", new Schema<String>().type("string"))
-                                        .addProperty("email", new Schema<String>().type("string"))
-                                        .addProperty("status", new Schema<String>().type("string")))
-                                .addSchemas("NewCustomerDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("firstName", new Schema<String>().type("string"))
-                                        .addProperty("lastName", new Schema<String>().type("string"))
-                                        .addProperty("email", new Schema<String>().type("string"))
-                                        .addProperty("password", new Schema<String>().type("string"))
-                                        .addProperty("matchingPassword", new Schema<String>().type("string")))
                                 .addSchemas("RestaurantDTO", new Schema<>()
                                         .type("object")
                                         .addProperty("id", new Schema<Long>().type("integer").format("int64"))
@@ -445,25 +466,16 @@ public class SwaggerConfig {
                                         .type("object")
                                         .addProperty("id", new Schema<Long>().type("integer").format("int64"))
                                         .addProperty("name", new Schema<String>().type("string")))
-                                .addSchemas("RestaurantUserAuthResponseDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("jwt", new Schema<String>().type("string"))
-                                        .addProperty("user", new Schema<>().$ref("#/components/schemas/RestaurantUserDTO")))
-                                .addSchemas("RestaurantUserDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("user_id", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("restaurant_id", new Schema<Long>().type("integer").format("int64")))
-                                .addSchemas("NewRestaurantDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("name", new Schema<String>().type("string"))
-                                        .addProperty("email", new Schema<String>().type("string"))
-                                        .addProperty("password", new Schema<String>().type("string")))
                                 .addResponses("400", new ApiResponse().description("Bad Request"))
                                 .addResponses("401", new ApiResponse().description("Unauthorized"))
                                 .addResponses("403", new ApiResponse().description("Forbidden"))
                                 .addResponses("404", new ApiResponse().description("Not Found"))
                                 .addResponses("500", new ApiResponse().description("Internal Server Error"))
-                                .addResponses("405", new ApiResponse().description("Method Not Allowed"))))
+                                .addResponses("405", new ApiResponse().description("Method Not Allowed")))
+                        .tags(List.of(
+                                new Tag().name("1. Restaurant").description("Controller for managing restaurants"),
+                                new Tag().name("2. Menu").description("Restaurant Menu Controller APIs")
+                        )))
                 .build();
     }
 

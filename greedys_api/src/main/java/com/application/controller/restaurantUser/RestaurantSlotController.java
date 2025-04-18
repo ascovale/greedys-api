@@ -21,7 +21,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Tag(name = "Slot", description = "Controller per la gestione degli slot")
+@Tag(name = "9. Slot Management", description = "Controller for managing slots")
 @RestController
 @RequestMapping("/restaurant/slot")
 @SecurityRequirement(name = "restaurantBearerAuth")

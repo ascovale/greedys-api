@@ -19,7 +19,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 
-@Tag(name = "Multi Restaurant User", description = "Management of multi-restaurant users. Allows operations such as switching users and disconnecting them.")
+@Tag(name = "3. Multi Restaurant User", description = "Management of multi-restaurant users. Allows operations such as switching users and disconnecting them.")
 @RestController
 @RequestMapping("/restaurant/multi_user/")
 @SecurityRequirement(name = "restaurantBearerAuth")

@@ -65,7 +65,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 @RestController
-@Tag(name = "Customer Authentication Controller", description = "Controller for managing customer authentication")
+@Tag(name = "1. Authentication", description = "Controller for managing customer authentication")
 @RequestMapping("/customer/auth")
 public class CustomerAuthenticationController {
     private final Logger LOGGER = LoggerFactory.getLogger(getClass());
@@ -99,6 +99,7 @@ public class CustomerAuthenticationController {
 
     // ------------------- API Methods ----------------------------- //
 
+    // 1. Authentication and Registration methods
     @Operation(summary = "Register a new customer", description = "Registers a new customer account and sends a verification email.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Customer successfully registered", content = {
@@ -117,63 +118,6 @@ public class CustomerAuthenticationController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
-    }
-
-    @Operation(summary = "Confirm customer registration", description = "Validates the registration token and activates the customer account.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Account successfully verified", content = @Content),
-            @ApiResponse(responseCode = "400", description = "Invalid or expired token", content = @Content)
-    })
-    @RequestMapping(value = "/confirm", method = RequestMethod.GET)
-    @ResponseBody
-    public GenericResponse confirmRegistrationResponse(final HttpServletRequest request,
-            @RequestParam final String token) throws UnsupportedEncodingException {
-        Locale locale = request.getLocale();
-        final String result = customerService.validateVerificationToken(token);
-        if (result.equals("valid")) {
-            final Customer customer = customerService.getCustomer(token);
-            authWithoutPassword(customer);
-            return new GenericResponse(messages.getMessage("message.accountVerified", null, locale));
-        }
-
-        return new GenericResponse(
-                messages.getMessage("auth.message." + result, null, locale) + "expired".equals(result));
-    }
-
-    @Operation(summary = "Resend registration token", description = "Generates and sends a new registration token to the customer.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Token successfully resent", content = @Content),
-            @ApiResponse(responseCode = "400", description = "Invalid token", content = @Content)
-    })
-    @RequestMapping(value = "/resend_token", method = RequestMethod.GET)
-    @ResponseBody
-    public GenericResponse resendRegistrationToken(final HttpServletRequest request,
-            @RequestParam("token") final String existingToken) {
-        final VerificationToken newToken = customerService.generateNewVerificationToken(existingToken);
-        Customer customer = customerService.getCustomer(newToken.getToken());
-        mailService.sendEmail(
-                constructResendVerificationTokenEmail(getAppUrl(request), request.getLocale(), newToken, customer));
-        return new GenericResponse(messages.getMessage("message.resendToken", null, request.getLocale()));
-    }
-
-    @Operation(summary = "Send password reset email", description = "Sends an email with a password reset token to the specified customer.")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Password reset email sent successfully", content = @Content),
-        @ApiResponse(responseCode = "400", description = "Invalid email address", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Customer not found", content = @Content)
-    })
-    @PostMapping("/password/forgot")
-    public ResponseEntity<String> sendPasswordResetEmail(@RequestParam("email") String email, HttpServletRequest request) {
-        Customer customer = customerService.findCustomerByEmail(email);
-        if (customer == null) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Customer not found");
-        }
-
-        String token = UUID.randomUUID().toString();
-        customerService.createPasswordResetTokenForCustomer(customer, token);
-        mailService.sendEmail(constructResetTokenEmail(getAppUrl(request), request.getLocale(), token, customer));
-
-        return ResponseEntity.ok("Password reset email sent successfully");
     }
 
     @Operation(summary = "Create an authentication token", description = "Authenticates a customer and returns a JWT token.")
@@ -213,6 +157,79 @@ public class CustomerAuthenticationController {
         }
     }
 
+    // 2. Password Management methods
+    @Operation(summary = "Send password reset email", description = "Sends an email with a password reset token to the specified customer.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Password reset email sent successfully", content = @Content),
+        @ApiResponse(responseCode = "400", description = "Invalid email address", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Customer not found", content = @Content)
+    })
+    @PostMapping("/password/forgot")
+    public ResponseEntity<String> sendPasswordResetEmail(@RequestParam("email") String email, HttpServletRequest request) {
+        Customer customer = customerService.findCustomerByEmail(email);
+        if (customer == null) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Customer not found");
+        }
+
+        String token = UUID.randomUUID().toString();
+        customerService.createPasswordResetTokenForCustomer(customer, token);
+        mailService.sendEmail(constructResetTokenEmail(getAppUrl(request), request.getLocale(), token, customer));
+
+        return ResponseEntity.ok("Password reset email sent successfully");
+    }
+
+    @Operation(summary = "Confirm password change with token", description = "Confirms the password change using a token")
+    @ApiResponse(responseCode = "200", description = "Password changed successfully or invalid token", content = @Content(mediaType = "text/plain", schema = @Schema(type = "string")))
+    @ApiResponse(responseCode = "401", description = "Unauthorized")
+    @PutMapping(value = "/password/confirm")
+    public String confirmPasswordChange(
+            @Parameter(description = "Password reset token") @RequestParam final String token) {
+        final String result = securityCustomerService.validatePasswordResetToken(token);
+        if (result != null) {
+            return "invalidToken";
+        }
+        return "success";
+    }
+
+    // 3. Token Management methods
+    @Operation(summary = "Confirm customer registration", description = "Validates the registration token and activates the customer account.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Account successfully verified", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Invalid or expired token", content = @Content)
+    })
+    @RequestMapping(value = "/confirm", method = RequestMethod.GET)
+    @ResponseBody
+    public GenericResponse confirmRegistrationResponse(final HttpServletRequest request,
+            @RequestParam final String token) throws UnsupportedEncodingException {
+        Locale locale = request.getLocale();
+        final String result = customerService.validateVerificationToken(token);
+        if (result.equals("valid")) {
+            final Customer customer = customerService.getCustomer(token);
+            authWithoutPassword(customer);
+            return new GenericResponse(messages.getMessage("message.accountVerified", null, locale));
+        }
+
+        return new GenericResponse(
+                messages.getMessage("auth.message." + result, null, locale) + "expired".equals(result));
+    }
+
+    @Operation(summary = "Resend registration token", description = "Generates and sends a new registration token to the customer.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Token successfully resent", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Invalid token", content = @Content)
+    })
+    @RequestMapping(value = "/resend_token", method = RequestMethod.GET)
+    @ResponseBody
+    public GenericResponse resendRegistrationToken(final HttpServletRequest request,
+            @RequestParam("token") final String existingToken) {
+        final VerificationToken newToken = customerService.generateNewVerificationToken(existingToken);
+        Customer customer = customerService.getCustomer(newToken.getToken());
+        mailService.sendEmail(
+                constructResendVerificationTokenEmail(getAppUrl(request), request.getLocale(), newToken, customer));
+        return new GenericResponse(messages.getMessage("message.resendToken", null, request.getLocale()));
+    }
+
+    // 4. Google Authentication
     @Operation(summary = "Authenticate with Google", description = "Authenticates a customer using a Google token and returns a JWT token.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Authentication successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthResponseDTO.class))),
@@ -246,37 +263,6 @@ public class CustomerAuthenticationController {
             logger.warn("Google token verification failed.");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-    }
-
-    @Operation(summary = "Reset customer password by email", description = "Sends an email to reset the password for the specified user by email")
-    @ApiResponse(responseCode = "200", description = "Password reset email sent successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
-    @ApiResponse(responseCode = "400", description = "Invalid request")
-    @ApiResponse(responseCode = "401", description = "Unauthorized")
-    @PostMapping(value = "/password/reset")
-    public GenericResponse resetPassword(final HttpServletRequest request,
-            @Parameter(description = "Email of the user to reset the password for") @RequestParam("email") final String customerEmail) {
-        final Customer customer = customerService.findCustomerByEmail(customerEmail);
-        if (customer != null) {
-            // TODO: write method sendPasswordResetTokenForCustomer
-            final String token = UUID.randomUUID().toString();
-            customerService.createPasswordResetTokenForCustomer(customer, token);
-            // mailSender.send(constructResetTokenEmail(getAppUrl(request),
-            // request.getLocale(), token, customer));
-        }
-        return new GenericResponse(messages.getMessage("message.resetPasswordEmail", null, request.getLocale()));
-    }
-
-    @Operation(summary = "Confirm password change with token", description = "Confirms the password change using a token")
-    @ApiResponse(responseCode = "200", description = "Password changed successfully or invalid token", content = @Content(mediaType = "text/plain", schema = @Schema(type = "string")))
-    @ApiResponse(responseCode = "401", description = "Unauthorized")
-    @PutMapping(value = "/password/confirm")
-    public String confirmPasswordChange(
-            @Parameter(description = "Password reset token") @RequestParam final String token) {
-        final String result = securityCustomerService.validatePasswordResetToken(token);
-        if (result != null) {
-            return "invalidToken";
-        }
-        return "success";
     }
 
     // ------------------- Private Methods ----------------------------- //

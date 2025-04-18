@@ -46,7 +46,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @SecurityRequirement(name = "restaurantBearerAuth")
 @RequestMapping("/restaurant/reservation")
-@Tag(name = "Reservation Restaurant", description = "APIs for managing reservations from the restaurant")
+@Tag(name = "4. Reservation Management", description = "APIs for managing reservations from the restaurant")
 public class RestaurantReservationController {
 	//
 	private ReservationService reservationService;
