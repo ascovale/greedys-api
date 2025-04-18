@@ -29,7 +29,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
-@Tag(name = "Customer", description = "Controller for managing customers")
+@Tag(name = "2. Customer", description = "Controller for managing customers")
 @RestController
 @RequestMapping("/customer")
 @SecurityRequirement(name = "customerBearerAuth")
@@ -153,9 +153,6 @@ public class CustomerController {
         customerService.updateLastName(getCustomerId(), lastName);
         return new GenericResponse("Last name updated successfully");
     }
-
-    // TODO: Regenerate the email confirmation token
-    // TODO: Request access credentials to ensure security
 
     @Operation(summary = "Update customer email", description = "Updates the email of a specific customer by their ID")
     @ApiResponse(responseCode = "200", description = "Email updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))

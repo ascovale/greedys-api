@@ -47,7 +47,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RequestMapping("/admin/restaurant")
 @RestController
 @SecurityRequirement(name = "adminBearerAuth")
-@Tag(name = "Admin Restaurant", description = "Admin management APIs for the Restaurant")
+@Tag(name = "5. Restaurant", description = "Admin Restaurant Management")
 public class AdminRestaurantController {
 
 	//TODO: cambiare convenzione invece di restaurantId usare id_restaurant

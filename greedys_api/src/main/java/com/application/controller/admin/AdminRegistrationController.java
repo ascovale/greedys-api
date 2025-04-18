@@ -42,6 +42,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -51,6 +52,7 @@ import jakarta.validation.Valid;
 // creare un permesso specifico per questo
 @RestController
 @RequestMapping("/admin/register")
+@Tag(name = "2. Registration", description = "Admin Registration Management")
 public class AdminRegistrationController {
     private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 

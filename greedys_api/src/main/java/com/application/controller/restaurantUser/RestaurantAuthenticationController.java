@@ -57,8 +57,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
-@Tag(name = "Restaurant Authentication Controller", description = "Controller for restaurant creation and user authentication")
-@RequestMapping("/restaurant/auth")
+@Tag(name = "1. Authentication", description = "Controller for restaurant creation and user authentication")
+@RequestMapping("/restaurant/user/auth")
 @SecurityRequirement(name = "bearerAuth")
 public class RestaurantAuthenticationController {
     private final Logger LOGGER = LoggerFactory.getLogger(getClass());
@@ -111,7 +111,7 @@ public class RestaurantAuthenticationController {
         return new GenericResponse("success");
     }
 
-    @GetMapping(value = "/user/resend_token")
+    @GetMapping(value = "/resend_token")
     @ResponseBody
     public GenericResponse resendRegistrationToken(final HttpServletRequest request,
             @RequestParam("token") final String existingToken) {
@@ -136,7 +136,7 @@ public class RestaurantAuthenticationController {
             @ApiResponse(responseCode = "200", description = "Password reset token sent successfully", content = @Content(mediaType = "application/json")),
             @ApiResponse(responseCode = "404", description = "User not found", content = @Content(mediaType = "application/json"))
     })
-    @PostMapping(value = "/user/password/forgot")
+    @PostMapping(value = "/password/forgot")
     public ResponseEntity<String> forgotPassword(@RequestParam("email") final String userEmail,
             final HttpServletRequest request) {
         final RestaurantUser user = restaurantUserService.findRestaurantUserByEmail(userEmail);
@@ -156,7 +156,7 @@ public class RestaurantAuthenticationController {
             @ApiResponse(responseCode = "401", description = "Authentication failed", content = @Content(mediaType = "application/json"))
     })
     @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Authentication request", required = true, content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthRequestDTO.class)))
-    @PostMapping(value = "/user/login", produces = "application/json")
+    @PostMapping(value = "/login", produces = "application/json")
     public String createAuthenticationToken(@RequestBody AuthRequestDTO authenticationRequest) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(),
@@ -176,7 +176,7 @@ public class RestaurantAuthenticationController {
     }
 
     @Operation(summary = "Confirm restaurant user registration", description = "Conferma la registrazione")
-    @GetMapping(value = "/user/confirm")
+    @GetMapping(value = "/confirm")
     public String confirmRestaurantUserRegistration(final HttpServletRequest request, final Model model,
             @RequestParam final String token) throws UnsupportedEncodingException {
         Locale locale = request.getLocale();
@@ -197,7 +197,7 @@ public class RestaurantAuthenticationController {
     @Operation(summary = "Confirm password change with token", description = "Confirms the password change using a token")
     @ApiResponse(responseCode = "200", description = "Password changed successfully or invalid token", content = @Content(mediaType = "text/plain", schema = @Schema(type = "string")))
     @ApiResponse(responseCode = "401", description = "Unauthorized")
-    @PutMapping(value = "/user/password/confirm")
+    @PutMapping(value = "/password/confirm")
     public String confirmPasswordChange(
             @Parameter(description = "Password reset token") @RequestParam final String token) {
         final String result = securityRestaurantUserService.validatePasswordResetToken(token);
@@ -217,7 +217,7 @@ public class RestaurantAuthenticationController {
 
     private SimpleMailMessage constructResetTokenEmail(final String contextPath, final Locale locale,
             final String token, final RestaurantUser user) {
-        final String url = contextPath + "/user/changePassword?id=" + user.getId() + "&token=" + token;
+        final String url = contextPath + "/changePassword?id=" + user.getId() + "&token=" + token;
         final String message = messages.getMessage("message.resetPassword", null, locale);
         return constructEmail("Reset Password", message + " \r\n" + url, user);
     }

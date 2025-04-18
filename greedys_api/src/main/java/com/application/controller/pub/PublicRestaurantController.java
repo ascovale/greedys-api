@@ -31,7 +31,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Tag(name = "Restaurant", description = "Controller for managing restaurants")
+@Tag(name = "1. Restaurant", description = "Controller for managing restaurants")
 @RestController
 @SecurityRequirement(name = "bearerAuth")
 public class PublicRestaurantController {
