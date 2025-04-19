@@ -114,7 +114,6 @@ public class SecurityConfig {
                                                                   * "/customer/public/**", "/customer/swagger-ui/**",
                                                                   * "/customer/v3/api-docs**",
                                                                   */
-
                                                                 "/doc**", "/swagger-ui/**",
                                                                 "/register/**", "/v3/api-docs*/**", "/api/**",
                                                                 "/auth/**",
