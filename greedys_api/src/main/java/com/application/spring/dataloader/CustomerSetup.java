@@ -110,4 +110,20 @@ public class CustomerSetup {
         role = roleDAO.save(role);
         return role;
     }
+
+    
+    public void customerSetup() {
+        logger.info(">>> --- Customer Setup --- <<<");
+        final Privilege ureadPrivilege = createPrivilegeIfNotFound("READ_PRIVILEGE");
+        final Privilege uwritePrivilege = createPrivilegeIfNotFound("WRITE_PRIVILEGE");
+        final Privilege upasswordPrivilege = createPrivilegeIfNotFound("CHANGE_PASSWORD_PRIVILEGE");
+
+        final List<Privilege> uadminPrivileges = new ArrayList<>(Arrays.asList(ureadPrivilege, uwritePrivilege, upasswordPrivilege));
+        final List<Privilege> userPrivileges = new ArrayList<>(Arrays.asList(ureadPrivilege, upasswordPrivilege));
+        createRoleIfNotFound("ROLE_PREMIUM_USER", new ArrayList<>(uadminPrivileges));
+        createRoleIfNotFound("ROLE_USER", new ArrayList<>(userPrivileges));
+        logger.info(">>> --- Customer Setup finished --- <<<");
+    }
+
+
 }

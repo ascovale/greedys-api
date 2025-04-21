@@ -157,22 +157,17 @@ public class RestaurantAuthenticationController {
     })
     @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Authentication request", required = true, content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthRequestDTO.class)))
     @PostMapping(value = "/login", produces = "application/json")
-    public String createAuthenticationToken(@RequestBody AuthRequestDTO authenticationRequest) {
+    public ResponseEntity<RestaurantUserAuthResponseDTO> createAuthenticationToken(@RequestBody AuthRequestDTO authenticationRequest) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(),
                         authenticationRequest.getPassword()));
-        System.out.println("\n\n\\n\n 1 Qua ci arrivo");
         final RestaurantUser userDetails = restaurantUserService
                 .findRestaurantUserByEmail(authenticationRequest.getUsername());
-        System.out.println("\n\n\\n\n 2 Qua ci arrivo");
 
         final String jwt = jwtUtil.generateToken(userDetails);
-        System.out.println("\n\n\\n\n 3 Qua ci arrivo");
         final RestaurantUserAuthResponseDTO responseDTO = new RestaurantUserAuthResponseDTO(jwt,
                 new RestaurantUserDTO(userDetails));
-        System.out.println("\n\n\\n\n 4 Qua ci arrivo");
-        return "ok";
-        //return ResponseEntity.ok(responseDTO);
+        return ResponseEntity.ok(responseDTO);
     }
 
     @Operation(summary = "Confirm restaurant user registration", description = "Conferma la registrazione")
