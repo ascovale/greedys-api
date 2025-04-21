@@ -112,4 +112,39 @@ public class AdminSetup {
         adminRoleDAO.save(role);
         return role;
     }
+
+    
+    @Transactional
+    public void adminSetup() {
+        logger.info(">>> --- Admin Setup --- <<<");
+        final AdminPrivilege adminReservationCustomerWrite = createAdminPrivilegeIfNotFound("PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_WRITE");
+        final AdminPrivilege adminReservationCustomerRead = createAdminPrivilegeIfNotFound("PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_READ");
+        final AdminPrivilege adminReservationRestaurantWrite = createAdminPrivilegeIfNotFound("PRIVILEGE_ADMIN_RESERVATION_RESTAURANT_WRITE");
+        final AdminPrivilege adminReservationRestaurantRead = createAdminPrivilegeIfNotFound("PRIVILEGE_ADMIN_RESERVATION_RESTAURANT_READ");
+        final AdminPrivilege adminRestaurantUserRead = createAdminPrivilegeIfNotFound("PRIVILEGE_ADMIN_RESTAURANT_USER_READ");
+        final AdminPrivilege adminRestaurantUserWrite = createAdminPrivilegeIfNotFound("PRIVILEGE_ADMIN_RESTAURANT_USER_WRITE");
+        final AdminPrivilege adminSwitchToRestaurantUserAdmin = createAdminPrivilegeIfNotFound("PRIVILEGE_SWITCH_TO_RESTAURANT_USER_ADMIN");
+        final AdminPrivilege adminRestaurantRead = createAdminPrivilegeIfNotFound("PRIVILEGE_ADMIN_RESTAURANT_READ");
+        final AdminPrivilege adminRestaurantWrite = createAdminPrivilegeIfNotFound("PRIVILEGE_ADMIN_RESTAURANT_WRITE");
+        final AdminPrivilege adminCustomerRead = createAdminPrivilegeIfNotFound("PRIVILEGE_ADMIN_CUSTOMER_READ");
+        final AdminPrivilege adminCustomerWrite = createAdminPrivilegeIfNotFound("PRIVILEGE_ADMIN_CUSTOMER_WRITE");
+
+        final List<AdminPrivilege> adminPrivileges = new ArrayList<>(Arrays.asList(
+            adminReservationCustomerWrite, adminReservationCustomerRead,
+            adminReservationRestaurantWrite, adminReservationRestaurantRead,
+            adminRestaurantUserRead, adminRestaurantUserWrite,
+            adminRestaurantRead, adminRestaurantWrite,
+            adminCustomerRead, adminCustomerWrite, adminSwitchToRestaurantUserAdmin));
+
+        createAdminRoleIfNotFound("ROLE_SUPER_ADMIN", new ArrayList<>(adminPrivileges));
+        createAdminRoleIfNotFound("ROLE_ADMIN_MANAGER", new ArrayList<>(Arrays.asList(
+            adminReservationCustomerRead, adminReservationRestaurantRead,
+            adminRestaurantUserRead, adminRestaurantRead,
+            adminCustomerRead)));
+        createAdminRoleIfNotFound("ROLE_ADMIN_EDITOR", new ArrayList<>(Arrays.asList(
+            adminReservationCustomerWrite, adminReservationRestaurantWrite,
+            adminRestaurantUserWrite, adminRestaurantWrite,
+            adminCustomerWrite)));
+        logger.info(">>> --- Admin Setup finished --- <<<");
+    }
 }

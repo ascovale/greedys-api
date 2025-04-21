@@ -90,7 +90,7 @@ public class SecurityConfig {
                                                                 "/register/**", "/v3/api-docs*/**", "/api/**",
                                                                 "/auth/**",
                                                                 "/reservation/**", "/error*", "/actuator/health",
-                                                                "/public/**","/restaurant/auth/**")
+                                                                "/public/**","/restaurant/user/auth/**")
                                                 .permitAll().requestMatchers("/restaurant_user/**").authenticated())
                                 .sessionManagement(management -> management
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))

@@ -164,6 +164,14 @@ public class SwaggerConfig {
                                         .addProperty("firstName", new Schema<String>().type("string"))
                                         .addProperty("lastName", new Schema<String>().type("string"))
                                         .addProperty("email", new Schema<String>().type("string")))
+                                .addSchemas("AuthRequestDTO", new Schema<>()
+                                        .type("object")
+                                        .addProperty("username", new Schema<String>().type("string"))
+                                        .addProperty("password", new Schema<String>().type("string")))
+                                .addSchemas("AuthResponseDTO", new Schema<>()
+                                        .type("object")
+                                        .addProperty("jwt", new Schema<String>().type("string"))
+                                        .addProperty("user", new Schema<>().$ref("#/components/schemas/AdminDTO")))
                                 .addResponses("400", new ApiResponse().description("Bad Request"))
                                 .addResponses("401", new ApiResponse().description("Unauthorized"))
                                 .addResponses("403", new ApiResponse().description("Forbidden"))
@@ -182,7 +190,6 @@ public class SwaggerConfig {
                         )))
                 .build();
     }
-
     @Bean
     public GroupedOpenApi customerApi() {
         return GroupedOpenApi.builder()
@@ -412,6 +419,10 @@ public class SwaggerConfig {
                                         .type("object")
                                         .addProperty("name", new Schema<String>().type("string"))
                                         .addProperty("email", new Schema<String>().type("string"))
+                                        .addProperty("password", new Schema<String>().type("string")))
+                                .addSchemas("AuthRequestDTO", new Schema<>()
+                                        .type("object")
+                                        .addProperty("username", new Schema<String>().type("string"))
                                         .addProperty("password", new Schema<String>().type("string")))
                                 .addResponses("400", new ApiResponse().description("Bad Request"))
                                 .addResponses("401", new ApiResponse().description("Unauthorized"))

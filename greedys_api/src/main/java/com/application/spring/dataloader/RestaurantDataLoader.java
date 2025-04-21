@@ -2,6 +2,8 @@ package com.application.spring.dataloader;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -11,7 +13,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.application.mapper.Mapper.Weekday;
+import com.application.persistence.dao.restaurant.RestaurantCategoryDAO;
 import com.application.persistence.dao.restaurant.RestaurantDAO;
+import com.application.persistence.dao.restaurant.RestaurantPrivilegeDAO;
+import com.application.persistence.dao.restaurant.RestaurantRoleDAO;
 import com.application.persistence.dao.restaurant.ServiceDAO;
 import com.application.persistence.dao.restaurant.ServiceTypeDAO;
 import com.application.persistence.dao.restaurant.SlotDAO;
@@ -19,6 +24,9 @@ import com.application.persistence.model.reservation.Service;
 import com.application.persistence.model.reservation.ServiceType;
 import com.application.persistence.model.reservation.Slot;
 import com.application.persistence.model.restaurant.Restaurant;
+import com.application.persistence.model.restaurant.RestaurantCategory;
+import com.application.persistence.model.restaurant.user.RestaurantPrivilege;
+import com.application.persistence.model.restaurant.user.RestaurantRole;
 import com.application.service.RestaurantService;
 import com.application.web.dto.post.NewRestaurantDTO;
 
@@ -35,6 +43,12 @@ public class RestaurantDataLoader {
     private SlotDAO slotDAO;
     @Autowired
     private RestaurantService restaurantService;
+    @Autowired
+    private RestaurantPrivilegeDAO restaurantPrivilegeDAO;
+    @Autowired
+    private RestaurantRoleDAO restaurantRoleDAO;
+    @Autowired
+    private RestaurantCategoryDAO restaurantCategoryDAO;
 
     private static final Logger logger = LoggerFactory.getLogger(RestaurantDataLoader.class);
 
@@ -77,6 +91,45 @@ public class RestaurantDataLoader {
         createSlotsForService(cena, LocalTime.of(17, 30), LocalTime.of(23, 0));
     }
 
+    @Transactional
+    public void createRestaurantTrattoriaDaMario() {
+        logger.info(">>> --- Creating Restaurant Trattoria Da Mario --- <<<");
+        Restaurant restaurant = restaurantDAO.findByName("Trattoria Da Mario");
+        if (restaurant != null) {
+            logger.info("Restaurant with name Trattoria Da Mario already exists.");
+            return;
+        }
+
+        NewRestaurantDTO restaurantDto = new NewRestaurantDTO();
+        restaurantDto.setName("Trattoria Da Mario");
+        restaurantDto.setAddress("Piazza del Risorgimento 46A");
+        restaurantDto.setEmail("info@lasoffittarenovatio.it"); // Stesso indirizzo e-mail
+        restaurantDto.setPassword("Mario123%");
+        restaurantService.registerRestaurant(restaurantDto);
+
+        restaurant = restaurantDAO.findByName("Trattoria Da Mario");
+        restaurant.setStatus(Restaurant.Status.ENABLED);
+        restaurantDAO.save(restaurant);
+
+        ServiceType pranzoType = serviceTypeDAO.findByName("Lunch");
+        Service pranzo = new Service();
+        pranzo.addServiceType(pranzoType);
+        pranzo.setValidFrom(LocalDate.now());
+        pranzo.setValidTo(LocalDate.now());
+        pranzo.setRestaurant(restaurant);
+        serviceDAO.save(pranzo);
+        createSlotsForService(pranzo, LocalTime.of(11, 0), LocalTime.of(17, 0));
+
+        ServiceType cenaType = serviceTypeDAO.findByName("Dinner");
+        Service cena = new Service();
+        cena.addServiceType(cenaType);
+        cena.setValidFrom(LocalDate.now());
+        cena.setValidTo(LocalDate.now());
+        cena.setRestaurant(restaurant);
+        serviceDAO.save(cena);
+        createSlotsForService(cena, LocalTime.of(17, 30), LocalTime.of(23, 0));
+    }
+
     private List<Slot> createSlotsForService(Service service, LocalTime startTime, LocalTime endTime) {
         List<Slot> slots = new java.util.ArrayList<>();
         LocalTime time = startTime;
@@ -94,5 +147,166 @@ public class RestaurantDataLoader {
             slotDAO.save(slot);
         }
         return slots;
+    }
+    
+    @Transactional
+    private RestaurantPrivilege createRestaurantPrivilegeIfNotFound(final String name) {
+        RestaurantPrivilege privilege = restaurantPrivilegeDAO.findByName(name);
+        if (privilege == null) {
+            privilege = new RestaurantPrivilege(name);
+            privilege = restaurantPrivilegeDAO.save(privilege);
+        }
+        return privilege;
+    }
+
+    @Transactional
+    public RestaurantRole createRestaurantRoleIfNotFound(String name, List<RestaurantPrivilege> privileges) {
+        RestaurantRole role = restaurantRoleDAO.findByName(name);
+        if (role == null) {
+            role = new RestaurantRole(name);
+        }
+        role.setPrivileges(privileges);
+        role = restaurantRoleDAO.save(role);
+        return role;
+    }
+
+    @Transactional void createRestaurantPrivilegesAndRoles() {
+        logger.info(">>> --- Creating Restaurant Privileges and Roles --- <<<");
+        final RestaurantPrivilege managerWritePrivilege = createRestaurantPrivilegeIfNotFound("PRIVILEGE_RESTAURANT_USER_MANAGER_WRITE");
+        final RestaurantPrivilege chefWritePrivilege = createRestaurantPrivilegeIfNotFound("PRIVILEGE_RESTAURANT_USER_CHEF_WRITE");
+        final RestaurantPrivilege waiterWritePrivilege = createRestaurantPrivilegeIfNotFound("PRIVILEGE_RESTAURANT_USER_WAITER_WRITE");
+        final RestaurantPrivilege viewerWritePrivilege = createRestaurantPrivilegeIfNotFound("PRIVILEGE_RESTAURANT_USER_VIEWER_WRITE");
+        final RestaurantPrivilege roleWritePrivilege = createRestaurantPrivilegeIfNotFound("PRIVILEGE_RESTAURANT_USER_ROLE_WRITE");
+        final RestaurantPrivilege reservationWritePrivilege = createRestaurantPrivilegeIfNotFound("PRIVILEGE_RESTAURANT_USER_RESERVATION_WRITE");
+        final RestaurantPrivilege serviceWritePrivilege = createRestaurantPrivilegeIfNotFound("PRIVILEGE_RESTAURANT_USER_SERVICE_WRITE");
+        final RestaurantPrivilege serviceReadPrivilege = createRestaurantPrivilegeIfNotFound("PRIVILEGE_RESTAURANT_USER_SERVICE_READ");
+        final RestaurantPrivilege slotWritePrivilege = createRestaurantPrivilegeIfNotFound("PRIVILEGE_RESTAURANT_USER_SLOT_WRITE");
+
+        /* PRIVILEGE_VIEW_USERS PRIVILEGE_ADD_MANAGER PRIVILEGE_ADD_CHEF PRIVILEGE_ADD_WAITER PRIVILEGE_ADD_VIEWER PRIVILEGE_DISABLE_MANAGER PRIVILEGE_DISABLE_CHEF PRIVILEGE_DISABLE_WAITER PRIVILEGE_DISABLE_VIEWER PRIVILEGE_CHANGE_ROLE_TO_CHEF PRIVILEGE_CHANGE_ROLE_TO_WAITER PRIVILEGE_CHANGE_ROLE_TO_VIEWER PRIVILEGE_CHANGE_ROLE_TO_MANAGER PRIVILEGE_MODIFY_RESERVATION PRIVILEGE_CANCEL_RESERVATION PRIVILEGE_CHAT_WITH_CUSTOMERS PRIVILEGE_SERVICE_MANAGMENT */
+
+        // Lista dei privilegi per i ruoli dei ristoranti
+        final List<RestaurantPrivilege> ownerPrivileges = new ArrayList<>(Arrays.asList(
+            managerWritePrivilege, chefWritePrivilege, waiterWritePrivilege, viewerWritePrivilege,
+            roleWritePrivilege, reservationWritePrivilege, serviceWritePrivilege, serviceReadPrivilege,
+            slotWritePrivilege));
+
+        final List<RestaurantPrivilege> managerPrivileges = new ArrayList<>(Arrays.asList(
+            chefWritePrivilege, waiterWritePrivilege, viewerWritePrivilege,
+            roleWritePrivilege, reservationWritePrivilege, serviceWritePrivilege, serviceReadPrivilege,
+            slotWritePrivilege));
+
+        final List<RestaurantPrivilege> viewerPrivileges = new ArrayList<>(Arrays.asList(serviceReadPrivilege));
+        final List<RestaurantPrivilege> chefPrivileges = new ArrayList<>(Arrays.asList(serviceReadPrivilege, slotWritePrivilege));
+        final List<RestaurantPrivilege> waiterPrivileges = new ArrayList<>(Arrays.asList(serviceReadPrivilege));
+
+        createRestaurantRoleIfNotFound("ROLE_OWNER", ownerPrivileges);
+        createRestaurantRoleIfNotFound("ROLE_MANAGER", managerPrivileges);
+        createRestaurantRoleIfNotFound("ROLE_VIEWER", viewerPrivileges);
+        createRestaurantRoleIfNotFound("ROLE_CHEF", chefPrivileges);
+        createRestaurantRoleIfNotFound("ROLE_WAITER", waiterPrivileges);
+        logger.info(">>> --- Restaurant Privileges and Roles Created --- <<<");
+    }
+
+    @Transactional
+    public void createDefaultServiceTypes() {
+        logger.info(">>> --- Creating Default Service Types --- <<<");
+        createServiceIfNotFound("Lunch");
+        createServiceIfNotFound("Dinner");
+        createServiceIfNotFound("Aperitif");
+        createServiceIfNotFound("Breakfast");
+        createServiceIfNotFound("After Dinner");
+        logger.info(">>> --- Default Service Types Created --- <<<");
+    }
+
+    @Transactional
+    private ServiceType createServiceIfNotFound(String name) {
+        ServiceType serviceType = serviceTypeDAO.findByName(name);
+        if (serviceType == null) {
+            serviceType = new ServiceType(name);
+            serviceTypeDAO.save(serviceType);
+        }
+        return serviceType;
+    }
+
+    
+    @Transactional void createRestaurantCategories() {
+        logger.info(">>> --- Creating Restaurant Categories --- <<<");
+        List<String> categories = Arrays.asList(
+            "Pizzeria", "Cucina Italiana", "Cucina Romana", "Cinese", "Giapponese",
+            "Sushi", "Senza Glutine", "Vegano", "Carne", "Pesce", "Fast Food",
+            "Vegetariano", "Mediterranea", "Messicana", "Indiana", "Francese",
+            "Spagnola", "Tailandese", "Coreana", "Barbecue", "Bisteccheria", "Griglieria",
+            "Hamburgeria", "Birreria", "Pub", "Tapas", "Fusion", "Mediorientale",
+            "Gourmet", "Creperia", "Pastificio", "Rosticceria", "Kebab", "Libanese",
+            "Turca", "Greca", "Vietnamita", "Filippina", "Africana", "Peruviana",
+            "Brasiliana", "Argentina", "Caraibica", "Hawaiiana", "Australiana",
+            "Russa", "Tedesca", "Polacca", "Ungherese", "Nordica", "Casereccia",
+            "Street Food", "Paninoteca", "Enoteca", "Churrascaria", "Dim Sum",
+            "Tex-Mex", "Pizza al Taglio", "Trattoria", "Osteria", "Cioccolateria",
+            "Gelateria", "Dessert Bar", "Tea House");
+
+        for (String categoryName : categories) {
+            if (restaurantCategoryDAO.findByName(categoryName) == null) {
+                RestaurantCategory category = new RestaurantCategory();
+                category.setName(categoryName);
+                restaurantCategoryDAO.save(category);
+            }
+        }
+        logger.info(">>> --- Restaurant Categories Created --- <<<");
+    }
+
+    @Transactional void assignCategoriesToLaSoffittaRenovatio() {
+        logger.info(">>> --- Assigning Categories to La Soffitta Renovatio --- <<<");
+        Restaurant restaurant = restaurantDAO.findByName("La Soffitta Renovatio");
+        if (restaurant == null) {
+            logger.warn("Restaurant La Soffitta Renovatio not found.");
+            return;
+        }
+
+        List<String> categoryNames = Arrays.asList(
+            "Pizzeria", "Senza Glutine", "Vegano", "Cucina Italiana", 
+            "Cucina Romana", "Carne", "Pesce");
+
+        for (String categoryName : categoryNames) {
+            RestaurantCategory category = restaurantCategoryDAO.findByName(categoryName);
+            if (category != null && !restaurant.getRestaurantTypes().contains(category)) {
+                restaurant.getRestaurantTypes().add(category);
+            }
+        }
+
+        restaurantDAO.save(restaurant);
+        logger.info("    >>>  ---   Categories Assigned to La Soffitta Renovatio   ---  <<< ");
+    }
+    
+    @Transactional void createAdditionalRestaurants() {
+        logger.info("    >>>  ---   Creating Additional Restaurants   ---  <<< ");
+        List<NewRestaurantDTO> restaurants = new ArrayList<>();
+        restaurants.add(new NewRestaurantDTO("Ristorante Da Mario", "Via Roma 10", "info@damario.it", "Password123"));
+        restaurants.add(new NewRestaurantDTO("Trattoria Bella Napoli", "Piazza Garibaldi 5", "info@bellanapoli.it", "Password123"));
+        restaurants.add(new NewRestaurantDTO("Osteria La Pergola", "Via Dante 15", "info@lapergola.it", "Password123"));
+        restaurants.add(new NewRestaurantDTO("Pizzeria Il Forno", "Corso Italia 20", "info@ilforno.it", "Password123"));
+        restaurants.add(new NewRestaurantDTO("Ristorante Al Mare", "Lungomare 25", "info@almare.it", "Password123"));
+        restaurants.add(new NewRestaurantDTO("Steakhouse La Griglia", "Via Veneto 30", "info@lagriglia.it", "Password123"));
+        restaurants.add(new NewRestaurantDTO("Sushi Bar Tokyo", "Via Milano 40", "info@sushitokyo.it", "Password123"));
+        restaurants.add(new NewRestaurantDTO("Ristorante Vegetariano Verde", "Via Firenze 50", "info@verde.it", "Password123"));
+        restaurants.add(new NewRestaurantDTO("Ristorante Gourmet Stella", "Via Torino 60", "info@stellagourmet.it", "Password123"));
+        restaurants.add(new NewRestaurantDTO("Ristorante Fusion Asia", "Via Napoli 70", "info@fusionasia.it", "Password123"));
+        restaurants.add(new NewRestaurantDTO("Ristorante Prova", "Via Napoli 70", "info@lasoffittarenovatio.it", "Minosse100%%"));
+
+        for (NewRestaurantDTO restaurantDto : restaurants) {
+            if (restaurantDAO.findByName(restaurantDto.getName()) == null) {
+                try {
+                    restaurantService.registerRestaurant(restaurantDto);
+                    Restaurant restaurant = restaurantDAO.findByName(restaurantDto.getName());
+                    if (restaurant != null) {
+                        restaurant.setStatus(Restaurant.Status.ENABLED);
+                        restaurantDAO.save(restaurant);
+                    }
+                } catch (Exception e) {
+                    logger.error("Error creating restaurant: " + restaurantDto.getName(), e);
+                }
+            }
+        }
+        logger.info("    >>>  ---   Additional Restaurants Created   ---  <<< ");
     }
 }
