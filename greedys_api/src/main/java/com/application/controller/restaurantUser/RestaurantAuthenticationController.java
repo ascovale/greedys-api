@@ -61,6 +61,13 @@ import jakarta.servlet.http.HttpServletRequest;
 @RequestMapping("/restaurant/user/auth")
 @SecurityRequirement(name = "bearerAuth")
 public class RestaurantAuthenticationController {
+
+    //TODO far
+    // potrei fare un jwt senza permessi che però può essere usato per fare il login
+    // get restaurants prende username e password e restituisce elenco ristoranti
+    // lo stesso ma da un jwt token del restaurantUser
+    // poi il login di un restaurant che ritorna il jwt che ha i permessi del ristorante
+    // poi un login che in realtà è uno switch che prende un jwt e ne restituisce un altro con i permessi di un altro ristorante
     private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
     private RestaurantService restaurantService;

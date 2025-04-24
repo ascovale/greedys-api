@@ -27,6 +27,7 @@ import com.application.persistence.dao.restaurant.RestaurantUserVerificationToke
 import com.application.persistence.model.restaurant.Restaurant;
 import com.application.persistence.model.restaurant.user.RestaurantRole;
 import com.application.persistence.model.restaurant.user.RestaurantUser;
+import com.application.persistence.model.restaurant.user.RestaurantUserHub;
 import com.application.persistence.model.restaurant.user.RestaurantUserPasswordResetToken;
 import com.application.persistence.model.restaurant.user.RestaurantUserVerificationToken;
 import com.application.security.jwt.JwtUtil;
@@ -138,11 +139,15 @@ public class RestaurantUserService {
             RestaurantRole rr) {
         System.out.println("Registering restaurant user with information:" + restaurantUserDTO.getRestaurantId() + " ");
         RestaurantUser ru = new RestaurantUser();
+        RestaurantUserHub restaurantUserHub = new RestaurantUserHub();
+        restaurantUserHub.setEmail(restaurantUserDTO.getEmail());
+        restaurantUserHub.setFirstName(restaurantUserDTO.getFirstName());
+        restaurantUserHub.setLastName(restaurantUserDTO.getLastName());
+        ru.setRestaurantUserHub(restaurantUserHub);
         Hibernate.initialize(ru.getRestaurantRoles());
-        ru.setEmail(restaurantUserDTO.getEmail());
         ru.addRestaurantRole(rr);
         ru.setRestaurant(restaurant);
-        ru.setPassword(passwordEncoder.encode(restaurantUserDTO.getPassword()));
+        restaurantUserHub.setPassword(passwordEncoder.encode(restaurantUserDTO.getPassword()));
         ruDAO.save(ru);
         emailService.sendRestaurantAssociationConfirmationEmail(ru);
         return ru;
@@ -151,9 +156,14 @@ public class RestaurantUserService {
     public RestaurantUser registerRestaurantUser(NewRestaurantUserDTO restaurantUserDTO, Restaurant restaurant) {
         System.out.println("Registering restaurant user with information:" + restaurantUserDTO.getRestaurantId() + " ");
         RestaurantUser ru = new RestaurantUser();
+        RestaurantUserHub restaurantUserHub = new RestaurantUserHub();
+        restaurantUserHub.setEmail(restaurantUserDTO.getEmail());
+        restaurantUserHub.setFirstName(restaurantUserDTO.getFirstName());
+        restaurantUserHub.setLastName(restaurantUserDTO.getLastName());
+        ru.setRestaurantUserHub(restaurantUserHub);
         Hibernate.initialize(ru.getRestaurantRoles());
         ru.setRestaurant(restaurant);
-        ru.setPassword(passwordEncoder.encode(restaurantUserDTO.getPassword()));
+        restaurantUserHub.setPassword(passwordEncoder.encode(restaurantUserDTO.getPassword()));
         ruDAO.save(ru);
         emailService.sendRestaurantAssociationConfirmationEmail(ru);
         return ru;
@@ -235,7 +245,7 @@ public class RestaurantUserService {
 
     public void changeRestaurantUserPassword(final Long id, final String password) {
         final RestaurantUser ru = ruDAO.findById(id).get();
-        ru.setPassword(passwordEncoder.encode(password));
+        ru.getRestaurantUserHub().setPassword(passwordEncoder.encode(password));
         ruDAO.save(ru);
     }
 

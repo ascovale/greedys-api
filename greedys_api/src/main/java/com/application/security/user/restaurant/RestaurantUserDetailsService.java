@@ -1,11 +1,5 @@
 package com.application.security.user.restaurant;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -34,40 +28,35 @@ public class RestaurantUserDetailsService implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(final String email)  {
+    public UserDetails loadUserByUsername(final String username) {
         final String ip = getClientIP();
         if (loginAttemptService.isBlocked(ip)) {
             throw new RuntimeException("blocked");
         }
-        
-            Collection<? extends GrantedAuthority> authorities;
-            RestaurantUser user = new RestaurantUser();
-          /*   if (isMultiRestaurantUser(email)) {
-                authorities = getSwitchUserAuthorities();
-                return new org.springframework.security.core.userdetails.User(
 
-                        user.getEmail(),
-                        user.getPassword(),
-                        user.isEnabled(),
-                        true,
-                        true,
-                        true,
-                        authorities);
-            } else {*/
-                user = restaurantUserDAO.findByEmail(email);
-                if (user == null) {
-                    throw new UsernameNotFoundException("No user found with username: " + email);
-                }
+        // Split the username into email and restaurantId
+        String[] parts = username.split(":");
+        if (parts.length != 2) {
+            throw new UsernameNotFoundException("Invalid username format. Expected 'email:restaurantId'.");
+        }
 
-                // Forza il caricamento lazy delle autorità
-                user.getAuthorities().size();
+        String email = parts[0];
+        Long restaurantId;
+        try {
+            restaurantId = Long.parseLong(parts[1]);
+        } catch (NumberFormatException e) {
+            throw new UsernameNotFoundException("Invalid restaurantId format.");
+        }
 
-            //}
-            System.out.println("\n\n\n 2Loaded user by email: " + email);
+        RestaurantUser user = restaurantUserDAO.findByEmailAndRestaurantId(email, restaurantId);
+        if (user == null) {
+            throw new UsernameNotFoundException("No user found with email: " + email + " and restaurant ID: " + restaurantId);
+        }
 
+        // Forza il caricamento lazy delle autorità
+        user.getAuthorities().size();
 
-            return user;
-        
+        return user;
     }
 
     public UserDetails loadUserById(final Long restaurantUserId) throws UsernameNotFoundException {
@@ -86,45 +75,14 @@ public class RestaurantUserDetailsService implements UserDetailsService {
         }
     }
 
-    public UserDetails loadSwitchUserById(final Long id) throws UsernameNotFoundException {
-        try {
-            final RestaurantUser user = restaurantUserDAO.findById(id).get();
-            if (user == null) {
-                throw new UsernameNotFoundException("No user found with id: " + id);
-            }
-            if (!isMultiRestaurantUser(user.getEmail())) {
-                throw new UsernameNotFoundException("User is not a multi-restaurant user with id: " + id);
-            }
-            Collection<? extends GrantedAuthority> authorities = getSwitchUserAuthorities();
+    
 
-            return new org.springframework.security.core.userdetails.User(user.getEmail(),
-                    user.getPassword(),
-                    user.isEnabled(),
-                    true,
-                    true,
-                    true,
-                    authorities);
-        } catch (final Exception e) {
-            throw new RuntimeException(e);
+    private String getClientIP() {
+        String ip = request.getHeader("X-Forwarded-For");
+        if (ip == null || ip.isEmpty()) {
+            ip = request.getRemoteAddr();
         }
-    }
-
-    private boolean isMultiRestaurantUser(String email) {
-        return restaurantUserDAO.isMultiRestaurantUser(email);
-    }
-
-    private Collection<? extends GrantedAuthority> getSwitchUserAuthorities() {
-        List<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority("PRIVILEGE_SWITCH_TO_RESTAURANT_USER"));
-        return authorities;
-    }
-
-    private final String getClientIP() {
-        final String xfHeader = request.getHeader("X-Forwarded-For");
-        if (xfHeader == null) {
-            return request.getRemoteAddr();
-        }
-        return xfHeader.split(",")[0];
+        return ip;
     }
 
 }
