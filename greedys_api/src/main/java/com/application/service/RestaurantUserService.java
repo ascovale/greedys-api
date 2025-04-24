@@ -22,6 +22,7 @@ import com.application.persistence.dao.restaurant.RestaurantDAO;
 import com.application.persistence.dao.restaurant.RestaurantPrivilegeDAO;
 import com.application.persistence.dao.restaurant.RestaurantRoleDAO;
 import com.application.persistence.dao.restaurant.RestaurantUserDAO;
+import com.application.persistence.dao.restaurant.RestaurantUserHubDAO;
 import com.application.persistence.dao.restaurant.RestaurantUserPasswordResetTokenDAO;
 import com.application.persistence.dao.restaurant.RestaurantUserVerificationTokenDAO;
 import com.application.persistence.model.restaurant.Restaurant;
@@ -56,6 +57,7 @@ public class RestaurantUserService {
     private RestaurantDAO restaurantDAO;
     private RestaurantRoleDAO rrDAO;
     private RestaurantPrivilegeDAO rpDAO;
+    private RestaurantUserHubDAO ruhDAO;
     private PasswordEncoder passwordEncoder;
     private final RestaurantUserPasswordResetTokenDAO passwordTokenRepository;
     private AuthenticationManager authenticationManager;
@@ -70,6 +72,7 @@ public class RestaurantUserService {
             RestaurantRoleDAO rrDAO,
             RestaurantPrivilegeDAO rpDAO,
             PasswordEncoder passwordEncoder,
+            RestaurantUserHubDAO ruhDAO,
             RestaurantUserPasswordResetTokenDAO passwordTokenRepository,
             @Qualifier("restaurantAuthenticationManager") AuthenticationManager authenticationManager,
             JwtUtil jwtUtil) {
@@ -84,6 +87,7 @@ public class RestaurantUserService {
         this.passwordTokenRepository = passwordTokenRepository;
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
+        this.ruhDAO = ruhDAO;
     }
 
     // TODO QUANDO CREO UN UTENTE DEVO SPECIFICARE IL RUOLO CHE HA NEL RISTORANTE
@@ -138,11 +142,27 @@ public class RestaurantUserService {
     public RestaurantUser registerRestaurantUser(NewRestaurantUserDTO restaurantUserDTO, Restaurant restaurant,
             RestaurantRole rr) {
         System.out.println("Registering restaurant user with information:" + restaurantUserDTO.getRestaurantId() + " ");
+
+        // Check if a user with the same email already exists
+        RestaurantUserHub existingUserHub = ruhDAO.findByEmail(restaurantUserDTO.getEmail());
+        if (existingUserHub != null) {
+            throw new IllegalArgumentException("User hub with email " + restaurantUserDTO.getEmail() + " already exists.");
+        }
+        
+        RestaurantUser existingRestaurantUser = ruDAO.findByEmailAndRestaurantId(restaurantUserDTO.getEmail(), restaurant.getId());
+        if (existingRestaurantUser != null) {
+            throw new IllegalArgumentException("User already exists for this restaurant.");
+        }
+
         RestaurantUser ru = new RestaurantUser();
         RestaurantUserHub restaurantUserHub = new RestaurantUserHub();
         restaurantUserHub.setEmail(restaurantUserDTO.getEmail());
         restaurantUserHub.setFirstName(restaurantUserDTO.getFirstName());
         restaurantUserHub.setLastName(restaurantUserDTO.getLastName());
+        
+        // Save the RestaurantUserHub entity before associating it with RestaurantUser
+        ruhDAO.save(restaurantUserHub);
+
         ru.setRestaurantUserHub(restaurantUserHub);
         Hibernate.initialize(ru.getRestaurantRoles());
         ru.addRestaurantRole(rr);
@@ -155,17 +175,56 @@ public class RestaurantUserService {
 
     public RestaurantUser registerRestaurantUser(NewRestaurantUserDTO restaurantUserDTO, Restaurant restaurant) {
         System.out.println("Registering restaurant user with information:" + restaurantUserDTO.getRestaurantId() + " ");
+
+        // Check if a user with the same email already exists
+        RestaurantUserHub existingUserHub = ruhDAO.findByEmail(restaurantUserDTO.getEmail());
+        if (existingUserHub != null) {
+            throw new IllegalArgumentException("User hub with email " + restaurantUserDTO.getEmail() + " already exists.");
+        }
+
+        RestaurantUser existingRestaurantUser = ruDAO.findByEmailAndRestaurantId(restaurantUserDTO.getEmail(), restaurant.getId());
+        if (existingRestaurantUser != null) {
+            throw new IllegalArgumentException("User already exists for this restaurant.");
+        }
+
         RestaurantUser ru = new RestaurantUser();
         RestaurantUserHub restaurantUserHub = new RestaurantUserHub();
         restaurantUserHub.setEmail(restaurantUserDTO.getEmail());
         restaurantUserHub.setFirstName(restaurantUserDTO.getFirstName());
         restaurantUserHub.setLastName(restaurantUserDTO.getLastName());
+        
+        // Save the RestaurantUserHub entity before associating it with RestaurantUser
+        ruhDAO.save(restaurantUserHub);
+
         ru.setRestaurantUserHub(restaurantUserHub);
         Hibernate.initialize(ru.getRestaurantRoles());
         ru.setRestaurant(restaurant);
         restaurantUserHub.setPassword(passwordEncoder.encode(restaurantUserDTO.getPassword()));
         ruDAO.save(ru);
         emailService.sendRestaurantAssociationConfirmationEmail(ru);
+        return ru;
+    }
+
+    public RestaurantUser addRestaurantUserIfHubExists(NewRestaurantUserDTO restaurantUserDTO, Restaurant restaurant) {
+        // Check if a user hub with the same email already exists
+        RestaurantUserHub existingUserHub = ruhDAO.findByEmail(restaurantUserDTO.getEmail());
+        if (existingUserHub == null) {
+            throw new IllegalArgumentException("No user hub found with email: " + restaurantUserDTO.getEmail());
+        }
+
+        // Check if a RestaurantUser already exists for this hub and restaurant
+        RestaurantUser existingRestaurantUser = ruDAO.findByEmailAndRestaurantId(restaurantUserDTO.getEmail(), restaurant.getId());
+        if (existingRestaurantUser != null) {
+            throw new IllegalArgumentException("User already exists for this restaurant.");
+        }
+
+        // Create and save a new RestaurantUser
+        RestaurantUser ru = new RestaurantUser();
+        ru.setRestaurantUserHub(existingUserHub);
+        ru.setRestaurant(restaurant);
+        Hibernate.initialize(ru.getRestaurantRoles());
+        ruDAO.save(ru);
+
         return ru;
     }
 
@@ -305,7 +364,6 @@ public class RestaurantUserService {
     }
 
     public RestaurantUserAuthResponseDTO loginRestaurantUser(Long restaurantUserId, HttpServletRequest request) {
-        if (ruDAO.isMultiRestaurantUser(restaurantUserId)) {
             RestaurantUser user = ruDAO.findById(restaurantUserId)
                     .orElseThrow(() -> new UsernameNotFoundException("No user found with ID: " + restaurantUserId));
             authenticationManager.authenticate(
@@ -327,8 +385,7 @@ public class RestaurantUserService {
             RestaurantUserAuthResponseDTO responseDTO = new RestaurantUserAuthResponseDTO(jwt,
                     new RestaurantUserDTO(customerDetails));
             return responseDTO;
-        }
-        throw new IllegalArgumentException("User is not a multi-restaurant user with ID: " + restaurantUserId);
+        
     }
 
     public RestaurantUserAuthResponseDTO adminLoginToRestaurantUser(Long restaurantUserId, HttpServletRequest request) {

@@ -2,7 +2,6 @@ package com.application.persistence.dao.restaurant;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -24,15 +23,7 @@ public interface RestaurantUserDAO extends JpaRepository<RestaurantUser, Long>{
     @Query("SELECT ru FROM RestaurantUser ru WHERE ru.restaurantUserHub.email = :email")
     RestaurantUser findByEmail(@Param("email") String email);
 
-    RestaurantUser findFirstByEmailOrderByIdAsc(@Param("email") String email);
-
-    @Query("SELECT COUNT(ru) > 1 FROM RestaurantUser ru WHERE ru.email = :email")
-    boolean isMultiRestaurantUser(@Param("email") String email);
-    @Query("SELECT COUNT(ru) > 1 FROM RestaurantUser ru WHERE ru.email = (SELECT email FROM RestaurantUser WHERE id = :restaurantUserId)")
-    boolean isMultiRestaurantUser(@Param("restaurantUserId") Long restaurantUserId);
-
-    Optional<RestaurantUser> findRestaurantUserByIdAndEmail(Long userId, String email);
-    @Query("SELECT ru FROM RestaurantUser ru WHERE ru.email = :email")
+    @Query("SELECT ru FROM RestaurantUser ru WHERE ru.restaurantUserHub.email = :email")
     List<RestaurantUser> findAllByEmail(@Param("email") String email);
 
     @Query("SELECT ru FROM RestaurantUser ru WHERE ru.restaurantUserHub.email = :email AND ru.restaurant.id = :restaurantId")

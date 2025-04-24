@@ -105,12 +105,7 @@ public class SecurityRestaurantUserService {
             return false;
         }
 
-        Optional<RestaurantUser> userOptional = restaurantUserDAO.findRestaurantUserByIdAndEmail(userId, email);
-        if (!userOptional.isPresent()) {
-            return false;
-        }
-
-        RestaurantUser foundUser = userOptional.get();
-        return foundUser.isEnabled() && isRestaurantEnabled(foundUser);
+        throw new IllegalArgumentException("User not found with id: " + userId + " and email: " + email);
+       
     }
 }

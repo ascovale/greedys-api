@@ -291,7 +291,7 @@ public class RestaurantDataLoader {
         restaurants.add(new NewRestaurantDTO("Ristorante Vegetariano Verde", "Via Firenze 50", "info@verde.it", "Password123"));
         restaurants.add(new NewRestaurantDTO("Ristorante Gourmet Stella", "Via Torino 60", "info@stellagourmet.it", "Password123"));
         restaurants.add(new NewRestaurantDTO("Ristorante Fusion Asia", "Via Napoli 70", "info@fusionasia.it", "Password123"));
-        restaurants.add(new NewRestaurantDTO("Ristorante Prova", "Via Napoli 70", "info@lasoffittarenovatio.it", "Minosse100%%"));
+        //restaurants.add(new NewRestaurantDTO("Ristorante Prova", "Via Napoli 70", "info@lasoffittarenovatio.it", "Minosse100%%"));
 
         for (NewRestaurantDTO restaurantDto : restaurants) {
             if (restaurantDAO.findByName(restaurantDto.getName()) == null) {
