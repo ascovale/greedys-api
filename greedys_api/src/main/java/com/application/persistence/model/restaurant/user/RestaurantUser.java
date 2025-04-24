@@ -1,6 +1,5 @@
 package com.application.persistence.model.restaurant.user;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -208,9 +207,7 @@ public class RestaurantUser implements UserDetails {
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return restaurantUserHub != null && 
-               (restaurantUserHub.getCredentialsExpirationDate() == null || 
-                restaurantUserHub.getCredentialsExpirationDate().isAfter(LocalDate.now()));
+        return true;
     }
 
     @Override
