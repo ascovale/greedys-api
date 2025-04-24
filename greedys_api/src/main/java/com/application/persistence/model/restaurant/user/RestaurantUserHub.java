@@ -26,8 +26,8 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "restaurant_user")
-public class RestaurantUser implements UserDetails {
+@Table(name = "restaurant_user_hub")
+public class RestaurantUserHub implements UserDetails {
     @Id
     @Column(unique = true, nullable = false)
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -45,20 +45,17 @@ public class RestaurantUser implements UserDetails {
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private Status status = Status.ENABLED;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "restaurant_user_hub_id")
-    private RestaurantUserHub restaurantUserHub;
-
-    public RestaurantUserHub getRestaurantUserHub() {
-        return restaurantUserHub;
-    }
-
-    public void setRestaurantUserHub(RestaurantUserHub restaurantUserHub) {
-        this.restaurantUserHub = restaurantUserHub;
-    }
-   
+    private String phoneNumber;
+    @Column(length = 60)
+    private String password;
+    @Column(unique = true, nullable = false)
+    private String email;
     private boolean accepted;
+    private String firstName;
+    private String lastName;
+
+    @Column(name = "credentials_expiration_date")
+    private LocalDate credentialsExpirationDate;
 
     public enum Status {
         BLOCKED,
@@ -67,6 +64,21 @@ public class RestaurantUser implements UserDetails {
         DISABLED
     }
 
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
 
     public boolean isAccepted() {
         return accepted;
@@ -80,7 +92,13 @@ public class RestaurantUser implements UserDetails {
         return status == Status.ENABLED && restaurant != null && restaurant.getStatus() == Restaurant.Status.ENABLED;
     }
 
+    public String getEmail() {
+        return email;
+    }
 
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
     public Status getStatus() {
         return status;
@@ -88,6 +106,14 @@ public class RestaurantUser implements UserDetails {
 
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 
     private Integer toReadNotification = 0;
@@ -124,6 +150,13 @@ public class RestaurantUser implements UserDetails {
         this.id = id;
     }
 
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
     public List<RestaurantRole> getRestaurantRoles() {
         return restaurantRoles;
@@ -190,10 +223,7 @@ public class RestaurantUser implements UserDetails {
 
     @Override
     public String getUsername() {
-        if (restaurantUserHub != null && restaurant != null) {
-            return restaurantUserHub.getEmail() + ":" + restaurant.getId();
-        }
-        return null;
+        return email;
     }
 
     @Override
@@ -208,17 +238,16 @@ public class RestaurantUser implements UserDetails {
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return restaurantUserHub != null && 
-               (restaurantUserHub.getCredentialsExpirationDate() == null || 
-                restaurantUserHub.getCredentialsExpirationDate().isAfter(LocalDate.now()));
+        //TODO in futuro da cambiare se le credenziali scadono
+        return true;
     }
 
-    @Override
-    public String getPassword() {
-        return restaurantUserHub != null ? restaurantUserHub.getPassword() : null;
+    public LocalDate getCredentialsExpirationDate() {
+        return credentialsExpirationDate;
     }
 
-    public String getEmail() {
-        return restaurantUserHub != null ? restaurantUserHub.getEmail() : null;
+    public void setCredentialsExpirationDate(LocalDate credentialsExpirationDate) {
+        this.credentialsExpirationDate = credentialsExpirationDate;
     }
+
 }

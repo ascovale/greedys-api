@@ -21,7 +21,8 @@ public interface RestaurantUserDAO extends JpaRepository<RestaurantUser, Long>{
 
     Collection<RestaurantUser> findByRestaurantId(Long id);
 
-    RestaurantUser findByEmail(String email);
+    @Query("SELECT ru FROM RestaurantUser ru WHERE ru.restaurantUserHub.email = :email")
+    RestaurantUser findByEmail(@Param("email") String email);
 
     RestaurantUser findFirstByEmailOrderByIdAsc(@Param("email") String email);
 
@@ -33,4 +34,7 @@ public interface RestaurantUserDAO extends JpaRepository<RestaurantUser, Long>{
     Optional<RestaurantUser> findRestaurantUserByIdAndEmail(Long userId, String email);
     @Query("SELECT ru FROM RestaurantUser ru WHERE ru.email = :email")
     List<RestaurantUser> findAllByEmail(@Param("email") String email);
+
+    @Query("SELECT ru FROM RestaurantUser ru WHERE ru.restaurantUserHub.email = :email AND ru.restaurant.id = :restaurantId")
+    RestaurantUser findByEmailAndRestaurantId(@Param("email") String email, @Param("restaurantId") Long restaurantId);
 }
