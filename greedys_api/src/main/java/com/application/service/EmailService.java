@@ -84,7 +84,7 @@ public class EmailService {
         }*/
     }
 
-    //TODO: il link per rimuovere ristorante è sbagliato da sistemare
+    // TODO: il link per rimuovere ristorante è sbagliato da sistemare
     // Creare link per rimuovere ristorante lato flutterApp
     private SimpleMailMessage constructRestaurantAssociationConfirmationMessage(RestaurantUser restaurantUser) {
         if (restaurantUser == null || restaurantUser.getRestaurant() == null || restaurantUser.getEmail() == null) {
@@ -117,31 +117,55 @@ public class EmailService {
     }
 
     public void sendEmail(String email, String subject, String content) {
-        final SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(email);
-        message.setSubject(subject);
-        message.setText(content);
-        message.setFrom("reservation@greedys.it");
-        mailSender.send(message);
-    }
-
-    public void sendEmail(SimpleMailMessage constructResendVerificationTokenEmail) {
-        mailSender.send(constructResendVerificationTokenEmail);
-    }   
-
-
-    public void sendTestEmail(String to, String subject, String text) {
         try {
-            SimpleMailMessage email = new SimpleMailMessage();
-            email.setTo(to); // Sostituisci con un indirizzo valido
-            email.setSubject(subject);
-            email.setText(text);
-            email.setFrom("reservation@greedys.it");
-            mailSender.send(email);
-            System.out.println("Email inviata con successo!");
+            if (email == null || email.isEmpty()) {
+                throw new IllegalArgumentException("Recipient email address cannot be null or empty");
+            }
+            System.out.println("Preparing to send email to: " + email); // Log per debug
+            final SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(email);
+            message.setSubject(subject);
+            message.setText(content);
+            message.setFrom("reservation@greedys.it");
+            mailSender.send(message);
+            System.out.println("Email sent successfully to: " + email); // Log per conferma
         } catch (Exception e) {
-            System.err.println("Errore durante l'invio dell'email: " + e.getMessage());
+            System.err.println("Error while sending email: " + e.getMessage()); // Log dettagliato
+            e.printStackTrace();
         }
     }
 
+    public void sendEmail(SimpleMailMessage constructResendVerificationTokenEmail) {
+        if (constructResendVerificationTokenEmail.getTo() == null || constructResendVerificationTokenEmail.getTo().length == 0) {
+            throw new IllegalArgumentException("Recipient email address cannot be null or empty");
+        }
+        mailSender.send(constructResendVerificationTokenEmail);
+    }   
+
+    public void sendTestEmail(String to, String subject, String text) {
+        try {
+            System.out.println("Trying to send Test email to: " + to);
+            System.out.println("Subject: " + subject);
+            System.out.println("Message: " + text);
+
+            SimpleMailMessage email = new SimpleMailMessage();
+            email.setTo(to);
+            email.setSubject(subject);
+            email.setText(text);
+            email.setFrom("reservation@greedys.it");
+
+            System.out.println("Sending email...");
+            mailSender.send(email);
+            System.out.println("Email sent successfully to: " + to);
+        } catch (IllegalArgumentException e) {
+            System.err.println("Invalid email address: " + e.getMessage());
+        } catch (org.springframework.mail.MailAuthenticationException e) {
+            System.err.println("Authentication failed: " + e.getMessage());
+        } catch (org.springframework.mail.MailSendException e) {
+            System.err.println("Failed to send email: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Unexpected error while sending email: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 }

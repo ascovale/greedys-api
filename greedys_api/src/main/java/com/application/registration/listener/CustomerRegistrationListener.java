@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.MessageSource;
+import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
@@ -30,7 +31,12 @@ public class CustomerRegistrationListener implements ApplicationListener<Custome
 
 	@Override
 	public void onApplicationEvent(final CustomerOnRegistrationCompleteEvent event) {
-		this.confirmRegistration(event);
+		try {
+			this.confirmRegistration(event);
+		} catch (MailException e) {
+			System.err.println("Failed to send email: " + e.getMessage());
+			e.printStackTrace();
+		}
 	}
 
 	private void confirmRegistration(final CustomerOnRegistrationCompleteEvent event) {

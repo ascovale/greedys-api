@@ -1,11 +1,14 @@
 package com.application.web.dto.post.admin;
 
-public class EmailRequestDTO {
+import com.application.controller.Validators.ValidEmail;
+
+public class EmailRequestDTO{ // Renamed from EmailRequestDTO to EmailRequestDto
+    @ValidEmail
     private String email;
     private String subject;
     private String message;
 
-    public EmailRequestDTO(String email, String subject, String message) {
+    public EmailRequestDTO(String email, String subject, String message) { // Updated constructor name
         this.email = email;
         this.subject = subject;
         this.message = message;
