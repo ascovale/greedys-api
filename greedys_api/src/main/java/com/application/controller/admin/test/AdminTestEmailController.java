@@ -49,8 +49,16 @@ public class AdminTestEmailController {
     @ApiResponse(responseCode = "400", description = "Invalid request")
     @PostMapping("/send_test_email")
     public GenericResponse sendTestEmail(@RequestBody EmailRequestDTO emailRequest) {
-        //emailService.sendEmail(emailRequest.getEmail(), emailRequest.getSubject(), emailRequest.getMessage());
-        return new GenericResponse("Email sent successfully");
+        try {
+            System.out.println("\n\n\nTrying to send Test email to: " + emailRequest.getEmail());
+            System.out.println("Subject: " + emailRequest.getSubject());
+            System.out.println("Message: " + emailRequest.getMessage() + "\n\n\n");
+            emailService.sendTestEmail(emailRequest.getEmail(), emailRequest.getSubject(), emailRequest.getMessage());
+            return new GenericResponse("Email sent successfully");
+        } catch (Exception e) {
+            e.printStackTrace(); // Log dettagliato per catturare eventuali errori
+            return new GenericResponse("Failed to send email: " + e.getMessage());
+        }
     }
 
     @Operation(summary = "Send test notification to restaurant User", description = "Sends a test notification with the specified title and body to the specified restaurant user")

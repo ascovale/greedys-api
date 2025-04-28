@@ -11,7 +11,6 @@ services:
         order: start-first
     depends_on:
       - db
-      - rabbitmq
     networks:
       - app-network
     environment:
@@ -43,23 +42,6 @@ services:
       retries: 5
     secrets:
       - db_password
-
-  rabbitmq:
-    image: rabbitmq:management
-    ports:
-      - "5672:5672"   # Porta per il broker RabbitMQ
-      - "15672:15672" # Porta per l'interfaccia di management
-    networks:
-      - app-network
-    healthcheck:
-      test: ["CMD-SHELL", "rabbitmqctl status --quiet || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-    secrets:
-      - rabbitmq_config
-    environment:
-      RABBITMQ_CONFIG_FILE: /run/secrets/rabbitmq_config
 
 networks:
   app-network:
