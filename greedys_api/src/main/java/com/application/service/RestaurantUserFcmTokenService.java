@@ -4,17 +4,19 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.application.persistence.dao.restaurant.RestaurantUserFcmTokenDAO;
+import com.application.persistence.model.restaurant.user.RestaurantUser;
 import com.application.persistence.model.restaurant.user.RestaurantUserFcmToken;
 import com.application.web.dto.post.UserFcmTokenDTO;
-import com.application.persistence.model.restaurant.user.RestaurantUser;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
 
 import jakarta.persistence.EntityManager;
 
 @Service
+@Transactional
 public class RestaurantUserFcmTokenService {
     private final RestaurantUserFcmTokenDAO userFcmTokenRepository;
     private final EntityManager entityManager;

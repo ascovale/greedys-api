@@ -26,7 +26,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RequestMapping("/customer/allergy")
 @SecurityRequirement(name = "customerBearerAuth")
-@Tag(name = "4. Allergy", description = "Controller for managing customer allergies")
+@Tag(name = "5. Allergy", description = "Controller for managing customer allergies")
 
 @RestController
 public class AllergyController {

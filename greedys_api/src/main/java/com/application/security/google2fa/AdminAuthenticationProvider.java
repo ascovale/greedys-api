@@ -27,13 +27,18 @@ public class AdminAuthenticationProvider extends DaoAuthenticationProvider {
         // Verifica esplicita della password
         if (!getPasswordEncoder().matches(auth.getCredentials().toString(), user.getPassword())) {
             System.out.println("\n\n\\n\n\nPassword non corrisponde: " + auth.getCredentials().toString() + " != " + user.getPassword());
-            // throw new BadCredentialsException("Invalid username or password");   
             throw new BadCredentialsException("Invalid username or password");
         }
 
-        // Procedi con l'autenticazione standard
-        final Authentication result = super.authenticate(auth);
-        return new UsernamePasswordAuthenticationToken(user, result.getCredentials(), result.getAuthorities());
+        try {
+            // Procedi con l'autenticazione standard
+            final Authentication result = super.authenticate(auth);
+            return new UsernamePasswordAuthenticationToken(user, result.getCredentials(), result.getAuthorities());
+        } catch (AuthenticationException e) {
+            // Cattura e stampa il motivo dell'errore
+            System.err.println("Errore durante l'autenticazione: " + e.getMessage());
+            throw e;
+        }
     }
 
     @Override

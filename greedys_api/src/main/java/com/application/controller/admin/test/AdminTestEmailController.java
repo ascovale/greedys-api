@@ -24,7 +24,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "adminBearerAuth")
 @Tag(name = "Admin Tester", description = "Admin management APIs for testing purposes")
 public class AdminTestEmailController {
-    //TODO: Dividere le mail la mail per la prenotazione e per la registrazione
+    //TODO: Dividere le mail per la prenotazione e per la registrazione
     //TODO: Bisognerà usare Twilio per inviare anche le mail per grossi volumi valutare aws
     private EmailService emailService;
     private NotificationService notificationService;

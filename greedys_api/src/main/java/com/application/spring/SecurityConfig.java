@@ -91,7 +91,7 @@ public class SecurityConfig {
                                                                 "/auth/**",
                                                                 "/reservation/**", "/error*", "/actuator/health",
                                                                 "/public/**","/restaurant/user/auth/**")
-                                                .permitAll().requestMatchers("/restaurant_user/**").authenticated())
+                                                .permitAll().requestMatchers("/restaurant/user/**").authenticated())
                                 .sessionManagement(management -> management
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                                 .addFilterBefore(restaurantJwtRequestFilter, UsernamePasswordAuthenticationFilter.class)

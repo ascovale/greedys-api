@@ -45,18 +45,23 @@ public class RestaurantUserRequestFilter extends OncePerRequestFilter {
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             System.out.println("No authentication found in context. Loading user details...");
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+            System.out.println("Authorities: " + userDetails.getAuthorities()+"\n\n\n\\n\n\n");
+
     
             if (jwtUtil.validateToken(jwt, userDetails)) {
                 System.out.println("Token validated. Setting authentication...");
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
+                System.out.println("\n\n\n\nSetting details for authentication token...");
                 usernamePasswordAuthenticationToken
                         .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                System.out.println("Setting authentication in SecurityContextHolder...");
                 SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
             } else {
                 System.out.println("Token validation failed.");
             }
         }
+        System.out.println("Continuing filter chain...");
     
         chain.doFilter(request, response);
     }

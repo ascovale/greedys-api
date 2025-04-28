@@ -37,7 +37,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
-@Tag(name = "2. User Management", description = "Controller for managing restaurant users")
+@Tag(name = "3. User Management", description = "Controller for managing restaurant users")
 @RestController
 @RequestMapping("/restaurant/user")
 @SecurityRequirement(name = "restaurantBearerAuth")
@@ -178,8 +178,12 @@ public class RestaurantUserController {
     private RestaurantUser getCurrentRestaurantUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.getPrincipal() instanceof RestaurantUser) {
+            System.out.println("\n\n\n\nAuthenticated restaurant user found.\n\n\n");
+            System.out.println("Authorities: " + authentication.getAuthorities());
+            System.out.println("User: " + authentication.getPrincipal());
             return (RestaurantUser) authentication.getPrincipal();
         }
+        System.out.println("\n\n\n\nNo authenticated restaurant user found.\n\n\n");
         return null;
     }
 

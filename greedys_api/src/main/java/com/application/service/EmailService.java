@@ -6,6 +6,7 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.application.persistence.model.customer.Notification;
 import com.application.persistence.model.restaurant.user.RestaurantNotification;
@@ -13,6 +14,7 @@ import com.application.persistence.model.restaurant.user.RestaurantUser;
 import com.application.service.utils.NotificatioUtils;
 
 @Service
+@Transactional
 public class EmailService {
 
     @Autowired

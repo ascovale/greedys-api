@@ -75,6 +75,22 @@ public class RestaurantUserDetailsService implements UserDetailsService {
         }
     }
 
+    public UserDetails loadUserHubById(final Long restaurantUserId) throws UsernameNotFoundException {
+        try {
+            final RestaurantUser user = restaurantUserDAO.findById(restaurantUserId).orElse(null);
+            if (user == null) {
+                throw new UsernameNotFoundException("No user found with ID: " + restaurantUserId);
+            }
+
+            // Forza il caricamento lazy delle autorità
+            user.getAuthorities().size();
+
+            return user;
+        } catch (final Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     
 
     private String getClientIP() {

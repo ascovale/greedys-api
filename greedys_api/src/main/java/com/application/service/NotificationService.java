@@ -18,6 +18,7 @@ import com.application.persistence.model.reservation.Reservation;
 import com.application.web.dto.NotificationDto;
 
 @Service
+@Transactional
 public class NotificationService {
     private final NotificationDAO notificationDAO;
     private final CustomerDAO userDAO;

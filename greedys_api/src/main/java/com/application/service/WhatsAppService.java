@@ -3,6 +3,7 @@ package com.application.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.application.persistence.model.customer.Customer;
 import com.application.persistence.model.customer.Notification;
@@ -11,6 +12,7 @@ import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.type.PhoneNumber;
 
 @Service
+@Transactional
 public class WhatsAppService {
 
     @Autowired

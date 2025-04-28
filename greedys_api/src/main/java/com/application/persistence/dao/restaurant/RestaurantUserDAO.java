@@ -28,4 +28,8 @@ public interface RestaurantUserDAO extends JpaRepository<RestaurantUser, Long>{
 
     @Query("SELECT ru FROM RestaurantUser ru WHERE ru.restaurantUserHub.email = :email AND ru.restaurant.id = :restaurantId")
     RestaurantUser findByEmailAndRestaurantId(@Param("email") String email, @Param("restaurantId") Long restaurantId);
+
+    @Query("SELECT ru FROM RestaurantUser ru WHERE ru.restaurantUserHub.id = :hubId")
+    List<RestaurantUser> findAllByRestaurantUserHubId(@Param("hubId") Long hubId);
+
 }

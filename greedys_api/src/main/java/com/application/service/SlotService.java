@@ -20,6 +20,7 @@ import com.application.web.dto.post.restaurant.RestaurantNewSlotDTO;
 import jakarta.transaction.Transactional;
 
 @org.springframework.stereotype.Service
+@Transactional
 public class SlotService {
 
     @Autowired

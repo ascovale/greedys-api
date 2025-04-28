@@ -45,7 +45,7 @@ public class RestaurantUser implements UserDetails {
     @Column(name = "status")
     private Status status = Status.ENABLED;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "restaurant_user_hub_id")
     private RestaurantUserHub restaurantUserHub;
 
@@ -78,8 +78,6 @@ public class RestaurantUser implements UserDetails {
     public boolean isEnabled() {
         return status == Status.ENABLED && restaurant != null && restaurant.getStatus() == Restaurant.Status.ENABLED;
     }
-
-
 
     public Status getStatus() {
         return status;

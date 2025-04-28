@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.application.persistence.dao.customer.CustomerFcmTokenDAO;
 import com.application.persistence.model.customer.Customer;
@@ -15,6 +16,7 @@ import com.google.firebase.auth.FirebaseToken;
 import jakarta.persistence.EntityManager;
 
 @Service
+@Transactional
 public class CustomerFcmTokenService {
     private final CustomerFcmTokenDAO customerFcmTokenRepository;
     private final EntityManager entityManager;
