@@ -274,10 +274,11 @@ public class SwaggerConfig {
                                 .addList("customerBearerAuth"))
                         .tags(List.of(
                                 new Tag().name("1. Authentication").description("Controller for managing customer authentication"),
-                                new Tag().name("2. Customer").description("Controller for managing customers"),
-                                new Tag().name("3. Reservation").description("APIs for managing reservations of the customer"),
-                                new Tag().name("4. Allergy").description("Controller for managing customer allergies"),
-                                new Tag().name("5. Notification").description("Notification management APIs for customers")
+                                new Tag().name("2. Registration").description("Controller for managing customer registration"),
+                                new Tag().name("3. Customer").description("Controller for managing customers"),
+                                new Tag().name("4. Reservation").description("APIs for managing reservations of the customer"),
+                                new Tag().name("5. Allergy").description("Controller for managing customer allergies"),
+                                new Tag().name("6. Notification").description("Notification management APIs for customers")
                         )))
                 .build();
     }
@@ -420,10 +421,12 @@ public class SwaggerConfig {
                                         .addProperty("name", new Schema<String>().type("string"))
                                         .addProperty("email", new Schema<String>().type("string"))
                                         .addProperty("password", new Schema<String>().type("string")))
-                                .addSchemas("AuthRequestDTO", new Schema<>()
+                                .addSchemas("RestaurantUserAuthRequestDTO", new Schema<>()
                                         .type("object")
                                         .addProperty("username", new Schema<String>().type("string"))
-                                        .addProperty("password", new Schema<String>().type("string")))
+                                        .addProperty("password", new Schema<String>().type("string"))
+                                        .addProperty("restaurantId",new Schema<Long>().type("integer").format("int64")))
+
                                 .addResponses("400", new ApiResponse().description("Bad Request"))
                                 .addResponses("401", new ApiResponse().description("Unauthorized"))
                                 .addResponses("403", new ApiResponse().description("Forbidden"))
@@ -434,8 +437,8 @@ public class SwaggerConfig {
                                 .addList("restaurantBearerAuth"))
                         .tags(List.of(
                                 new Tag().name("1. Authentication").description("Controller for restaurant creation and user authentication"),
-                                new Tag().name("2. User Management").description("Controller for managing restaurant users"),
-                                new Tag().name("3. Multi Restaurant User").description("Management of multi-restaurant users. Allows operations such as switching users and disconnecting them."),
+                                new Tag().name("2. Registration").description("Controller for restaurant registration"),
+                                new Tag().name("3. User Management").description("Controller for managing restaurant users"),
                                 new Tag().name("4. Reservation Management").description("APIs for managing reservations from the restaurant"),
                                 new Tag().name("5. Menu Management").description("Restaurant Menu Controller APIs"),
                                 new Tag().name("6. Notification Management").description("Restaurant Notification management APIs"),

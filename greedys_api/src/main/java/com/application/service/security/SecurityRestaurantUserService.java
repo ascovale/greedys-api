@@ -6,20 +6,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.application.persistence.dao.customer.ReservationDAO;
 import com.application.persistence.dao.restaurant.RestaurantUserDAO;
+import com.application.persistence.dao.restaurant.RestaurantUserHubDAO;
 import com.application.persistence.model.reservation.Reservation;
 import com.application.persistence.model.restaurant.Restaurant;
 import com.application.persistence.model.restaurant.user.RestaurantUser;
 
 @Service("securityRestaurantUserService")
+@Transactional
 public class SecurityRestaurantUserService {
     
     @Autowired 
     private ReservationDAO reservationRepository;
     @Autowired 
     private RestaurantUserDAO restaurantUserDAO;
+    @Autowired
+    private RestaurantUserHubDAO restaurantUserHubDAO;
     
     public boolean hasPermissionOnReservation(Long idReservation) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -107,5 +112,21 @@ public class SecurityRestaurantUserService {
 
         throw new IllegalArgumentException("User not found with id: " + userId + " and email: " + email);
        
+    }
+
+    public boolean hasPermissionForRestaurant(Long restaurantId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return false;
+        }
+
+        Object principal = authentication.getPrincipal();
+        if (!(principal instanceof RestaurantUser)) {
+            return false;
+        }
+
+        RestaurantUser restaurantUser = (RestaurantUser) principal;
+        
+        return restaurantUserHubDAO.hasPermissionForRestaurant(restaurantUser.getRestaurantUserHub().getId(), restaurantId);
     }
 }

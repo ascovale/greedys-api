@@ -20,6 +20,7 @@ import com.application.persistence.model.restaurant.user.RestaurantUser;
 import jakarta.transaction.Transactional;
 
 @Service
+@Transactional
 public class RestaurantNotificationService {
 	private final RestaurantUserDAO restaurantUserDAO;
 	private final RestaurantDAO restaurantDAO;

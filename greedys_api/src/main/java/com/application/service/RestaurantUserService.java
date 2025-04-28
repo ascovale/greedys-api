@@ -1,20 +1,13 @@
 package com.application.service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,11 +26,8 @@ import com.application.persistence.model.restaurant.user.RestaurantUserPasswordR
 import com.application.persistence.model.restaurant.user.RestaurantUserVerificationToken;
 import com.application.security.jwt.JwtUtil;
 import com.application.security.user.restaurant.RestaurantUserDetailsService;
-import com.application.web.dto.RestaurantUserAuthResponseDTO;
 import com.application.web.dto.get.RestaurantUserDTO;
 import com.application.web.dto.post.NewRestaurantUserDTO;
-
-import jakarta.servlet.http.HttpServletRequest;
 
 @Service
 @Transactional
@@ -51,17 +41,13 @@ public class RestaurantUserService {
     public static String APP_NAME = "SpringRegistration";
 
     private RestaurantUserVerificationTokenDAO tokenDAO;
-    private RestaurantUserDetailsService userDetailsService;
     private EmailService emailService;
     private RestaurantUserDAO ruDAO;
     private RestaurantDAO restaurantDAO;
     private RestaurantRoleDAO rrDAO;
-    private RestaurantPrivilegeDAO rpDAO;
     private RestaurantUserHubDAO ruhDAO;
     private PasswordEncoder passwordEncoder;
     private final RestaurantUserPasswordResetTokenDAO passwordTokenRepository;
-    private AuthenticationManager authenticationManager;
-    private JwtUtil jwtUtil;
 
     public RestaurantUserService(
             RestaurantUserVerificationTokenDAO tokenDAO,
@@ -77,16 +63,12 @@ public class RestaurantUserService {
             @Qualifier("restaurantAuthenticationManager") AuthenticationManager authenticationManager,
             JwtUtil jwtUtil) {
         this.tokenDAO = tokenDAO;
-        this.userDetailsService = userDetailsService;
         this.emailService = emailService;
         this.ruDAO = ruDAO;
         this.restaurantDAO = restaurantDAO;
         this.rrDAO = rrDAO;
-        this.rpDAO = rpDAO;
         this.passwordEncoder = passwordEncoder;
         this.passwordTokenRepository = passwordTokenRepository;
-        this.authenticationManager = authenticationManager;
-        this.jwtUtil = jwtUtil;
         this.ruhDAO = ruhDAO;
     }
 
@@ -350,70 +332,6 @@ public class RestaurantUserService {
         vToken.updateToken(UUID.randomUUID().toString());
         vToken = tokenDAO.save(vToken);
         return vToken;
-    }
-
-    private List<? extends GrantedAuthority> getSwitchUserAuthorities() {
-        List<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority("PRIVILEGE_SWITCH_TO_RESTAURANT_USER"));
-        return authorities;
-    }
-    private List<? extends GrantedAuthority> getSwitchUserAuthoritiesAdmin() {
-        List<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority("PRIVILEGE_ADMIN_SWITCH_TO_RESTAURANT_USER"));
-        return authorities;
-    }
-
-    public RestaurantUserAuthResponseDTO loginRestaurantUser(Long restaurantUserId, HttpServletRequest request) {
-            RestaurantUser user = ruDAO.findById(restaurantUserId)
-                    .orElseThrow(() -> new UsernameNotFoundException("No user found with ID: " + restaurantUserId));
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(user.getEmail(), null));
-
-            final RestaurantUser customerDetails = ruDAO.findById(restaurantUserId)
-                    .orElseThrow(() -> new UsernameNotFoundException("No user found with ID: " + restaurantUserId));
-            final String jwt = jwtUtil.generateToken(customerDetails);
-            // Combine authorities from getSwitchUserAuthorities() and user.getAuthorities()
-            List<GrantedAuthority> combinedAuthorities = new ArrayList<>();
-            combinedAuthorities.addAll(getSwitchUserAuthorities());
-            combinedAuthorities.addAll(user.getAuthorities());
-
-            UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
-                    user, null, combinedAuthorities);
-            usernamePasswordAuthenticationToken
-                    .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
-            RestaurantUserAuthResponseDTO responseDTO = new RestaurantUserAuthResponseDTO(jwt,
-                    new RestaurantUserDTO(customerDetails));
-            return responseDTO;
-        
-    }
-
-    public RestaurantUserAuthResponseDTO adminLoginToRestaurantUser(Long restaurantUserId, HttpServletRequest request) {
-        RestaurantUser user = ruDAO.findById(restaurantUserId)
-                    .orElseThrow(() -> new UsernameNotFoundException("No user found with ID: " + restaurantUserId));
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(user.getEmail(), null));
-
-            final RestaurantUser customerDetails = ruDAO.findById(restaurantUserId)
-                    .orElseThrow(() -> new UsernameNotFoundException("No user found with ID: " + restaurantUserId));
-            final String jwt = jwtUtil.generateToken(customerDetails);
-            // Combine authorities from getSwitchUserAuthorities() and user.getAuthorities()
-            List<GrantedAuthority> combinedAuthorities = new ArrayList<>();
-            combinedAuthorities.addAll(getSwitchUserAuthoritiesAdmin());
-            combinedAuthorities.addAll(user.getAuthorities());
-
-            UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
-                    user, null, combinedAuthorities);
-            usernamePasswordAuthenticationToken
-                    .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
-            RestaurantUserAuthResponseDTO responseDTO = new RestaurantUserAuthResponseDTO(jwt,
-                    new RestaurantUserDTO(customerDetails));
-            return responseDTO;
-    }
-
-    public void disconnectRestaurantUserAdmin() {
-       //TODO: Da Riscrivere
     }
 
     public RestaurantUser findRestaurantUserByEmail(String userEmail) {

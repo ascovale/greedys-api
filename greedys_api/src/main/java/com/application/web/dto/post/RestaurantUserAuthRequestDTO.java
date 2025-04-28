@@ -3,20 +3,27 @@ package com.application.web.dto.post;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "DTO per la richiesta di autenticazione")
-public class AuthRequestDTO {
+public class RestaurantUserAuthRequestDTO {
     @Schema(description = "Nome utente", example = "user123")
     private String username;
+
+    private Long restaurantId;
 
     @Schema(description = "Password dell'utente", example = "password123")
     private String password;
 
-    public AuthRequestDTO() {}
+    public RestaurantUserAuthRequestDTO() {}
 
-    public AuthRequestDTO(String username, String password) {
+    public RestaurantUserAuthRequestDTO(String username, String password) {
         this.username = username;
         this.password = password;
     }
 
+    public RestaurantUserAuthRequestDTO(String username, String password,Long restaurantId) {
+        this.restaurantId = restaurantId;
+        this.username = username;
+        this.password = password;
+    }
     public String getUsername() {
         return username;
     }
@@ -33,4 +40,11 @@ public class AuthRequestDTO {
         this.password = password;
     }
 
+    public Long getRestaurantId() {
+        return restaurantId;
+    }
+
+    public void setRestaurantId(Long restaurantId) {
+        this.restaurantId = restaurantId;
+    }
 }

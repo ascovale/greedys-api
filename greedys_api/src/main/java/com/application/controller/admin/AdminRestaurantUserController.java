@@ -1,5 +1,7 @@
 package com.application.controller.admin;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.application.persistence.model.restaurant.user.RestaurantUser;
 import com.application.service.RestaurantUserService;
+import com.application.service.authentication.RestaurantAuthenticationService;
 import com.application.web.util.GenericResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,11 +34,14 @@ public class AdminRestaurantUserController {
 
     // TODO Forse manca il delete restaurant user e quindi anche altri utenti
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(AdminRestaurantUserController.class);
     private final RestaurantUserService restaurantUserService;
+    private final RestaurantAuthenticationService restaurantAuthenticationService;
 
     @Autowired
-    public AdminRestaurantUserController(RestaurantUserService restaurantUserService) {
+    public AdminRestaurantUserController(RestaurantUserService restaurantUserService, RestaurantAuthenticationService restaurantAuthenticationService) {
         this.restaurantUserService = restaurantUserService;
+        this.restaurantAuthenticationService = restaurantAuthenticationService;
     }
 
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_USER_WRITE')")
@@ -74,12 +80,17 @@ public class AdminRestaurantUserController {
         return new GenericResponse("Restaurant owner changed successfully");
     }
 
-    @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_SWITCH_TO_RESTAURANT_USER')")
+    //@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_SWITCH_TO_RESTAURANT_USER')")
     @Operation(summary = "Get JWT Token of a restaurant user", description = "Returns the JWT token of a restaurant user")
     @ApiResponse(responseCode = "200", description = "JWT token of restaurant user successfully given")
     @GetMapping("/login/{restaurantUserId}")
-    public ResponseEntity<?> loginTokenHasRestaurantUser(@RequestParam Long restaurantUserId, HttpServletRequest request) {
-        return ResponseEntity.ok(restaurantUserService.adminLoginToRestaurantUser(restaurantUserId,request));
+    public ResponseEntity<?> loginHasRestaurantUser(@RequestParam Long restaurantUserId, HttpServletRequest request) {
+        try {
+            return ResponseEntity.ok(restaurantAuthenticationService.adminLoginToRestaurantUser(restaurantUserId, request));
+        } catch (UnsupportedOperationException e) {
+            LOGGER.error("Authentication failed: {}", e.getMessage());
+            return ResponseEntity.status(401).body("Authentication failed: Invalid username or password.");
+        }
     }
 
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_USER_READ')")

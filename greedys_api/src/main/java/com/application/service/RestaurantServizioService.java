@@ -10,8 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.application.persistence.dao.restaurant.RestaurantServiceDAO;
 
 
-@Transactional
 @Service("restaurantServizioService")
+@Transactional
 public class RestaurantServizioService{
 	@Autowired
 	private RestaurantServiceDAO restaurantServiceDAO;
