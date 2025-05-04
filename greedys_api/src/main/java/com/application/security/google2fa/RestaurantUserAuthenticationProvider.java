@@ -18,8 +18,8 @@ public class RestaurantUserAuthenticationProvider extends DaoAuthenticationProvi
 
     @Override
     public Authentication authenticate(Authentication auth) throws AuthenticationException {
-        if (auth.getDetails() instanceof CustomAuthenticationDetails) {
-            CustomAuthenticationDetails details = (CustomAuthenticationDetails) auth.getDetails();
+        if (auth.getDetails() instanceof RestaurantUserAuthenticationDetails) {
+            RestaurantUserAuthenticationDetails details = (RestaurantUserAuthenticationDetails) auth.getDetails();
             if (details.isBypassPasswordCheck()) {
                 System.out.println("\n\n\n\n>>>>>>>>>>>> Entering RestaurantUserAuthenticationProvider.authenticate method");
                 System.out.println("Authenticating user with email:restaurantId : " + auth.getName());

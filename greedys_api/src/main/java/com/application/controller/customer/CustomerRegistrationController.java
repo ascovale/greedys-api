@@ -42,6 +42,7 @@ import com.application.security.jwt.JwtUtil;
 import com.application.security.user.ISecurityUserService;
 import com.application.service.CustomerService;
 import com.application.service.EmailService;
+import com.application.service.authentication.CustomerAuthenticationService;
 import com.application.web.dto.AuthRequestGoogleDTO;
 import com.application.web.dto.get.CustomerDTO;
 import com.application.web.dto.post.AuthResponseDTO;
@@ -72,10 +73,9 @@ public class CustomerRegistrationController {
     private CustomerService customerService;
     private MessageSource messages;
     private ApplicationEventPublisher eventPublisher;
-    private Environment env;
     private EmailService mailService;
-    private AuthenticationManager authenticationManager;
     private final ISecurityUserService securityCustomerService;
+    private CustomerAuthenticationService customerAuthenticationService;
     private JwtUtil jwtUtil;
 
     private static final Logger logger = LoggerFactory.getLogger(CustomerAuthenticationController.class);
@@ -85,15 +85,16 @@ public class CustomerRegistrationController {
             ApplicationEventPublisher eventPublisher, Environment env, EmailService mailService,
             @Qualifier("customerAuthenticationManager") AuthenticationManager authenticationManager,
             JwtUtil jwtUtil,
-            @Qualifier("customerSecurityService") ISecurityUserService securityCustomerService) {
+            @Qualifier("customerSecurityService") ISecurityUserService securityCustomerService,
+            CustomerAuthenticationService customerAuthenticationService // aggiunto parametro
+    ) {
         this.customerService = customerService;
         this.messages = messages;
         this.eventPublisher = eventPublisher;
-        this.env = env;
         this.mailService = mailService;
-        this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.securityCustomerService = securityCustomerService;
+        this.customerAuthenticationService = customerAuthenticationService; // correzione assegnamento
     }
 
     // ------------------- API Methods ----------------------------- //
@@ -109,7 +110,7 @@ public class CustomerRegistrationController {
     public ResponseEntity<String> registerCustomerAccount(@Valid @RequestBody NewCustomerDTO accountDto,
             HttpServletRequest request) {
         try {
-            Customer customer = customerService.registerNewCustomerAccount(accountDto);
+            Customer customer = customerAuthenticationService.registerNewCustomerAccount(accountDto);
             eventPublisher
                     .publishEvent(
                             new CustomerOnRegistrationCompleteEvent(customer, Locale.ITALIAN, getAppUrl(request)));
@@ -134,7 +135,7 @@ public class CustomerRegistrationController {
         }
 
         String token = UUID.randomUUID().toString();
-        customerService.createPasswordResetTokenForCustomer(customer, token);
+        customerAuthenticationService.createPasswordResetTokenForCustomer(customer, token);
         mailService.sendEmail(constructResetTokenEmail(getAppUrl(request), request.getLocale(), token, customer));
 
         return ResponseEntity.ok("Password reset email sent successfully");
@@ -164,9 +165,9 @@ public class CustomerRegistrationController {
     public GenericResponse confirmRegistrationResponse(final HttpServletRequest request,
             @RequestParam final String token) throws UnsupportedEncodingException {
         Locale locale = request.getLocale();
-        final String result = customerService.validateVerificationToken(token);
+        final String result = customerAuthenticationService.validateVerificationToken(token);
         if (result.equals("valid")) {
-            final Customer customer = customerService.getCustomer(token);
+            final Customer customer = customerAuthenticationService.getCustomer(token);
             authWithoutPassword(customer);
             return new GenericResponse(messages.getMessage("message.accountVerified", null, locale));
         }
@@ -184,8 +185,8 @@ public class CustomerRegistrationController {
     @ResponseBody
     public GenericResponse resendRegistrationToken(final HttpServletRequest request,
             @RequestParam("token") final String existingToken) {
-        final VerificationToken newToken = customerService.generateNewVerificationToken(existingToken);
-        Customer customer = customerService.getCustomer(newToken.getToken());
+        final VerificationToken newToken = customerAuthenticationService.generateNewVerificationToken(existingToken);
+        Customer customer = customerAuthenticationService.getCustomer(newToken.getToken());
         mailService.sendEmail(
                 constructResendVerificationTokenEmail(getAppUrl(request), request.getLocale(), newToken, customer));
         return new GenericResponse(messages.getMessage("message.resendToken", null, request.getLocale()));
@@ -217,7 +218,7 @@ public class CustomerRegistrationController {
                 accountDto.setLastName(name.split(" ")[1]);
                 accountDto.setEmail(email);
                 accountDto.setPassword(generateRandomPassword()); // Generate and set a random password
-                customer = customerService.registerNewCustomerAccount(accountDto);
+                customer = customerAuthenticationService.registerNewCustomerAccount(accountDto);
             }
             String jwt = jwtUtil.generateToken(customer);
             return ResponseEntity.ok(new AuthResponseDTO(jwt, new CustomerDTO(customer)));

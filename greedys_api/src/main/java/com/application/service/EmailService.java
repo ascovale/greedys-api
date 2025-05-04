@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -167,5 +168,9 @@ public class EmailService {
             System.err.println("Unexpected error while sending email: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    public JavaMailSenderImpl getMailSender() {
+        return (JavaMailSenderImpl) mailSender;
     }
 }

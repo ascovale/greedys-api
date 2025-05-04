@@ -31,7 +31,7 @@ import com.application.persistence.model.restaurant.user.RestaurantPrivilege;
 import com.application.persistence.model.restaurant.user.RestaurantUser;
 import com.application.persistence.model.restaurant.user.RestaurantUserPasswordResetToken;
 import com.application.persistence.model.restaurant.user.RestaurantUserVerificationToken;
-import com.application.security.google2fa.CustomAuthenticationDetails;
+import com.application.security.google2fa.RestaurantUserAuthenticationDetails;
 import com.application.security.jwt.JwtUtil;
 import com.application.security.user.ISecurityUserService;
 import com.application.service.EmailService;
@@ -131,7 +131,7 @@ public class RestaurantAuthenticationService {
         // Creazione di un token di autenticazione con bypass della password
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                 user.getUsername(), null);
-        authToken.setDetails(new CustomAuthenticationDetails(true, user.getRestaurant().getId(), user.getEmail()));
+        authToken.setDetails(new RestaurantUserAuthenticationDetails(true, user.getRestaurant().getId(), user.getEmail()));
 
         // Autenticazione senza password
         SecurityContextHolder.getContext().setAuthentication(authToken);

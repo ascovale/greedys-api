@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.application.persistence.model.customer.Customer;
 import com.application.service.CustomerService;
+import com.application.service.authentication.CustomerAuthenticationService;
 import com.application.web.dto.get.CustomerDTO;
 import com.application.web.dto.put.UpdatePasswordDTO;
 import com.application.web.error.InvalidOldPasswordException;
@@ -36,14 +37,17 @@ import jakarta.validation.Valid;
 public class CustomerController {
     private final CustomerService customerService;
     private final MessageSource messages;
+    private final CustomerAuthenticationService customerAuthenticationService; // aggiunto
 
     //TODO: Emails should be sent in the service layer
     //TODO: Implementare tutti i metodi per la configurazione delle notifiche del customer
 
     public CustomerController(CustomerService customerService,
-            MessageSource messages) {
+            MessageSource messages,
+            CustomerAuthenticationService customerAuthenticationService) { // aggiunto parametro
         this.customerService = customerService;
         this.messages = messages;
+        this.customerAuthenticationService = customerAuthenticationService; // aggiunto
     }
 
     @Operation(summary = "Get Customer ID", description = "Retrieves the ID of the current customer", responses = {
@@ -114,10 +118,10 @@ public class CustomerController {
     public GenericResponse changeUserPassword(
             @Parameter(description = "Locale for response messages") final Locale locale,
             @Parameter(description = "DTO containing the old and new password", required = true) @Valid UpdatePasswordDTO passwordDto) {
-        if (!customerService.checkIfValidOldPassword(getCustomerId(), passwordDto.getOldPassword())) {
+        if (!customerAuthenticationService.checkIfValidOldPassword(getCustomerId(), passwordDto.getOldPassword())) {
             throw new InvalidOldPasswordException();
         }
-        customerService.changeCustomerPassword(getCustomerId(), passwordDto.getNewPassword());
+        customerAuthenticationService.changeCustomerPassword(getCustomerId(), passwordDto.getNewPassword());
         return new GenericResponse(messages.getMessage("message.updatePasswordSuc", null, locale));
     }
 
