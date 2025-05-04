@@ -1,6 +1,7 @@
 package com.application.controller.admin.test;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -88,7 +89,44 @@ public class AdminTestEmailController {
         restaurantNotificationService.sendRestaurantNotification(notificationRequest.getTitle(), notificationRequest.getBody(), null);
         return new GenericResponse("Notification sent successfully");
     }
-
+    /**
+     * Public method to manually test the SMTP connection.
+     * Can be invoked from a test endpoint or startup command.
+     */
+    @Operation(summary = "Test SMTP connection", description = "Tests the SMTP connection for sending emails")
+    @ApiResponse(responseCode = "200", description = "Connection successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
+    @ApiResponse(responseCode = "500", description = "Connection failed")
+    @PostMapping("/test_smtp_connection")
+    public GenericResponse testSmtpConnection() {
+        try {
+            System.out.println("Testing connection to SMTP server...");
+            // Controllo di tipo prima del cast
+            Object sender = emailService.getMailSender();
+            if (!(sender instanceof JavaMailSenderImpl)) {
+                return new GenericResponse("MailSender is not an instance of JavaMailSenderImpl: " + sender.getClass().getName());
+            }
+            JavaMailSenderImpl mailSender = (JavaMailSenderImpl) sender;
+            // Imposta timeout di connessione e lettura (es. 15 secondi)
+            mailSender.getJavaMailProperties().put("mail.smtp.connectiontimeout", "100000");
+            mailSender.getJavaMailProperties().put("mail.smtp.timeout", "100000");
+            mailSender.testConnection();
+            System.out.println("Connection successful.");
+            return new GenericResponse("SMTP connection successful");
+        } catch (jakarta.mail.MessagingException e) {
+            System.err.println("MessagingException: " + e.getMessage());
+            Throwable cause = e.getCause();
+            while (cause != null) {
+                System.err.println("Caused by: " + cause.getMessage());
+                cause = cause.getCause();
+            }
+            e.printStackTrace();
+            return new GenericResponse("SMTP connection failed: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Unexpected error: " + e.getMessage());
+            e.printStackTrace();
+            return new GenericResponse("Unexpected error during SMTP connection test: " + e.getMessage());
+        }
+    }
     public static class NotificationRequest {
         private String title;
         private String body;

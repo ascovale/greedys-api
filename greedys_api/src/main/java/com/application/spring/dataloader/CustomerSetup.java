@@ -17,7 +17,7 @@ import com.application.persistence.dao.customer.RoleDAO;
 import com.application.persistence.model.customer.Customer;
 import com.application.persistence.model.customer.Privilege;
 import com.application.persistence.model.customer.Role;
-import com.application.service.CustomerService;
+import com.application.service.authentication.CustomerAuthenticationService;
 import com.application.web.dto.post.NewCustomerDTO;
 
 @Component
@@ -30,7 +30,7 @@ public class CustomerSetup {
     @Autowired
     private CustomerDAO userDAO;
     @Autowired
-    private CustomerService userService;
+    private CustomerAuthenticationService userService;
 
     private static final Logger logger = LoggerFactory.getLogger(CustomerSetup.class);
 

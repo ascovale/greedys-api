@@ -1,7 +1,5 @@
 package com.application.spring;
 
-import java.util.Properties;
-
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -34,7 +32,8 @@ public class MailConfig {
         System.out.println("Port: " + reservationPort);
         System.out.println("Username: " + reservationUsername);
         System.out.println("Password: [PROTECTED]");
-
+        // Optionally print TLS/SSL info for debugging
+        System.out.println("Using STARTTLS on port 587: " + (reservationPort == 587));
     }
 
     @Bean
@@ -42,28 +41,6 @@ public class MailConfig {
     @ConfigurationProperties(prefix = "mail.reservation")
     public JavaMailSender reservationMailSender() {
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
-        Properties props = mailSender.getJavaMailProperties();
-        props.put("mail.smtp.connectiontimeout", "5000");
-        props.put("mail.smtp.timeout", "5000");
-        props.put("mail.smtp.writetimeout", "5000");
-
-        try {
-            System.out.println("Testing connection to SMTP server...");
-            mailSender.testConnection();
-            System.out.println("Connection successful.");
-        } catch (jakarta.mail.MessagingException e) {
-            System.err.println("MessagingException: " + e.getMessage());
-            Throwable cause = e.getCause();
-            while (cause != null) {
-                System.err.println("Caused by: " + cause.getMessage());
-                cause = cause.getCause();
-            }
-            e.printStackTrace();
-        } catch (Exception e) {
-            System.err.println("Unexpected error: " + e.getMessage());
-            e.printStackTrace();
-        }
-
         return mailSender;
     }
 

@@ -1,10 +1,10 @@
 package com.application.security.google2fa;
 
-public class CustomAuthenticationDetails {
+public class RestaurantUserAuthenticationDetails {
     private final boolean bypassPasswordCheck;
     private final Long restaurantId;
     private final String email;
-    public CustomAuthenticationDetails(boolean bypassPasswordCheck, Long restaurantId, String email) {
+    public RestaurantUserAuthenticationDetails(boolean bypassPasswordCheck, Long restaurantId, String email) {
         this.bypassPasswordCheck = bypassPasswordCheck;
         this.restaurantId = restaurantId;
         this.email = email;

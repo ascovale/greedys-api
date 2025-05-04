@@ -13,12 +13,12 @@ import org.springframework.stereotype.Component;
 
 import com.application.persistence.model.customer.Customer;
 import com.application.registration.CustomerOnRegistrationCompleteEvent;
-import com.application.service.CustomerService;
+import com.application.service.authentication.CustomerAuthenticationService;
 
 @Component
 public class CustomerRegistrationListener implements ApplicationListener<CustomerOnRegistrationCompleteEvent> {
 	@Autowired
-	private CustomerService service;
+	private CustomerAuthenticationService service;
 
 	@Autowired
 	private MessageSource messages;
@@ -26,8 +26,6 @@ public class CustomerRegistrationListener implements ApplicationListener<Custome
 	@Autowired
 	@Qualifier("reservationMailSender")
 	private JavaMailSender mailSender;
-
-	// API
 
 	@Override
 	public void onApplicationEvent(final CustomerOnRegistrationCompleteEvent event) {
