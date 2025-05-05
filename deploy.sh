@@ -1,7 +1,6 @@
 #!/bin/bash
 
-
-docker build -t greedys_api_spring-app .
+docker pull registry.gitlab.com/psychoorange/springapi:latest
 
 docker service rm greedys_api_spring-app 
 
