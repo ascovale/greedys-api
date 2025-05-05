@@ -1,6 +1,6 @@
 services:
   spring-app:
-    image: greedys_api_spring-app
+    image: registry.gitlab.com/psychoorange/greedys_api/spring-app:latest
     ports:
       - "5050:8443"  # Espone la porta HTTPS sul container
     deploy:
