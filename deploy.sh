@@ -1,7 +1,12 @@
 #!/bin/bash
 
-docker pull registry.gitlab.com/psychoorange/greedys_api:latest
+set -e  # Exit immediately if a command exits with a non-zero status
 
-docker service rm greedys_api_spring-app 
+echo "Pulling the latest Docker image..."
+docker pull registry.gitlab.com/psychoorange/greedys_api/spring-app:latest
 
+echo "Removing the existing service..."
+docker service rm greedys_api_spring-app || echo "Service not found, skipping removal."
+
+echo "Deploying the stack..."
 docker stack deploy -c docker-compose.yml greedys_api
