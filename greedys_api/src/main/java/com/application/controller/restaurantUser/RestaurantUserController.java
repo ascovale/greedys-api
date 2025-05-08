@@ -123,7 +123,7 @@ public class RestaurantUserController {
             @ApiResponse(responseCode = "404", description = "User or restaurant not found")
     })
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_MANAGER_WRITE')")
-    @DeleteMapping(value = "/disable_user")
+    @DeleteMapping(value = "/disable_user/{restaurantUserId}")
     public ResponseEntity<Void> disableRestaurantUser(@PathVariable Long restaurantUserId) {
         restaurantUserService.disableRestaurantUser(ControllerUtils.getCurrentRestaurantUser().getId(), restaurantUserId);
         return ResponseEntity.ok().build();

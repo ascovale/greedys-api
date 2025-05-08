@@ -73,7 +73,7 @@ public class RestaurantServicesController {
     })
     @PreAuthorize("authentication.principal.isEnabled() & hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_WRITE')")
     @DeleteMapping("/{serviceId}/delete")
-    public GenericResponse deleteService(@RequestParam Long serviceId) {
+    public GenericResponse deleteService(@PathVariable Long serviceId) {
         System.out.println("<<<   Controller Service   >>>");
         System.out.println("<<<   serviceId: " + serviceId);
         serviceService.deleteService(serviceId);
