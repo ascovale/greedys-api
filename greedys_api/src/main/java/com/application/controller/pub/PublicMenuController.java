@@ -37,7 +37,7 @@ public class PublicMenuController {
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/{restaurantId}/menus")
-    public Collection<MenuDTO> getMenusByRestaurantId(@PathParam("restaurantId") @PathVariable Long restaurantId) {
+    public Collection<MenuDTO> getMenusByRestaurantId(@PathParam("restaurantId") Long restaurantId) {
         return restaurantMenuService.getMenusByRestaurant(restaurantId);
     }
 
