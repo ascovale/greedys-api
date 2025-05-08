@@ -17,6 +17,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.websocket.server.PathParam;
 
 @Tag(name = "2. Menu", description = "Restaurant Menu Controller APIs")
 @SecurityRequirement(name = "restaurantBearerAuth")
@@ -36,7 +37,7 @@ public class PublicMenuController {
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/{restaurantId}/menus")
-    public Collection<MenuDTO> getMenusByRestaurantId(@PathVariable("restaurantId") Long restaurantId) {
+    public Collection<MenuDTO> getMenusByRestaurantId(@PathParam("restaurantId") @PathVariable Long restaurantId) {
         return restaurantMenuService.getMenusByRestaurant(restaurantId);
     }
 
