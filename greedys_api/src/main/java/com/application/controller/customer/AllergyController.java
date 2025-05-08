@@ -57,8 +57,8 @@ public class AllergyController {
     @ApiResponse(responseCode = "404", description = "Customer not found")
     @ApiResponse(responseCode = "401", description = "Unauthorized")
     @DeleteMapping("/remove/{allergyId}")
-    public GenericResponse removeAllergyFromUser(@PathVariable Long idAllergy) {
-        customerService.removeAllergy(idAllergy);
+    public GenericResponse removeAllergyFromUser(@PathVariable Long allergyId) {
+        customerService.removeAllergy(allergyId);
         return new GenericResponse("Allergy removed successfully");
     }
 

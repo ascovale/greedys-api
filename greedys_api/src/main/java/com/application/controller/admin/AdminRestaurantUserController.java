@@ -81,10 +81,9 @@ public class AdminRestaurantUserController {
     }
 
     //@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_SWITCH_TO_RESTAURANT_USER')")
-    @Operation(summary = "Get JWT Token of a restaurant user", description = "Returns the JWT token of a restaurant user")
-    @ApiResponse(responseCode = "200", description = "JWT token of restaurant user successfully given")
     @GetMapping("/login/{restaurantUserId}")
-    public ResponseEntity<?> loginHasRestaurantUser(@RequestParam Long restaurantUserId, HttpServletRequest request) {
+    @Operation(summary = "Get JWT Token of a restaurant user", description = "Returns the JWT token of a restaurant user")
+    public ResponseEntity<?> loginHasRestaurantUser(@PathVariable Long restaurantUserId, HttpServletRequest request) {
         try {
             return ResponseEntity.ok(restaurantAuthenticationService.adminLoginToRestaurantUser(restaurantUserId, request));
         } catch (UnsupportedOperationException e) {

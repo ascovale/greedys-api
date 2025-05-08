@@ -54,6 +54,7 @@ public class AdminReservationController {
 		return ResponseEntity.ok().build();
 	}
 
+	@PutMapping("/{reservationId}/accept")
 	@Operation(summary = "Accept a reservation", description = "Endpoint to accept a reservation by its ID")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Reservation accepted successfully"),
@@ -62,7 +63,6 @@ public class AdminReservationController {
 			@ApiResponse(responseCode = "404", description = "Reservation not found", content = @Content),
 			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
 	})
-	@PutMapping("/{reservationId}/accept")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_WRITE')")
 	public ResponseEntity<?> acceptReservation(@PathVariable Long reservationId, @RequestParam Boolean accepted) {
 		reservationService.adminMarkReservationAccepted(reservationId, accepted);

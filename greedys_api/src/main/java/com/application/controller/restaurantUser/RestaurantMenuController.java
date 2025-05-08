@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.controller.utils.ControllerUtils;
@@ -48,7 +48,7 @@ public class RestaurantMenuController {
         return restaurantMenuService.getMenusByRestaurant(ControllerUtils.getCurrentRestaurant().getId());
     }
 
-    @Operation(summary = "Retrieve dishes in a menu", description = "Retrieve all dishes for a specific menu by its ID")
+    @Operation(summary = "Get dishes of a menu", description = "Retrieve all dishes of a specific menu")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Dishes retrieved successfully"),
         @ApiResponse(responseCode = "400", description = "Invalid menu ID"),
@@ -57,11 +57,11 @@ public class RestaurantMenuController {
     })
     @PreAuthorize("@securityRestaurantUserService.isMenuOwnedByRestaurant(#menuId, authentication.principal.restaurantId)")
     @GetMapping("/{menuId}/dishes")
-    public Collection<MenuDishDTO> getMenuDishes(@RequestParam Long menuId) {
-        return restaurantMenuService.getMenuDishesByMenuId(menuId);
+    public ResponseEntity<?> getMenuDishes(@PathVariable Long menuId) {
+        return ResponseEntity.ok(restaurantMenuService.getMenuDishesByMenuId(menuId));
     }
 
-    @Operation(summary = "Retrieve a menu by ID", description = "Retrieve details of a specific menu by its ID")
+    @Operation(summary = "Get menu details", description = "Retrieve details of a specific menu")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Menu retrieved successfully"),
         @ApiResponse(responseCode = "400", description = "Invalid menu ID"),
@@ -70,8 +70,8 @@ public class RestaurantMenuController {
     })
     @PreAuthorize("@securityRestaurantUserService.isMenuOwnedByRestaurant(#menuId, authentication.principal.restaurantId)")
     @GetMapping("/{menuId}")
-    public MenuDTO getMenuById(@RequestParam Long menuId) {
-        return restaurantMenuService.getMenuById(menuId);
+    public ResponseEntity<?> getMenuDetails(@PathVariable Long menuId) {
+        return ResponseEntity.ok(restaurantMenuService.getMenuById(menuId));
     }
 
     @Operation(summary = "Retrieve all dishes", description = "Retrieve all dishes for the current restaurant")
