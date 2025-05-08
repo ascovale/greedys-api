@@ -20,7 +20,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "2. Menu", description = "Restaurant Menu Controller APIs")
 @SecurityRequirement(name = "restaurantBearerAuth")
-@RequestMapping("/public/restaurant/")
+@RequestMapping("/public/restaurant")
 @RestController
 public class PublicMenuController {
     private final RestaurantMenuService restaurantMenuService;
@@ -36,7 +36,7 @@ public class PublicMenuController {
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/{restaurantId}/menus")
-    public Collection<MenuDTO> getMenusByRestaurantId(@RequestParam Long restaurantId) {
+    public Collection<MenuDTO> getMenusByRestaurantId(@PathVariable Long restaurantId) {
         return restaurantMenuService.getMenusByRestaurant(restaurantId);
     }
 
