@@ -24,434 +24,22 @@ public class SwaggerConfig {
                         .title("Greedys API")
                         .version("1.0")
                         .description("API for managing restaurant reservations"))
-                .components(new Components()
-                        .addResponses("400", new ApiResponse().description("Bad Request"))
-                        .addResponses("401", new ApiResponse().description("Unauthorized"))
-                        .addResponses("403", new ApiResponse().description("Forbidden"))
-                        .addResponses("404", new ApiResponse().description("Not Found"))
-                        .addResponses("500", new ApiResponse().description("Internal Server Error"))
-                );
+                .components(sharedComponents());
     }
 
     @Bean
     public GroupedOpenApi adminApi() {
-        return GroupedOpenApi.builder()
-                .group("admin-api")
-                .pathsToMatch("/admin/**")
-                .packagesToScan("com.application.controller.admin",
-                        "com.application.controller.admin.test")
-                .addOpenApiCustomizer(openApi -> openApi
-                        .components(sharedComponents()
-                                .addSecuritySchemes("adminBearerAuth",
-                                        new SecurityScheme()
-                                                .type(SecurityScheme.Type.HTTP)
-                                                .scheme("bearer")
-                                                .bearerFormat("JWT"))
-                                .addSchemas("RestaurantCategoryDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("id", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("name", new Schema<String>().type("string")))
-                                .addSchemas("NewTableDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("idRestaurant", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("name", new Schema<String>().type("string"))
-                                        .addProperty("roomId", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("capacity", new Schema<Integer>().type("integer"))
-                                        .addProperty("positionX", new Schema<Integer>().type("integer"))
-                                        .addProperty("positionY", new Schema<Integer>().type("integer")))
-                                .addSchemas("NewRoomDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("idRestaurant", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("name", new Schema<String>().type("string")))
-                                .addSchemas("RestaurantDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("id", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("name", new Schema<String>().type("string"))
-                                        .addProperty("email", new Schema<String>().type("string")))
-                                .addSchemas("ServiceDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("id", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("name", new Schema<String>().type("string")))
-                                .addSchemas("RoomDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("id", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("name", new Schema<String>().type("string")))
-                                .addSchemas("ReservationDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("id", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("pax", new Schema<Integer>().type("integer"))
-                                        .addProperty("kids", new Schema<Integer>().type("integer"))
-                                        .addProperty("notes", new Schema<String>().type("string")))
-                                .addSchemas("PageReservationDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("content", new Schema<>()
-                                                .type("array")
-                                                .items(new Schema<>().$ref("#/components/schemas/ReservationDTO")))
-                                        .addProperty("totalElements", new Schema<>().type("integer").format("int64"))
-                                        .addProperty("totalPages", new Schema<>().type("integer")))
-                                .addSchemas("TableDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("id", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("name", new Schema<String>().type("string")))
-                                .addSchemas("Pageable", new Schema<>()
-                                        .type("object")
-                                        .addProperty("page", new Schema<Integer>().type("integer"))
-                                        .addProperty("size", new Schema<Integer>().type("integer")))
-                                .addSchemas("AdminNewReservationDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("idSlot", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("pax", new Schema<Integer>().type("integer"))
-                                        .addProperty("kids", new Schema<Integer>().type("integer"))
-                                        .addProperty("notes", new Schema<String>().type("string")))
-                                .addSchemas("NewAdminDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("firstName", new Schema<String>().type("string"))
-                                        .addProperty("lastName", new Schema<String>().type("string"))
-                                        .addProperty("email", new Schema<String>().type("string")))
-                                .addSchemas("ServiceTypeDto", new Schema<>()
-                                        .type("object")
-                                        .addProperty("id", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("name", new Schema<String>().type("string")))
-                                .addSchemas("SlotDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("id", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("startTime", new Schema<String>().type("string").format("time"))
-                                        .addProperty("endTime", new Schema<String>().type("string").format("time")))
-                                .addSchemas("AdminNewServiceDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("name", new Schema<String>().type("string"))
-                                        .addProperty("description", new Schema<String>().type("string")))
-                                .addSchemas("PageCustomerDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("content", new Schema<>()
-                                                .type("array")
-                                                .items(new Schema<>().$ref("#/components/schemas/CustomerDTO")))
-                                        .addProperty("totalElements", new Schema<>().type("integer").format("int64"))
-                                        .addProperty("totalPages", new Schema<>().type("integer")))
-                                .addSchemas("AllergyDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("id", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("name", new Schema<String>().type("string"))
-                                        .addProperty("description", new Schema<String>().type("string")))
-                                .addSchemas("NotificationRequest", new Schema<>()
-                                        .type("object")
-                                        .addProperty("title", new Schema<String>().type("string"))
-                                        .addProperty("message", new Schema<String>().type("string")))
-                                .addSchemas("EmailRequestDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("email", new Schema<String>().type("string"))
-                                        .addProperty("subject", new Schema<String>().type("string"))
-                                        .addProperty("message", new Schema<String>().type("string")))
-                                .addSchemas("NewAllergyDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("name", new Schema<String>().type("string"))
-                                        .addProperty("description", new Schema<String>().type("string")))
-                                .addSchemas("CustomerDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("id", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("firstName", new Schema<String>().type("string"))
-                                        .addProperty("lastName", new Schema<String>().type("string"))
-                                        .addProperty("email", new Schema<String>().type("string"))
-                                        .addProperty("status", new Schema<String>().type("string")))
-                                .addSchemas("AdminAuthResponseDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("jwt", new Schema<String>().type("string"))
-                                        .addProperty("user", new Schema<>().$ref("#/components/schemas/AdminDTO")))
-                                .addSchemas("AdminDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("id", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("firstName", new Schema<String>().type("string"))
-                                        .addProperty("lastName", new Schema<String>().type("string"))
-                                        .addProperty("email", new Schema<String>().type("string")))
-                                .addSchemas("AuthRequestDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("username", new Schema<String>().type("string"))
-                                        .addProperty("password", new Schema<String>().type("string")))
-                                .addSchemas("AuthResponseDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("jwt", new Schema<String>().type("string"))
-                                        .addProperty("user", new Schema<>().$ref("#/components/schemas/AdminDTO")))
-                                .addResponses("400", new ApiResponse().description("Bad Request"))
-                                .addResponses("401", new ApiResponse().description("Unauthorized"))
-                                .addResponses("403", new ApiResponse().description("Forbidden"))
-                                .addResponses("404", new ApiResponse().description("Not Found"))
-                                .addResponses("500", new ApiResponse().description("Internal Server Error"))
-                                .addResponses("405", new ApiResponse().description("Method Not Allowed")))
-                        .addSecurityItem(new SecurityRequirement().addList("adminBearerAuth"))
-                        .tags(List.of(
-                                new Tag().name("1. Authentication").description("Admin Authentication Controller"),
-                                new Tag().name("2. Registration").description("Admin Registration Management"),
-                                new Tag().name("3. Users").description("Admin Users Management"),
-                                new Tag().name("4. Customer").description("Admin Customer Management"),
-                                new Tag().name("5. Restaurant").description("Admin Restaurant Management"),
-                                new Tag().name("6. Services").description("Admin Services Management"),
-                                new Tag().name("7. Reservation").description("Admin Reservation Management")
-                        )))
-                .build();
+        return createGroupedOpenApi("admin-api", "/admin/**", adminTags(), "adminBearerAuth");
     }
+
     @Bean
     public GroupedOpenApi customerApi() {
-        return GroupedOpenApi.builder()
-                .group("customer-api")
-                .pathsToMatch("/customer/**")
-                .packagesToScan("com.application.controller.customer")
-                .addOpenApiCustomizer(openApi -> openApi
-                        .components(sharedComponents()
-                                .addSecuritySchemes("customerBearerAuth",
-                                        new SecurityScheme()
-                                                .type(SecurityScheme.Type.HTTP)
-                                                .scheme("bearer")
-                                                .bearerFormat("JWT"))
-                                .addSchemas("PageNotification", new Schema<>()
-                                        .type("object")
-                                        .addProperty("content", new Schema<>()
-                                                .type("array")
-                                                .items(new Schema<>().$ref("#/components/schemas/NotificationDto")))
-                                        .addProperty("totalElements", new Schema<>().type("integer").format("int64"))
-                                        .addProperty("totalPages", new Schema<>().type("integer")))
-                                .addSchemas("UserFcmTokenDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("userId", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("fcmToken", new Schema<String>().type("string"))
-                                        .addProperty("createdAt", new Schema<String>().type("string").format("date-time"))
-                                        .addProperty("deviceId", new Schema<String>().type("string")))
-                                .addSchemas("CustomerDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("id", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("firstName", new Schema<String>().type("string"))
-                                        .addProperty("lastName", new Schema<String>().type("string"))
-                                        .addProperty("email", new Schema<String>().type("string"))
-                                        .addProperty("status", new Schema<String>().type("string")))
-                                .addSchemas("UpdatePasswordDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("currentPassword", new Schema<String>().type("string"))
-                                        .addProperty("newPassword", new Schema<String>().type("string"))
-                                        .addProperty("confirmPassword", new Schema<String>().type("string")))
-                                .addSchemas("NewCustomerDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("firstName", new Schema<String>().type("string"))
-                                        .addProperty("lastName", new Schema<String>().type("string"))
-                                        .addProperty("email", new Schema<String>().type("string"))
-                                        .addProperty("password", new Schema<String>().type("string"))
-                                        .addProperty("matchingPassword", new Schema<String>().type("string")))
-                                .addSchemas("AuthRequestDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("username", new Schema<String>().type("string"))
-                                        .addProperty("password", new Schema<String>().type("string")))
-                                .addSchemas("AuthResponseDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("jwt", new Schema<String>().type("string"))
-                                        .addProperty("user", new Schema<>().$ref("#/components/schemas/CustomerDTO")))
-                                .addSchemas("AuthRequestGoogleDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("token", new Schema<String>().type("string")))
-                                .addSchemas("ReservationDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("id", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("pax", new Schema<Integer>().type("integer"))
-                                        .addProperty("kids", new Schema<Integer>().type("integer"))
-                                        .addProperty("notes", new Schema<String>().type("string"))
-                                        .addProperty("reservationDay", new Schema<String>().type("string").format("date")))
-                                .addSchemas("CustomerNewReservationDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("idSlot", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("pax", new Schema<Integer>().type("integer"))
-                                        .addProperty("kids", new Schema<Integer>().type("integer"))
-                                        .addProperty("notes", new Schema<String>().type("string"))
-                                        .addProperty("reservationDay", new Schema<String>().type("string").format("date"))
-                                        .addProperty("restaurant_id", new Schema<Long>().type("integer").format("int64")))
-                                .addSchemas("AllergyDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("id", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("name", new Schema<String>().type("string"))
-                                        .addProperty("description", new Schema<String>().type("string")))
-                                .addResponses("400", new ApiResponse().description("Bad Request"))
-                                .addResponses("401", new ApiResponse().description("Unauthorized"))
-                                .addResponses("403", new ApiResponse().description("Forbidden"))
-                                .addResponses("404", new ApiResponse().description("Not Found"))
-                                .addResponses("500", new ApiResponse().description("Internal Server Error"))
-                                .addResponses("405", new ApiResponse().description("Method Not Allowed")))
-                        .addSecurityItem(new SecurityRequirement()
-                                .addList("customerBearerAuth"))
-                        .tags(List.of(
-                                new Tag().name("1. Authentication").description("Controller for managing customer authentication"),
-                                new Tag().name("2. Registration").description("Controller for managing customer registration"),
-                                new Tag().name("3. Customer").description("Controller for managing customers"),
-                                new Tag().name("4. Reservation").description("APIs for managing reservations of the customer"),
-                                new Tag().name("5. Allergy").description("Controller for managing customer allergies"),
-                                new Tag().name("6. Notification").description("Notification management APIs for customers")
-                        )))
-                .build();
+        return createGroupedOpenApi("customer-api", "/customer/**", customerTags(), "customerBearerAuth");
     }
 
     @Bean
     public GroupedOpenApi restaurantApi() {
-        return GroupedOpenApi.builder()
-                .group("restaurant-api")
-                .pathsToMatch("/restaurant/**")
-                .packagesToScan("com.application.controller.restaurantUser")
-                .addOpenApiCustomizer(openApi -> openApi
-                        .components(sharedComponents()
-                                .addSecuritySchemes("restaurantBearerAuth",
-                                        new SecurityScheme()
-                                                .type(SecurityScheme.Type.HTTP)
-                                                .scheme("bearer")
-                                                .bearerFormat("JWT"))
-                                .addSchemas("ReservationDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("id", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("pax", new Schema<Integer>().type("integer"))
-                                        .addProperty("kids", new Schema<Integer>().type("integer"))
-                                        .addProperty("notes", new Schema<String>().type("string")))
-                                .addSchemas("PageReservationDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("content", new Schema<>()
-                                                .type("array")
-                                                .items(new Schema<>().$ref("#/components/schemas/ReservationDTO")))
-                                        .addProperty("totalElements", new Schema<>().type("integer").format("int64"))
-                                        .addProperty("totalPages", new Schema<>().type("integer")))
-                                .addSchemas("TableDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("id", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("name", new Schema<String>().type("string")))
-                                .addSchemas("RoomDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("id", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("name", new Schema<String>().type("string")))
-                                .addSchemas("ServiceDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("id", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("name", new Schema<String>().type("string")))
-                                .addSchemas("NewRoomDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("idRestaurant", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("name", new Schema<String>().type("string")))
-                                .addSchemas("NewTableDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("idRestaurant", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("name", new Schema<String>().type("string"))
-                                        .addProperty("roomId", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("capacity", new Schema<Integer>().type("integer"))
-                                        .addProperty("positionX", new Schema<Integer>().type("integer"))
-                                        .addProperty("positionY", new Schema<Integer>().type("integer")))
-                                .addSchemas("PageRestaurantNotification", new Schema<>()
-                                        .type("object")
-                                        .addProperty("content", new Schema<>()
-                                                .type("array")
-                                                .items(new Schema<>().$ref("#/components/schemas/RestaurantNotification")))
-                                        .addProperty("totalElements", new Schema<>().type("integer").format("int64"))
-                                        .addProperty("totalPages", new Schema<>().type("integer")))
-                                .addSchemas("RestaurantNotification", new Schema<>()
-                                        .type("object")
-                                        .addProperty("id", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("type", new Schema<String>().type("string"))
-                                        .addProperty("opened", new Schema<Boolean>().type("boolean")))
-                                .addSchemas("RestaurantUserDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("user_id", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("restaurant_id", new Schema<Long>().type("integer").format("int64")))
-                                .addSchemas("RestaurantNewReservationDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("idSlot", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("pax", new Schema<Integer>().type("integer"))
-                                        .addProperty("kids", new Schema<Integer>().type("integer"))
-                                        .addProperty("notes", new Schema<String>().type("string"))
-                                        .addProperty("reservationDay", new Schema<String>().type("string").format("date"))
-                                        .addProperty("restaurant_id", new Schema<Long>().type("integer").format("int64")))
-                                .addSchemas("MenuItemDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("id", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("name", new Schema<String>().type("string"))
-                                        .addProperty("description", new Schema<String>().type("string")))
-                                .addSchemas("RestaurantMenuDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("id", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("name", new Schema<String>().type("string"))
-                                        .addProperty("description", new Schema<String>().type("string")))
-                                .addSchemas("NewMenuItemDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("name", new Schema<String>().type("string"))
-                                        .addProperty("description", new Schema<String>().type("string"))
-                                        .addProperty("restaurantId", new Schema<Long>().type("integer").format("int64")))
-                                .addSchemas("NewPricedMenuItemDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("itemId", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("menuId", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("price", new Schema<Double>().type("number").format("double")))
-                                .addSchemas("PricedMenuItemDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("itemId", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("menuId", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("price", new Schema<Double>().type("number").format("double")))
-                                .addSchemas("NewRestaurantMenuDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("name", new Schema<String>().type("string"))
-                                        .addProperty("description", new Schema<String>().type("string"))
-                                        .addProperty("price", new Schema<Double>().type("number").format("double"))
-                                        .addProperty("restaurantId", new Schema<Long>().type("integer").format("int64")))
-                                .addSchemas("ServiceTypeDto", new Schema<>()
-                                        .type("object")
-                                        .addProperty("id", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("name", new Schema<String>().type("string")))
-                                .addSchemas("SlotDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("id", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("startTime", new Schema<String>().type("string").format("time"))
-                                        .addProperty("endTime", new Schema<String>().type("string").format("time")))
-                                .addSchemas("RestaurantNewServiceDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("name", new Schema<String>().type("string"))
-                                        .addProperty("description", new Schema<String>().type("string")))
-                                .addSchemas("RestaurantNewSlotDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("startTime", new Schema<String>().type("string").format("time"))
-                                        .addProperty("endTime", new Schema<String>().type("string").format("time"))
-                                        .addProperty("serviceId", new Schema<Long>().type("integer").format("int64")))
-                                .addSchemas("NewSlotDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("startTime", new Schema<String>().type("string").format("time"))
-                                        .addProperty("endTime", new Schema<String>().type("string").format("time"))
-                                        .addProperty("serviceId", new Schema<Long>().type("integer").format("int64")))
-                                .addSchemas("RestaurantUserAuthResponseDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("jwt", new Schema<String>().type("string"))
-                                        .addProperty("user", new Schema<>().$ref("#/components/schemas/RestaurantUserDTO")))
-                                .addSchemas("NewRestaurantUserDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("userId", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("restaurantId", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("role", new Schema<String>().type("string")))
-                                .addSchemas("NewRestaurantDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("name", new Schema<String>().type("string"))
-                                        .addProperty("email", new Schema<String>().type("string"))
-                                        .addProperty("password", new Schema<String>().type("string")))
-                                .addSchemas("RestaurantUserAuthRequestDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("username", new Schema<String>().type("string"))
-                                        .addProperty("password", new Schema<String>().type("string"))
-                                        .addProperty("restaurantId",new Schema<Long>().type("integer").format("int64")))
-
-                                .addResponses("400", new ApiResponse().description("Bad Request"))
-                                .addResponses("401", new ApiResponse().description("Unauthorized"))
-                                .addResponses("403", new ApiResponse().description("Forbidden"))
-                                .addResponses("404", new ApiResponse().description("Not Found"))
-                                .addResponses("500", new ApiResponse().description("Internal Server Error"))
-                                .addResponses("405", new ApiResponse().description("Method Not Allowed")))
-                        .addSecurityItem(new SecurityRequirement()
-                                .addList("restaurantBearerAuth"))
-                        .tags(List.of(
-                                new Tag().name("1. Authentication").description("Controller for restaurant creation and user authentication"),
-                                new Tag().name("2. Registration").description("Controller for restaurant registration"),
-                                new Tag().name("3. User Management").description("Controller for managing restaurant users"),
-                                new Tag().name("4. Reservation Management").description("APIs for managing reservations from the restaurant"),
-                                new Tag().name("5. Menu Management").description("Restaurant Menu Controller APIs"),
-                                new Tag().name("6. Notification Management").description("Restaurant Notification management APIs"),
-                                new Tag().name("7. Restaurant Management").description("Controller for managing restaurant operations"),
-                                new Tag().name("8. Service Management").description("Controller for managing services offered by restaurants"),
-                                new Tag().name("9. Slot Management").description("Controller for managing slots")
-                        )))
-                .build();
+        return createGroupedOpenApi("restaurant-api", "/restaurant/**", restaurantTags(), "restaurantBearerAuth");
     }
 
     @Bean
@@ -462,39 +50,19 @@ public class SwaggerConfig {
                 .pathsToMatch("/public/**", "/register/**", "/auth/**")
                 .pathsToExclude("/restaurant/**", "/customer/**", "/admin/**")
                 .addOpenApiCustomizer(openApi -> openApi
-                        .components(sharedComponents()
-                                .addSchemas("RestaurantDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("id", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("name", new Schema<String>().type("string"))
-                                        .addProperty("email", new Schema<String>().type("string")))
-                                .addSchemas("RoomDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("id", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("name", new Schema<String>().type("string")))
-                                .addSchemas("ServiceDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("id", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("name", new Schema<String>().type("string")))
-                                .addSchemas("SlotDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("id", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("startTime", new Schema<String>().type("string").format("time"))
-                                        .addProperty("endTime", new Schema<String>().type("string").format("time")))
-                                .addSchemas("TableDTO", new Schema<>()
-                                        .type("object")
-                                        .addProperty("id", new Schema<Long>().type("integer").format("int64"))
-                                        .addProperty("name", new Schema<String>().type("string")))
-                                .addResponses("400", new ApiResponse().description("Bad Request"))
-                                .addResponses("401", new ApiResponse().description("Unauthorized"))
-                                .addResponses("403", new ApiResponse().description("Forbidden"))
-                                .addResponses("404", new ApiResponse().description("Not Found"))
-                                .addResponses("500", new ApiResponse().description("Internal Server Error"))
-                                .addResponses("405", new ApiResponse().description("Method Not Allowed")))
-                        .tags(List.of(
-                                new Tag().name("1. Restaurant").description("Controller for managing restaurants"),
-                                new Tag().name("2. Menu").description("Restaurant Menu Controller APIs")
-                        )))
+                        .components(sharedComponents())
+                        .tags(publicTags()))
+                .build();
+    }
+
+    private GroupedOpenApi createGroupedOpenApi(String group, String path, List<Tag> tags, String securityScheme) {
+        return GroupedOpenApi.builder()
+                .group(group)
+                .pathsToMatch(path)
+                .addOpenApiCustomizer(openApi -> openApi
+                        .components(sharedComponents().addSecuritySchemes(securityScheme, securitySchemeConfig()))
+                        .addSecurityItem(new SecurityRequirement().addList(securityScheme))
+                        .tags(tags))
                 .build();
     }
 
@@ -503,6 +71,63 @@ public class SwaggerConfig {
                 .addSchemas("GenericResponse", new Schema<>()
                         .type("object")
                         .addProperty("message", new Schema<String>().type("string"))
-                        .addProperty("error", new Schema<String>().type("string")));
+                        .addProperty("error", new Schema<String>().type("string")))
+                .addResponses("400", new ApiResponse().description("Bad Request"))
+                .addResponses("401", new ApiResponse().description("Unauthorized"))
+                .addResponses("403", new ApiResponse().description("Forbidden"))
+                .addResponses("404", new ApiResponse().description("Not Found"))
+                .addResponses("500", new ApiResponse().description("Internal Server Error"))
+                .addResponses("405", new ApiResponse().description("Method Not Allowed"));
+    }
+
+    private SecurityScheme securitySchemeConfig() {
+        return new SecurityScheme()
+                .type(SecurityScheme.Type.HTTP)
+                .scheme("bearer")
+                .bearerFormat("JWT");
+    }
+
+    private List<Tag> adminTags() {
+        return List.of(
+                new Tag().name("1. Authentication").description("Admin Authentication Controller"),
+                new Tag().name("2. Registration").description("Admin Registration Management"),
+                new Tag().name("3. Users").description("Admin Users Management"),
+                new Tag().name("4. Customer").description("Admin Customer Management"),
+                new Tag().name("5. Restaurant").description("Admin Restaurant Management"),
+                new Tag().name("6. Services").description("Admin Services Management"),
+                new Tag().name("7. Reservation").description("Admin Reservation Management")
+        );
+    }
+
+    private List<Tag> customerTags() {
+        return List.of(
+                new Tag().name("1. Authentication").description("Controller for managing customer authentication"),
+                new Tag().name("2. Registration").description("Controller for managing customer registration"),
+                new Tag().name("3. Customer").description("Controller for managing customers"),
+                new Tag().name("4. Reservation").description("APIs for managing reservations of the customer"),
+                new Tag().name("5. Allergy").description("Controller for managing customer allergies"),
+                new Tag().name("6. Notification").description("Notification management APIs for customers")
+        );
+    }
+
+    private List<Tag> restaurantTags() {
+        return List.of(
+                new Tag().name("1. Authentication").description("Controller for restaurant creation and user authentication"),
+                new Tag().name("2. Registration").description("Controller for restaurant registration"),
+                new Tag().name("3. User Management").description("Controller for managing restaurant users"),
+                new Tag().name("4. Reservation Management").description("APIs for managing reservations from the restaurant"),
+                new Tag().name("5. Menu Management").description("Restaurant Menu Controller APIs"),
+                new Tag().name("6. Notification Management").description("Restaurant Notification management APIs"),
+                new Tag().name("7. Restaurant Management").description("Controller for managing restaurant operations"),
+                new Tag().name("8. Service Management").description("Controller for managing services offered by restaurants"),
+                new Tag().name("9. Slot Management").description("Controller for managing slots")
+        );
+    }
+
+    private List<Tag> publicTags() {
+        return List.of(
+                new Tag().name("1. Restaurant").description("Controller for managing restaurants"),
+                new Tag().name("2. Menu").description("Restaurant Menu Controller APIs")
+        );
     }
 }
