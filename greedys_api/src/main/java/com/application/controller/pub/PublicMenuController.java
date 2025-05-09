@@ -17,6 +17,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.websocket.server.PathParam;
 
 @Tag(name = "2. Menu", description = "Restaurant Menu Controller APIs")
@@ -32,7 +35,7 @@ public class PublicMenuController {
 
     @Operation(summary = "Get menus by restaurant ID", description = "Retrieve all menus for a specific restaurant by its ID")
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Menus retrieved successfully"),
+        @ApiResponse(responseCode = "200", description = "Menus retrieved successfully", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = MenuDTO.class)))),
         @ApiResponse(responseCode = "401", description = "Unauthorized access"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
@@ -43,7 +46,7 @@ public class PublicMenuController {
 
     @Operation(summary = "Get dishes by menu ID", description = "Retrieve all dishes for a specific menu by its ID")
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Dishes retrieved successfully"),
+        @ApiResponse(responseCode = "200", description = "Dishes retrieved successfully", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = MenuDishDTO.class)))),
         @ApiResponse(responseCode = "400", description = "Invalid menu ID"),
         @ApiResponse(responseCode = "401", description = "Unauthorized access"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
@@ -55,7 +58,7 @@ public class PublicMenuController {
 
     @Operation(summary = "Get menu details by ID", description = "Retrieve details of a specific menu by its ID")
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Menu details retrieved successfully"),
+        @ApiResponse(responseCode = "200", description = "Menu details retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = MenuDTO.class))),
         @ApiResponse(responseCode = "400", description = "Invalid menu ID"),
         @ApiResponse(responseCode = "401", description = "Unauthorized access"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
@@ -64,6 +67,4 @@ public class PublicMenuController {
     public MenuDTO getMenuDetailsById(@PathVariable Long menuId) {
         return restaurantMenuService.getMenuById(menuId);
     }
-
-   
 }
