@@ -89,8 +89,8 @@ public class SwaggerConfig {
 
     private List<Tag> adminTags() {
         return List.of(
-                new Tag().name("1. Authentication").description("Admin Authentication Controller"),
-                new Tag().name("2. Registration").description("Admin Registration Management"),
+                new Tag().name("1. Admin Authentication").description("Admin Authentication Controller"),
+                new Tag().name("2. Admin Registration").description("Admin Registration Management"),
                 new Tag().name("3. Users").description("Admin Users Management"),
                 new Tag().name("4. Customer").description("Admin Customer Management"),
                 new Tag().name("5. Restaurant").description("Admin Restaurant Management"),
@@ -101,8 +101,8 @@ public class SwaggerConfig {
 
     private List<Tag> customerTags() {
         return List.of(
-                new Tag().name("1. Authentication").description("Controller for managing customer authentication"),
-                new Tag().name("2. Registration").description("Controller for managing customer registration"),
+                new Tag().name("1. Customer Authentication").description("Controller for managing customer authentication"),
+                new Tag().name("2. Customer Registration").description("Controller for managing customer registration"),
                 new Tag().name("3. Customer").description("Controller for managing customers"),
                 new Tag().name("4. Reservation").description("APIs for managing reservations of the customer"),
                 new Tag().name("5. Allergy").description("Controller for managing customer allergies"),
@@ -112,8 +112,8 @@ public class SwaggerConfig {
 
     private List<Tag> restaurantTags() {
         return List.of(
-                new Tag().name("1. Authentication").description("Controller for restaurant creation and user authentication"),
-                new Tag().name("2. Registration").description("Controller for restaurant registration"),
+                new Tag().name("1. Restaurant Authentication").description("Controller for restaurant creation and user authentication"),
+                new Tag().name("2. Restaurant Registration").description("Controller for restaurant registration"),
                 new Tag().name("3. User Management").description("Controller for managing restaurant users"),
                 new Tag().name("4. Reservation Management").description("APIs for managing reservations from the restaurant"),
                 new Tag().name("5. Menu Management").description("Restaurant Menu Controller APIs"),
