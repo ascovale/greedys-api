@@ -6,6 +6,9 @@ import com.application.web.dto.RestaurantImageDto;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(name = "NewRestaurantDTO", description = "DTO for creating a new restaurant")
 public class NewRestaurantDTO {
 	//TODO: Veridicare tutti i dati con Validators
     @NotNull

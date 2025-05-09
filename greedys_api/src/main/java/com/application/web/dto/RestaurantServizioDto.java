@@ -1,12 +1,13 @@
 package com.application.web.dto;
 
-
 import java.time.LocalDate;
 import java.util.List;
 
 import com.application.persistence.model.reservation.Reservation;
 import com.application.persistence.model.restaurant.Restaurant;
+import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(name = "RestaurantServizioDto", description = "DTO for restaurant service details")
 public class RestaurantServizioDto {
 	private Long id;
 	private String name;

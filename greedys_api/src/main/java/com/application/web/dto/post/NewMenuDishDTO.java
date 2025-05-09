@@ -1,5 +1,8 @@
 package com.application.web.dto.post;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(name = "NewMenuDishDTO", description = "DTO for associating a dish with a menu")
 public class NewMenuDishDTO {
 
     private Long menuId;

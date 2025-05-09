@@ -10,7 +10,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 @PasswordMatches
-@Schema(description = "DTO representing customer details")
+@Schema(name = "CustomerDTO", description = "DTO for customer details")
 public class CustomerDTO {
 
     @Schema(description = "ID of the customer", example = "1")

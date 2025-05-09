@@ -2,6 +2,7 @@ package com.application.web.dto.get;
 
 import com.application.persistence.model.menu.Dish;
 import com.application.persistence.model.menu.MenuDish;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * PricedMenuItemDTO is a Data Transfer Object (DTO) that represents a menu item along with its price.
@@ -20,6 +21,7 @@ import com.application.persistence.model.menu.MenuDish;
  * 
  * @see DishDTO
  */
+@Schema(name = "MenuDishDTO", description = "DTO for menu dish details")
 public class MenuDishDTO {
 
     private DishDTO dishDTO;

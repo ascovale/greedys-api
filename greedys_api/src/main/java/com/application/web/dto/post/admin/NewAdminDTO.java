@@ -6,6 +6,9 @@ import com.application.controller.Validators.ValidPassword;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(name = "NewAdminDTO", description = "DTO for creating a new admin")
 public class NewAdminDTO {
 
   @NotNull

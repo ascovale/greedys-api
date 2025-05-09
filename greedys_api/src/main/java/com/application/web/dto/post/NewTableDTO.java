@@ -1,5 +1,8 @@
 package com.application.web.dto.post;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(name = "NewTableDTO", description = "DTO for creating a new table")
 public class NewTableDTO {
     private Long idRestaurant;
 

@@ -4,8 +4,7 @@ import com.application.persistence.model.customer.Allergy;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@Schema
-(name = "AllergyDTO", description = "DTO for creating an allergy")
+@Schema(name = "AllergyDTO", description = "DTO for allergy details")
 public class AllergyDTO {
     private Long id;
     @Schema(description = "Name of the allergy", example = "Peanut Allergy")

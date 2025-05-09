@@ -5,6 +5,9 @@ import java.util.List;
 
 import com.application.persistence.model.menu.Menu;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(name = "MenuDTO", description = "DTO for menu details")
 public class MenuDTO {
 
     private Long id;

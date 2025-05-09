@@ -7,6 +7,9 @@ import java.util.List;
 import com.application.persistence.model.customer.Notification;
 import com.application.persistence.model.customer.Notification.Type;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(name = "NotificationDto", description = "DTO for notification details")
 public class NotificationDto {
 	
 	private Long id;
