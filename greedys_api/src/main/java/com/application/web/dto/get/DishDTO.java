@@ -5,6 +5,9 @@ import java.util.Collection;
 import com.application.persistence.model.menu.Allergen;
 import com.application.persistence.model.menu.Dish;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(name = "DishDTO", description = "DTO for dish details")
 public class DishDTO {
     private Long id;
     private String name;

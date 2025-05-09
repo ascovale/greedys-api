@@ -4,9 +4,11 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 @Entity
 @Table(name = "image_restaurant")
+@Schema(name = "RestaurantImageDto", description = "DTO for restaurant image details")
 public class RestaurantImageDto {
 	
 	@Id

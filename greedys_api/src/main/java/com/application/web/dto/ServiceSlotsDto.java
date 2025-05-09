@@ -11,6 +11,9 @@ import com.application.persistence.model.reservation.ServiceType;
 import com.application.persistence.model.reservation.Slot;
 import com.application.web.dto.get.SlotDTO;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(name = "ServiceSlotsDto", description = "DTO for service slots details")
 public class ServiceSlotsDto {
 	LocalTime open;
 	LocalTime close;

@@ -1,7 +1,9 @@
 package com.application.web.dto.put;
 
 import com.application.controller.Validators.ValidPassword;
+import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(name = "UpdatePasswordDTO", description = "DTO for updating a user's password")
 public class UpdatePasswordDTO {
 
     private String oldPassword;

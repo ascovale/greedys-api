@@ -7,7 +7,10 @@ import com.application.controller.Validators.PasswordMatches;
 import com.application.controller.Validators.ValidEmail;
 import com.application.controller.Validators.ValidPassword;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 @PasswordMatches
+@Schema(name = "ClientUserDto", description = "DTO for client user details")
 public class ClientUserDto {
     @NotNull
     @Size(min = 1, message = "{Size.companyUserDto.firstName}")

@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(name = "NewSlotDTO", description = "DTO for creating a new slot")
 public class NewSlotDTO {
 
 

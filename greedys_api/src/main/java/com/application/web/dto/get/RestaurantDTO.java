@@ -8,7 +8,9 @@ import com.application.controller.Validators.ValidEmail;
 import com.application.persistence.model.restaurant.Restaurant;
 import com.application.web.dto.RestaurantImageDto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(name = "RestaurantDTO", description = "DTO for restaurant details")
 public class RestaurantDTO {
 	private Long id; 
     @NotNull

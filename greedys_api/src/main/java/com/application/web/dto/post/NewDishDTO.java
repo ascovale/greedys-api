@@ -1,7 +1,9 @@
 package com.application.web.dto.post;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(name = "NewDishDTO", description = "DTO for creating a new dish")
 public class NewDishDTO {
 
     @JsonProperty("name")
