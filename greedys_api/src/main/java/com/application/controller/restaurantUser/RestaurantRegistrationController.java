@@ -35,7 +35,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
-@Tag(name = "2. Registration", description = "Controller for restaurant registration")
+@Tag(name = "2. Resttaurant Registration", description = "Controller for restaurant registration")
 @RequestMapping("/restaurant/user/auth")
 @SecurityRequirement(name = "bearerAuth")
 public class RestaurantRegistrationController {
