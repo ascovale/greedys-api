@@ -78,7 +78,7 @@ public class AllergyController {
     @ApiResponse(responseCode = "401", description = "Unauthorized")
     @GetMapping("/paginated")
     public List<AllergyDTO> getPaginatedAllergiesOfCustomer(@RequestParam int page, @RequestParam int size) {
-        return allergyService.getPaginatedAllergies(page, size);
+        return customerService.getPaginatedAllergies(page, size);
     }
 
     @Operation(summary = "Get allergy by ID", description = "Returns a specific allergy of the currently authenticated customer using the allergy ID")

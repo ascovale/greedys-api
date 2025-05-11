@@ -1,11 +1,6 @@
 package com.application.persistence.model.restaurant.user;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -129,17 +124,6 @@ public class RestaurantUserHub {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-
-
-
-    private final List<GrantedAuthority> getGrantedAuthorities(final List<String> privileges) {
-        final List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
-        for (final String privilege : privileges) {
-            authorities.add(new SimpleGrantedAuthority(privilege));
-        }
-        return authorities;
     }
 
     public String getUsername() {

@@ -312,9 +312,11 @@ public class RestaurantUserService {
             tokenDAO.delete(verificationToken);
             return TOKEN_EXPIRED;
         }
-
+        if (user.getStatus() != RestaurantUser.Status.VERIFY_TOKEN) {
+            return TOKEN_INVALID;
+        }
         user.setStatus(RestaurantUser.Status.ENABLED);
-        // tokenDAO.delete(verificationToken);
+        tokenDAO.delete(verificationToken);
         ruDAO.save(user);
         return TOKEN_VALID;
     }
@@ -346,7 +348,7 @@ public class RestaurantUserService {
         ru.setStatus(newStatus);
         ruDAO.save(ru);
 
-        // rifare jwt
+        //TODO:NOn credo ci sia bisogno di rifare jwt in ogni caso fare un test sullo status dopo averlo cambiato
     }
 
     @Transactional
@@ -385,8 +387,7 @@ public class RestaurantUserService {
         String token = UUID.randomUUID().toString();
         createVerificationTokenForRestaurantUser(restaurantUser, token);
         // TODO: Verificare invio mail
-        // final SimpleMailMessage email = constructEmailMessage(event, restaurantUser,
-        // token);
+        // final SimpleMailMessage email = constructEmailMessage(event, restaurantUser,token);
         // mailSender.send(email);
 
         return new RestaurantUserDTO(restaurantUser);

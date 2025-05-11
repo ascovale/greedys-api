@@ -20,7 +20,7 @@ public class NewRestaurantDTO {
     @Size(min = 1, message = "{Size.restaurantDto.email}")
     private String email;
 	private Long ownerId;
-	//TODO: private String phoneNumber;
+	private String phoneNumber;
 	private String password;
 	public NewRestaurantDTO() {
 	}
@@ -94,5 +94,11 @@ public class NewRestaurantDTO {
 	public void setpI(String pi) {
 		this.pi = pi;
 	}
+	public String getPhoneNumber() {
+		return phoneNumber;
+	}
 
+	public void setPhoneNumber(String phoneNumber) {
+		this.phoneNumber = phoneNumber;
+	}
 }

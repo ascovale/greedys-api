@@ -91,7 +91,7 @@ public class RestaurantController {
 			@ApiResponse(responseCode = "400", description = "Invalid request")
 	})
 	public GenericResponse addRoom(@RequestBody NewRoomDTO roomDto) {
-		// TODO: a quale ristorante associa la stanza
+		// TODO: a quale ristorante associa la stanza?
 		roomService.createRoom(roomDto);
 		return new GenericResponse("success");
 	}
