@@ -60,8 +60,6 @@ public class EmailService {
         email.setTo(recipientAddress);
         email.setSubject(subject);
         email.setText(message);
-        // TODO: Impostare le diverse email per le varie tipologie di notifiche
-        //email.setFrom("reservation@greedys.it");
         email.setFrom("reservation@greedys.it");
         return email;
 

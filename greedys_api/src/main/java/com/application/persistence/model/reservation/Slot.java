@@ -106,7 +106,6 @@ public class Slot {
 	}
 
     public void setDeleted(boolean b) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'setDeleted'");
+		this.deleted = b;
     }
 }

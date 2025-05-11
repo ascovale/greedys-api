@@ -43,7 +43,7 @@ public class RestaurantUser implements UserDetails {
     private RestaurantUserOptions options;
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private Status status = Status.ENABLED;
+    private Status status = Status.VERIFY_TOKEN;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "restaurant_user_hub_id")
@@ -60,6 +60,7 @@ public class RestaurantUser implements UserDetails {
     private boolean accepted;
 
     public enum Status {
+        VERIFY_TOKEN,
         BLOCKED,
         DELETED,
         ENABLED,

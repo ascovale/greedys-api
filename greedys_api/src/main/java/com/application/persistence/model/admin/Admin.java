@@ -40,13 +40,14 @@ public class Admin implements UserDetails {
 	private Integer toReadNotification = 0;
 	
     public enum Status {
+		VERIFY_TOKEN,
         BLOCKED,
         DELETED,
         ENABLED,
         DISABLED
     }
 
-	private Status status= Status.ENABLED;
+	private Status status= Status.VERIFY_TOKEN;
 
 	public Status getStatus() {
 		return status;
