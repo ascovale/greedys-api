@@ -48,6 +48,8 @@ public class Customer implements UserDetails {
 	@OneToOne
     private CustomerOptions customerOptions;
 
+
+
 	public enum Status {
         BLOCKED,
         DELETED,
@@ -218,8 +220,6 @@ public class Customer implements UserDetails {
 
 	@Override
 	public boolean isCredentialsNonExpired() {
-		//TODO in futuro da cambiare se le credenziali scadono
-
 		return true;
 	}
 

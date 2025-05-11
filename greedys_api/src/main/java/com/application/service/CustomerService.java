@@ -1,6 +1,5 @@
 package com.application.service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -8,8 +7,6 @@ import java.util.stream.Collectors;
 import org.hibernate.Hibernate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -260,9 +257,14 @@ public class CustomerService {
 		throw new UnsupportedOperationException("Unimplemented method 'adminLoginToCustomer'");
 	}
 
-	private List<? extends GrantedAuthority> getSwitchUserAuthoritiesAdmin() {
-		List<GrantedAuthority> authorities = new ArrayList<>();
-		authorities.add(new SimpleGrantedAuthority("PRIVILEGE_ADMIN_SWITCH_TO_RESTAURANT_USER"));
-		return authorities;
-	}
+    public List<AllergyDTO> getPaginatedAllergies(int page, int size) {
+		PageRequest pageRequest = PageRequest.of(page, size);
+		Customer customer = customerDAO.findById(getCurrentCustomer().getId())
+			.orElseThrow(() -> new EntityNotFoundException("Customer not found"));
+		Page<Allergy> allergiesPage = customerDAO.findCustomerAllergies(customer, pageRequest);
+		return allergiesPage.stream()
+			.map(AllergyDTO::new)
+			.collect(Collectors.toList());
+    }
+
 }

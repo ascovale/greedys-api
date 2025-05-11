@@ -1,7 +1,6 @@
 package com.application.spring;
 
 import java.util.Locale;
-import java.util.Properties;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.ApplicationContext;
@@ -12,8 +11,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.http.MediaType;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.context.request.RequestContextListener;
 import org.springframework.web.servlet.LocaleResolver;

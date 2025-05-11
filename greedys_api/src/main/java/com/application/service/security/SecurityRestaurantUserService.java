@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.application.persistence.dao.customer.ReservationDAO;
-import com.application.persistence.dao.restaurant.RestaurantUserDAO;
 import com.application.persistence.dao.restaurant.RestaurantUserHubDAO;
 import com.application.persistence.model.reservation.Reservation;
 import com.application.persistence.model.restaurant.Restaurant;
@@ -21,8 +20,6 @@ public class SecurityRestaurantUserService {
     
     @Autowired 
     private ReservationDAO reservationRepository;
-    @Autowired 
-    private RestaurantUserDAO restaurantUserDAO;
     @Autowired
     private RestaurantUserHubDAO restaurantUserHubDAO;
     

@@ -26,8 +26,6 @@ public class CustomerAuthenticationController {
 
     private CustomerAuthenticationService customerAuthenticationService;
 
-    // TODO manca il login tramite google che è diverso dalla registrazione
-
     @Autowired
     public CustomerAuthenticationController(CustomerAuthenticationService customerAuthenticationService,
             JwtUtil jwtUtil) {

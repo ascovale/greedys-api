@@ -610,8 +610,6 @@ public class ReservationService {
                 .collect(Collectors.toList());
     }
 
-    //TODO: Da verificare
-
     public Page<ReservationDTO> getCustomerReservationsPaginated(Long customerId, Pageable pageable) {
         Page<Reservation> page = reservationDAO.findByCustomer(customerId, pageable);
         return page.map(ReservationDTO::new);

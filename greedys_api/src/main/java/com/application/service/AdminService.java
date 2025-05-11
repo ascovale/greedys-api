@@ -41,21 +41,18 @@ public class AdminService {
 	private final AdminVerificationTokenDAO tokenDAO;
 	private final AdminPasswordResetTokenDAO passwordTokenRepository;
 	private final PasswordEncoder passwordEncoder;
-	private final AdminRoleDAO roleRepository;
 	private final EntityManager entityManager;
 	private final AdminRoleDAO adminRoleDAO;
 
 	public AdminService(AdminDAO adminDAO, AdminVerificationTokenDAO tokenDAO,
 	AdminPasswordResetTokenDAO passwordTokenRepository,
 			PasswordEncoder passwordEncoder,
-			AdminRoleDAO roleRepository,
 			EntityManager entityManager,
 			AdminRoleDAO adminRoleDAO) {
 		this.adminDAO = adminDAO;
 		this.tokenDAO = tokenDAO;
 		this.passwordTokenRepository = passwordTokenRepository;
 		this.passwordEncoder = passwordEncoder;
-		this.roleRepository = roleRepository;
 		this.entityManager = entityManager;
 		this.adminRoleDAO = adminRoleDAO;
 	}
@@ -170,10 +167,12 @@ public class AdminService {
 			tokenDAO.delete(verificationToken);
 			return TOKEN_EXPIRED;
 		}
+		if (user.getStatus() != Admin.Status.VERIFY_TOKEN) {
+			return TOKEN_INVALID;
+		}
 
 		user.setStatus(Admin.Status.ENABLED);
-		//TODO: Cancellare verificationToken anche restaurantUser e Customer
-		// tokenDAO.delete(verificationToken);
+		tokenDAO.delete(verificationToken);
 		adminDAO.save(user);
 		return TOKEN_VALID;
 	}
