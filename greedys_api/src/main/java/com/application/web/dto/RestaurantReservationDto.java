@@ -9,7 +9,10 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import com.application.controller.Validators.PasswordMatches;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 @PasswordMatches
+@Schema(name = "RestaurantReservationDto", description = "DTO for restaurant reservation details")
 public class RestaurantReservationDto {
 	@NotNull
 	private Integer pax;

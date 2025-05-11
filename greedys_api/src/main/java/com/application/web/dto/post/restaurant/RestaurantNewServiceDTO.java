@@ -1,7 +1,9 @@
 package com.application.web.dto.post.restaurant;
 
 import java.time.LocalDate;
+import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(name = "RestaurantNewServiceDTO", description = "DTO for creating a new restaurant service")
 public class RestaurantNewServiceDTO {
 
 	private String name;

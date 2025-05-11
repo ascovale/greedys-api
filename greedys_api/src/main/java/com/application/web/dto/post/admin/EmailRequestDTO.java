@@ -1,8 +1,10 @@
 package com.application.web.dto.post.admin;
 
 import com.application.controller.Validators.ValidEmail;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-public class EmailRequestDTO{ // Renamed from EmailRequestDTO to EmailRequestDto
+@Schema(name = "EmailRequestDTO", description = "DTO for email requests")
+public class EmailRequestDTO { // Renamed from EmailRequestDTO to EmailRequestDto
     @ValidEmail
     private String email;
     private String subject;

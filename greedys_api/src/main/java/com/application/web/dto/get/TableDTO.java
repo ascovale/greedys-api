@@ -1,7 +1,9 @@
 package com.application.web.dto.get;
 
 import com.application.persistence.model.restaurant.Table;
+import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(name = "TableDTO", description = "DTO for table details")
 public class TableDTO {
     
         private Long id;

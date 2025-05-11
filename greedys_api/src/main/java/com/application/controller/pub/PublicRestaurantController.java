@@ -185,8 +185,8 @@ public class PublicRestaurantController {
 			@ApiResponse(responseCode = "404", description = "Slot not found"),
 			@ApiResponse(responseCode = "400", description = "Invalid request")
 	})
-	@GetMapping("public/restaurant/slot/{slotId}")
-	public SlotDTO getSlotById(@PathVariable Long id) {
-		return slotService.findById(id);
+	@GetMapping("/public/restaurant/slot/{slotId}")
+	public SlotDTO getSlotById(@PathVariable Long slotId) {
+		return slotService.findById(slotId);
 	}
 }

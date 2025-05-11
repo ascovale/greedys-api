@@ -2,7 +2,9 @@ package com.application.web.dto;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(name = "Event", description = "DTO for event details")
 public class Event{
 	
 	private String id;

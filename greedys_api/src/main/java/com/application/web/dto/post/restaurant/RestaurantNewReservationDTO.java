@@ -1,11 +1,12 @@
 package com.application.web.dto.post.restaurant;
 
-
 import java.time.LocalDate;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(name = "RestaurantNewReservationDTO", description = "DTO for creating a new restaurant reservation")
 public class RestaurantNewReservationDTO {
 	
 	private Long idSlot;

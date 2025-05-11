@@ -2,8 +2,9 @@ package com.application.web.dto;
 
 import java.time.LocalTime;
 import java.util.List;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-
+@Schema(name = "ServicesDto", description = "DTO for services details")
 public class ServicesDto {
 	String name;
 	LocalTime open;

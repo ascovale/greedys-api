@@ -1,11 +1,12 @@
 package com.application.web.dto;
 
-
 import java.util.List;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(name = "RestaurantFullDetailsDto", description = "DTO for full restaurant details")
 public class RestaurantFullDetailsDto {
 		private Long id;
 		private String name;

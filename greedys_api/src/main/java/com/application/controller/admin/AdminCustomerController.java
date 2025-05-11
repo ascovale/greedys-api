@@ -119,7 +119,7 @@ public class AdminCustomerController {
     @Operation(summary = "Get JWT Token of a customer", description = "Get JWT Token of a customer")
     @ApiResponse(responseCode = "200", description = "Token retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @GetMapping("/login/{customerId}")
-    public ResponseEntity<?> loginTokenHasRestaurantUser(@RequestParam Long customerId, HttpServletRequest request) {
+    public ResponseEntity<?> loginTokenHasRestaurantUser(@PathVariable Long customerId, HttpServletRequest request) {
         return ResponseEntity.ok(customerService.adminLoginToCustomer(customerId,request));
     }
 

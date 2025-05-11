@@ -2,7 +2,7 @@ package com.application.web.dto.post;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@Schema(description = "DTO per la richiesta di autenticazione")
+@Schema(name = "RestaurantUserAuthRequestDTO", description = "DTO for restaurant user authentication requests")
 public class RestaurantUserAuthRequestDTO {
     @Schema(description = "Nome utente", example = "user123")
     private String username;

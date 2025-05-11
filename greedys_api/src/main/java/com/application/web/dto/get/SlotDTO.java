@@ -8,6 +8,9 @@ import com.application.web.dto.post.LocalTimeDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(name = "SlotDTO", description = "DTO for slot details")
 public class SlotDTO {
 		
 	Long id;

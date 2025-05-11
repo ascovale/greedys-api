@@ -8,6 +8,9 @@ import com.application.web.dto.post.LocalDateDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(name = "ReservationDTO", description = "DTO for reservation details")
 public class ReservationDTO {
 
 	private Long id;

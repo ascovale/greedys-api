@@ -1,12 +1,14 @@
 package com.application.web.dto.get;
 
-
 import java.time.LocalDate;
 
 import com.application.persistence.model.reservation.Service;
 import com.application.web.dto.ServiceTypeDto;
 import java.util.Collection;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(name = "ServiceDTO", description = "DTO for service details")
 public class ServiceDTO {
     private long id;
     private String name;

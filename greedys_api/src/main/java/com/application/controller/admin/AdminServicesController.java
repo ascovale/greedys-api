@@ -64,7 +64,7 @@ public class AdminServicesController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @DeleteMapping("/{serviceId}/delete")
-    public GenericResponse deleteService(@RequestParam Long serviceId) {
+    public GenericResponse deleteService(@PathVariable Long serviceId) {
         System.out.println("<<<   Controller Service   >>>");
         System.out.println("<<<   serviceId: " + serviceId);
         serviceService.deleteService(serviceId);

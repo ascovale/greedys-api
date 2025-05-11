@@ -1,7 +1,10 @@
 package com.application.web.dto.post;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.util.List;
 
+@Schema(name = "NewMenuDTO", description = "DTO for creating a new menu")
 public class NewMenuDTO {
 
     private String name;
