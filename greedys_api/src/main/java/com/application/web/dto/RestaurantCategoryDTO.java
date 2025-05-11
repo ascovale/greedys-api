@@ -1,6 +1,8 @@
-
 package com.application.web.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(name = "RestaurantCategoryDTO", description = "DTO for restaurant category details")
 public class RestaurantCategoryDTO {
     private String name;
 

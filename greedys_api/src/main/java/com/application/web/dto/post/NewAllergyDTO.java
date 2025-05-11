@@ -2,8 +2,7 @@ package com.application.web.dto.post;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@Schema
-(name = "NewAllergyDTO", description = "DTO for creating an allergy")
+@Schema(name = "NewAllergyDTO", description = "DTO for creating a new allergy")
 public class NewAllergyDTO {
     private String name;
     private String description;

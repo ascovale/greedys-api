@@ -2,7 +2,7 @@ package com.application.web.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@Schema(description = "DTO per la richiesta di autenticazione")
+@Schema(name = "AuthRequestGoogleDTO", description = "DTO for Google authentication requests")
 public class AuthRequestGoogleDTO {
     private String token;
 

@@ -7,6 +7,9 @@ import java.util.Set;
 import com.application.mapper.Mapper.Weekday;
 import com.application.persistence.model.reservation.Service;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(name = "ServiceDto", description = "DTO for service details")
 public class ServiceDto {
 	LocalTime open;
 	LocalTime close;

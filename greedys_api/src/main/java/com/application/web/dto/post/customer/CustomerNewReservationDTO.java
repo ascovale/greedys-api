@@ -1,10 +1,12 @@
 package com.application.web.dto.post.customer;
 
-
 import java.time.LocalDate;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(name = "CustomerNewReservationDTO", description = "DTO for creating a new customer reservation")
 public class CustomerNewReservationDTO {
 	
 	private Long idSlot;

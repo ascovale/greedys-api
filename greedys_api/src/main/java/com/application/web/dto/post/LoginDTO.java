@@ -1,5 +1,8 @@
 package com.application.web.dto.post;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(name = "LoginDTO", description = "DTO for login requests")
 public class LoginDTO {
     private String username;
     private String password;

@@ -1,6 +1,6 @@
 services:
   spring-app:
-    image: greedys_api_spring-app
+    image: registry.gitlab.com/psychoorange/greedys_api/spring-app:latest
     ports:
       - "5050:8443"  # Espone la porta HTTPS sul container
     deploy:
@@ -27,7 +27,7 @@ services:
     image: mysql:8.0
     environment:
       MYSQL_DATABASE: greedys_v1
-      MYSQL_ROOT_PASSWORD: "Minosse100%" 
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_password
     ports:
       - "3309:3306"
     volumes:

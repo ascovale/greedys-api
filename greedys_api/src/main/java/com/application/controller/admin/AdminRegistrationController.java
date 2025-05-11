@@ -51,7 +51,7 @@ import jakarta.validation.Valid;
 // creare un permesso specifico per questo
 @RestController
 @RequestMapping("/admin/register")
-@Tag(name = "2. Registration", description = "Admin Registration Management")
+@Tag(name = "2. Admin Registration", description = "Admin Registration Management")
 public class AdminRegistrationController {
     private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 

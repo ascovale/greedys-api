@@ -1,12 +1,14 @@
-
 package com.application.web.dto.post;
 
 import com.application.controller.Validators.ValidEmail;
 import com.application.controller.Validators.ValidPassword;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+@Schema(name = "NewRestaurantUserDTO", description = "DTO for creating a new restaurant user")
 public class NewRestaurantUserDTO {
 
   @NotNull

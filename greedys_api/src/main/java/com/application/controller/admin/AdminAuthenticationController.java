@@ -23,7 +23,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Tag(name = "1. Authentication", description = "Controller for managing Admin user authentication")
+@Tag(name = "1. Admin Authentication", description = "Controller for managing Admin user authentication")
 @RestController
 @RequestMapping(value = "/admin/auth", produces = "application/json")
 public class AdminAuthenticationController {

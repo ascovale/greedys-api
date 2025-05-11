@@ -1,7 +1,9 @@
 package com.application.web.dto;
 
 import com.application.persistence.model.reservation.ServiceType;
+import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(name = "ServiceTypeDto", description = "DTO for service type details")
 public class ServiceTypeDto {
 	Long id;
 	String name;

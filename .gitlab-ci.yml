@@ -1,6 +1,6 @@
 variables:
-  TAG_LATEST: ${CI_REGISTRY_IMAGE}/spring-app:latest
-  TAG_COMMIT: ${CI_REGISTRY_IMAGE}/spring-app:${CI_COMMIT_SHORT_SHA}
+  TAG_LATEST: ${CI_REGISTRY_IMAGE}:latest
+  TAG_COMMIT: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}
   DART_REPO: git@gitlab.com:PsychoOrange/greedys_api_dart_lib.git
 
 stages:
@@ -21,7 +21,7 @@ build:
   script:
     - echo "Logging into Docker registry..."
     - echo $CI_JOB_TOKEN | docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY
-    - echo "Building and tagging Docker image for spring-app..."
+    - echo "Building and tagging Docker image..."
     - docker build -t $TAG_LATEST --build-arg SPRING_PROFILES_ACTIVE="docker" .
     - echo "Tagging Docker image with commit tag..."
     - docker tag $TAG_LATEST $TAG_COMMIT
