@@ -84,8 +84,12 @@ public class SlotService {
     }
 
     public boolean cancelSlot(Long id, Long slotId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'cancelSlot'");
+        Slot slot = slotDAO.findById(slotId).orElseThrow(() -> new IllegalArgumentException("Slot not found."));
+        if (!slot.getService().getId().equals(id)) {
+            throw new IllegalArgumentException("Slot does not belong to the specified service.");
+        }
+        slotDAO.delete(slot);
+        return true;
     }
     public List<SlotDTO> findAllSlots() {
         return slotDAO.findAll().stream()

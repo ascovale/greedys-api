@@ -200,9 +200,11 @@ public class CustomerAuthenticationService {
 			tokenDAO.delete(verificationToken);
 			return TOKEN_EXPIRED;
 		}
-
+		if (customer.getStatus() != Customer.Status.VERIFY_TOKEN) {
+			return TOKEN_INVALID;
+		}
 		customer.setStatus(Customer.Status.ENABLED);
-		// tokenDAO.delete(verificationToken);
+		tokenDAO.delete(verificationToken);
 		customerDAO.save(customer);
 		return TOKEN_VALID;
 	}
@@ -233,16 +235,6 @@ public class CustomerAuthenticationService {
 		deleteCustomer(customer);
 	}
 
-	private Customer getCurrentCustomer() {
-		Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-		if (principal instanceof Customer) {
-			return ((Customer) principal);
-		} else {
-			System.out.println("Questo non dovrebbe succedere");
-			return null;
-		}
-	}
-
 	@Transactional
 	public void enableCustomer(Long customerId) {
 		Customer customer = customerDAO.findById(customerId)
@@ -250,33 +242,24 @@ public class CustomerAuthenticationService {
 		customer.setStatus(Customer.Status.ENABLED);
 		customerDAO.save(customer);
 	}
-	/*
-	 * public void removePermissions(Long idCustomer) {
-	 * Customer customer = customerDAO.findById(idCustomer).orElseThrow(() -> new
-	 * EntityNotFoundException("Customer not found"));
-	 * customer.setRoles(Arrays.asList(roleRepository.findByName("ROLE_CUSTOMER")));
-	 * customerDAO.save(customer);
-	 * }
-	 */
 
-		// Assuming there is a ReportAbuseDAO and ReportAbuse entity
-		/*
-		 * ReportAbuse report = new ReportAbuse();
-		 * report.setRestaurantId(restaurantId);
-		 * report.setCustomerId(getCurrentCustomer().getId());
-		 * report.setTimestamp(LocalDateTime.now());
-		 * reportAbuseDAO.save(report);
-		 */
-		// TODO in futuro decidere cosa farà anche solo mandare una mail
-		// L'utente segnala qualche tipo di abuso nella recensione o altro
-	
+	public AuthResponseDTO adminLoginToCustomer(Long customerId, HttpServletRequest request) {
+		Customer customer = customerDAO.findById(customerId)
+				.orElseThrow(() -> new EntityNotFoundException("No customer found with ID: " + customerId));
 
-	public Object adminLoginToCustomer(Long customerId, HttpServletRequest request) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'adminLoginToCustomer'");
+		// Create an authentication token bypassing the password
+		UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+				customer.getEmail(), null);
+		authToken.setDetails(customer);
+
+		// Authenticate without password
+		SecurityContextHolder.getContext().setAuthentication(authToken);
+
+		final String jwt = jwtUtil.generateToken(customer);
+		return new AuthResponseDTO(jwt, new CustomerDTO(customer));
 	}
 
-		private boolean emailExists(final String email) {
+	private boolean emailExists(final String email) {
 		return customerDAO.findByEmail(email) != null;
 	}
 

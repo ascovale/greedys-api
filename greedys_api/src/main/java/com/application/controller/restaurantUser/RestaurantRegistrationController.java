@@ -40,12 +40,6 @@ import jakarta.servlet.http.HttpServletRequest;
 @SecurityRequirement(name = "bearerAuth")
 public class RestaurantRegistrationController {
 
-    //TODO far
-    // potrei fare un jwt senza permessi che però può essere usato per fare il login
-    // get restaurants prende username e password e restituisce elenco ristoranti
-    // lo stesso ma da un jwt token del restaurantUser
-    // poi il login di un restaurant che ritorna il jwt che ha i permessi del ristorante
-    // poi un login che in realtà è uno switch che prende un jwt e ne restituisce un altro con i permessi di un altro ristorante
     private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
     private RestaurantService restaurantService;
@@ -123,23 +117,28 @@ public class RestaurantRegistrationController {
             @Parameter(description = "Password reset token") @RequestParam final String token) {
         return restaurantAuthenticationService.confirmPasswordChange(token);
     }
-/* 
-
-    public void authWithHttpServletRequest(HttpServletRequest request, String username, String password) {
-        try {
-            request.login(username, password);
-        } catch (ServletException e) {
-            LOGGER.error("Error while login ", e);
-        }
-    }
-
-    public void authWithoutPassword(RestaurantUser restaurantUser) {
-        List<RestaurantPrivilege> privileges = restaurantUser.getPrivileges().stream().collect(Collectors.toList());
-        List<GrantedAuthority> authorities = privileges.stream().map(p -> new SimpleGrantedAuthority(p.getName()))
-                .collect(Collectors.toList());
-
-        Authentication authentication = new UsernamePasswordAuthenticationToken(restaurantUser, null, authorities);
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-    }*/
+    /*
+     * 
+     * public void authWithHttpServletRequest(HttpServletRequest request, String
+     * username, String password) {
+     * try {
+     * request.login(username, password);
+     * } catch (ServletException e) {
+     * LOGGER.error("Error while login ", e);
+     * }
+     * }
+     * 
+     * public void authWithoutPassword(RestaurantUser restaurantUser) {
+     * List<RestaurantPrivilege> privileges =
+     * restaurantUser.getPrivileges().stream().collect(Collectors.toList());
+     * List<GrantedAuthority> authorities = privileges.stream().map(p -> new
+     * SimpleGrantedAuthority(p.getName()))
+     * .collect(Collectors.toList());
+     * 
+     * Authentication authentication = new
+     * UsernamePasswordAuthenticationToken(restaurantUser, null, authorities);
+     * 
+     * SecurityContextHolder.getContext().setAuthentication(authentication);
+     * }
+     */
 }

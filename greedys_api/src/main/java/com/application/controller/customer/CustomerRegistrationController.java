@@ -193,7 +193,7 @@ public class CustomerRegistrationController {
     }
 
     // 4. Google Authentication
-    @Operation(summary = "Authenticate with Google", description = "Authenticates a customer using a Google token and returns a JWT token.")
+    @Operation(summary = "Authenticate with Google", description = "Authenticates or if not exist register a customer using a Google token and returns a JWT token.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Authentication successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthResponseDTO.class))),
             @ApiResponse(responseCode = "401", description = "Authentication failed", content = @Content(mediaType = "application/json"))
