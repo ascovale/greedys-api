@@ -3,6 +3,7 @@ package com.application.spring;
 import java.util.List;
 
 import org.springdoc.core.models.GroupedOpenApi;
+import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -17,56 +18,73 @@ import io.swagger.v3.oas.models.tags.Tag;
 
 @Configuration
 public class SwaggerConfig {
+
     @Bean
-    public OpenAPI customOpenAPI() {
+    public OpenAPI baseOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
                         .title("Greedys API")
                         .version("1.0")
                         .description("API for managing restaurant reservations"))
-                .components(sharedComponents());
+                .components(baseComponents());
     }
 
     @Bean
     public GroupedOpenApi adminApi() {
-        return createGroupedOpenApi("admin-api", "/admin/**", adminTags(), "adminBearerAuth");
+        return GroupedOpenApi.builder()
+                .group("admin-api")
+                .packagesToScan("com.application.controller.admin")
+                .pathsToMatch("/admin/**")
+                .addOpenApiCustomizer(groupCustomizer(adminTags(), "adminBearerAuth"))
+                .build();
     }
 
     @Bean
     public GroupedOpenApi customerApi() {
-        return createGroupedOpenApi("customer-api", "/customer/**", customerTags(), "customerBearerAuth");
+        return GroupedOpenApi.builder()
+                .group("customer-api")
+                .packagesToScan("com.application.controller.customer")
+                .pathsToMatch("/customer/**")
+                .addOpenApiCustomizer(groupCustomizer(customerTags(), "customerBearerAuth"))
+                .build();
     }
 
     @Bean
     public GroupedOpenApi restaurantApi() {
-        return createGroupedOpenApi("restaurant-api", "/restaurant/**", restaurantTags(), "restaurantBearerAuth");
+        return GroupedOpenApi.builder()
+                .group("restaurant-api")
+                .packagesToScan("com.application.controller.restaurant")
+                .pathsToMatch("/restaurant/**")
+                .addOpenApiCustomizer(groupCustomizer(restaurantTags(), "restaurantBearerAuth"))
+                .build();
     }
 
     @Bean
     public GroupedOpenApi publicApi() {
         return GroupedOpenApi.builder()
                 .group("public-api")
-                .packagesToScan("com.application.controller.pub")
+                .packagesToScan("com.application.controller.pub", "com.application.web.dto")
                 .pathsToMatch("/public/**", "/register/**", "/auth/**")
-                .pathsToExclude("/restaurant/**", "/customer/**", "/admin/**")
-                .addOpenApiCustomizer(openApi -> openApi
-                        .components(sharedComponents())
-                        .tags(publicTags()))
+                .addOpenApiCustomizer(groupCustomizer(publicTags(), null))
                 .build();
     }
 
-    private GroupedOpenApi createGroupedOpenApi(String group, String path, List<Tag> tags, String securityScheme) {
-        return GroupedOpenApi.builder()
-                .group(group)
-                .pathsToMatch(path)
-                .addOpenApiCustomizer(openApi -> openApi
-                        .components(sharedComponents().addSecuritySchemes(securityScheme, securitySchemeConfig()))
-                        .addSecurityItem(new SecurityRequirement().addList(securityScheme))
-                        .tags(tags))
-                .build();
+    private OpenApiCustomizer groupCustomizer(List<Tag> tags, String securityName) {
+        return openApi -> {
+            tags.forEach(openApi::addTagsItem);
+            if (securityName != null) {
+                openApi.addSecurityItem(new SecurityRequirement().addList(securityName));
+                Components components = openApi.getComponents();
+                if (components != null) {
+                    if (components.getSecuritySchemes() == null || !components.getSecuritySchemes().containsKey(securityName)) {
+                        components.addSecuritySchemes(securityName, bearerScheme());
+                    }
+                }
+            }
+        };
     }
 
-    private Components sharedComponents() {
+    private Components baseComponents() {
         return new Components()
                 .addSchemas("GenericResponse", new Schema<>()
                         .type("object")
@@ -80,7 +98,7 @@ public class SwaggerConfig {
                 .addResponses("405", new ApiResponse().description("Method Not Allowed"));
     }
 
-    private SecurityScheme securitySchemeConfig() {
+    private SecurityScheme bearerScheme() {
         return new SecurityScheme()
                 .type(SecurityScheme.Type.HTTP)
                 .scheme("bearer")
@@ -101,33 +119,33 @@ public class SwaggerConfig {
 
     private List<Tag> customerTags() {
         return List.of(
-                new Tag().name("1. Customer Authentication").description("Controller for managing customer authentication"),
-                new Tag().name("2. Customer Registration").description("Controller for managing customer registration"),
-                new Tag().name("3. Customer").description("Controller for managing customers"),
-                new Tag().name("4. Reservation").description("APIs for managing reservations of the customer"),
-                new Tag().name("5. Allergy").description("Controller for managing customer allergies"),
-                new Tag().name("6. Notification").description("Notification management APIs for customers")
+                new Tag().name("1. Customer Authentication").description("Customer Authentication Controller"),
+                new Tag().name("2. Customer Registration").description("Customer Registration Controller"),
+                new Tag().name("3. Customer").description("Customer Data Controller"),
+                new Tag().name("4. Reservation").description("Reservation Controller for Customers"),
+                new Tag().name("5. Allergy").description("Customer Allergy Management"),
+                new Tag().name("6. Notification").description("Customer Notification Controller")
         );
     }
 
     private List<Tag> restaurantTags() {
         return List.of(
-                new Tag().name("1. Restaurant Authentication").description("Controller for restaurant creation and user authentication"),
-                new Tag().name("2. Restaurant Registration").description("Controller for restaurant registration"),
-                new Tag().name("3. User Management").description("Controller for managing restaurant users"),
-                new Tag().name("4. Reservation Management").description("APIs for managing reservations from the restaurant"),
-                new Tag().name("5. Menu Management").description("Restaurant Menu Controller APIs"),
-                new Tag().name("6. Notification Management").description("Restaurant Notification management APIs"),
-                new Tag().name("7. Restaurant Management").description("Controller for managing restaurant operations"),
-                new Tag().name("8. Service Management").description("Controller for managing services offered by restaurants"),
-                new Tag().name("9. Slot Management").description("Controller for managing slots")
+                new Tag().name("1. Restaurant Authentication").description("Restaurant Auth Controller"),
+                new Tag().name("2. Restaurant Registration").description("Restaurant Registration Controller"),
+                new Tag().name("3. User Management").description("Restaurant User Management"),
+                new Tag().name("4. Reservation Management").description("Restaurant Reservation Controller"),
+                new Tag().name("5. Menu Management").description("Menu Management APIs"),
+                new Tag().name("6. Notification Management").description("Notification APIs"),
+                new Tag().name("7. Restaurant Management").description("Operations Management"),
+                new Tag().name("8. Service Management").description("Service Management APIs"),
+                new Tag().name("9. Slot Management").description("Slot Management APIs")
         );
     }
 
     private List<Tag> publicTags() {
         return List.of(
-                new Tag().name("1. Restaurant").description("Controller for managing restaurants"),
-                new Tag().name("2. Menu").description("Restaurant Menu Controller APIs")
+                new Tag().name("1. Restaurant").description("Public Restaurant APIs"),
+                new Tag().name("2. Menu").description("Public Menu APIs")
         );
     }
 }
