@@ -28,7 +28,7 @@ import jakarta.servlet.http.HttpServletRequest;
 @RequestMapping("/admin/restaurant/user")
 @RestController
 @SecurityRequirement(name = "adminBearerAuth")
-@Tag(name = "8. Restaurant User", description = "Admin management APIs for the RestaurantUser")
+@Tag(name = "Restaurant User", description = "Admin management APIs for the RestaurantUser")
 public class AdminRestaurantUserController {
     // TODO: aggiungere ruoli e permessi ai ruoli come metodi
 

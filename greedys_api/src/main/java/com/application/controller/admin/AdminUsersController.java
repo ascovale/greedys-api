@@ -32,7 +32,7 @@ import jakarta.validation.Valid;
 @RequestMapping("/admin")
 @RestController
 @SecurityRequirement(name = "adminBearerAuth")
-@Tag(name = "3. Users", description = "Admin Users Management")
+@Tag(name = "Users", description = "Admin Users Management")
 public class AdminUsersController {
     // TODO: aggiungere ruoli e permessi ai ruoli come metodi
     // Riscrivere tutta la classe per implementare i metodi per dare togliere i

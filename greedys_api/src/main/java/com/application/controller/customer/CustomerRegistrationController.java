@@ -65,7 +65,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 @RestController
-@Tag(name = "2. Customer Registration", description = "Controller for managing customer registration")
+@Tag(name = "Customer Registration", description = "Controller for managing customer registration")
 @RequestMapping("/customer/auth")
 public class CustomerRegistrationController {
     private final Logger LOGGER = LoggerFactory.getLogger(getClass());

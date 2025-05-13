@@ -22,7 +22,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/restaurant/notification")
 @SecurityRequirement(name = "restaurantBearerAuth")
-@Tag(name = "6. Notification Management", description = "Restaurant Notification management APIs")
+@Tag(name = "Notification Management", description = "Restaurant Notification management APIs")
 public class RestaurantNotificationController {
     //TODO: capire se dividere in restaurantNotification e restaurantUserNotification
     //che avrebbe anche senso capire se ci sono delle notifiche che basta che le legge uno o che le devono leggere tutti

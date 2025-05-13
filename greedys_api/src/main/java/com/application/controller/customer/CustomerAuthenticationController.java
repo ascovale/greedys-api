@@ -20,7 +20,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@Tag(name = "1. Customer Authentication", description = "Controller for managing customer authentication")
+@Tag(name = "Customer Authentication", description = "Controller for managing customer authentication")
 @RequestMapping("/customer/auth")
 public class CustomerAuthenticationController {
 

@@ -35,7 +35,7 @@ public class SwaggerConfig {
                 .group("admin-api")
                 .packagesToScan("com.application.controller.admin")
                 .pathsToMatch("/admin/**")
-                .addOpenApiCustomizer(groupCustomizer(adminTags(), "adminBearerAuth"))
+                .addOpenApiCustomizer(groupCustomizer(null, "adminBearerAuth"))
                 .build();
     }
 
@@ -45,7 +45,7 @@ public class SwaggerConfig {
                 .group("customer-api")
                 .packagesToScan("com.application.controller.customer")
                 .pathsToMatch("/customer/**")
-                .addOpenApiCustomizer(groupCustomizer(customerTags(), "customerBearerAuth"))
+                .addOpenApiCustomizer(groupCustomizer(null, "customerBearerAuth"))
                 .build();
     }
 
@@ -55,7 +55,7 @@ public class SwaggerConfig {
                 .group("restaurant-api")
                 .packagesToScan("com.application.controller.restaurant")
                 .pathsToMatch("/restaurant/**")
-                .addOpenApiCustomizer(groupCustomizer(restaurantTags(), "restaurantBearerAuth"))
+                .addOpenApiCustomizer(groupCustomizer(null, "restaurantBearerAuth"))
                 .build();
     }
 
@@ -65,13 +65,15 @@ public class SwaggerConfig {
                 .group("public-api")
                 .packagesToScan("com.application.controller.pub", "com.application.web.dto")
                 .pathsToMatch("/public/**", "/register/**", "/auth/**")
-                .addOpenApiCustomizer(groupCustomizer(publicTags(), null))
+                .addOpenApiCustomizer(groupCustomizer(null, null))
                 .build();
     }
 
     private OpenApiCustomizer groupCustomizer(List<Tag> tags, String securityName) {
         return openApi -> {
-            tags.forEach(openApi::addTagsItem);
+            if (tags != null) {
+                tags.forEach(openApi::addTagsItem);
+            }
             if (securityName != null) {
                 openApi.addSecurityItem(new SecurityRequirement().addList(securityName));
                 Components components = openApi.getComponents();
@@ -103,49 +105,5 @@ public class SwaggerConfig {
                 .type(SecurityScheme.Type.HTTP)
                 .scheme("bearer")
                 .bearerFormat("JWT");
-    }
-
-    private List<Tag> adminTags() {
-        return List.of(
-                new Tag().name("1. Admin Authentication").description("Admin Authentication Controller"),
-                new Tag().name("2. Admin Registration").description("Admin Registration Management"),
-                new Tag().name("3. Users").description("Admin Users Management"),
-                new Tag().name("4. Customer").description("Admin Customer Management"),
-                new Tag().name("5. Restaurant").description("Admin Restaurant Management"),
-                new Tag().name("6. Services").description("Admin Services Management"),
-                new Tag().name("7. Reservation").description("Admin Reservation Management")
-        );
-    }
-
-    private List<Tag> customerTags() {
-        return List.of(
-                new Tag().name("1. Customer Authentication").description("Customer Authentication Controller"),
-                new Tag().name("2. Customer Registration").description("Customer Registration Controller"),
-                new Tag().name("3. Customer").description("Customer Data Controller"),
-                new Tag().name("4. Reservation").description("Reservation Controller for Customers"),
-                new Tag().name("5. Allergy").description("Customer Allergy Management"),
-                new Tag().name("6. Notification").description("Customer Notification Controller")
-        );
-    }
-
-    private List<Tag> restaurantTags() {
-        return List.of(
-                new Tag().name("1. Restaurant Authentication").description("Restaurant Auth Controller"),
-                new Tag().name("2. Restaurant Registration").description("Restaurant Registration Controller"),
-                new Tag().name("3. User Management").description("Restaurant User Management"),
-                new Tag().name("4. Reservation Management").description("Restaurant Reservation Controller"),
-                new Tag().name("5. Menu Management").description("Menu Management APIs"),
-                new Tag().name("6. Notification Management").description("Notification APIs"),
-                new Tag().name("7. Restaurant Management").description("Operations Management"),
-                new Tag().name("8. Service Management").description("Service Management APIs"),
-                new Tag().name("9. Slot Management").description("Slot Management APIs")
-        );
-    }
-
-    private List<Tag> publicTags() {
-        return List.of(
-                new Tag().name("1. Restaurant").description("Public Restaurant APIs"),
-                new Tag().name("2. Menu").description("Public Menu APIs")
-        );
     }
 }

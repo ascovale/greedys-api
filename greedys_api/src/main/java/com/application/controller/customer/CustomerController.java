@@ -30,7 +30,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
-@Tag(name = "3. Customer", description = "Controller for managing customers")
+@Tag(name = "Customer", description = "Controller for managing customers")
 @RestController
 @RequestMapping("/customer")
 @SecurityRequirement(name = "customerBearerAuth")

@@ -33,7 +33,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Tag(name = "7. Restaurant Management", description = "Controller for managing restaurant operations")
+@Tag(name = "Restaurant Management", description = "Controller for managing restaurant operations")
 @RestController
 @RequestMapping("/restaurant")
 // @PreAuthorize("@securityService.isRestaurantUserPermission(#idRestaurantUser)")
