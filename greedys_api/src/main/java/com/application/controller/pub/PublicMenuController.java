@@ -22,7 +22,7 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.websocket.server.PathParam;
 
-@Tag(name = "2. Menu", description = "Restaurant Menu Controller APIs")
+@Tag(name = "Menu", description = "Restaurant Menu Controller APIs")
 @SecurityRequirement(name = "restaurantBearerAuth")
 @RequestMapping("/public/restaurant")
 @RestController
