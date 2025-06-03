@@ -8,7 +8,6 @@ services:
       update_config:
         parallelism: 1
         delay: 10s
-        order: start-first
     depends_on:
       - db
     networks:
@@ -20,7 +19,6 @@ services:
       - keystore_password
       - db_password
       - email_password
-      - rabbitmq_password
       - service_account
 
   db:
@@ -58,10 +56,6 @@ secrets:
   db_password:
     external: true
   email_password:
-    external: true
-  rabbitmq_password:
-    external: true
-  rabbitmq_config:
     external: true
   service_account:
     external: true

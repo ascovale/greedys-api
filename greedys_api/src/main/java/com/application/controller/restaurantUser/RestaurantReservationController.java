@@ -3,7 +3,6 @@ package com.application.controller.restaurantUser;
 import java.time.LocalDate;
 import java.util.Collection;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -46,12 +45,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @SecurityRequirement(name = "restaurantBearerAuth")
 @RequestMapping("/restaurant/reservation")
-@Tag(name = "Reservation Management", description = "APIs for managing reservations from the restaurant")
+@Tag(name = "Restaurant Reservation", description = "APIs for managing reservations from the restaurant")
 public class RestaurantReservationController {
 	//
 	private ReservationService reservationService;
 
-	@Autowired
+	
 	public RestaurantReservationController(ReservationService reservationService) {
 		this.reservationService = reservationService;
 	}
