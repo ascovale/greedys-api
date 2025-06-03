@@ -1,5 +1,34 @@
 #!/bin/bash
+# Script per creare i segreti Docker Swarm
+# Usage: ./generate_secrets.sh
+
 set -e
+
+# Lista dei segreti da creare
+declare -a secrets=(
+  "db_password"
+  "email_password"
+)
+
+echo "--- Creazione segreti Docker Swarm ---"
+for secret in "${secrets[@]}"; do
+  if docker secret ls --format '{{.Name}}' | grep -q "^$secret$"; then
+    echo "[!] Il segreto '$secret' esiste già. Vuoi sovrascriverlo? (s/N)"
+    read -r overwrite
+    if [[ ! "$overwrite" =~ ^[sS]$ ]]; then
+      echo "-> Skipping $secret"
+      continue
+    fi
+    docker secret rm "$secret"
+  fi
+
+# Genera una password random di 32 caratteri
+value=$(openssl rand -base64 32)
+echo "Password generata per '$secret': $value"
+echo -n "$value" | docker secret create "$secret" -
+echo "-> Segreto '$secret' creato."
+continue
+done
 
 # Scegli ambiente: localhost o api.greedys.it
 DOMAIN="$1"
@@ -53,4 +82,8 @@ docker secret create keystore_password "$PASSWORD_TMP"
 # Pulizia dei file temporanei
 rm "$KEYSTORE_TMP" "$PASSWORD_TMP"
 
-echo "Script completato con successo!"
+# rimuovo i segreti esistenti (se non esistono, ignoro l'errore)
+docker secret rm service_account 2>/dev/null || true
+docker secret create service_account ./secured/greedy-69de3-968988eeefce.json 
+
+echo "--- Fine creazione segreti ---"
