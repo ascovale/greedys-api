@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.application.persistence.model.admin.Admin;
 import com.application.security.jwt.JwtUtil;
 import com.application.service.AdminService;
-import com.application.web.dto.AdminAuthResponseDTO;
 import com.application.web.dto.get.AdminDTO;
 import com.application.web.dto.post.AuthRequestDTO;
 import com.application.web.dto.post.AuthResponseDTO;
@@ -55,7 +54,7 @@ public class AdminAuthenticationController {
 
             final Admin userDetails = adminService.findAdminByEmail(authenticationRequest.getUsername());
             final String jwt = jwtUtil.generateToken(userDetails);
-            final AdminAuthResponseDTO responseDTO = new AdminAuthResponseDTO(jwt, new AdminDTO(userDetails));
+            final AuthResponseDTO responseDTO = new AuthResponseDTO(jwt, new AdminDTO(userDetails));
             return ResponseEntity.ok(responseDTO);
     }
 }
