@@ -29,6 +29,7 @@ import com.application.persistence.dao.restaurant.RestaurantUserPasswordResetTok
 import com.application.persistence.model.restaurant.Restaurant;
 import com.application.persistence.model.restaurant.user.RestaurantPrivilege;
 import com.application.persistence.model.restaurant.user.RestaurantUser;
+import com.application.persistence.model.restaurant.user.RestaurantUserHub;
 import com.application.persistence.model.restaurant.user.RestaurantUserPasswordResetToken;
 import com.application.persistence.model.restaurant.user.RestaurantUserVerificationToken;
 import com.application.security.google2fa.RestaurantUserAuthenticationDetails;
@@ -36,12 +37,14 @@ import com.application.security.jwt.JwtUtil;
 import com.application.security.user.ISecurityUserService;
 import com.application.service.EmailService;
 import com.application.service.RestaurantUserService;
-import com.application.web.dto.RestaurantUserAuthResponseDTO;
 import com.application.web.dto.get.RestaurantDTO;
 import com.application.web.dto.get.RestaurantUserDTO;
-import com.application.web.dto.post.RestaurantUserAuthRequestDTO;
+import com.application.web.dto.post.AuthRequestDTO;
+import com.application.web.dto.post.AuthResponseDTO;
+import com.application.web.dto.post.RestaurantUserSelectRequestDTO;
 import com.application.web.util.GenericResponse;
 
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -84,8 +87,8 @@ public class RestaurantAuthenticationService {
         this.restaurantUserHubDAO = restaurantUserHubDAO;
         this.passwordEncoder = passwordEncoder;
     }
-
-    public RestaurantUserAuthResponseDTO login(RestaurantUserAuthRequestDTO authenticationRequest) {
+/* 
+    public AuthResponseDTO login(AuthRequestDTO authenticationRequest) {
         RestaurantUser userDetails;
         if (authenticationRequest.getRestaurantId() == null || authenticationRequest.getRestaurantId() == 0) {
             // Cerca il primo RestaurantUser associato al RestaurantUserHub
@@ -121,10 +124,10 @@ public class RestaurantAuthenticationService {
             }
         }
         String jwt = jwtUtil.generateToken(userDetails);
-        return new RestaurantUserAuthResponseDTO(jwt, new RestaurantUserDTO(userDetails));
+        return new AuthResponseDTO(jwt, new RestaurantUserDTO(userDetails));
     }
-
-    public RestaurantUserAuthResponseDTO adminLoginToRestaurantUser(Long restaurantUserId, HttpServletRequest request) {
+*/
+    public AuthResponseDTO adminLoginToRestaurantUser(Long restaurantUserId, HttpServletRequest request) {
         RestaurantUser user = restaurantUserDAO.findById(restaurantUserId)
                 .orElseThrow(() -> new UsernameNotFoundException("No user found with ID: " + restaurantUserId));
 
@@ -137,7 +140,7 @@ public class RestaurantAuthenticationService {
         SecurityContextHolder.getContext().setAuthentication(authToken);
 
         final String jwt = jwtUtil.generateToken(user);
-        return new RestaurantUserAuthResponseDTO(jwt, new RestaurantUserDTO(user));
+        return new AuthResponseDTO(jwt, new RestaurantUserDTO(user));
     }
 
     public ResponseEntity<String> createPasswordResetTokenForRestaurantUser(final RestaurantUser ru,
@@ -212,7 +215,7 @@ public class RestaurantAuthenticationService {
         return "success";
     }
 
-    public RestaurantUserAuthResponseDTO changeRestaurant(Long restaurantId) {
+    public AuthResponseDTO changeRestaurant(Long restaurantId) {
         final RestaurantUser currentUser = (RestaurantUser) SecurityContextHolder.getContext().getAuthentication()
                 .getPrincipal();
         final RestaurantUser updatedUser = restaurantUserDAO.findByEmailAndRestaurantId(currentUser.getEmail(),
@@ -224,7 +227,34 @@ public class RestaurantAuthenticationService {
             throw new IllegalArgumentException("User is not enabled.");
         }
         final String newJwt = jwtUtil.generateToken(updatedUser);
-        return new RestaurantUserAuthResponseDTO(newJwt, new RestaurantUserDTO(updatedUser));
+        return new AuthResponseDTO(newJwt, new RestaurantUserDTO(updatedUser));
+    }
+
+    public AuthResponseDTO selectRestaurant(RestaurantUserSelectRequestDTO selectRequest) {
+        // Decodifica il JWT hub
+        Claims claims;
+        try {
+            claims = jwtUtil.extractAllClaims(selectRequest.getHubToken());
+        } catch (Exception e) {
+            throw new UnsupportedOperationException("Invalid hub token.");
+        }
+        // Verifica che sia un token di tipo hub
+        if (!"hub".equals(claims.get("type"))) {
+            throw new UnsupportedOperationException("Token is not a hub token.");
+        }
+        Long hubId = claims.get("hubId", Long.class);
+        String email = claims.get("email", String.class);
+
+        // Trova il RestaurantUser con quell'hubId e restaurantId
+        RestaurantUser user = restaurantUserDAO.findByEmailAndRestaurantId(email, selectRequest.getRestaurantId());
+        if (user == null || user.getRestaurantUserHub() == null || !user.getRestaurantUserHub().getId().equals(hubId)) {
+            throw new UnsupportedOperationException("User does not have access to this restaurant.");
+        }
+        if (!user.isEnabled()) {
+            throw new UnsupportedOperationException("User is not enabled for this restaurant.");
+        }
+        String jwt = jwtUtil.generateToken(user);
+        return new AuthResponseDTO(jwt, new RestaurantUserDTO(user));
     }
 
     private String getAppUrl(HttpServletRequest request) {
@@ -288,4 +318,51 @@ public class RestaurantAuthenticationService {
                 .map(RestaurantDTO::new)
                 .collect(Collectors.toList());
     }
+
+    public AuthResponseDTO loginWithHubSupport(AuthRequestDTO authenticationRequest) {
+        // Trova il RestaurantUser associato all'email
+        RestaurantUserHub user = restaurantUserHubDAO.findByEmail(authenticationRequest.getUsername());
+        if (user == null) {
+            throw new UnsupportedOperationException("Invalid username or password.");
+        }
+
+        // Verifica la password
+        if (!passwordEncoder.matches(authenticationRequest.getPassword(), user.getPassword())) {
+            throw new UnsupportedOperationException("Invalid username or password.");
+        }
+
+        // Recupera tutti i RestaurantUser associati a questo hub
+        List<RestaurantUser> associatedUsers = restaurantUserDAO
+                .findAllByRestaurantUserHubId(user.getId());
+
+        if (associatedUsers == null || associatedUsers.isEmpty()) {
+            throw new UnsupportedOperationException("No restaurants associated with this user.");
+        }
+
+        if (associatedUsers.size() == 1) {
+            // Login classico: un solo ristorante
+            RestaurantUser singleUser = associatedUsers.get(0);
+            authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                    authenticationRequest.getUsername() + ":" + singleUser.getRestaurant().getId(),
+                    authenticationRequest.getPassword()
+                )
+            );
+            String jwt = jwtUtil.generateToken(singleUser);
+            return new AuthResponseDTO(jwt, new RestaurantUserDTO(singleUser));
+        } else {
+            // Login intermedio: più ristoranti
+            // Genera un JWT "hub" (puoi aggiungere un claim "type":"hub" se vuoi)
+            // e restituisci la lista dei ristoranti
+            // NB: qui non serve autenticare con restaurantId, basta email/password
+
+            // Genera JWT hub (puoi usare un metodo dedicato, qui esempio semplice)
+            String hubJwt = jwtUtil.generateHubToken(user);
+
+            AuthResponseDTO hubResponse = new AuthResponseDTO(hubJwt, user);
+            
+            return hubResponse;
+        }
+    }
+
 }

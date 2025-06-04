@@ -41,9 +41,7 @@ public class CustomerAuthenticationController {
     @PostMapping(value = "/login", produces = "application/json")
     public ResponseEntity<?> createAuthenticationToken(
             @RequestBody AuthRequestDTO authenticationRequest) {
-        ResponseEntity<?> responseDTO = customerAuthenticationService.login(authenticationRequest);
-        return ResponseEntity.ok(responseDTO);
-
+        return customerAuthenticationService.login(authenticationRequest);
     }
 
 }
