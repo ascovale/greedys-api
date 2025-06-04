@@ -1,4 +1,4 @@
-package com.application.controller.restaurantUser;
+package com.application.controller.restaurant;
 
 import java.util.Collection;
 
@@ -101,7 +101,7 @@ public class RestaurantServicesController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/{serviceId}/slots")
-    public Collection<SlotDTO> getSlots(@PathVariable(value = "serviceId") long serviceId) {
+    public Collection<SlotDTO> getSlots(@PathVariable long serviceId) {
         return slotService.findByService_Id(serviceId);
     }
 
