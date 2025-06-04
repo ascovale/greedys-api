@@ -1,4 +1,4 @@
-package com.application.controller.restaurantUser;
+package com.application.controller.restaurant.restaurantUser;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
