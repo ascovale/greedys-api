@@ -1,4 +1,4 @@
-package com.application.controller.restaurant.restaurantUser;
+package com.application.controller.restaurantUser;
 
 import java.util.Locale;
 
