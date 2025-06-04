@@ -5,6 +5,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.application.service.authentication.RestaurantAuthenticationService;
 import com.application.web.dto.post.AuthRequestDTO;
@@ -15,7 +17,11 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
+@RestController
+@Tag(name = "Restaurant User Authentication", description = "Controller for restaurant user authentication")
+@RequestMapping("/restaurant/user/auth")
 public class RUserAuthController {
 
     private final Logger LOGGER = LoggerFactory.getLogger(getClass());
