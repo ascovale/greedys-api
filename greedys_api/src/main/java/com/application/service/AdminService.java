@@ -258,4 +258,9 @@ public class AdminService {
 		// TODO: gestione della cache
 	}
 
+	public AdminDTO loginAndGetDTO(String username) {
+        Admin user = findAdminByEmail(username);
+        return new AdminDTO(user);
+    }
+
 }

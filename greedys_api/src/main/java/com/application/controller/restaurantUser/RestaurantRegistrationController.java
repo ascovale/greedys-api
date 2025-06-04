@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.application.service.RestaurantService;
 import com.application.service.authentication.RestaurantAuthenticationService;
-import com.application.web.dto.RestaurantUserAuthResponseDTO;
+import com.application.web.dto.post.AuthResponseDTO;
 import com.application.web.dto.post.NewRestaurantDTO;
 import com.application.web.util.GenericResponse;
 
@@ -92,13 +92,13 @@ public class RestaurantRegistrationController {
 
     @Operation(summary = "Change restaurant and get a new JWT", description = "Switches the restaurant and returns a new JWT for the specified restaurant ID")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "JWT generated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = RestaurantUserAuthResponseDTO.class))),
+            @ApiResponse(responseCode = "200", description = "JWT generated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthResponseDTO.class))),
             @ApiResponse(responseCode = "403", description = "Access denied", content = @Content(mediaType = "application/json")),
             @ApiResponse(responseCode = "404", description = "Restaurant not found", content = @Content(mediaType = "application/json"))
     })
     @PreAuthorize("@securityRestaurantUserService.hasPermissionForRestaurant(#restaurantId)")
     @PostMapping(value = "/change-restaurant", produces = "application/json")
-    public RestaurantUserAuthResponseDTO changeRestaurant(@RequestParam Long restaurantId) {
+    public AuthResponseDTO changeRestaurant(@RequestParam Long restaurantId) {
         return restaurantAuthenticationService.changeRestaurant(restaurantId);
     }
 

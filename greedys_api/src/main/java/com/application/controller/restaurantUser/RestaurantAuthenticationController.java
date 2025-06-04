@@ -9,8 +9,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.service.authentication.RestaurantAuthenticationService;
-import com.application.web.dto.RestaurantUserAuthResponseDTO;
-import com.application.web.dto.post.RestaurantUserAuthRequestDTO;
+import com.application.web.dto.post.AuthRequestDTO;
+import com.application.web.dto.post.AuthResponseDTO;
+import com.application.web.dto.post.RestaurantUserSelectRequestDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -36,20 +37,37 @@ public class RestaurantAuthenticationController {
     }
 
 
-    @Operation(summary = "Generate an authentication token", description = "Authenticates a user and returns a JWT token")
+    @Operation(summary = "Generate an authentication token", description = "Authenticates a user and returns a JWT token or a selection token if multiple restaurants are available")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Authentication successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = RestaurantUserAuthResponseDTO.class))),
+            @ApiResponse(responseCode = "200", description = "Authentication successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthResponseDTO.class))),
+
             @ApiResponse(responseCode = "401", description = "Authentication failed", content = @Content(mediaType = "application/json"))
     })
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Authentication request", required = true, content = @Content(mediaType = "application/json", schema = @Schema(implementation = RestaurantUserAuthRequestDTO.class)))
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Authentication request", required = true, content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthRequestDTO.class)))
     @PostMapping(value = "/login", produces = "application/json")
-    public ResponseEntity<?> createAuthenticationToken(@RequestBody RestaurantUserAuthRequestDTO authenticationRequest) {
+    public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthRequestDTO authenticationRequest) {
         try {
-            RestaurantUserAuthResponseDTO responseDTO = restaurantAuthenticationService.login(authenticationRequest);
-            return ResponseEntity.ok(responseDTO);
+            return ResponseEntity.ok(restaurantAuthenticationService.loginWithHubSupport(authenticationRequest));
         } catch (UnsupportedOperationException e) {
             LOGGER.error("Authentication failed: {}", e.getMessage());
             return ResponseEntity.status(401).body("Authentication failed: Invalid username or password.");
         }
     }
+
+    @Operation(summary = "Select a restaurant after intermediate login", description = "Given a hub JWT and a restaurantId, returns a JWT for the selected restaurant user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Selection successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthResponseDTO.class))),
+            @ApiResponse(responseCode = "401", description = "Selection failed", content = @Content(mediaType = "application/json"))
+    })
+    @PostMapping(value = "/select-restaurant", produces = "application/json")
+    public ResponseEntity<?> selectRestaurant(@RequestBody RestaurantUserSelectRequestDTO selectRequest) {
+        try {
+            AuthResponseDTO responseDTO = restaurantAuthenticationService.selectRestaurant(selectRequest);
+            return ResponseEntity.ok(responseDTO);
+        } catch (UnsupportedOperationException e) {
+            LOGGER.error("Restaurant selection failed: {}", e.getMessage());
+            return ResponseEntity.status(401).body("Restaurant selection failed: " + e.getMessage());
+        }
+    }
+
 }
