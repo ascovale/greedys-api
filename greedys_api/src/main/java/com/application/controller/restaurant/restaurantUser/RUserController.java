@@ -1,4 +1,4 @@
-package com.application.controller.restaurantUser;
+package com.application.controller.restaurant.restaurantUser;
 
 import java.util.Locale;
 
@@ -37,17 +37,17 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
-@Tag(name = "User Management", description = "Controller for managing restaurant users")
+@Tag(name = "Restaurant User Management", description = "Controller for managing restaurant users")
 @RestController
 @RequestMapping("/restaurant/user")
 @SecurityRequirement(name = "restaurantBearerAuth")
-public class RestaurantUserController {
+public class RUserController {
 
     private final RestaurantUserService restaurantUserService;
     private final MessageSource messages;
     private final RestaurantRoleDAO roleDAO;
 
-    public RestaurantUserController(RestaurantUserService restaurantUserService, MessageSource messages, RestaurantRoleDAO roleDAO) {
+    public RUserController(RestaurantUserService restaurantUserService, MessageSource messages, RestaurantRoleDAO roleDAO) {
         this.messages = messages;
         this.restaurantUserService = restaurantUserService;
         this.roleDAO = roleDAO;
