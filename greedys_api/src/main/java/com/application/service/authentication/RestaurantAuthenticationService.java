@@ -319,7 +319,7 @@ public class RestaurantAuthenticationService {
                 .collect(Collectors.toList());
     }
 
-    public Object loginWithHubSupport(AuthRequestDTO authenticationRequest) {
+    public AuthResponseDTO loginWithHubSupport(AuthRequestDTO authenticationRequest) {
         // Trova il RestaurantUser associato all'email
         RestaurantUserHub user = restaurantUserHubDAO.findByEmail(authenticationRequest.getUsername());
         if (user == null) {
