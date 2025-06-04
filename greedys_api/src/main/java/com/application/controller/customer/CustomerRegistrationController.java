@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.MessageSource;
@@ -80,7 +79,6 @@ public class CustomerRegistrationController {
 
     private static final Logger logger = LoggerFactory.getLogger(CustomerAuthenticationController.class);
 
-    @Autowired
     public CustomerRegistrationController(CustomerService customerService, MessageSource messages,
             ApplicationEventPublisher eventPublisher, Environment env, EmailService mailService,
             @Qualifier("customerAuthenticationManager") AuthenticationManager authenticationManager,
@@ -128,7 +126,7 @@ public class CustomerRegistrationController {
         @ApiResponse(responseCode = "404", description = "Customer not found", content = @Content)
     })
     @PostMapping("/password/forgot")
-    public ResponseEntity<String> sendPasswordResetEmail(@RequestParam("email") String email, HttpServletRequest request) {
+    public ResponseEntity<String> sendPasswordResetEmail(@RequestParam String email, HttpServletRequest request) {
         Customer customer = customerService.findCustomerByEmail(email);
         if (customer == null) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Customer not found");

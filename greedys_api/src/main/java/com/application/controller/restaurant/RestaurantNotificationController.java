@@ -1,4 +1,4 @@
-package com.application.controller.restaurantUser;
+package com.application.controller.restaurant;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

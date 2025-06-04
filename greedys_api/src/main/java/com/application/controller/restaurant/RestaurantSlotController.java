@@ -1,4 +1,4 @@
-package com.application.controller.restaurantUser;
+package com.application.controller.restaurant;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

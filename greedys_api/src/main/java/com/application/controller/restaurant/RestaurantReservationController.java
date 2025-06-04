@@ -1,4 +1,4 @@
-package com.application.controller.restaurantUser;
+package com.application.controller.restaurant;
 
 import java.time.LocalDate;
 import java.util.Collection;
