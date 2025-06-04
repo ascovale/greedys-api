@@ -259,6 +259,8 @@ public class CustomerAuthenticationService {
 		return new AuthResponseDTO(jwt, new CustomerDTO(customer));
 	}
 
+
+
 	private boolean emailExists(final String email) {
 		return customerDAO.findByEmail(email) != null;
 	}
