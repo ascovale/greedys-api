@@ -112,7 +112,8 @@ public class AdminSetup {
         if (role == null) {
             role = new AdminRole(name);
         }
-        role.setAdminPrivileges(privileges);
+        // Ensure privileges is always a mutable list
+        role.setAdminPrivileges(new ArrayList<>(privileges));
         adminRoleDAO.save(role);
         return role;
     }

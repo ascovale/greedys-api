@@ -172,7 +172,8 @@ public class RestaurantDataLoader {
         if (role == null) {
             role = new RestaurantRole(name);
         }
-        role.setPrivileges(privileges);
+        // Ensure privileges is always a mutable list
+        role.setPrivileges(new ArrayList<>(privileges));
         role = restaurantRoleDAO.save(role);
         return role;
     }
