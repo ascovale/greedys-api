@@ -1,7 +1,6 @@
 package com.application.service.authentication;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -116,7 +115,7 @@ public class CustomerAuthenticationService {
 		customer.setPassword(passwordEncoder.encode(accountDto.getPassword()));
 		customer.setEmail(accountDto.getEmail());
 		// customer.setUsing2FA(accountDto.isUsing2FA());
-		customer.setRoles(Arrays.asList(roleRepository.findByName("ROLE_CUSTOMER")));
+		customer.setRoles(new java.util.ArrayList<>(java.util.Arrays.asList(roleRepository.findByName("ROLE_CUSTOMER"))));
 		return customerDAO.save(customer);
 	}
 

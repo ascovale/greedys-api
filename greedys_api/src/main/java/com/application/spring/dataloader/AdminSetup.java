@@ -75,8 +75,8 @@ public class AdminSetup {
             logger.info("Admin with email ascolesevalentino@gmail.com already exists.");
             return;
         }
-        logger.info("Creating admin Valentino Ascolese");
 
+        logger.info("Creating admin Valentino Ascolese");
         NewAdminDTO adminDTO = new NewAdminDTO();
         adminDTO.setEmail("ascolesevalentino@gmail.com");
         adminDTO.setFirstName("Valentino");
