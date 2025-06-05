@@ -55,7 +55,7 @@ public class AdminSetup {
             adminRestaurantRead, adminRestaurantWrite,
             adminCustomerRead, adminCustomerWrite, adminSwitchToRestaurantUserAdmin));
 
-        createAdminRoleIfNotFound("ROLE_SUPER_ADMIN", new ArrayList<>(adminPrivileges));
+        createAdminRoleIfNotFound("ROLE_SUPER_ADMIN", adminPrivileges);
         createAdminRoleIfNotFound("ROLE_ADMIN_MANAGER", new ArrayList<>(Arrays.asList(
             adminReservationCustomerRead, adminReservationRestaurantRead,
             adminRestaurantUserRead, adminRestaurantRead,
