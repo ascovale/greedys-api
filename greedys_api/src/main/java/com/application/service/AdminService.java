@@ -247,11 +247,11 @@ public class AdminService {
 
 
 
-	public void updateCustomerStatus(Long adminId, Admin.Status newStatus) {
+	public void updateAdminStatus(Long adminId, Admin.Status newStatus) {
 		Admin admin = adminDAO.findById(adminId)
-				.orElseThrow(() -> new IllegalArgumentException("Customer not found"));
+				.orElseThrow(() -> new IllegalArgumentException("Admin not found"));
 
-		// Aggiorna lo stato del customer
+		// Aggiorna lo stato del admin
 		admin.setStatus(newStatus);
 		adminDAO.save(admin);
 

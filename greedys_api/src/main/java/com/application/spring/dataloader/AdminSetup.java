@@ -83,7 +83,7 @@ public class AdminSetup {
         adminDTO.setLastName("Ascolese");
         adminDTO.setPassword("Minosse100%");
         Admin admin =adminService.registerNewAdminAccount(adminDTO);
-        admin.setStatus(Admin.Status.ENABLED);
+        adminService.updateAdminStatus(admin.getId(), Admin.Status.ENABLED);
         adminDAO.save(admin);
 
         logger.info("Creating admin Matteo Rossi");
@@ -93,7 +93,7 @@ public class AdminSetup {
         admin2DTO.setLastName("Rossi");
         admin2DTO.setPassword("Minosse100%");
         admin =adminService.registerNewAdminAccount(admin2DTO);
-        admin.setStatus(Admin.Status.ENABLED);
+        adminService.updateAdminStatus(admin.getId(), Admin.Status.ENABLED);
         adminDAO.save(admin);
     }
 
