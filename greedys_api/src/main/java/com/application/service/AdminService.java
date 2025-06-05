@@ -2,7 +2,6 @@ package com.application.service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -78,8 +77,9 @@ public class AdminService {
 		admin.setEmail(accountDto.getEmail());
 		//admin.setStatus(Admin.Status.ENABLED);
 		AdminRole adminRole = adminRoleDAO.findByName("ROLE_SUPER_ADMIN");
-
-		admin.setAdminRoles(new ArrayList<>(Arrays.asList(adminRole)));
+		ArrayList<AdminRole> adminRoles = new ArrayList<>();
+		adminRoles.add(adminRole);
+		admin.setAdminRoles(adminRoles);
 		// user.setUsing2FA(accountDto.isUsing2FA());
 		//admin.setAdminRoles(Arrays.asList(roleRepository.findByName("ROLE_USER")));
 		return adminDAO.save(admin);

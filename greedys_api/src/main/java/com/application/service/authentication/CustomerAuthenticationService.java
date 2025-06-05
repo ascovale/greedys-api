@@ -1,6 +1,7 @@
 package com.application.service.authentication;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -21,6 +22,7 @@ import com.application.persistence.dao.customer.RoleDAO;
 import com.application.persistence.dao.customer.VerificationTokenDAO;
 import com.application.persistence.model.customer.Customer;
 import com.application.persistence.model.customer.PasswordResetToken;
+import com.application.persistence.model.customer.Role;
 import com.application.persistence.model.customer.VerificationToken;
 import com.application.security.jwt.JwtUtil;
 import com.application.web.dto.get.CustomerDTO;
@@ -115,7 +117,9 @@ public class CustomerAuthenticationService {
 		customer.setPassword(passwordEncoder.encode(accountDto.getPassword()));
 		customer.setEmail(accountDto.getEmail());
 		// customer.setUsing2FA(accountDto.isUsing2FA());
-		customer.setRoles(new java.util.ArrayList<>(java.util.Arrays.asList(roleRepository.findByName("ROLE_CUSTOMER"))));
+		ArrayList<Role> roles = new ArrayList<>();
+		roles.add(roleRepository.findByName("ROLE_CUSTOMER"));
+		customer.setRoles(roles);
 		return customerDAO.save(customer);
 	}
 
