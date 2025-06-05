@@ -1,6 +1,7 @@
 package com.application.service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -75,10 +76,10 @@ public class AdminService {
 		admin.setSurname(accountDto.getLastName());
 		admin.setPassword(passwordEncoder.encode(accountDto.getPassword()));
 		admin.setEmail(accountDto.getEmail());
-		admin.setStatus(Admin.Status.ENABLED);
+		//admin.setStatus(Admin.Status.ENABLED);
 		AdminRole adminRole = adminRoleDAO.findByName("ROLE_SUPER_ADMIN");
 
-		admin.setAdminRoles(Arrays.asList(adminRole));
+		admin.setAdminRoles(new ArrayList<>(Arrays.asList(adminRole)));
 		// user.setUsing2FA(accountDto.isUsing2FA());
 		//admin.setAdminRoles(Arrays.asList(roleRepository.findByName("ROLE_USER")));
 		return adminDAO.save(admin);
@@ -246,7 +247,7 @@ public class AdminService {
 	}*/	
 
 
-
+	@Transactional
 	public void updateAdminStatus(Long adminId, Admin.Status newStatus) {
 		System.out.println("\n\n\n\nUpdating admin status for ID: " + adminId + " to " + newStatus+ "\n\n\n\n");
 
@@ -257,6 +258,7 @@ public class AdminService {
 
 		admin.setStatus(newStatus);
 		adminDAO.save(admin);
+		System.out.println("\n\n\nAdmin status updated for ID: " + adminId + " to " + newStatus+ "\n\n\n\n");
 	}
 
 	public AdminDTO loginAndGetDTO(String username) {
