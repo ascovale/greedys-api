@@ -243,19 +243,20 @@ public class AdminService {
 		User user = adminDAO.findById(idUser).orElseThrow(() -> new EntityNotFoundException("User not found"));
 		user.setRoles(Arrays.asList(roleRepository.findByName("ROLE_USER")));
 		adminDAO.save(user);
-	}*/
+	}*/	
 
 
 
 	public void updateAdminStatus(Long adminId, Admin.Status newStatus) {
+		System.out.println("\n\n\n\nUpdating admin status for ID: " + adminId + " to " + newStatus+ "\n\n\n\n");
+
 		Admin admin = adminDAO.findById(adminId)
 				.orElseThrow(() -> new IllegalArgumentException("Admin not found"));
-
 		// Aggiorna lo stato del admin
+		System.out.println("\n\n\nTrovato admin status for ID: " + adminId + " to " + newStatus+ "\n\n\n\n");
+
 		admin.setStatus(newStatus);
 		adminDAO.save(admin);
-
-		// TODO: gestione della cache
 	}
 
 	public AdminDTO loginAndGetDTO(String username) {
