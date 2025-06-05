@@ -55,7 +55,7 @@ public class AdminUsersController {
     @ApiResponse(responseCode = "400", description = "Invalid request")
     @PutMapping("/{adminId}/block")
     public GenericResponse blockUser(@PathVariable Long adminId) {
-        adminService.updateCustomerStatus(adminId, Admin.Status.BLOCKED);
+        adminService.updateAdminStatus(adminId, Admin.Status.BLOCKED);
         return new GenericResponse("Admin blocked successfully");
     }
 
@@ -65,7 +65,7 @@ public class AdminUsersController {
     @ApiResponse(responseCode = "400", description = "Invalid request")
     @PutMapping("/{adminId}/enable")
     public GenericResponse enableUser(@PathVariable Long adminId) {
-        adminService.updateCustomerStatus(adminId, Admin.Status.ENABLED);
+        adminService.updateAdminStatus(adminId, Admin.Status.ENABLED);
         return new GenericResponse("User enabled successfully");
     }
 
@@ -75,7 +75,7 @@ public class AdminUsersController {
     @ApiResponse(responseCode = "400", description = "Invalid request")
     @PutMapping("/{adminId}/delete")
     public GenericResponse deleteAdminUser(@PathVariable Long adminId) {
-        adminService.updateCustomerStatus(adminId, Admin.Status.DELETED);
+        adminService.updateAdminStatus(adminId, Admin.Status.DELETED);
         return new GenericResponse("Admin user deleted successfully");
     }
 
