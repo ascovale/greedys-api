@@ -22,10 +22,6 @@ import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
-import org.thymeleaf.spring6.SpringTemplateEngine;
-import org.thymeleaf.spring6.templateresolver.SpringResourceTemplateResolver;
-import org.thymeleaf.spring6.view.ThymeleafViewResolver;
-import org.thymeleaf.templatemode.TemplateMode;
 
 import com.application.controller.Validators.EmailValidator;
 import com.application.controller.Validators.PasswordMatchesValidator;
@@ -45,22 +41,11 @@ public class MvcConfig implements WebMvcConfigurer, ApplicationContextAware {
 
     @Override
     public void addViewControllers(final ViewControllerRegistry registry) {
-        registry.addViewController("/register/restaurant/**");
-        registry.addViewController("/register/user/**");
-        registry.addViewController("/login**").setViewName("login");
-        registry.addViewController("/auth**").setViewName("login");
-        registry.addViewController("/doc**").setViewName("doc");
         registry.addViewController("/swagger-ui**").setViewName("swagger-ui");
     }
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/**")
-                .addResourceLocations("classpath:/static/", "classpath:/public/",
-                        "classpath:/resources/", "classpath:/META-INF/resources/");
-        registry.addResourceHandler("/webjars/**")
-                .addResourceLocations("classpath:/META-INF/resources/webjars/");
-
         registry.addResourceHandler("/swagger-ui/**")
                 .addResourceLocations("classpath:/META-INF/resources/webjars/");
     }
@@ -74,32 +59,7 @@ public class MvcConfig implements WebMvcConfigurer, ApplicationContextAware {
                 .defaultContentType(MediaType.APPLICATION_JSON); // Imposta JSON come default
     }
 
-    @Bean
-    SpringResourceTemplateResolver templateResolver() {
-        SpringResourceTemplateResolver templateResolver = new SpringResourceTemplateResolver();
-        templateResolver.setApplicationContext(applicationContext);
-        templateResolver.setPrefix("classpath:/templates/");
-        templateResolver.setSuffix(".html");
-        templateResolver.setTemplateMode(TemplateMode.HTML);
-        templateResolver.setCacheable(true);
-        return templateResolver;
-    }
-
-    @Bean
-    SpringTemplateEngine templateEngine() {
-        SpringTemplateEngine templateEngine = new SpringTemplateEngine();
-        templateEngine.setTemplateResolver(templateResolver());
-        templateEngine.setEnableSpringELCompiler(true);
-        return templateEngine;
-    }
-
-    @Bean
-    ThymeleafViewResolver viewResolver() {
-        ThymeleafViewResolver viewResolver = new ThymeleafViewResolver();
-        viewResolver.setTemplateEngine(templateEngine());
-        viewResolver.setCharacterEncoding("UTF-8");
-        return viewResolver;
-    }
+    
 
     @Override
     public void addInterceptors(final InterceptorRegistry registry) {
