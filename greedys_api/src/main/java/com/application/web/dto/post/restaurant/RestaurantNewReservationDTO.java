@@ -15,23 +15,23 @@ public class RestaurantNewReservationDTO {
 	private String notes;
     @DateTimeFormat(pattern = "dd-MM-yyyy")
 	private LocalDate reservationDay; 
-    private Long restaurant_id;
-	private Long user_id;
+    private Long restaurantId;
+	private Long userId;
 
 
-	public Long getUser_id() {
-		if (user_id == null) {
+	public Long getUserId() {
+		if (userId == null) {
 			throw new IllegalArgumentException("User id is null, the reservation is anonymous.");
 		}
-		return user_id;
+		return userId;
 	}
 
-    public Long getRestaurant_id() {
-        return restaurant_id;
+    public Long getRestaurantId() {
+        return restaurantId;
     }
 
-    public void setRestaurant_id(Long restaurant_id) {
-        this.restaurant_id = restaurant_id;
+    public void setRestaurantId(Long restaurantId) {
+        this.restaurantId = restaurantId;
     }
 
 	public Long getIdSlot() {

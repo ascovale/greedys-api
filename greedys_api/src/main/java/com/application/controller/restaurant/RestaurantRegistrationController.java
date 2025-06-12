@@ -71,7 +71,8 @@ public class RestaurantRegistrationController {
         restaurantService.registerRestaurant(restaurantDto);
         return new GenericResponse("success");
     }
-
+    //TODO richiesta verifica email
+    
     @GetMapping(value = "/resend_token")
     @ResponseBody
     public GenericResponse resendRegistrationToken(final HttpServletRequest request,

@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.service.authentication.RestaurantAuthenticationService;
-import com.application.web.dto.post.AuthRequestDTO;
 import com.application.web.dto.post.AuthResponseDTO;
 import com.application.web.dto.post.RestaurantUserSelectRequestDTO;
 
