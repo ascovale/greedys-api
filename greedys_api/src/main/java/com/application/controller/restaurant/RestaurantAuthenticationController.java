@@ -40,7 +40,7 @@ public class RestaurantAuthenticationController {
             @ApiResponse(responseCode = "200", description = "Selection successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthResponseDTO.class))),
             @ApiResponse(responseCode = "401", description = "Selection failed", content = @Content(mediaType = "application/json"))
     })
-    @PostMapping(value = "/login", produces = "application/json")
+    @PostMapping(value = "/select-restaurant", produces = "application/json")
     public ResponseEntity<?> selectRestaurant(@RequestBody RestaurantUserSelectRequestDTO selectRequest) {
         try {
             AuthResponseDTO responseDTO = restaurantAuthenticationService.selectRestaurant(selectRequest);
