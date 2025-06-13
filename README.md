@@ -1,2 +1,0 @@
-# greedys
-Rest spring API
