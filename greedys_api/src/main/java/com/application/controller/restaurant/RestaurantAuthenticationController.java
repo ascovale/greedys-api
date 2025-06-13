@@ -50,5 +50,6 @@ public class RestaurantAuthenticationController {
             return ResponseEntity.status(401).body("Restaurant selection failed: " + e.getMessage());
         }
     }
+    
 
 }
