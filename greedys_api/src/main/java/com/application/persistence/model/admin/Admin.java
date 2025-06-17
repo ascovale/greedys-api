@@ -47,7 +47,7 @@ public class Admin implements UserDetails {
         DISABLED
     }
 
-	private Status status= Status.VERIFY_TOKEN;
+	private Status status = Status.VERIFY_TOKEN;
 
 	public Status getStatus() {
 		return status;
