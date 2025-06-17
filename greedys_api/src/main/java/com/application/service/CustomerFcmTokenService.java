@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.application.persistence.dao.customer.CustomerFcmTokenDAO;
 import com.application.persistence.model.customer.Customer;
-import com.application.persistence.model.customer.CustomerFcmToken;
+import com.application.persistence.model.notification.CustomerFcmToken;
 import com.application.web.dto.post.UserFcmTokenDTO;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
@@ -27,22 +27,12 @@ public class CustomerFcmTokenService {
     }
 
     public void saveUserFcmToken(UserFcmTokenDTO userFcmTokenDTO) {
-        CustomerFcmToken userFcmToken = new CustomerFcmToken();
-        userFcmToken.setCustomer(entityManager.getReference(Customer.class, userFcmTokenDTO.getUserId()));
-        userFcmToken.setFcmToken(userFcmTokenDTO.getFcmToken());
-        userFcmToken.setCreatedAt(userFcmTokenDTO.getCreatedAt() != null ? userFcmTokenDTO.getCreatedAt() : LocalDateTime.now());
-        userFcmToken.setDeviceId(userFcmTokenDTO.getDeviceId());
-        customerFcmTokenRepository.save(userFcmToken);
-    }
+        Customer customer = entityManager.getReference(Customer.class, userFcmTokenDTO.getUserId());
+        String token = userFcmTokenDTO.getFcmToken();
+        String deviceId = userFcmTokenDTO.getDeviceId();
 
-    public CustomerFcmToken updateUserFcmToken(String oldToken, UserFcmTokenDTO newToken) {
-        CustomerFcmToken existingToken = customerFcmTokenRepository.findByFcmTokenAndCustomerId(oldToken, newToken.getUserId());
-        if (existingToken != null) {
-            existingToken.setFcmToken(newToken.getFcmToken());
-            return customerFcmTokenRepository.save(existingToken);
-        } else {
-            throw new RuntimeException("UserFcmToken not found for user");
-        }
+        CustomerFcmToken userFcmToken = new CustomerFcmToken(customer, token, deviceId);
+        customerFcmTokenRepository.save(userFcmToken);
     }
 
     public List<CustomerFcmToken> getTokensByCustomerId(Long id) {

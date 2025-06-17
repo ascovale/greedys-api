@@ -104,15 +104,6 @@ public class NotificationController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "Update a user's FCM token", description = "Updates a user's FCM token")
-    @PutMapping("/token")
-    public ResponseEntity<Void> updateUserFcmToken(
-            @RequestParam String oldToken,
-            @RequestBody UserFcmTokenDTO newToken) {
-        customerFcmTokenRepository.updateUserFcmToken(oldToken, newToken);
-        return ResponseEntity.ok().build();
-    }
-
     @Operation(summary = "Check if a device's token is present", description = "Checks if a device's token is present")
     @GetMapping("/token/present")
     public ResponseEntity<String> isDeviceTokenPresent(

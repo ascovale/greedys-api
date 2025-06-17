@@ -7,8 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.application.persistence.dao.restaurant.RestaurantUserFcmTokenDAO;
+import com.application.persistence.model.notification.RestaurantUserFcmToken;
 import com.application.persistence.model.restaurant.user.RestaurantUser;
-import com.application.persistence.model.restaurant.user.RestaurantUserFcmToken;
 import com.application.web.dto.post.UserFcmTokenDTO;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
@@ -27,24 +27,14 @@ public class RestaurantUserFcmTokenService {
     }
 
     public void saveUserFcmToken(UserFcmTokenDTO userFcmTokenDTO) {
-        RestaurantUserFcmToken userFcmToken = new RestaurantUserFcmToken();
-        userFcmToken.setUser(entityManager.getReference(RestaurantUser.class, userFcmTokenDTO.getUserId()));
-        userFcmToken.setFcmToken(userFcmTokenDTO.getFcmToken());
-        userFcmToken.setCreatedAt(userFcmTokenDTO.getCreatedAt() != null ? userFcmTokenDTO.getCreatedAt() : LocalDateTime.now());
-        userFcmToken.setDeviceId(userFcmTokenDTO.getDeviceId());
+        RestaurantUser restaurantUser = entityManager.getReference(RestaurantUser.class, userFcmTokenDTO.getUserId());
+        String token = userFcmTokenDTO.getFcmToken();
+        String deviceId = userFcmTokenDTO.getDeviceId();
+
+        RestaurantUserFcmToken userFcmToken = new RestaurantUserFcmToken(restaurantUser, token, deviceId);
         userFcmTokenRepository.save(userFcmToken);
     }
-
-    public RestaurantUserFcmToken updateUserFcmToken(String oldToken, UserFcmTokenDTO newToken) {
-        RestaurantUserFcmToken existingToken = userFcmTokenRepository.findByFcmTokenAndRestaurantUserId(oldToken, newToken.getUserId());
-        if (existingToken != null) {
-            existingToken.setFcmToken(newToken.getFcmToken());
-            return userFcmTokenRepository.save(existingToken);
-        } else {
-            throw new RuntimeException("UserFcmToken not found for user");
-        }
-    }
-
+    
     public List<RestaurantUserFcmToken> getTokensByRestaurantUserId(Long id) {
         return userFcmTokenRepository.findByRestaurantUserId(id);
     }
