@@ -144,4 +144,18 @@ public class NotificationController {
         }
     }
 
+    @Operation(summary = "Test Firebase connection", description = "Send a test notification to a specific FCM token")
+    @PostMapping("/test-firebase")
+    public ResponseEntity<String> testFirebaseConnection(@RequestParam String firebaseFcmToken,
+                                                        @RequestParam(required = false, defaultValue = "Test Title") String title,
+                                                        @RequestParam(required = false, defaultValue = "Test message from backend.") String body) {
+        
+        boolean sent = firebaseService.sendTestNotificationToToken(firebaseFcmToken, title, body);
+        if (sent) {
+            return ResponseEntity.ok("Notification sent successfully");
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to send notification");
+        }
+    }
+
 }
