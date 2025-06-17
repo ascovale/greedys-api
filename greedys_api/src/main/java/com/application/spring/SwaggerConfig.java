@@ -1,9 +1,11 @@
 package com.application.spring;
 
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
-import org.springdoc.core.models.GroupedOpenApi;
 import org.springdoc.core.customizers.OpenApiCustomizer;
+import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -30,12 +32,27 @@ public class SwaggerConfig {
     }
 
     @Bean
+    public OpenApiCustomizer sortSchemasCustomizer() {
+        return openApi -> {
+            if (openApi.getComponents() != null && openApi.getComponents().getSchemas() != null) {
+                Map<String, Schema> original = openApi.getComponents().getSchemas();
+                Map<String, Schema> sorted = new TreeMap<>();
+                for (Map.Entry<String, Schema> entry : original.entrySet()) {
+                    sorted.put(entry.getKey(), entry.getValue());
+                }
+                openApi.getComponents().setSchemas(sorted);
+            }
+        };
+    }
+
+    @Bean
     public GroupedOpenApi adminApi() {
         return GroupedOpenApi.builder()
                 .group("admin-api")
                 .packagesToScan("com.application.controller.admin")
                 .pathsToMatch("/admin/**")
                 .addOpenApiCustomizer(groupCustomizer(null, "adminBearerAuth"))
+                .addOpenApiCustomizer(sortSchemasCustomizer())
                 .build();
     }
 
@@ -46,6 +63,7 @@ public class SwaggerConfig {
                 .packagesToScan("com.application.controller.customer")
                 .pathsToMatch("/customer/**")
                 .addOpenApiCustomizer(groupCustomizer(null, "customerBearerAuth"))
+                .addOpenApiCustomizer(sortSchemasCustomizer())
                 .build();
     }
 
@@ -56,6 +74,7 @@ public class SwaggerConfig {
                 .packagesToScan("com.application.controller.restaurant", "com.application.controller.restaurantUser")
                 .pathsToMatch("/restaurant/**")
                 .addOpenApiCustomizer(groupCustomizer(null, "restaurantBearerAuth"))
+                .addOpenApiCustomizer(sortSchemasCustomizer())
                 .build();
     }
 
@@ -66,6 +85,7 @@ public class SwaggerConfig {
                 .packagesToScan("com.application.controller.pub", "com.application.web.dto")
                 .pathsToMatch("/public/**", "/register/**", "/auth/**")
                 .addOpenApiCustomizer(groupCustomizer(null, null))
+                .addOpenApiCustomizer(sortSchemasCustomizer())
                 .build();
     }
 

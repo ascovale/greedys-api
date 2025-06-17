@@ -75,16 +75,15 @@ public class AdminSetup {
             logger.info("Admin with email ascolesevalentino@gmail.com already exists.");
             return;
         }
-        logger.info("Creating admin Valentino Ascolese");
 
+        logger.info("Creating admin Valentino Ascolese");
         NewAdminDTO adminDTO = new NewAdminDTO();
         adminDTO.setEmail("ascolesevalentino@gmail.com");
         adminDTO.setFirstName("Valentino");
         adminDTO.setLastName("Ascolese");
         adminDTO.setPassword("Minosse100%");
         Admin admin =adminService.registerNewAdminAccount(adminDTO);
-        admin.setStatus(Admin.Status.ENABLED);
-        adminDAO.save(admin);
+        adminService.updateAdminStatus(admin.getId(), Admin.Status.ENABLED);
 
         logger.info("Creating admin Matteo Rossi");
         NewAdminDTO admin2DTO = new NewAdminDTO();
@@ -93,8 +92,7 @@ public class AdminSetup {
         admin2DTO.setLastName("Rossi");
         admin2DTO.setPassword("Minosse100%");
         admin =adminService.registerNewAdminAccount(admin2DTO);
-        admin.setStatus(Admin.Status.ENABLED);
-        adminDAO.save(admin);
+        adminService.updateAdminStatus(admin.getId(), Admin.Status.ENABLED);
     }
 
     @Transactional
@@ -112,7 +110,8 @@ public class AdminSetup {
         if (role == null) {
             role = new AdminRole(name);
         }
-        role.setAdminPrivileges(privileges);
+        // Ensure privileges is always a mutable list
+        role.setAdminPrivileges(new ArrayList<>(privileges));
         adminRoleDAO.save(role);
         return role;
     }

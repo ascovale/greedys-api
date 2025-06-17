@@ -106,7 +106,8 @@ public class CustomerSetup {
         if (role == null) {
             role = new Role(name);
         }
-        role.setPrivileges(privileges);
+        // Ensure privileges is always a mutable list
+        role.setPrivileges(new ArrayList<>(privileges));
         role = roleDAO.save(role);
         return role;
     }

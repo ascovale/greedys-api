@@ -1,7 +1,7 @@
 package com.application.service;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -75,7 +75,7 @@ public class AdminService {
 		admin.setSurname(accountDto.getLastName());
 		admin.setPassword(passwordEncoder.encode(accountDto.getPassword()));
 		admin.setEmail(accountDto.getEmail());
-		admin.setStatus(Admin.Status.ENABLED);
+		//admin.setStatus(Admin.Status.ENABLED);
 		AdminRole adminRole = adminRoleDAO.findByName("ROLE_SUPER_ADMIN");
 
 		admin.addAdminRole(adminRole);
@@ -243,19 +243,21 @@ public class AdminService {
 		User user = adminDAO.findById(idUser).orElseThrow(() -> new EntityNotFoundException("User not found"));
 		user.setRoles(Arrays.asList(roleRepository.findByName("ROLE_USER")));
 		adminDAO.save(user);
-	}*/
+	}*/	
 
 
+	@Transactional
+	public void updateAdminStatus(Long adminId, Admin.Status newStatus) {
+		System.out.println("\n\n\n\nUpdating admin status for ID: " + adminId + " to " + newStatus+ "\n\n\n\n");
 
-	public void updateCustomerStatus(Long adminId, Admin.Status newStatus) {
 		Admin admin = adminDAO.findById(adminId)
-				.orElseThrow(() -> new IllegalArgumentException("Customer not found"));
+				.orElseThrow(() -> new IllegalArgumentException("Admin not found"));
+		// Aggiorna lo stato del admin
+		System.out.println("\n\n\nTrovato admin status for ID: " + adminId + " to " + newStatus+ "\n\n\n\n");
 
-		// Aggiorna lo stato del customer
 		admin.setStatus(newStatus);
 		adminDAO.save(admin);
-
-		// TODO: gestione della cache
+		System.out.println("\n\n\nAdmin status updated for ID: " + adminId + " to " + newStatus+ "\n\n\n\n");
 	}
 
 	public AdminDTO loginAndGetDTO(String username) {

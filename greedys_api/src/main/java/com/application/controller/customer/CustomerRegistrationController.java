@@ -190,6 +190,11 @@ public class CustomerRegistrationController {
         return new GenericResponse(messages.getMessage("message.resendToken", null, request.getLocale()));
     }
 
+    
+    //TODO  Registration with facebook verify the restaurant email if it is facebook verified
+
+    //TODO Registration with apple verify the restaurant email if it is apple verified
+
     // 4. Google Authentication
     @Operation(summary = "Authenticate with Google", description = "Authenticates or if not exist register a customer using a Google token and returns a JWT token.")
     @ApiResponses(value = {

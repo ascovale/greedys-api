@@ -100,7 +100,7 @@ public class ReservationService {
     @Transactional
     public ReservationDTO createRestaurantReservation(RestaurantNewReservationDTO reservationDto)
             throws NoSuchElementException {
-        Restaurant restaurant = restaurantDAO.findById(reservationDto.getRestaurant_id())
+        Restaurant restaurant = restaurantDAO.findById(reservationDto.getRestaurantId())
                 .orElseThrow(() -> new NoSuchElementException("Restaurant not found"));
         Slot slot = entityManager.getReference(Slot.class, reservationDto.getIdSlot());
         if (slot == null || slot.getDeleted()) {
@@ -120,7 +120,7 @@ public class ReservationService {
         // TODO forse deve essere restaurantUser
         // reservation.setCreator(getCurrentUser());
 
-        Customer user = entityManager.getReference(Customer.class, reservationDto.getUser_id());
+        Customer user = entityManager.getReference(Customer.class, reservationDto.getUserId());
         reservation.setCustomer(user);
         customerNotificationService.createReservationNotification(reservation, Type.NEW_RESERVATION);
 
