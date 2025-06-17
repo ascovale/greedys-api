@@ -1,5 +1,6 @@
 package com.application.service.security;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,19 +16,17 @@ import com.application.persistence.model.restaurant.Restaurant;
 import com.application.persistence.model.restaurant.user.RestaurantUser;
 import com.application.security.jwt.JwtUtil;
 
-import io.jsonwebtoken.Claims;
-
 @Service("securityRestaurantUserService")
 @Transactional
 public class SecurityRestaurantUserService {
-    
-    @Autowired 
+
+    @Autowired
     private ReservationDAO reservationRepository;
     @Autowired
     private RestaurantUserHubDAO restaurantUserHubDAO;
     @Autowired
     private JwtUtil jwtUtil;
-    
+
     public boolean hasPermissionOnReservation(Long idReservation) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
@@ -45,7 +44,8 @@ public class SecurityRestaurantUserService {
         } else {
             return false;
         }
-        // Check if the reservation exists and if the restaurantUser is of the same restaurant of the reservation
+        // Check if the reservation exists and if the restaurantUser is of the same
+        // restaurant of the reservation
         // and if the customer is enabled
         Optional<Reservation> reservation = reservationRepository.findById(idReservation);
         if (!reservation.isPresent()) {
@@ -61,7 +61,7 @@ public class SecurityRestaurantUserService {
         if (!restaurantUser.isEnabled()) {
             return false;
         }
-        
+
         return true;
     }
 
@@ -113,7 +113,7 @@ public class SecurityRestaurantUserService {
         }
 
         throw new IllegalArgumentException("User not found with id: " + userId + " and email: " + email);
-       
+
     }
 
     public boolean hasPermissionForRestaurant(Long restaurantId) {
@@ -128,23 +128,31 @@ public class SecurityRestaurantUserService {
         }
 
         RestaurantUser restaurantUser = (RestaurantUser) principal;
-        
-        return restaurantUserHubDAO.hasPermissionForRestaurant(restaurantUser.getRestaurantUserHub().getId(), restaurantId);
+
+        return restaurantUserHubDAO.hasPermissionForRestaurant(restaurantUser.getRestaurantUserHub().getId(),
+                restaurantId);
     }
 
-
-
-    public boolean isHubUser(String authHeader) {
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            throw new IllegalArgumentException("Missing or invalid Authorization header");
-        }
-        String hubJwt = authHeader.substring(7); // Remove 'Bearer '
-        try {
-            Claims claims = jwtUtil.extractAllClaims(hubJwt);
-            String type = claims.get("type", String.class);
-            return "hub".equals(type);
-        } catch (Exception e) {
+    public boolean hasHubPermissionForRestaurant(Long restaurantId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
             return false;
         }
+
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof org.springframework.security.core.userdetails.User) {
+            org.springframework.security.core.userdetails.User userDetails = (org.springframework.security.core.userdetails.User) principal;
+            String email = userDetails.getUsername();
+            if (email == null || email.isEmpty()) {
+                return false;
+            }
+            List<Restaurant> restaurants = restaurantUserHubDAO.findAllRestaurantsByHubEmail(email);
+            if (restaurants == null) {
+                return false;
+            }
+            return restaurants.stream().anyMatch(r -> r.getId().equals(restaurantId));
+        }
+        return false;
+      
     }
 }
