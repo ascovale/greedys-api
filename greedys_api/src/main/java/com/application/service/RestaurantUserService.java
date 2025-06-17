@@ -128,7 +128,16 @@ public class RestaurantUserService {
         // Check if a user with the same email already exists
         RestaurantUserHub existingUserHub = ruhDAO.findByEmail(restaurantUserDTO.getEmail());
         if (existingUserHub != null) {
-            throw new IllegalArgumentException("User hub with email " + restaurantUserDTO.getEmail() + " already exists.");
+            // Se esiste già un RestaurantUserHub con questa email, aggiungi il nuovo RestaurantUser a questo hub
+            RestaurantUser ru = new RestaurantUser();
+            ru.setRestaurantUserHub(existingUserHub);
+            Hibernate.initialize(ru.getRestaurantRoles());
+            ru.addRestaurantRole(rr);
+            ru.setRestaurant(restaurant);
+            existingUserHub.setPassword(passwordEncoder.encode(restaurantUserDTO.getPassword()));
+            ruDAO.save(ru);
+            emailService.sendRestaurantAssociationConfirmationEmail(ru);
+            return ru;
         }
         
         RestaurantUser existingRestaurantUser = ruDAO.findByEmailAndRestaurantId(restaurantUserDTO.getEmail(), restaurant.getId());

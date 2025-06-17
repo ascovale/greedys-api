@@ -87,46 +87,56 @@ public class RestaurantAuthenticationService {
         this.restaurantUserHubDAO = restaurantUserHubDAO;
         this.passwordEncoder = passwordEncoder;
     }
-/* 
-    public AuthResponseDTO login(AuthRequestDTO authenticationRequest) {
-        RestaurantUser userDetails;
-        if (authenticationRequest.getRestaurantId() == null || authenticationRequest.getRestaurantId() == 0) {
-            // Cerca il primo RestaurantUser associato al RestaurantUserHub
-            System.out.println("Restaurant ID is null or zero, searching for RestaurantUserHub.");
-            RestaurantUser hubUser = restaurantUserDAO.findByEmail(authenticationRequest.getUsername());
-            if (hubUser == null || hubUser.getRestaurantUserHub() == null) {
-                throw new IllegalArgumentException("Invalid email or no associated RestaurantUserHub found.");
-            }
-            List<RestaurantUser> associatedUsers = restaurantUserDAO
-                    .findAllByRestaurantUserHubId(hubUser.getRestaurantUserHub().getId());
-            if (associatedUsers.isEmpty()) {
-                throw new IllegalArgumentException(
-                        "No associated RestaurantUser found for the given RestaurantUserHub.");
-            }
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            authenticationRequest.getUsername() + ":" + associatedUsers.get(0).getRestaurant().getId(),
-                            authenticationRequest.getPassword()));            
 
-            userDetails = associatedUsers.get(0); // Prendi il primo utente associato
-        } else {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            authenticationRequest.getUsername() + ":" + authenticationRequest.getRestaurantId(),
-                            authenticationRequest.getPassword()));
-
-            // Cerca il RestaurantUser specifico per email e restaurantId
-            userDetails = restaurantUserDAO.findByEmailAndRestaurantId(authenticationRequest.getUsername(),
-                    authenticationRequest.getRestaurantId());
-            if (userDetails == null) {
-                throw new IllegalArgumentException(
-                        "Restaurant not found or user does not have access to this restaurant.");
-            }
-        }
-        String jwt = jwtUtil.generateToken(userDetails);
-        return new AuthResponseDTO(jwt, new RestaurantUserDTO(userDetails));
-    }
-*/
+    /*
+     * public AuthResponseDTO login(AuthRequestDTO authenticationRequest) {
+     * RestaurantUser userDetails;
+     * if (authenticationRequest.getRestaurantId() == null ||
+     * authenticationRequest.getRestaurantId() == 0) {
+     * // Cerca il primo RestaurantUser associato al RestaurantUserHub
+     * System.out.
+     * println("Restaurant ID is null or zero, searching for RestaurantUserHub.");
+     * RestaurantUser hubUser =
+     * restaurantUserDAO.findByEmail(authenticationRequest.getUsername());
+     * if (hubUser == null || hubUser.getRestaurantUserHub() == null) {
+     * throw new
+     * IllegalArgumentException("Invalid email or no associated RestaurantUserHub found."
+     * );
+     * }
+     * List<RestaurantUser> associatedUsers = restaurantUserDAO
+     * .findAllByRestaurantUserHubId(hubUser.getRestaurantUserHub().getId());
+     * if (associatedUsers.isEmpty()) {
+     * throw new IllegalArgumentException(
+     * "No associated RestaurantUser found for the given RestaurantUserHub.");
+     * }
+     * authenticationManager.authenticate(
+     * new UsernamePasswordAuthenticationToken(
+     * authenticationRequest.getUsername() + ":" +
+     * associatedUsers.get(0).getRestaurant().getId(),
+     * authenticationRequest.getPassword()));
+     * 
+     * userDetails = associatedUsers.get(0); // Prendi il primo utente associato
+     * } else {
+     * authenticationManager.authenticate(
+     * new UsernamePasswordAuthenticationToken(
+     * authenticationRequest.getUsername() + ":" +
+     * authenticationRequest.getRestaurantId(),
+     * authenticationRequest.getPassword()));
+     * 
+     * // Cerca il RestaurantUser specifico per email e restaurantId
+     * userDetails =
+     * restaurantUserDAO.findByEmailAndRestaurantId(authenticationRequest.
+     * getUsername(),
+     * authenticationRequest.getRestaurantId());
+     * if (userDetails == null) {
+     * throw new IllegalArgumentException(
+     * "Restaurant not found or user does not have access to this restaurant.");
+     * }
+     * }
+     * String jwt = jwtUtil.generateToken(userDetails);
+     * return new AuthResponseDTO(jwt, new RestaurantUserDTO(userDetails));
+     * }
+     */
     public AuthResponseDTO adminLoginToRestaurantUser(Long restaurantUserId, HttpServletRequest request) {
         RestaurantUser user = restaurantUserDAO.findById(restaurantUserId)
                 .orElseThrow(() -> new UsernameNotFoundException("No user found with ID: " + restaurantUserId));
@@ -134,7 +144,8 @@ public class RestaurantAuthenticationService {
         // Creazione di un token di autenticazione con bypass della password
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                 user.getUsername(), null);
-        authToken.setDetails(new RestaurantUserAuthenticationDetails(true, user.getRestaurant().getId(), user.getEmail()));
+        authToken.setDetails(
+                new RestaurantUserAuthenticationDetails(true, user.getRestaurant().getId(), user.getEmail()));
 
         // Autenticazione senza password
         SecurityContextHolder.getContext().setAuthentication(authToken);
@@ -338,16 +349,14 @@ public class RestaurantAuthenticationService {
         if (associatedUsers == null || associatedUsers.isEmpty()) {
             throw new UnsupportedOperationException("No restaurants associated with this user.");
         }
-
+        System.out.println("\n\n\n\n\n>>>>Associated users: " + associatedUsers.size());
         if (associatedUsers.size() == 1) {
             // Login classico: un solo ristorante
             RestaurantUser singleUser = associatedUsers.get(0);
             authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                    authenticationRequest.getUsername() + ":" + singleUser.getRestaurant().getId(),
-                    authenticationRequest.getPassword()
-                )
-            );
+                    new UsernamePasswordAuthenticationToken(
+                            authenticationRequest.getUsername() + ":" + singleUser.getRestaurant().getId(),
+                            authenticationRequest.getPassword()));
             String jwt = jwtUtil.generateToken(singleUser);
             return new AuthResponseDTO(jwt, new RestaurantUserDTO(singleUser));
         } else {
@@ -360,7 +369,7 @@ public class RestaurantAuthenticationService {
             String hubJwt = jwtUtil.generateHubToken(user);
 
             AuthResponseDTO hubResponse = new AuthResponseDTO(hubJwt, user);
-            
+
             return hubResponse;
         }
     }

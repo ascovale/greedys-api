@@ -30,62 +30,94 @@ public class RestaurantUserRequestFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
-        System.out.println("Filtering request: " + request.getRequestURI());
+        System.out.println("[FILTER] Filtering request: " + request.getRequestURI());
     
         final String authorizationHeader = request.getHeader("Authorization");
+        System.out.println("[FILTER] Authorization header: " + authorizationHeader);
         String username = null;
         String jwt = null;
+        Object claims = null; // claims ora visibile ovunque
+        String type = null;   // type ora visibile ovunque
     
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             jwt = authorizationHeader.substring(7);
+            System.out.println("[FILTER] JWT found: " + jwt);
             username = jwtUtil.extractUsername(jwt);
-            System.out.println("Extracted username: " + username);
+            System.out.println("[FILTER] Extracted username: " + username);
             try {
-                var claims = jwtUtil.extractAllClaims(jwt);
-                String type = (String) claims.get("type");
+                claims = jwtUtil.extractAllClaims(jwt);
+                type = (String) ((java.util.Map<?,?>)claims).get("type");
                 String path = request.getRequestURI();
+                System.out.println("[FILTER] Token type: " + type + ", Path: " + path);
                 // Consenti sia a /restaurant/user/auth/select-restaurant che a /restaurant/user/auth/restaurants solo token di tipo hub
                 if ("/restaurant/user/auth/select-restaurant".equals(path) || "/restaurant/user/auth/restaurants".equals(path)) {
+                    System.out.println("[FILTER] Endpoint requires type hub");
                     if (!"hub".equals(type)) {
+                        System.out.println("[FILTER] Token type is not hub, sending 401");
                         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                         response.getWriter().write("Token must be of type hub for this endpoint.");
                         return;
                     }
                 } else {
+                    System.out.println("[FILTER] Endpoint does NOT allow type hub");
                     if ("hub".equals(type)) {
+                        System.out.println("[FILTER] Token type is hub, sending 401");
                         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                         response.getWriter().write("Token of type hub not allowed for this endpoint.");
                         return;
                     }
                 }
-       
             } catch (Exception e) {
+                System.out.println("[FILTER] Exception during claims parsing: " + e.getMessage());
                 // In caso di errore parsing claims, prosegui senza autenticare
                 chain.doFilter(request, response);
                 return;
             }
+        } else {
+            System.out.println("[FILTER] No valid Authorization header found");
         }
     
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            System.out.println("No authentication found in context. Loading user details...");
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
-            System.out.println("Authorities: " + userDetails.getAuthorities()+"\n\n\n\\n\n\n");
-
-    
+            System.out.println("[FILTER] No authentication found in context. Loading user details...");
+            UserDetails userDetails;
+            if ("hub".equals(type)) {
+                // Crea un UserDetails custom per hub solo se claims non è null
+                String email = null;
+                if (claims != null) {
+                    email = (String) ((java.util.Map<?,?>)claims).get("email");
+                }
+                if (email == null) {
+                    System.out.println("[FILTER] Email claim is missing for hub token, sending 401");
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.getWriter().write("Email claim missing in hub token.");
+                    return;
+                }
+                userDetails = org.springframework.security.core.userdetails.User
+                    .withUsername(email) // Use only the email, no ":0"
+                    .password("") // Nessuna password
+                    .authorities("ROLE_HUB")
+                    .build();
+                System.out.println("[FILTER] Created custom UserDetails for hub: " + userDetails.getUsername());
+            } else {
+                userDetails = this.userDetailsService.loadUserByUsername(username);
+                System.out.println("[FILTER] Authorities: " + userDetails.getAuthorities());
+            }
             if (jwtUtil.validateToken(jwt, userDetails)) {
-                System.out.println("Token validated. Setting authentication...");
+                System.out.println("[FILTER] Token validated. Setting authentication...");
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
-                System.out.println("\n\n\n\nSetting details for authentication token...");
+                System.out.println("[FILTER] Setting details for authentication token...");
                 usernamePasswordAuthenticationToken
                         .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                System.out.println("Setting authentication in SecurityContextHolder...");
+                System.out.println("[FILTER] Setting authentication in SecurityContextHolder...");
                 SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
             } else {
-                System.out.println("Token validation failed.");
+                System.out.println("[FILTER] Token validation failed.");
             }
+        } else {
+            System.out.println("[FILTER] Username is null or authentication already present.");
         }
-        System.out.println("Continuing filter chain...");
+        System.out.println("[FILTER] Continuing filter chain...");
     
         chain.doFilter(request, response);
     }

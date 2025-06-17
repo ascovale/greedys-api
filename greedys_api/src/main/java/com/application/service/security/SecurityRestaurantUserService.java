@@ -13,6 +13,9 @@ import com.application.persistence.dao.restaurant.RestaurantUserHubDAO;
 import com.application.persistence.model.reservation.Reservation;
 import com.application.persistence.model.restaurant.Restaurant;
 import com.application.persistence.model.restaurant.user.RestaurantUser;
+import com.application.security.jwt.JwtUtil;
+
+import io.jsonwebtoken.Claims;
 
 @Service("securityRestaurantUserService")
 @Transactional
@@ -22,6 +25,8 @@ public class SecurityRestaurantUserService {
     private ReservationDAO reservationRepository;
     @Autowired
     private RestaurantUserHubDAO restaurantUserHubDAO;
+    @Autowired
+    private JwtUtil jwtUtil;
     
     public boolean hasPermissionOnReservation(Long idReservation) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -125,5 +130,21 @@ public class SecurityRestaurantUserService {
         RestaurantUser restaurantUser = (RestaurantUser) principal;
         
         return restaurantUserHubDAO.hasPermissionForRestaurant(restaurantUser.getRestaurantUserHub().getId(), restaurantId);
+    }
+
+
+
+    public boolean isHubUser(String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new IllegalArgumentException("Missing or invalid Authorization header");
+        }
+        String hubJwt = authHeader.substring(7); // Remove 'Bearer '
+        try {
+            Claims claims = jwtUtil.extractAllClaims(hubJwt);
+            String type = claims.get("type", String.class);
+            return "hub".equals(type);
+        } catch (Exception e) {
+            return false;
+        }
     }
 }
