@@ -19,8 +19,8 @@ import org.springframework.web.client.RestTemplate;
 
 import com.application.persistence.dao.restaurant.RestaurantUserDAO;
 import com.application.persistence.model.customer.Customer;
-import com.application.persistence.model.customer.CustomerFcmToken;
 import com.application.persistence.model.customer.Notification;
+import com.application.persistence.model.notification.CustomerFcmToken;
 import com.application.persistence.model.restaurant.user.RestaurantNotification;
 import com.application.persistence.model.restaurant.user.RestaurantUser;
 import com.application.service.utils.NotificatioUtils;
