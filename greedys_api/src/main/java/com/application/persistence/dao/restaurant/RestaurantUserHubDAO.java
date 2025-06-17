@@ -27,4 +27,8 @@ public interface RestaurantUserHubDAO extends JpaRepository<RestaurantUserHub, L
     
     @Query("SELECT ru.restaurant FROM RestaurantUser ru WHERE ru.restaurantUserHub.id = :hubId")
     List<Restaurant> findAllRestaurantsByHubId(@Param("hubId") Long hubId);
+
+    @Query("SELECT ru.restaurant FROM RestaurantUser ru WHERE ru.restaurantUserHub.email = :email")
+    List<Restaurant> findAllRestaurantsByHubEmail(@Param("email") String email);
+
 }

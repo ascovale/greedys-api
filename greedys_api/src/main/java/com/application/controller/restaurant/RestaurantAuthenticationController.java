@@ -47,7 +47,6 @@ public class RestaurantAuthenticationController {
             @ApiResponse(responseCode = "200", description = "List retrieved successfully", content = @Content(mediaType = "application/json")),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content(mediaType = "application/json"))
     })
-    //@PreAuthorize("@securityRestaurantUserService.isHubUser()")
     @PostMapping(value = "/restaurants", produces = "application/json")
     public ResponseEntity<?> restaurants( @Parameter(hidden = true) @RequestHeader("Authorization") String authHeader) {
         try {
@@ -74,7 +73,7 @@ public class RestaurantAuthenticationController {
             @ApiResponse(responseCode = "200", description = "Selection successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthResponseDTO.class))),
             @ApiResponse(responseCode = "401", description = "Selection failed", content = @Content(mediaType = "application/json"))
     })
-    @PreAuthorize("@securityRestaurantUserService.hasPermissionForRestaurant(#selectRequest.restaurantId)")
+    @PreAuthorize("@securityRestaurantUserService.hasHubPermissionForRestaurant(#selectRequest.restaurantId)")
     @PostMapping(value = "/select-restaurant", produces = "application/json")
     public ResponseEntity<?> selectRestaurant(@Parameter(hidden = true) @RequestHeader("Authorization") String authHeader,@RequestBody RestaurantUserSelectRequestDTO selectRequest) {
         try {
