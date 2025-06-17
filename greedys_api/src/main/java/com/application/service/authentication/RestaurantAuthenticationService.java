@@ -365,4 +365,15 @@ public class RestaurantAuthenticationService {
         }
     }
 
+    public List<RestaurantUser> getAssociatedUsersByHubId(Long hubId) {
+        return restaurantUserDAO.findAllByRestaurantUserHubId(hubId);
+    }
+
+    public List<RestaurantDTO> getRestaurantsByUserHubId(Long userHubId) {
+        return restaurantUserHubDAO.findAllRestaurantsByHubId(userHubId)
+                .stream()
+                .map(RestaurantDTO::new)
+                .collect(Collectors.toList());
+    }
+
 }

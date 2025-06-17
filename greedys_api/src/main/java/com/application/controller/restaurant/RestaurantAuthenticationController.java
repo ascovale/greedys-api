@@ -9,10 +9,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.application.security.jwt.JwtUtil;
 import com.application.service.authentication.RestaurantAuthenticationService;
 import com.application.web.dto.post.AuthResponseDTO;
 import com.application.web.dto.post.RestaurantUserSelectRequestDTO;
 
+import io.jsonwebtoken.Claims;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -28,12 +30,38 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class RestaurantAuthenticationController {
 
     private final Logger LOGGER = LoggerFactory.getLogger(getClass());
+    private final JwtUtil jwtUtil;
 
     private final RestaurantAuthenticationService restaurantAuthenticationService;
 
     public RestaurantAuthenticationController(
-            RestaurantAuthenticationService restaurantAuthenticationService) {
+            RestaurantAuthenticationService restaurantAuthenticationService, JwtUtil jwtUtil) {
+        this.jwtUtil = jwtUtil;
         this.restaurantAuthenticationService = restaurantAuthenticationService;
+    }
+
+    @Operation(summary = "Get list of restaurants for hub user", description = "Given a hub JWT, returns the list of restaurants associated with the hub user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "List retrieved successfully", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content(mediaType = "application/json"))
+    })
+    @PreAuthorize("@securityRestaurantUserService.isHubUser()")
+    @PostMapping(value = "/restaurants", produces = "application/json")
+    public ResponseEntity<?> restaurants(@RequestBody String hubJwt) {
+        try {
+            Claims claims;
+            claims = jwtUtil.extractAllClaims(hubJwt);
+            String type = claims.get("type", String.class);
+            if (!"hub".equals(type)) {
+                throw new IllegalArgumentException("JWT does not belong to a hub user");
+            }
+            Long hubId = claims.get("hubId", Long.class);
+
+            return ResponseEntity.ok(restaurantAuthenticationService.getRestaurantsByUserHubId(hubId));
+        } catch (Exception e) {
+            LOGGER.error("Failed to retrieve restaurants: {}", e.getMessage());
+            return ResponseEntity.status(401).body("Failed to retrieve restaurants: " + e.getMessage());
+        }
     }
 
     @Operation(summary = "Select a restaurant after intermediate login", description = "Given a hub JWT and a restaurantId, returns a JWT for the selected restaurant user")
@@ -52,6 +80,5 @@ public class RestaurantAuthenticationController {
             return ResponseEntity.status(401).body("Restaurant selection failed: " + e.getMessage());
         }
     }
-    
 
 }
