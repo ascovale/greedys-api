@@ -77,9 +77,8 @@ public class AdminService {
 		admin.setEmail(accountDto.getEmail());
 		//admin.setStatus(Admin.Status.ENABLED);
 		AdminRole adminRole = adminRoleDAO.findByName("ROLE_SUPER_ADMIN");
-		ArrayList<AdminRole> adminRoles = new ArrayList<>();
-		adminRoles.add(adminRole);
-		admin.setAdminRoles(adminRoles);
+
+		admin.addAdminRole(adminRole);
 		// user.setUsing2FA(accountDto.isUsing2FA());
 		//admin.setAdminRoles(Arrays.asList(roleRepository.findByName("ROLE_USER")));
 		return adminDAO.save(admin);
