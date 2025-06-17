@@ -76,9 +76,9 @@ public class RestaurantAuthenticationController {
     })
     @PreAuthorize("@securityRestaurantUserService.hasPermissionForRestaurant(#selectRequest.restaurantId)")
     @PostMapping(value = "/select-restaurant", produces = "application/json")
-    public ResponseEntity<?> selectRestaurant(@RequestBody RestaurantUserSelectRequestDTO selectRequest) {
+    public ResponseEntity<?> selectRestaurant(@Parameter(hidden = true) @RequestHeader("Authorization") String authHeader,@RequestBody RestaurantUserSelectRequestDTO selectRequest) {
         try {
-            AuthResponseDTO responseDTO = restaurantAuthenticationService.selectRestaurant(selectRequest);
+            AuthResponseDTO responseDTO = restaurantAuthenticationService.selectRestaurant(authHeader.substring(7),selectRequest);
             return ResponseEntity.ok(responseDTO);
         } catch (UnsupportedOperationException e) {
             LOGGER.error("Restaurant selection failed: {}", e.getMessage());

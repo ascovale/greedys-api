@@ -241,11 +241,11 @@ public class RestaurantAuthenticationService {
         return new AuthResponseDTO(newJwt, new RestaurantUserDTO(updatedUser));
     }
 
-    public AuthResponseDTO selectRestaurant(RestaurantUserSelectRequestDTO selectRequest) {
+    public AuthResponseDTO selectRestaurant(String token,RestaurantUserSelectRequestDTO selectRequest) {
         // Decodifica il JWT hub
         Claims claims;
         try {
-            claims = jwtUtil.extractAllClaims(selectRequest.getHubToken());
+            claims = jwtUtil.extractAllClaims(token);
         } catch (Exception e) {
             throw new UnsupportedOperationException("Invalid hub token.");
         }
