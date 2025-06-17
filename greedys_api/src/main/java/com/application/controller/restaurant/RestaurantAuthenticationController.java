@@ -3,6 +3,7 @@ package com.application.controller.restaurant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,6 +41,7 @@ public class RestaurantAuthenticationController {
             @ApiResponse(responseCode = "200", description = "Selection successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthResponseDTO.class))),
             @ApiResponse(responseCode = "401", description = "Selection failed", content = @Content(mediaType = "application/json"))
     })
+    @PreAuthorize("@securityRestaurantUserService.hasPermissionForRestaurant(#selectRequest.restaurantId)")
     @PostMapping(value = "/select-restaurant", produces = "application/json")
     public ResponseEntity<?> selectRestaurant(@RequestBody RestaurantUserSelectRequestDTO selectRequest) {
         try {
