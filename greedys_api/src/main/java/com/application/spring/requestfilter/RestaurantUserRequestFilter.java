@@ -44,22 +44,21 @@ public class RestaurantUserRequestFilter extends OncePerRequestFilter {
                 var claims = jwtUtil.extractAllClaims(jwt);
                 String type = (String) claims.get("type");
                 String path = request.getRequestURI();
-
-                if ("/restaurant/user/auth/select-restaurant".equals(path)) {
-                    // Solo token con type hub sono accettati su questa rotta
+                // Consenti sia a /restaurant/user/auth/select-restaurant che a /restaurant/user/auth/restaurants solo token di tipo hub
+                if ("/restaurant/user/auth/select-restaurant".equals(path) || "/restaurant/user/auth/restaurants".equals(path)) {
                     if (!"hub".equals(type)) {
                         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                         response.getWriter().write("Token must be of type hub for this endpoint.");
                         return;
                     }
                 } else {
-                    // Su tutte le altre rotte, rifiuta se type è hub
                     if ("hub".equals(type)) {
                         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                         response.getWriter().write("Token of type hub not allowed for this endpoint.");
                         return;
                     }
                 }
+       
             } catch (Exception e) {
                 // In caso di errore parsing claims, prosegui senza autenticare
                 chain.doFilter(request, response);
