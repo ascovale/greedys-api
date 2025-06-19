@@ -16,10 +16,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.application.persistence.model.customer.Notification;
+import com.application.persistence.model.notification.CustomerNotification;
 import com.application.service.CustomerFcmTokenService;
 import com.application.service.FirebaseService;
-import com.application.service.NotificationService;
+import com.application.service.notification.CustomerNotificationService;
 import com.application.web.dto.post.UserFcmTokenDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -36,10 +36,10 @@ public class NotificationController {
 
     private final CustomerFcmTokenService customerFcmTokenRepository;
     private final FirebaseService firebaseService;
-    private final NotificationService notificationService;
+    private final CustomerNotificationService notificationService;
 
     public NotificationController(CustomerFcmTokenService customerFcmTokenRepository, FirebaseService firebaseService,
-            NotificationService notificationService) {
+            CustomerNotificationService notificationService) {
         this.customerFcmTokenRepository = customerFcmTokenRepository;
         this.firebaseService = firebaseService;
         this.notificationService = notificationService;
@@ -73,19 +73,19 @@ public class NotificationController {
 
     @Operation(summary = "Get unread notifications", description = "Returns a pageable list of unread notifications")
     @GetMapping("/unread/{page}/{size}")
-    public ResponseEntity<Page<Notification>> getUnreadNotifications(@PathVariable int page,
+    public ResponseEntity<Page<CustomerNotification>> getUnreadNotifications(@PathVariable int page,
             @PathVariable int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Notification> unreadNotifications = notificationService.getUnreadNotifications(pageable);
+        Page<CustomerNotification> unreadNotifications = notificationService.getUnreadNotifications(pageable);
         return ResponseEntity.ok().body(unreadNotifications);
     }
 
     @Operation(summary = "Get all notifications", description = "Returns a pageable list of all notifications")
     @GetMapping("/all/{page}/{size}")
-    public ResponseEntity<Page<Notification>> getAllNotifications(@PathVariable int page,
+    public ResponseEntity<Page<CustomerNotification>> getAllNotifications(@PathVariable int page,
             @PathVariable int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Notification> allNotifications = notificationService.getAllNotifications(pageable);
+        Page<CustomerNotification> allNotifications = notificationService.getAllNotifications(pageable);
         return ResponseEntity.ok().body(allNotifications);
     }
 
@@ -110,10 +110,7 @@ public class NotificationController {
             @RequestParam String deviceId) {
         boolean isPresent = customerFcmTokenRepository.isDeviceTokenPresent(deviceId);
         if (isPresent) {
-            Optional<String> oldToken = firebaseService.getOldTokenIfPresent(deviceId);
-            if (oldToken.isPresent()) {
-                return ResponseEntity.ok().body(oldToken.get());
-            }
+            return ResponseEntity.ok().body(customerFcmTokenRepository.getTokenByDeviceId(deviceId).getFcmToken());
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Token not present");
     }
@@ -134,27 +131,7 @@ public class NotificationController {
             case "NOT FOUND":
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("NOT FOUND");
             default:
-                Optional<String> oldToken = firebaseService.getOldTokenIfPresent(deviceId);
-                if (oldToken.isPresent()) {
-                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .body("ERROR: Old token found - " + oldToken.get());
-                } else {
-                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("ERROR");
-                }
-        }
-    }
-
-    @Operation(summary = "Test Firebase connection", description = "Send a test notification to a specific FCM token")
-    @PostMapping("/test-firebase")
-    public ResponseEntity<String> testFirebaseConnection(@RequestParam String firebaseFcmToken,
-                                                        @RequestParam(required = false, defaultValue = "Test Title") String title,
-                                                        @RequestParam(required = false, defaultValue = "Test message from backend.") String body) {
-        
-        boolean sent = firebaseService.sendTestNotificationToToken(firebaseFcmToken, title, body);
-        if (sent) {
-            return ResponseEntity.ok("Notification sent successfully");
-        } else {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to send notification");
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error occurred");
         }
     }
 

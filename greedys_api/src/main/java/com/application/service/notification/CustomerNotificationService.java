@@ -1,6 +1,7 @@
-package com.application.service;
+package com.application.service.notification;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -12,58 +13,50 @@ import org.springframework.transaction.annotation.Transactional;
 import com.application.persistence.dao.customer.CustomerDAO;
 import com.application.persistence.dao.customer.NotificationDAO;
 import com.application.persistence.model.customer.Customer;
-import com.application.persistence.model.customer.Notification;
-import com.application.persistence.model.customer.Notification.Type;
+import com.application.persistence.model.notification.CustomerFcmToken;
+import com.application.persistence.model.notification.CustomerNotification;
 import com.application.persistence.model.reservation.Reservation;
+import com.application.service.CustomerFcmTokenService;
+import com.application.service.FirebaseService;
 import com.application.web.dto.NotificationDto;
 
 @Service
 @Transactional
-public class NotificationService {
+public class CustomerNotificationService {
     private final NotificationDAO notificationDAO;
     private final CustomerDAO userDAO;
+    private final CustomerFcmTokenService customerFcmTokenService;
     private final FirebaseService firebaseService;
 
-    public NotificationService(NotificationDAO notificationDAO, CustomerDAO userDAO, FirebaseService firebaseService) {
+    public CustomerNotificationService(NotificationDAO notificationDAO, CustomerDAO userDAO, FirebaseService firebaseService) {
         this.notificationDAO = notificationDAO;
         this.userDAO = userDAO;
+        this.customerFcmTokenService = null;
         this.firebaseService = firebaseService;
     }
 
-    public Notification createReservationNotification(Reservation reservation,Type type) {
-        Customer user = getCurrentUser();
-        Notification notification = new Notification();
-        notification.setCustomer(user);
-        user.setToReadNotification(user.getToReadNotification() + 1);
-        notification.setReservation(reservation);
-        notification.setType(type);
-        userDAO.save(user);
-        notificationDAO.save(notification);
-        firebaseService.sendFirebaseNotification(notification);
-        return notification;
-    }
-  
     public List<NotificationDto> findByUser(Customer user) {
-        List<Notification> notifications = notificationDAO.findByCustomer(user);
-        return NotificationDto.toDto(notifications);
+        List<CustomerNotification> notifications = notificationDAO.findByCustomer(user);
+        return notifications.stream()
+                .map(notification -> new NotificationDto(
+                    notification.getId(), 
+                    notification.getCustomer().getId(), 
+                    notification.getUnopened(),
+                    notification.getBody(),
+                    notification.getCreationTime()
+
+                )).toList();
     }
 
-    public Optional<Notification> findById(Long id) {
+    public Optional<CustomerNotification> findById(Long id) {
         return notificationDAO.findById(id);
     }
     
     @Transactional
     public void read(Long idNotification) {
-        Notification notification = findById(idNotification).get();
+        CustomerNotification notification = findById(idNotification).get();
         notification.setUnopened(false);
         notificationDAO.save(notification);
-    }
-    
-    @Transactional
-    public void readNotification(Customer currentUser) {
-        Customer user = getCurrentUser();
-        user.setToReadNotification(0);
-        userDAO.save(user);    
     }
     
     public Integer countNotification(Customer currentUser) {
@@ -87,20 +80,20 @@ public class NotificationService {
 
     @Transactional
     public void setNotificationAsRead(Long notificationId, Boolean read) {
-        Optional<Notification> notificationOpt = notificationDAO.findById(notificationId);
+        Optional<CustomerNotification> notificationOpt = notificationDAO.findById(notificationId);
         if (notificationOpt.isPresent()) {
-            Notification notification = notificationOpt.get();
+            CustomerNotification notification = notificationOpt.get();
             notification.setUnopened(!read);
             notificationDAO.save(notification);
         }
     }
 
     @Transactional
-    public Page<Notification> getUnreadNotifications(Pageable pageable) {
+    public Page<CustomerNotification> getUnreadNotifications(Pageable pageable) {
         return notificationDAO.findByCustomerAndUnopenedTrue(getCurrentUser(), pageable);
     }
     //TODO da testare
-    public Page<Notification> getAllNotifications(Pageable pageable) {
+    public Page<CustomerNotification> getAllNotifications(Pageable pageable) {
     Customer currentUser = getCurrentUser();
     if (!currentUser.isEnabled()) {
         throw new IllegalStateException("User is not enabled");
@@ -108,8 +101,10 @@ public class NotificationService {
         return notificationDAO.findAllByCustomer(getCurrentUser(), pageable);
     }
 
-    public void sendCustomerNotification(String title, String body, Long idCustomer) {
-		firebaseService.sendFirebaseCustomerNotification(title, body, idCustomer);
+    public void sendNotification(String title, String body, Map<String, String> data,  Long idCustomer) {
+        List<String > tokens = customerFcmTokenService.getTokensByCustomerId(idCustomer).stream().map(t -> t.getFcmToken()).toList();
+        firebaseService.sendNotification(title, body, data, tokens);
+        
 	}
 
 }

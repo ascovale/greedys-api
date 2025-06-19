@@ -1,33 +1,22 @@
 package com.application.web.dto;
 
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-
-import com.application.persistence.model.customer.Notification;
-import com.application.persistence.model.customer.Notification.Type;
-
+import java.time.Instant;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(name = "NotificationDto", description = "DTO for notification details")
 public class NotificationDto {
 	
 	private Long id;
-	private Type type;
 	private Long idUser;
-	private Long idReservation;
 	private Boolean read;
 	private String text;
-	private Timestamp creationTime;
+	private Instant creationTime;
+
 	
-	
-	
-	public NotificationDto(Long id, Type type, Long idUser, Long idReservation, Boolean read, String text,
-			Timestamp creationTime) {
+	public NotificationDto(Long id, Long idUser, Boolean read, String text,
+			Instant creationTime) {
 		this.id = id;
-		this.type = type;
 		this.idUser = idUser;
-		this.idReservation = idReservation;
 		this.read = !read;
 		this.text = text;
 		this.creationTime = creationTime;
@@ -39,23 +28,11 @@ public class NotificationDto {
 	public void setId(Long id) {
 		this.id = id;
 	}
-	public Type getType() {
-		return type;
-	}
-	public void setType(Type type) {
-		this.type = type;
-	}
 	public Long getIdUser() {
 		return idUser;
 	}
 	public void setIdUser(Long idUser) {
 		this.idUser = idUser;
-	}
-	public Long getIdReservation() {
-		return idReservation;
-	}
-	public void setIdReservation(Long idReservation) {
-		this.idReservation = idReservation;
 	}
 	public String getText() {
 		return text;
@@ -63,11 +40,8 @@ public class NotificationDto {
 	public void setText(String text) {
 		this.text = text;
 	}
-	public Timestamp getCreationTime() {
+	public Instant getCreationTime() {
 		return creationTime;
-	}
-	public void setCreationTime(Timestamp creationTime) {
-		this.creationTime = creationTime;
 	}
 	
 	public Boolean getRead() {
@@ -83,34 +57,4 @@ public class NotificationDto {
 				.append("]");
 		return builder.toString();
 	}
-	public static List<NotificationDto> toDto(List<Notification> notifications) {
-		ArrayList<NotificationDto> list = new ArrayList<NotificationDto>();
-		for(Notification n : notifications) {
-			list.add(new NotificationDto(
-					n.getId(),
-					n.getType(),
-					n.getCustomer().getId(), 
-					null,//n.getReservation().getId(),
-					n.getUnopened(), 
-					n.getText(),
-					n.getCreationTime()
-					));
-		}
- 		return list;
-	}
-	
-	public static NotificationDto toDto(Notification n) {
-		return new NotificationDto(
-					n.getId(),
-					n.getType(),
-					n.getCustomer().getId(), 
-					null,//n.getReservation().getId(),
-					n.getUnopened(), 
-					n.getText(),
-					n.getCreationTime()
-					);
-		
-	}
-
-
 }

@@ -25,7 +25,6 @@ import com.application.persistence.dao.restaurant.RestaurantDAO;
 import com.application.persistence.dao.restaurant.RestaurantUserDAO;
 import com.application.persistence.dao.restaurant.ServiceDAO;
 import com.application.persistence.model.customer.Customer;
-import com.application.persistence.model.customer.Notification.Type;
 import com.application.persistence.model.reservation.Reservation;
 import com.application.persistence.model.reservation.ReservationLog;
 import com.application.persistence.model.reservation.ReservationRequest;
@@ -33,6 +32,7 @@ import com.application.persistence.model.reservation.Slot;
 import com.application.persistence.model.restaurant.Restaurant;
 import com.application.persistence.model.restaurant.user.RestaurantNotification;
 import com.application.persistence.model.restaurant.user.RestaurantUser;
+import com.application.service.notification.CustomerNotificationService;
 import com.application.web.dto.get.ReservationDTO;
 import com.application.web.dto.post.NewReservationDTO;
 import com.application.web.dto.post.admin.AdminNewReservationDTO;
@@ -59,7 +59,7 @@ public class ReservationService {
     private final ServiceDAO serviceDAO;
     private final ClosedDayDAO closedDaysDAO;
     private final RestaurantNotificationService restaurantNotificationService;
-    private final NotificationService customerNotificationService;
+    private final CustomerNotificationService customerNotificationService;
     private final RestaurantDAO restaurantDAO;
     private final RestaurantUserDAO restaurantUserDAO;
     private final CustomerDAO customerDAO;
@@ -68,7 +68,7 @@ public class ReservationService {
     public ReservationService(ReservationDAO reservationDAO, ReservationRequestDAO reservationRequestDAO,
             ReservationLogDAO reservationLogDAO, ServiceDAO serviceDAO, ClosedDayDAO closedDaysDAO,
             RestaurantNotificationService restaurantNotificationService,
-            NotificationService customerNotificationService, RestaurantDAO restaurantDAO,
+            CustomerNotificationService customerNotificationService, RestaurantDAO restaurantDAO,
             RestaurantUserDAO restaurantUserDAO,
             CustomerDAO customerDAO) {
         this.reservationDAO = reservationDAO;
@@ -122,7 +122,9 @@ public class ReservationService {
 
         Customer user = entityManager.getReference(Customer.class, reservationDto.getUserId());
         reservation.setCustomer(user);
-        customerNotificationService.createReservationNotification(reservation, Type.NEW_RESERVATION);
+
+        //TO DO
+        ////customerNotificationService.createReservationNotification(reservation, Type.NEW_RESERVATION);
 
         reservation = reservationDAO.save(reservation);
 
@@ -153,7 +155,7 @@ public class ReservationService {
         restaurantNotificationService.createNotificationsForRestaurant(reservation.getRestaurant(),
                 RestaurantNotification.Type.NEW_RESERVATION);
 
-        customerNotificationService.createReservationNotification(reservation, Type.NEW_RESERVATION);
+        //customerNotificationService.createReservationNotification(reservation, Type.NEW_RESERVATION);
         return new ReservationDTO(reservation);
     }
 
@@ -281,7 +283,7 @@ public class ReservationService {
         reservation.setDeleted(true);
         // reservation.setCancelUser(getCurrentUser());
         reservationDAO.save(reservation);
-        customerNotificationService.createReservationNotification(reservation, Type.CANCEL);
+        //customerNotificationService.createReservationNotification(reservation, Type.CANCEL);
         restaurantNotificationService.createNotificationsForRestaurant(reservation.getRestaurant(),
                 RestaurantNotification.Type.CANCEL);
     }
@@ -299,8 +301,8 @@ public class ReservationService {
     }
 
     @Transactional
-    public void adminModifyReservation(Long oldReservationId, NewReservationDTO dTO, Customer currentUser) {
-        Reservation reservation = reservationDAO.findById(oldReservationId)
+    private Reservation modifyReservation(Long oldId, NewReservationDTO dTO) {
+        Reservation reservation = reservationDAO.findById(oldId)
                 .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
         reservationLogDAO.save(new ReservationLog(reservation, getCurrentUser()));
         reservation.setPax(dTO.getPax());
@@ -308,26 +310,25 @@ public class ReservationService {
         reservation.setNotes(dTO.getNotes());
         reservation.setDate(dTO.getReservationDay());
         reservation.setSlot(entityManager.getReference(Slot.class, dTO.getIdSlot()));
-        reservationLogDAO.save(new ReservationLog(reservation, getCurrentUser()));
-        reservationDAO.save(reservation);
-        customerNotificationService.createReservationNotification(reservation, Type.ALTERED);
-        restaurantNotificationService.createNotificationsForRestaurant(reservation.getRestaurant(),
-                RestaurantNotification.Type.ALTERED);
+        return reservation;
     }
 
-    @Transactional
-    public void restaurantModifyReservation(Long oldReservationId, NewReservationDTO dTO, Customer currentUser) {
-        Reservation reservation = reservationDAO.findById(oldReservationId)
-                .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
-        reservationLogDAO.save(new ReservationLog(reservation, getCurrentUser()));
-        reservation.setPax(dTO.getPax());
-        reservation.setKids(dTO.getKids());
-        reservation.setNotes(dTO.getNotes());
-        reservation.setDate(dTO.getReservationDay());
-        reservation.setSlot(entityManager.getReference(Slot.class, dTO.getIdSlot()));
-        reservationLogDAO.save(new ReservationLog(reservation, getCurrentUser()));
+    public void adminModifyReservation(Long oldReservationId, NewReservationDTO dTO, Customer currentUser) {
+        Reservation reservation = modifyReservation(oldReservationId, dTO);
+        //eventuali altre modifiche da admin
         reservationDAO.save(reservation);
-        customerNotificationService.createReservationNotification(reservation, Type.ALTERED);
+        reservationLogDAO.save(new ReservationLog(reservation, getCurrentUser()));
+        //customerNotificationService.createReservationNotification(reservation, Type.ALTERED);
+        restaurantNotificationService.createNotificationsForRestaurant(reservation.getRestaurant(),
+                RestaurantNotification.Type.ALTERED);
+            
+    }
+
+    public void restaurantModifyReservation(Long oldReservationId, NewReservationDTO dTO, Customer currentUser) {
+        Reservation reservation = modifyReservation(oldReservationId, dTO);
+        reservationDAO.save(reservation);
+        reservationLogDAO.save(new ReservationLog(reservation, getCurrentUser()));
+        //customerNotificationService.createReservationNotification(reservation, Type.ALTERED);
     }
 
     @Transactional
@@ -372,7 +373,7 @@ public class ReservationService {
         reservationDAO.save(reservation);
 
         // Notify the customer of the accepted reservation modification
-        customerNotificationService.createReservationNotification(reservation, Type.ALTERED);
+        //customerNotificationService.createReservationNotification(reservation, Type.ALTERED);
 
         // Delete the reservation request after accepting it
         reservationRequestDAO.delete(reservationRequest);
@@ -387,7 +388,7 @@ public class ReservationService {
             reservation.setSeated(false);
         }
         reservationDAO.save(reservation);
-        customerNotificationService.createReservationNotification(reservation, Type.NO_SHOW);
+        //customerNotificationService.createReservationNotification(reservation, Type.NO_SHOW);
         restaurantNotificationService.createNotificationsForRestaurant(reservation.getRestaurant(),
                 RestaurantNotification.Type.NO_SHOW);
         return reservation;
@@ -406,7 +407,7 @@ public class ReservationService {
             if (noShow)
                 reservation.setSeated(false);
             reservationDAO.save(reservation);
-            customerNotificationService.createReservationNotification(reservation, Type.NO_SHOW);
+            //customerNotificationService.createReservationNotification(reservation, Type.NO_SHOW);
         } else {
             throw new IllegalStateException(
                     "The time limit for marking this reservation as no-show has not passed yet.");
@@ -421,7 +422,7 @@ public class ReservationService {
         if (seated)
             reservation.setNoShow(false);
         reservationDAO.save(reservation);
-        customerNotificationService.createReservationNotification(reservation, Type.SEATED);
+        //customerNotificationService.createReservationNotification(reservation, Type.SEATED);
         restaurantNotificationService.createNotificationsForRestaurant(reservation.getRestaurant(),
                 RestaurantNotification.Type.SEATED);
         return reservation;
@@ -438,7 +439,7 @@ public class ReservationService {
         if (seated)
             reservation.setNoShow(false);
         reservationDAO.save(reservation);
-        customerNotificationService.createReservationNotification(reservation, Type.SEATED);
+        //customerNotificationService.createReservationNotification(reservation, Type.SEATED);
         return reservation;
     }
 
@@ -451,7 +452,7 @@ public class ReservationService {
             reservation.setRejected(false);
         }
         reservationDAO.save(reservation);
-        customerNotificationService.createReservationNotification(reservation, Type.ACCEPTED);
+        //customerNotificationService.createReservationNotification(reservation, Type.ACCEPTED);
         restaurantNotificationService.createNotificationsForRestaurant(reservation.getRestaurant(),
                 RestaurantNotification.Type.ACCEPTED);
         return reservation;
@@ -468,7 +469,7 @@ public class ReservationService {
         if (accepted)
             reservation.setRejected(false);
         reservationDAO.save(reservation);
-        customerNotificationService.createReservationNotification(reservation, Type.SEATED);
+        //customerNotificationService.createReservationNotification(reservation, Type.SEATED);
         return reservation;
     }
 
@@ -481,7 +482,7 @@ public class ReservationService {
             reservation.setAccepted(false);
         }
         reservationDAO.save(reservation);
-        customerNotificationService.createReservationNotification(reservation, Type.REJECTED);
+        //customerNotificationService.createReservationNotification(reservation, Type.REJECTED);
         restaurantNotificationService.createNotificationsForRestaurant(reservation.getRestaurant(),
                 RestaurantNotification.Type.REJECTED);
         return reservation;
@@ -498,7 +499,7 @@ public class ReservationService {
         if (rejected)
             reservation.setAccepted(false);
         reservationDAO.save(reservation);
-        customerNotificationService.createReservationNotification(reservation, Type.SEATED);
+        //customerNotificationService.createReservationNotification(reservation, Type.SEATED);
         return reservation;
     }
 
@@ -529,7 +530,7 @@ public class ReservationService {
         // TODO scrivere il codice per dire se è stata creata o collegata dall'utente
         reservation.setCustomer(null);
         reservationDAO.save(reservation);
-        customerNotificationService.createReservationNotification(reservation, Type.REJECTED);
+        //customerNotificationService.createReservationNotification(reservation, Type.REJECTED);
         restaurantNotificationService.createNotificationsForRestaurant(reservation.getRestaurant(),
                 RestaurantNotification.Type.USERNOTACCEPTEDRESERVATION);
     }

@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.service.EmailService;
-import com.application.service.NotificationService;
 import com.application.service.RestaurantNotificationService;
+import com.application.service.notification.CustomerNotificationService;
 import com.application.web.dto.post.admin.EmailRequestDTO;
 import com.application.web.util.GenericResponse;
 
@@ -28,11 +28,11 @@ public class AdminTestEmailController {
     //TODO: Dividere le mail per la prenotazione e per la registrazione
     //TODO: Bisognerà usare Twilio per inviare anche le mail per grossi volumi valutare aws
     private EmailService emailService;
-    private NotificationService notificationService;
+    private CustomerNotificationService notificationService;
     private RestaurantNotificationService restaurantNotificationService;
 
     @Autowired
-    public AdminTestEmailController(EmailService emailService, NotificationService notificationService, RestaurantNotificationService restaurantNotificationService) {
+    public AdminTestEmailController(EmailService emailService, CustomerNotificationService notificationService, RestaurantNotificationService restaurantNotificationService) {
         this.emailService = emailService;
         this.notificationService = notificationService;
         this.restaurantNotificationService = restaurantNotificationService;
@@ -77,7 +77,7 @@ public class AdminTestEmailController {
     @ApiResponse(responseCode = "400", description = "Invalid request")
     @PostMapping("/send_user_test_notification")
     public GenericResponse sendUserTestNotification(@RequestBody NotificationRequest notificationRequest) {
-        notificationService.sendCustomerNotification(notificationRequest.getTitle(), notificationRequest.getBody(), notificationRequest.getIdRestaurantUser());
+        notificationService.sendNotification(notificationRequest.getTitle(), notificationRequest.getBody(), null, notificationRequest.getIdRestaurantUser());
         return new GenericResponse("Notification sent successfully");
     }
 

@@ -26,7 +26,6 @@ public class CustomerAuthenticationController {
 
     private CustomerAuthenticationService customerAuthenticationService;
 
-    @Autowired
     public CustomerAuthenticationController(CustomerAuthenticationService customerAuthenticationService,
             JwtUtil jwtUtil) {
         this.customerAuthenticationService = customerAuthenticationService;

@@ -73,7 +73,8 @@ public class CustomerAuthenticationService {
 		this.jwtUtil = jwtUtil; 
 	}
 
-	    public ResponseEntity<?> login(AuthRequestDTO authenticationRequest) {
+	    public ResponseEntity<?> 
+		login(AuthRequestDTO authenticationRequest) {
         
         logger.debug("Authentication request received for username: {}", authenticationRequest.getUsername());
 
