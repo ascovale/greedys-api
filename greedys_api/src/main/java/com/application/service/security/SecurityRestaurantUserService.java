@@ -14,7 +14,6 @@ import com.application.persistence.dao.restaurant.RestaurantUserHubDAO;
 import com.application.persistence.model.reservation.Reservation;
 import com.application.persistence.model.restaurant.Restaurant;
 import com.application.persistence.model.restaurant.user.RestaurantUser;
-import com.application.security.jwt.JwtUtil;
 
 @Service("securityRestaurantUserService")
 @Transactional
@@ -24,8 +23,6 @@ public class SecurityRestaurantUserService {
     private ReservationDAO reservationRepository;
     @Autowired
     private RestaurantUserHubDAO restaurantUserHubDAO;
-    @Autowired
-    private JwtUtil jwtUtil;
 
     public boolean hasPermissionOnReservation(Long idReservation) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -155,4 +152,6 @@ public class SecurityRestaurantUserService {
         return false;
       
     }
+
+
 }

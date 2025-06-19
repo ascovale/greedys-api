@@ -314,20 +314,11 @@ public class RestaurantAuthenticationService {
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
-    public List<RestaurantDTO> getRestaurantsForUserHub(String email, String password) {
-        final RestaurantUser restaurantUser = restaurantUserDAO.findByEmail(email);
-        if (restaurantUser == null || restaurantUser.getRestaurantUserHub() == null) {
-            throw new IllegalArgumentException("Invalid email or password");
-        }
-
-        if (!passwordEncoder.matches(password, restaurantUser.getRestaurantUserHub().getPassword())) {
-            throw new IllegalArgumentException("Invalid email or password.");
-        }
-
-        return restaurantUserHubDAO.findAllRestaurantsByHubId(restaurantUser.getRestaurantUserHub().getId())
-                .stream()
-                .map(RestaurantDTO::new)
-                .collect(Collectors.toList());
+    public List<RestaurantDTO> getRestaurantsForUserHub(String email) {
+        return restaurantUserHubDAO.findAllRestaurantsByHubEmail(email)
+        .stream()
+        .map(RestaurantDTO::new)
+        .collect(Collectors.toList());
     }
 
     public AuthResponseDTO loginWithHubSupport(AuthRequestDTO authenticationRequest) {
