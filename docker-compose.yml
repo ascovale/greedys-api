@@ -22,7 +22,7 @@ services:
       - service_account
 
   db:
-    image: mysql:8.0
+    image: mysql:latest
     environment:
       MYSQL_DATABASE: greedys_v1
       MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_password
@@ -43,7 +43,6 @@ services:
 
 networks:
   app-network:
-    driver: overlay
 
 volumes:
   db_data:

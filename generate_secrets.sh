@@ -43,7 +43,6 @@ while [[ -z "$DOMAIN" ]]; do
   done
 done
 
-ALIAS="$DOMAIN"
 DNAME="CN=$DOMAIN, OU=IT, O=Greedys, L=Rome, ST=Rome, C=IT"
 
 # Rimuovo i segreti esistenti (se non esistono, ignoro l'errore)
@@ -56,14 +55,19 @@ echo "Generazione della nuova password..."
 KEYSTORE_PASSWORD=$(openssl rand -hex 12)
 echo "Nuova password generata."
 
-# Salvo la password in un file temporaneo in /dev/shm (in memoria)
-PASSWORD_TMP="/dev/shm/keystore_password.txt"
-echo "$KEYSTORE_PASSWORD" > "$PASSWORD_TMP"
+echo "$KEYSTORE_PASSWORD" | docker secret create keystore_password -
 
 # Genero il nuovo certificato keystore in /dev/shm per non scrivere su disco
 KEYSTORE_TMP="/dev/shm/keystore.p12"
-keytool -genkeypair \
-    -alias "$ALIAS" \
+
+
+# Ensure the keystore file is removed before generation
+if [ -f "$KEYSTORE_TMP" ]; then
+    rm -f "$KEYSTORE_TMP"
+fi
+
+keytool -v -genkeypair \
+    -alias "api.greedys.it" \
     -keyalg RSA \
     -keysize 2048 \
     -validity 365 \
@@ -73,14 +77,18 @@ keytool -genkeypair \
     -keypass "$KEYSTORE_PASSWORD" \
     -dname "$DNAME"
 
+# Verify the keystore file
+if [ ! -f "$KEYSTORE_TMP" ]; then
+    echo "Errore: il file keystore non è stato generato correttamente."
+    exit 1
+fi
+
 # Crea i nuovi segreti Docker
 echo "Creazione del segreto 'keystore'..."
 docker secret create keystore "$KEYSTORE_TMP"
-echo "Creazione del segreto 'keystore_password'..."
-docker secret create keystore_password "$PASSWORD_TMP"
 
 # Pulizia dei file temporanei
-rm "$KEYSTORE_TMP" "$PASSWORD_TMP"
+rm "$KEYSTORE_TMP"
 
 # rimuovo i segreti esistenti (se non esistono, ignoro l'errore)
 docker secret rm service_account 2>/dev/null || true

@@ -1,6 +1,5 @@
 package com.application.persistence.model.admin;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.Entity;
@@ -26,7 +25,7 @@ public class AdminRole {
     	joinColumns = @JoinColumn(name = "admin_role_id"), 
     	inverseJoinColumns = @JoinColumn(name = "admin_privilege_id")
     )	
-    private List<AdminPrivilege> adminPrivileges = new ArrayList<>(); // Ensure modifiable list
+    private List<AdminPrivilege> adminPrivileges;
 
     public AdminRole() {
         super();

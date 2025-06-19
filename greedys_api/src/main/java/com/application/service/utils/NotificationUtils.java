@@ -3,21 +3,46 @@ package com.application.service.utils;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.application.persistence.model.customer.Notification.Type;
 import com.application.persistence.model.restaurant.user.RestaurantNotification;
 
-public class NotificatioUtils { 
-    public static final Map<Type, NotificationTemplate> USER_TEMPLATES = new HashMap<>() {{
-        put(Type.NO_SHOW, new NotificationTemplate("no_show", "è stato segnato un no_show"));
-        put(Type.SEATED, new NotificationTemplate("seated", "You have been seated successfully."));
-        put(Type.UNSEATED, new NotificationTemplate("unseated", "You have been unseated."));
-        put(Type.CANCEL, new NotificationTemplate("cancel", "Your reservation has been cancelled."));
-        put(Type.CONFIRMED, new NotificationTemplate("confirmed", "Your reservation has been confirmed."));
-        put(Type.ALTERED, new NotificationTemplate("altered", "Your reservation details have been altered."));
-        put(Type.NEW_RESERVATION, new NotificationTemplate("new_reservation", "Your reservation has been created by the restaurant."));
-        put(Type.ACCEPTED, new NotificationTemplate("accepted", "Your reservation has been accepted."));
-        put(Type.REJECTED, new NotificationTemplate("rejected", "Your reservation has been rejected."));
-    }};
+public class NotificationUtils {
+
+    public enum CustomerNotificationType {
+        NO_SHOW,
+        SEATED,
+        UNSEATED,
+        CANCEL,
+        CONFIRMED,
+        ALTERED,
+        NEW_RESERVATION,
+        ACCEPTED,
+        REJECTED
+    }
+
+    public static final NotificationTemplate customerTemplate(CustomerNotificationType type) {
+        switch (type) {
+            case NO_SHOW:
+                return new NotificationTemplate("no_show", "A reservation has been marked as no_show.");
+            case SEATED:
+                return new NotificationTemplate("seated", "A reservation has been seated.");
+            case UNSEATED:
+                return new NotificationTemplate("unseated", "A reservation has been unseated.");
+            case CANCEL:
+                return new NotificationTemplate("cancel", "A reservation has been cancelled.");
+            case CONFIRMED:
+                return new NotificationTemplate("confirmed", "A reservation has been confirmed.");
+            case ALTERED:
+                return new NotificationTemplate("altered", "A reservation has been altered.");
+            case NEW_RESERVATION:
+                return new NotificationTemplate("new_reservation", "A new reservation has been made.");
+            case ACCEPTED:
+                return new NotificationTemplate("accepted", "A reservation has been accepted.");
+            case REJECTED:
+                return new NotificationTemplate("rejected", "A reservation has been rejected.");
+            default:
+                throw new IllegalArgumentException("Unknown notification type: " + type);
+        }
+    }
 
     public static final Map<RestaurantNotification.Type, NotificationTemplate> RESTAURANT_TEMPLATES = new HashMap<>() {{
         put(RestaurantNotification.Type.NEW_RESERVATION, new NotificationTemplate("new_reservation", "A new reservation has been made."));
@@ -50,10 +75,6 @@ public class NotificatioUtils {
         public String getMessage() {
             return message;
         }
-    }
-
-    public static Map<Type, NotificationTemplate> getUserTemplates() {
-        return USER_TEMPLATES;
     }
 
     public static Map<RestaurantNotification.Type, NotificationTemplate> getRestaurantTemplates() {

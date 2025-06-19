@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.application.persistence.model.customer.Customer;
-import com.application.persistence.model.customer.Notification;
+import com.application.persistence.model.notification.CustomerNotification;
 import com.application.spring.TwilioConfig;
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.type.PhoneNumber;
@@ -27,9 +27,9 @@ public class WhatsAppService {
         System.out.println("Messaggio inviato a " + phoneNumber);
     }
 
-    public void sendWhatsAppMessage(Notification notification) {
+    public void sendWhatsAppMessage(CustomerNotification notification) {
         String phoneNumber = notification.getCustomer().getPhoneNumber();
-        String message = notification.getText();
+        String message = notification.getBody();
         sendWhatsAppMessage(phoneNumber, message);
     }
   

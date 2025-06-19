@@ -9,10 +9,11 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.application.persistence.model.customer.Notification;
+import com.application.persistence.model.notification.CustomerNotification;
+import com.application.persistence.model.notification.Notification;
 import com.application.persistence.model.restaurant.user.RestaurantNotification;
 import com.application.persistence.model.restaurant.user.RestaurantUser;
-import com.application.service.utils.NotificatioUtils;
+import com.application.service.utils.NotificationUtils;
 
 @Service
 @Transactional
@@ -23,14 +24,9 @@ public class EmailService {
     private JavaMailSender mailSender;
 
     private SimpleMailMessage constructNotificationMessage(Notification notification) {
-        final String recipientAddress = notification.getCustomer().getEmail();
-
-        notification.getType().toString();
-        final String subject = NotificatioUtils.getUserTemplates().get(notification.getType()).getTitle() + "   "
-                + notification.getId().toString();
-        final String message = NotificatioUtils.getUserTemplates().get(notification.getType()).getMessage();
+        final String subject = notification.getTitle();
+        final String message = notification.getBody();
         final SimpleMailMessage email = new SimpleMailMessage();
-        email.setTo(recipientAddress);
         email.setSubject(subject);
         email.setText(message);
         email.setFrom("reservation@greedys.it");
@@ -38,31 +34,15 @@ public class EmailService {
     }
 
     @Async
-    public void sendEmailNotification(Notification notification) {
+    public void sendEmailNotification(CustomerNotification notification, String email) {
         try {
-            final SimpleMailMessage email = constructNotificationMessage(notification);
-            mailSender.send(email);
+            final SimpleMailMessage message = constructNotificationMessage(notification);
+            message.setTo(email);
+            mailSender.send(message);
         } catch (Exception e) {
             // Log the exception and handle it accordingly
             System.err.println("Failed to send email: " + e.getMessage());
         }
-    }
-
-    private SimpleMailMessage constructRestaurantNotificationMessage(RestaurantNotification notification) {
-        RestaurantUser user = notification.getRestaurantUser();
-        final String recipientAddress = user.getEmail();
-        final String subject = NotificatioUtils.getRestaurantTemplates().get(notification.getType()).getTitle()
-                + "   "
-                + notification.getId().toString();
-        final String message = NotificatioUtils.getRestaurantTemplates().get(notification.getType())
-                .getMessage();
-        final SimpleMailMessage email = new SimpleMailMessage();
-        email.setTo(recipientAddress);
-        email.setSubject(subject);
-        email.setText(message);
-        email.setFrom("reservation@greedys.it");
-        return email;
-
     }
 
     @Async
