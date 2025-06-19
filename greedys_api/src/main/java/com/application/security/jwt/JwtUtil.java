@@ -3,8 +3,10 @@ package com.application.security.jwt;
 import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.crypto.SecretKey;
@@ -63,6 +65,9 @@ public class JwtUtil {
 
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
+        claims.put("authorities", userDetails.getAuthorities().stream()
+        .map(Object::toString)
+        .collect(Collectors.toList()));
         return createToken(claims, userDetails.getUsername());
     }
 
@@ -84,7 +89,7 @@ public class JwtUtil {
     public String generateHubToken(RestaurantUserHub user) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("type", "hub");
-        claims.put("hubId", user.getId());
+        claims.put("authorities", hubPrivileges());
         claims.put("email", user.getEmail());
         return Jwts.builder()
                 .setClaims(claims)
@@ -93,5 +98,9 @@ public class JwtUtil {
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
+    }
+
+    private List<String> hubPrivileges() {
+        return List.of("PRIVILEGE_HUB", "PRIVILEGE_CHANGE_PASSWORD");
     }
 }

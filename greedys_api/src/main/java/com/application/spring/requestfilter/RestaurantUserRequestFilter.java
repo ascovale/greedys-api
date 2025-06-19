@@ -49,24 +49,7 @@ public class RestaurantUserRequestFilter extends OncePerRequestFilter {
                 type = (String) ((java.util.Map<?,?>)claims).get("type");
                 String path = request.getRequestURI();
                 System.out.println("[FILTER] Token type: " + type + ", Path: " + path);
-                // Consenti sia a /restaurant/user/auth/select-restaurant che a /restaurant/user/auth/restaurants solo token di tipo hub
-                if ("/restaurant/user/auth/select-restaurant".equals(path) || "/restaurant/user/auth/restaurants".equals(path)) {
-                    System.out.println("[FILTER] Endpoint requires type hub");
-                    if (!"hub".equals(type)) {
-                        System.out.println("[FILTER] Token type is not hub, sending 401");
-                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                        response.getWriter().write("Token must be of type hub for this endpoint.");
-                        return;
-                    }
-                } else {
-                    System.out.println("[FILTER] Endpoint does NOT allow type hub");
-                    if ("hub".equals(type)) {
-                        System.out.println("[FILTER] Token type is hub, sending 401");
-                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                        response.getWriter().write("Token of type hub not allowed for this endpoint.");
-                        return;
-                    }
-                }
+                
             } catch (Exception e) {
                 System.out.println("[FILTER] Exception during claims parsing: " + e.getMessage());
                 // In caso di errore parsing claims, prosegui senza autenticare
@@ -95,7 +78,7 @@ public class RestaurantUserRequestFilter extends OncePerRequestFilter {
                 userDetails = org.springframework.security.core.userdetails.User
                     .withUsername(email) // Use only the email, no ":0"
                     .password("") // Nessuna password
-                    .authorities("ROLE_HUB")
+                    .authorities("PRIVILEGE_HUB","PRIVILEGE_CHANGE_PASSWORD")
                     .build();
                 System.out.println("[FILTER] Created custom UserDetails for hub: " + userDetails.getUsername());
             } else {

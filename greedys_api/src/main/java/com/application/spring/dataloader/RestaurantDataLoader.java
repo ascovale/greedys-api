@@ -189,6 +189,7 @@ public class RestaurantDataLoader {
         final RestaurantPrivilege serviceWritePrivilege = createRestaurantPrivilegeIfNotFound("PRIVILEGE_RESTAURANT_USER_SERVICE_WRITE");
         final RestaurantPrivilege serviceReadPrivilege = createRestaurantPrivilegeIfNotFound("PRIVILEGE_RESTAURANT_USER_SERVICE_READ");
         final RestaurantPrivilege slotWritePrivilege = createRestaurantPrivilegeIfNotFound("PRIVILEGE_RESTAURANT_USER_SLOT_WRITE");
+        final RestaurantPrivilege changePasswordPrivilege = createRestaurantPrivilegeIfNotFound("PRIVILEGE_CHANGE_PASSWORD");
 
         /* PRIVILEGE_VIEW_USERS PRIVILEGE_ADD_MANAGER PRIVILEGE_ADD_CHEF PRIVILEGE_ADD_WAITER PRIVILEGE_ADD_VIEWER PRIVILEGE_DISABLE_MANAGER PRIVILEGE_DISABLE_CHEF PRIVILEGE_DISABLE_WAITER PRIVILEGE_DISABLE_VIEWER PRIVILEGE_CHANGE_ROLE_TO_CHEF PRIVILEGE_CHANGE_ROLE_TO_WAITER PRIVILEGE_CHANGE_ROLE_TO_VIEWER PRIVILEGE_CHANGE_ROLE_TO_MANAGER PRIVILEGE_MODIFY_RESERVATION PRIVILEGE_CANCEL_RESERVATION PRIVILEGE_CHAT_WITH_CUSTOMERS PRIVILEGE_SERVICE_MANAGMENT */
 
@@ -196,16 +197,16 @@ public class RestaurantDataLoader {
         final List<RestaurantPrivilege> ownerPrivileges = new ArrayList<>(Arrays.asList(
             managerWritePrivilege, chefWritePrivilege, waiterWritePrivilege, viewerWritePrivilege,
             roleWritePrivilege, reservationWritePrivilege, serviceWritePrivilege, serviceReadPrivilege,
-            slotWritePrivilege));
+            slotWritePrivilege, changePasswordPrivilege));
 
         final List<RestaurantPrivilege> managerPrivileges = new ArrayList<>(Arrays.asList(
             chefWritePrivilege, waiterWritePrivilege, viewerWritePrivilege,
             roleWritePrivilege, reservationWritePrivilege, serviceWritePrivilege, serviceReadPrivilege,
-            slotWritePrivilege));
+            slotWritePrivilege, changePasswordPrivilege));
 
-        final List<RestaurantPrivilege> viewerPrivileges = new ArrayList<>(Arrays.asList(serviceReadPrivilege));
-        final List<RestaurantPrivilege> chefPrivileges = new ArrayList<>(Arrays.asList(serviceReadPrivilege, slotWritePrivilege));
-        final List<RestaurantPrivilege> waiterPrivileges = new ArrayList<>(Arrays.asList(serviceReadPrivilege));
+        final List<RestaurantPrivilege> viewerPrivileges = new ArrayList<>(Arrays.asList(serviceReadPrivilege, changePasswordPrivilege));
+        final List<RestaurantPrivilege> chefPrivileges = new ArrayList<>(Arrays.asList(serviceReadPrivilege, slotWritePrivilege, changePasswordPrivilege));
+        final List<RestaurantPrivilege> waiterPrivileges = new ArrayList<>(Arrays.asList(serviceReadPrivilege, changePasswordPrivilege));
 
         createRestaurantRoleIfNotFound("ROLE_OWNER", ownerPrivileges);
         createRestaurantRoleIfNotFound("ROLE_MANAGER", managerPrivileges);
