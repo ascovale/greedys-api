@@ -99,8 +99,7 @@ publish:
         $OPENAPI_CLI generate \
           -i "$SPEC_FILE" \
           -g dart-dio \
-          -o "$OUTPUT_DIR" \
-          --additional-properties="apiNameSuffix=Api,pubName=${GROUP}_client"
+          -o "$OUTPUT_DIR"
 
         echo "- Rimuovo spec temporanea"
         rm "$SPEC_FILE"
