@@ -2,6 +2,12 @@ variables:
   TAG_LATEST: ${CI_REGISTRY_IMAGE}:latest
   TAG_COMMIT: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}
   DART_REPO: git@gitlab.com:PsychoOrange/greedys_api_dart_lib.git
+  # Comando per invocare OpenAPI Generator (installato via npm)
+  OPENAPI_CLI: npm exec --yes @openapitools/openapi-generator-cli
+  # Base URL delle spec (modifica se serve)
+  API_DOCS_BASE: "https://api.greedys.it/v3/api-docs"
+  # Elenco dei gruppi da processare
+  API_GROUPS: "restaurant admin customer"
 
 stages:
   - build
@@ -56,29 +62,60 @@ deploy:
 publish:
   image: openjdk:11-jre-slim
   stage: publish
-  script:
-    - echo "Updating apt and installing curl, Node.js, and git..."
+  before_script:
+    - echo "Aggiorno apt, installo curl, git e Node.js…"
     - apt-get update && apt-get install -y curl git
     - curl -sL https://deb.nodesource.com/setup_18.x | bash -
     - apt-get install -y nodejs
     - npm install -g @openapitools/openapi-generator-cli
-    - echo "Fetching OpenAPI specification from spring-app..."
-    - curl -o openapi.spec https://api.greedys.it/v3/api-docs
-    - echo "Setting up GIT_ASKPASS to use PAT..."
+
+    # Setup GIT con PAT
     - echo "echo \$PAT" > /tmp/git-askpass.sh
     - chmod +x /tmp/git-askpass.sh
     - export GIT_ASKPASS=/tmp/git-askpass.sh
-    - echo "Cloning Dart client library repository using HTTPS with PAT..."
+
+    - echo "Clono il repo del client Dart…"
     - git clone https://gitlab.com/PsychoOrange/greedys_api_dart_lib.git
     - cd greedys_api_dart_lib
-    - echo "Configuring Git user name and email..."
     - git config user.email "ci-bot@greedys.com"
-    - git config user.name "Greedys CI Bot"
-    - echo "Generating Dart client library with Dio from OpenAPI specification..."
-    - openapi-generator-cli generate -i ../openapi.spec -g dart-dio -o .
-    - echo "Committing and pushing changes to Dart client library repository..."
+    - git config user.name  "Greedys CI Bot"
+
+  script:
+    - echo "Pulisco cartelle client…"
+    - rm -rf src/restaurant_client src/admin_client src/customer_client
+
+    # Per ogni gruppo: scarica spec e genera client
+    - |
+      for GROUP in $API_GROUPS; do
+        SPEC_FILE="../openapi-${GROUP}.json"
+        OUTPUT_DIR="src/${GROUP}_client"
+
+        echo
+        echo ">>> Generazione client per $GROUP <<<"
+        echo "- Scarico spec da $API_DOCS_BASE/${GROUP}-api"
+        curl -sSf -o "$SPEC_FILE" "${API_DOCS_BASE}/${GROUP}-api"
+
+        echo "- Genero Dart client in $OUTPUT_DIR"
+        $OPENAPI_CLI generate \
+          -i "$SPEC_FILE" \
+          -g dart-dio \
+          -o "$OUTPUT_DIR" \
+          --additional-properties="apiNameSuffix=Api,pubName=${GROUP}_client"
+
+        echo "- Rimuovo spec temporanea"
+        rm "$SPEC_FILE"
+      done
+
+    - echo
+    - echo "Committiamo e pushiamo le modifiche generati…"
     - git add .
-    - git commit -m "Update Dart client library with latest API changes"
-    - git push origin main
+    - |
+      if git diff-index --quiet HEAD; then
+        echo "Nessuna modifica da pushare."
+      else
+        git commit -m "Aggiorna Dart clients: $API_GROUPS"
+        git push origin main
+      fi
+
   only:
     - main
