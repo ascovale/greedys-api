@@ -1,5 +1,7 @@
 package com.application.controller.restaurant;
 
+import java.util.Collection;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.application.persistence.model.restaurant.user.RestaurantUser;
 import com.application.security.jwt.JwtUtil;
 import com.application.service.authentication.RestaurantAuthenticationService;
+import com.application.web.dto.get.RestaurantDTO;
 import com.application.web.dto.post.AuthResponseDTO;
 import com.application.web.dto.post.RestaurantUserSelectRequestDTO;
 
@@ -52,7 +55,7 @@ public class RestaurantAuthenticationController {
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content(mediaType = "application/json"))
     })
     @GetMapping(value = "/restaurants", produces = "application/json")
-    public ResponseEntity<?> restaurants( @Parameter(hidden = true) @RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<Collection<RestaurantDTO>> restaurants( @Parameter(hidden = true) @RequestHeader("Authorization") String authHeader) {
         try {
             LOGGER.info("[DEBUG] Entered /restaurants endpoint");
             Authentication authentication =
@@ -92,7 +95,7 @@ public class RestaurantAuthenticationController {
             return ResponseEntity.ok(restaurantAuthenticationService.getRestaurantsForUserHub(hubEmail));
         } catch (Exception e) {
             LOGGER.error("Failed to retrieve restaurants: {}", e.getMessage(), e);
-            return ResponseEntity.status(401).body("Failed to retrieve restaurants: " + e.getMessage());
+            return ResponseEntity.status(401).build();
         }
     }
 
