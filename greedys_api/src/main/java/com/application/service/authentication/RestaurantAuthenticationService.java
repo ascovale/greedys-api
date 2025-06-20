@@ -241,24 +241,13 @@ public class RestaurantAuthenticationService {
         return new AuthResponseDTO(newJwt, new RestaurantUserDTO(updatedUser));
     }
 
-    public AuthResponseDTO selectRestaurant(String token,RestaurantUserSelectRequestDTO selectRequest) {
-        // Decodifica il JWT hub
-        Claims claims;
-        try {
-            claims = jwtUtil.extractAllClaims(token);
-        } catch (Exception e) {
-            throw new UnsupportedOperationException("Invalid hub token.");
-        }
-        // Verifica che sia un token di tipo hub
-        if (!"hub".equals(claims.get("type"))) {
-            throw new UnsupportedOperationException("Token is not a hub token.");
-        }
-        Long hubId = claims.get("hubId", Long.class);
-        String email = claims.get("email", String.class);
+    public AuthResponseDTO selectRestaurant(Long restaurantId) {
+        // Recupera l'email dell'utente autenticato
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
         // Trova il RestaurantUser con quell'hubId e restaurantId
-        RestaurantUser user = restaurantUserDAO.findByEmailAndRestaurantId(email, selectRequest.getRestaurantId());
-        if (user == null || user.getRestaurantUserHub() == null || !user.getRestaurantUserHub().getId().equals(hubId)) {
+        RestaurantUser user = restaurantUserDAO.findByEmailAndRestaurantId(email, restaurantId);
+        if (user == null) {
             throw new UnsupportedOperationException("User does not have access to this restaurant.");
         }
         if (!user.isEnabled()) {

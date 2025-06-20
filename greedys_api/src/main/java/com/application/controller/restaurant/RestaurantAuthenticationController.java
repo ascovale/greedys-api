@@ -6,10 +6,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.persistence.model.restaurant.user.RestaurantUser;
@@ -50,7 +51,7 @@ public class RestaurantAuthenticationController {
             @ApiResponse(responseCode = "200", description = "List retrieved successfully", content = @Content(mediaType = "application/json")),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content(mediaType = "application/json"))
     })
-    @PostMapping(value = "/restaurants", produces = "application/json")
+    @GetMapping(value = "/restaurants", produces = "application/json")
     public ResponseEntity<?> restaurants( @Parameter(hidden = true) @RequestHeader("Authorization") String authHeader) {
         try {
             LOGGER.info("[DEBUG] Entered /restaurants endpoint");
@@ -95,16 +96,16 @@ public class RestaurantAuthenticationController {
         }
     }
 
-    @PreAuthorize("hasAuthority('PRIVILEGE_HUB') and @securityRestaurantUserService.hasHubPermissionForRestaurant(#selectRequest.restaurantId)")
+    @PreAuthorize("hasAuthority('PRIVILEGE_HUB')") // se si toglie il check, il metodo potrebbe permettere anche il cambio di ristorante per un utente che non è un hub 
     @Operation(summary = "Select a restaurant after intermediate login", description = "Given a hub JWT and a restaurantId, returns a JWT for the selected restaurant user")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Selection successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthResponseDTO.class))),
             @ApiResponse(responseCode = "401", description = "Selection failed", content = @Content(mediaType = "application/json"))
     })
-    @PostMapping(value = "/select-restaurant", produces = "application/json")
-    public ResponseEntity<?> selectRestaurant(@Parameter(hidden = true) @RequestHeader("Authorization") String authHeader,@RequestBody RestaurantUserSelectRequestDTO selectRequest) {
+    @GetMapping(value = "/select-restaurant", produces = "application/json")
+    public ResponseEntity<?> selectRestaurant(@RequestParam Long restaurantId) {
         try {
-            AuthResponseDTO responseDTO = restaurantAuthenticationService.selectRestaurant(authHeader.substring(7),selectRequest);
+            AuthResponseDTO responseDTO = restaurantAuthenticationService.selectRestaurant(restaurantId);
             return ResponseEntity.ok(responseDTO);
         } catch (UnsupportedOperationException e) {
             LOGGER.error("Restaurant selection failed: {}", e.getMessage());
