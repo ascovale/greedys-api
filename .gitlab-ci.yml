@@ -96,10 +96,7 @@ publish:
         curl -sSf -o "$SPEC_FILE" "${API_DOCS_BASE}/${GROUP}-api"
 
         echo "- Genero Dart client in $OUTPUT_DIR"
-        $OPENAPI_CLI generate \
-          -i "$SPEC_FILE" \
-          -g dart-dio \
-          -o "$OUTPUT_DIR"
+        $OPENAPI_CLI generate -i $SPEC_FILE -g dart-dio -o $OUTPUT_DIR
 
         echo "- Rimuovo spec temporanea"
         rm "$SPEC_FILE"
