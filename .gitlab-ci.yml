@@ -82,13 +82,13 @@ publish:
 
   script:
     - echo "Pulisco cartelle client…"
-    - rm -rf src/restaurant_client src/admin_client src/customer_client
+    - rm -rf src/restaurant src/admin src/customer
 
     # Per ogni gruppo: scarica spec e genera client
     - |
       for GROUP in $API_GROUPS; do
-        SPEC_FILE="../openapi-${GROUP}.json"
-        OUTPUT_DIR="src/${GROUP}_client"
+        SPEC_FILE="./openapi-${GROUP}.json"
+        OUTPUT_DIR="./${GROUP}"
 
         echo
         echo ">>> Generazione client per $GROUP <<<"
