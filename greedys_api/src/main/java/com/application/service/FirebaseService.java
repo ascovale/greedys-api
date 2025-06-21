@@ -7,7 +7,7 @@ import java.util.Map;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.application.persistence.dao.restaurant.RestaurantUserDAO;
+import com.application.persistence.dao.restaurant.RUserDAO;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
@@ -22,7 +22,7 @@ public class FirebaseService {
     public static final String SECURED_CHAT_SPECIFIC_USER = "/secured/user/queue/specific-user";
     private GoogleCredentials googleCredentials;
 
-    public FirebaseService(CustomerFcmTokenService customerFcmTokenService,RestaurantUserDAO restaurantUserDAO, RestaurantUserFcmTokenService restaurantFcmTokenService)
+    public FirebaseService(CustomerFcmTokenService customerFcmTokenService,RUserDAO RUserDAO, RUserFcmTokenService restaurantFcmTokenService)
      {
         try {
             this.googleCredentials = GoogleCredentials.fromStream(new FileInputStream("/run/secrets/service_account"))

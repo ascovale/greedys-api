@@ -15,13 +15,13 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "restaurant_user_hub")
-public class RestaurantUserHub {
+public class RUserHub {
     @Id
     @Column(unique = true, nullable = false)
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     @OneToOne(fetch = FetchType.LAZY)
-    private RestaurantUserOptions options;
+    private RUserOptions options;
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private Status status = Status.ENABLED;
@@ -106,11 +106,11 @@ public class RestaurantUserHub {
         return id;
     }
 
-    public RestaurantUserOptions getUserOptions() {
+    public RUserOptions getUserOptions() {
         return options;
     }
 
-    public void setUserOptions(RestaurantUserOptions options) {
+    public void setUserOptions(RUserOptions options) {
         this.options = options;
     }
 

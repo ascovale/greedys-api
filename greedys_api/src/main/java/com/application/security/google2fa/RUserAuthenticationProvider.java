@@ -8,25 +8,25 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
 
-import com.application.persistence.dao.restaurant.RestaurantUserDAO;
-import com.application.persistence.model.restaurant.user.RestaurantUser;
+import com.application.persistence.dao.restaurant.RUserDAO;
+import com.application.persistence.model.restaurant.user.RUser;
 
 @Component
-public class RestaurantUserAuthenticationProvider extends DaoAuthenticationProvider {
+public class RUserAuthenticationProvider extends DaoAuthenticationProvider {
     @Autowired
-    private RestaurantUserDAO userRepository;
+    private RUserDAO userRepository;
 
     @Override
     public Authentication authenticate(Authentication auth) throws AuthenticationException {
-        if (auth.getDetails() instanceof RestaurantUserAuthenticationDetails) {
-            RestaurantUserAuthenticationDetails details = (RestaurantUserAuthenticationDetails) auth.getDetails();
+        if (auth.getDetails() instanceof RUserAuthenticationDetails) {
+            RUserAuthenticationDetails details = (RUserAuthenticationDetails) auth.getDetails();
             if (details.isBypassPasswordCheck()) {
-                System.out.println("\n\n\n\n>>>>>>>>>>>> Entering RestaurantUserAuthenticationProvider.authenticate method");
+                System.out.println("\n\n\n\n>>>>>>>>>>>> Entering RUserAuthenticationProvider.authenticate method");
                 System.out.println("Authenticating user with email:restaurantId : " + auth.getName());
                 System.out.println("Details: " + details);
                 System.out.println("Credentials: " + auth.getCredentials());
 
-                RestaurantUser user = userRepository.findByEmailAndRestaurantId(details.getEmail(), details.getRestaurantId());
+                RUser user = userRepository.findByEmailAndRestaurantId(details.getEmail(), details.getRestaurantId());
                 if (user == null) {
                     throw new BadCredentialsException("Invalid username or restaurant ID");
                 }
@@ -38,7 +38,7 @@ public class RestaurantUserAuthenticationProvider extends DaoAuthenticationProvi
             }
         }
 
-        System.out.println("\n\n\n\n>>>>>>>>>>>> Entering RestaurantUserAuthenticationProvider.authenticate method");
+        System.out.println("\n\n\n\n>>>>>>>>>>>> Entering RUserAuthenticationProvider.authenticate method");
         System.out.println("Authenticating user with email:restaurantId : " + auth.getName());
 
         // Split the username into email and restaurantId
@@ -55,7 +55,7 @@ public class RestaurantUserAuthenticationProvider extends DaoAuthenticationProvi
             throw new BadCredentialsException("Invalid restaurantId format.");
         }
 
-        final RestaurantUser user = userRepository.findByEmailAndRestaurantId(email, restaurantId);
+        final RUser user = userRepository.findByEmailAndRestaurantId(email, restaurantId);
 
         if (user == null) {
             System.out.println("User not found for email: " + email + " and restaurantId: " + restaurantId);

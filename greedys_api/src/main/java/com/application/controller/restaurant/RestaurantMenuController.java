@@ -54,7 +54,7 @@ public class RestaurantMenuController {
         @ApiResponse(responseCode = "401", description = "Unauthorized access"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @PreAuthorize("@securityRestaurantUserService.isMenuOwnedByRestaurant(#menuId, authentication.principal.restaurantId)")
+    @PreAuthorize("@securityRUserService.isMenuOwnedByRestaurant(#menuId, authentication.principal.restaurantId)")
     @GetMapping("/{menuId}/dishes")
     public ResponseEntity<?> getMenuDishes(@PathVariable Long menuId) {
         return ResponseEntity.ok(restaurantMenuService.getMenuDishesByMenuId(menuId));
@@ -67,7 +67,7 @@ public class RestaurantMenuController {
         @ApiResponse(responseCode = "401", description = "Unauthorized access"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @PreAuthorize("@securityRestaurantUserService.isMenuOwnedByRestaurant(#menuId, authentication.principal.restaurantId)")
+    @PreAuthorize("@securityRUserService.isMenuOwnedByRestaurant(#menuId, authentication.principal.restaurantId)")
     @GetMapping("/{menuId}")
     public ResponseEntity<?> getMenuDetails(@PathVariable Long menuId) {
         return ResponseEntity.ok(restaurantMenuService.getMenuById(menuId));
@@ -103,7 +103,7 @@ public class RestaurantMenuController {
         @ApiResponse(responseCode = "401", description = "Unauthorized access"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @PreAuthorize("@securityRestaurantUserService.isMenuOwnedByRestaurant(#newMenuItem.menuId, authentication.principal.restaurantId)")
+    @PreAuthorize("@securityRUserService.isMenuOwnedByRestaurant(#newMenuItem.menuId, authentication.principal.restaurantId)")
     @PostMapping("/dishes/add")
     public void addDishToMenu(@RequestBody NewMenuDishDTO newMenuItem) {
         restaurantMenuService.addMenuDish(newMenuItem);

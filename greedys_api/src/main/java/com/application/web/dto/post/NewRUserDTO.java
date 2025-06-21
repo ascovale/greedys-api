@@ -8,8 +8,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-@Schema(name = "NewRestaurantUserDTO", description = "DTO for creating a new restaurant user")
-public class NewRestaurantUserDTO {
+@Schema(name = "NewRUserDTO", description = "DTO for creating a new restaurant user")
+public class NewRUserDTO {
 
   @NotNull
     @Size(min = 1, message = "{Size.companyUserDto.firstName}")
@@ -95,10 +95,10 @@ public class NewRestaurantUserDTO {
         this.restaurantId = restaurantId;
     }
 
-    public NewRestaurantUserDTO() {
+    public NewRUserDTO() {
     }
 
-    public NewRestaurantUserDTO(String firstName, String lastName, String password, String matchingPassword, String email, Integer role, Long restaurantId) {
+    public NewRUserDTO(String firstName, String lastName, String password, String matchingPassword, String email, Integer role, Long restaurantId) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.password = password;

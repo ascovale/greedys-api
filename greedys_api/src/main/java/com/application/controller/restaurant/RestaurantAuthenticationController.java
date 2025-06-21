@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.application.persistence.model.restaurant.user.RestaurantUser;
+import com.application.persistence.model.restaurant.user.RUser;
 import com.application.security.jwt.JwtUtil;
 import com.application.service.authentication.RestaurantAuthenticationService;
 import com.application.web.dto.get.RestaurantDTO;
@@ -74,12 +74,12 @@ public class RestaurantAuthenticationController {
             String hubEmail = null;
             Object principal = authentication.getPrincipal();
             LOGGER.info("[DEBUG] Principal class: {}", principal != null ? principal.getClass().getName() : "null");
-            if (principal instanceof RestaurantUser) {
-                RestaurantUser restaurantUser = (RestaurantUser) principal;
-                hubEmail = restaurantUser.getEmail();
-                LOGGER.info("[DEBUG] Extracted hubEmail from RestaurantUser: {}", hubEmail);
+            if (principal instanceof RUser) {
+                RUser RUser = (RUser) principal;
+                hubEmail = RUser.getEmail();
+                LOGGER.info("[DEBUG] Extracted hubEmail from RUser: {}", hubEmail);
             } else {
-                LOGGER.info("[DEBUG] Principal is not RestaurantUser, checking Authorization header");
+                LOGGER.info("[DEBUG] Principal is not RUser, checking Authorization header");
                 if (authHeader == null || !authHeader.toLowerCase().startsWith("bearer ")) {
                     LOGGER.warn("[DEBUG] Missing or invalid Authorization header");
                     return ResponseEntity.status(400).body("Bad Request: Missing or invalid Authorization header");

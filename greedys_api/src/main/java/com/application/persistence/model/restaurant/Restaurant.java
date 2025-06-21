@@ -8,7 +8,7 @@ import java.util.List;
 import com.application.persistence.model.Image;
 import com.application.persistence.model.menu.Dish;
 import com.application.persistence.model.reservation.Service;
-import com.application.persistence.model.restaurant.user.RestaurantUser;
+import com.application.persistence.model.restaurant.user.RUser;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -56,7 +56,7 @@ public class Restaurant {
 	@OneToMany(fetch = FetchType.EAGER, mappedBy = "restaurant")
 	private List<Service> services;
 	@OneToMany(mappedBy = "restaurant")
-	private Collection<RestaurantUser> restaurantUsers;
+	private Collection<RUser> RUsers;
 	@OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "restaurant")
 	// @JsonManagedReference
 	private List<Image> restaurantImages;
@@ -141,12 +141,12 @@ public class Restaurant {
 		this.restaurantTypes = restaurantTypes;
 	}
 
-	public Collection<RestaurantUser> getRestaurantUsers() {
-		return restaurantUsers;
+	public Collection<RUser> getRUsers() {
+		return RUsers;
 	}
 
-	public void setRestaurantUsers(Collection<RestaurantUser> restaurantUsers) {
-		this.restaurantUsers = restaurantUsers;
+	public void setRUsers(Collection<RUser> RUsers) {
+		this.RUsers = RUsers;
 	}
 
 	public List<Image> getRestaurantImages() {

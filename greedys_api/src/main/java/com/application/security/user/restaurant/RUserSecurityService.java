@@ -12,23 +12,23 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.application.persistence.dao.restaurant.RestaurantUserPasswordResetTokenDAO;
-import com.application.persistence.model.restaurant.user.RestaurantUser;
-import com.application.persistence.model.restaurant.user.RestaurantUserPasswordResetToken;
+import com.application.persistence.dao.restaurant.RUserPasswordResetTokenDAO;
+import com.application.persistence.model.restaurant.user.RUser;
+import com.application.persistence.model.restaurant.user.RUserPasswordResetToken;
 import com.application.security.user.ISecurityUserService;
 
 @Service
 @Transactional
-@Qualifier("restaurantUserSecurityService")
-public class RestaurantUserSecurityService implements ISecurityUserService {
+@Qualifier("RUserSecurityService")
+public class RUserSecurityService implements ISecurityUserService {
 
     @Autowired
-    private RestaurantUserPasswordResetTokenDAO passwordTokenRepository;
+    private RUserPasswordResetTokenDAO passwordTokenRepository;
 
     // API
     @Override
     public String validatePasswordResetToken(String token) {
-        final RestaurantUserPasswordResetToken passToken = passwordTokenRepository.findByToken(token);
+        final RUserPasswordResetToken passToken = passwordTokenRepository.findByToken(token);
         if ((passToken == null)) {
             return "invalidToken";
         }
@@ -37,7 +37,7 @@ public class RestaurantUserSecurityService implements ISecurityUserService {
             return "expired";
         }
 
-        final RestaurantUser user = passToken.getRestaurantUser();
+        final RUser user = passToken.getRUser();
         final Authentication auth = new UsernamePasswordAuthenticationToken(user, null, Arrays.asList(new SimpleGrantedAuthority("CHANGE_PASSWORD_PRIVILEGE")));
         SecurityContextHolder.getContext().setAuthentication(auth);
         return null;

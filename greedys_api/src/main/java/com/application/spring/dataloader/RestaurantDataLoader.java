@@ -17,7 +17,7 @@ import com.application.persistence.dao.restaurant.RestaurantCategoryDAO;
 import com.application.persistence.dao.restaurant.RestaurantDAO;
 import com.application.persistence.dao.restaurant.RestaurantPrivilegeDAO;
 import com.application.persistence.dao.restaurant.RestaurantRoleDAO;
-import com.application.persistence.dao.restaurant.RestaurantUserDAO;
+import com.application.persistence.dao.restaurant.RUserDAO;
 import com.application.persistence.dao.restaurant.ServiceDAO;
 import com.application.persistence.dao.restaurant.ServiceTypeDAO;
 import com.application.persistence.dao.restaurant.SlotDAO;
@@ -28,7 +28,7 @@ import com.application.persistence.model.restaurant.Restaurant;
 import com.application.persistence.model.restaurant.RestaurantCategory;
 import com.application.persistence.model.restaurant.user.RestaurantPrivilege;
 import com.application.persistence.model.restaurant.user.RestaurantRole;
-import com.application.persistence.model.restaurant.user.RestaurantUser;
+import com.application.persistence.model.restaurant.user.RUser;
 import com.application.service.RestaurantService;
 import com.application.web.dto.post.NewRestaurantDTO;
 
@@ -52,7 +52,7 @@ public class RestaurantDataLoader {
     @Autowired
     private RestaurantCategoryDAO restaurantCategoryDAO;
     @Autowired
-    private RestaurantUserDAO restaurantUserDAO;
+    private RUserDAO RUserDAO;
 
     private static final Logger logger = LoggerFactory.getLogger(RestaurantDataLoader.class);
 
@@ -75,9 +75,9 @@ public class RestaurantDataLoader {
         restaurant = restaurantDAO.findByName("La Soffitta Renovatio");
         restaurant.setStatus(Restaurant.Status.ENABLED);
         restaurantDAO.save(restaurant);
-        RestaurantUser ru = restaurantUserDAO.findByEmail("info@lasoffittarenovatio.it");
-        ru.setStatus(RestaurantUser.Status.ENABLED);
-        restaurantUserDAO.save(ru);
+        RUser ru = RUserDAO.findByEmail("info@lasoffittarenovatio.it");
+        ru.setStatus(RUser.Status.ENABLED);
+        RUserDAO.save(ru);
 
         ServiceType pranzoType = serviceTypeDAO.findByName("Lunch");
         Service pranzo = new Service();

@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.application.security.jwt.JwtUtil;
-import com.application.security.user.restaurant.RestaurantUserDetailsService;
+import com.application.security.user.restaurant.RUserDetailsService;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -18,12 +18,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 @Component
-public class RestaurantUserRequestFilter extends OncePerRequestFilter {
+public class RUserRequestFilter extends OncePerRequestFilter {
     
-    private RestaurantUserDetailsService userDetailsService;
+    private RUserDetailsService userDetailsService;
     private JwtUtil jwtUtil;
 
-    public RestaurantUserRequestFilter(RestaurantUserDetailsService userDetailsService, JwtUtil jwtUtil) {
+    public RUserRequestFilter(RUserDetailsService userDetailsService, JwtUtil jwtUtil) {
         this.userDetailsService = userDetailsService;
         this.jwtUtil = jwtUtil;
     }

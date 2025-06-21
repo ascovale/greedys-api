@@ -1,7 +1,7 @@
 package com.application.controller.Validators;
 
 import com.application.web.dto.post.NewCustomerDTO;
-import com.application.web.dto.post.NewRestaurantUserDTO;
+import com.application.web.dto.post.NewRUserDTO;
 import com.application.web.dto.post.admin.NewAdminDTO;
 
 import jakarta.validation.ConstraintValidator;
@@ -21,9 +21,9 @@ public class PasswordMatchesValidator implements ConstraintValidator<PasswordMat
         } else if (obj instanceof NewAdminDTO) {
             NewAdminDTO admin = (NewAdminDTO) obj;
             return admin.getPassword().equals(admin.getMatchingPassword());
-        } else if (obj instanceof NewRestaurantUserDTO) {
-            NewRestaurantUserDTO restaurantUser = (NewRestaurantUserDTO) obj;
-            return restaurantUser.getPassword().equals(restaurantUser.getMatchingPassword());
+        } else if (obj instanceof NewRUserDTO) {
+            NewRUserDTO RUser = (NewRUserDTO) obj;
+            return RUser.getPassword().equals(RUser.getMatchingPassword());
         }
             throw new IllegalArgumentException("Unsupported object type");
         

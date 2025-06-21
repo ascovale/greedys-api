@@ -2,7 +2,7 @@ package com.application.web.dto;
 
 import java.util.List;
 
-public class RestaurantUserHubAuthResponseDTO {
+public class RUserHubAuthResponseDTO {
     private String token;
     private List<RestaurantInfo> restaurants;
 

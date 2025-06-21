@@ -178,9 +178,9 @@ public class AdminRestaurantController {
 			@ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class))),
 			@ApiResponse(responseCode = "404", description = "Restaurant or user not found")
 	})
-	@PostMapping("{restaurantUserId}/accept")
-	public GenericResponse acceptUser(@PathVariable Long restaurantUserId) {
-		restaurantUserService.acceptRestaurantUser(restaurantUserId);
+	@PostMapping("{RUserId}/accept")
+	public GenericResponse acceptUser(@PathVariable Long RUserId) {
+		RUserService.acceptRUser(RUserId);
 		return new GenericResponse("success");
 	}
 */

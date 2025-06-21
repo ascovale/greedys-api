@@ -6,23 +6,23 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.application.persistence.dao.restaurant.RestaurantUserDAO;
-import com.application.persistence.model.restaurant.user.RestaurantUser;
+import com.application.persistence.dao.restaurant.RUserDAO;
+import com.application.persistence.model.restaurant.user.RUser;
 import com.application.security.LoginAttemptService;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-@Service("restaurantUserDetailsService")
+@Service("RUserDetailsService")
 @Transactional
-public class RestaurantUserDetailsService implements UserDetailsService {
+public class RUserDetailsService implements UserDetailsService {
 
-    private final RestaurantUserDAO restaurantUserDAO;
+    private final RUserDAO RUserDAO;
     private final LoginAttemptService loginAttemptService;
     private final HttpServletRequest request;
 
-    public RestaurantUserDetailsService(RestaurantUserDAO restaurantUserDAO, LoginAttemptService loginAttemptService,
+    public RUserDetailsService(RUserDAO RUserDAO, LoginAttemptService loginAttemptService,
             HttpServletRequest request) {
-        this.restaurantUserDAO = restaurantUserDAO;
+        this.RUserDAO = RUserDAO;
         this.loginAttemptService = loginAttemptService;
         this.request = request;
     }
@@ -48,7 +48,7 @@ public class RestaurantUserDetailsService implements UserDetailsService {
             throw new UsernameNotFoundException("Invalid restaurantId format.");
         }
 
-        RestaurantUser user = restaurantUserDAO.findByEmailAndRestaurantId(email, restaurantId);
+        RUser user = RUserDAO.findByEmailAndRestaurantId(email, restaurantId);
         if (user == null) {
             throw new UsernameNotFoundException("No user found with email: " + email + " and restaurant ID: " + restaurantId);
         }
@@ -59,11 +59,11 @@ public class RestaurantUserDetailsService implements UserDetailsService {
         return user;
     }
 
-    public UserDetails loadUserById(final Long restaurantUserId) throws UsernameNotFoundException {
+    public UserDetails loadUserById(final Long RUserId) throws UsernameNotFoundException {
         try {
-            final RestaurantUser user = restaurantUserDAO.findById(restaurantUserId).orElse(null);
+            final RUser user = RUserDAO.findById(RUserId).orElse(null);
             if (user == null) {
-                throw new UsernameNotFoundException("No user found with ID: " + restaurantUserId);
+                throw new UsernameNotFoundException("No user found with ID: " + RUserId);
             }
 
             // Forza il caricamento lazy delle autorità

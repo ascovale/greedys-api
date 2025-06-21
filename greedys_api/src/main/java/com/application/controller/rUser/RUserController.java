@@ -1,4 +1,4 @@
-package com.application.controller.restaurantUser;
+package com.application.controller.rUser;
 
 import java.util.Locale;
 
@@ -19,10 +19,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.application.controller.utils.ControllerUtils;
 import com.application.persistence.dao.restaurant.RestaurantRoleDAO;
-import com.application.persistence.model.restaurant.user.RestaurantUser;
-import com.application.service.RestaurantUserService;
-import com.application.web.dto.get.RestaurantUserDTO;
-import com.application.web.dto.post.NewRestaurantUserDTO;
+import com.application.persistence.model.restaurant.user.RUser;
+import com.application.service.RUserService;
+import com.application.web.dto.get.RUserDTO;
+import com.application.web.dto.post.NewRUserDTO;
 import com.application.web.dto.put.UpdatePasswordDTO;
 import com.application.web.error.InvalidOldPasswordException;
 import com.application.web.util.GenericResponse;
@@ -43,13 +43,13 @@ import jakarta.validation.Valid;
 @SecurityRequirement(name = "restaurantBearerAuth")
 public class RUserController {
 
-    private final RestaurantUserService restaurantUserService;
+    private final RUserService RUserService;
     private final MessageSource messages;
     private final RestaurantRoleDAO roleDAO;
 
-    public RUserController(RestaurantUserService restaurantUserService, MessageSource messages, RestaurantRoleDAO roleDAO) {
+    public RUserController(RUserService RUserService, MessageSource messages, RestaurantRoleDAO roleDAO) {
         this.messages = messages;
-        this.restaurantUserService = restaurantUserService;
+        this.RUserService = RUserService;
         this.roleDAO = roleDAO;
     }
 
@@ -57,22 +57,22 @@ public class RUserController {
      * Assigns a specific role to a restaurant user.
      *
      * @param role            The role to assign.
-     * @param restaurantUserId The ID of the restaurant user.
+     * @param RUserId The ID of the restaurant user.
      * @return ResponseEntity containing the updated user details.
      */
     @Operation(summary = "Add a role to a restaurant user", description = "Assign a specific role to an existing restaurant user")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Role assigned successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = RestaurantUserDTO.class))),
+            @ApiResponse(responseCode = "200", description = "Role assigned successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = RUserDTO.class))),
             @ApiResponse(responseCode = "404", description = "User or role not found"),
             @ApiResponse(responseCode = "400", description = "Invalid role")
     })
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_' + #role.toUpperCase() + '_WRITE')")
     @PostMapping(value = "/add_role")
-    public ResponseEntity<RestaurantUserDTO> addRoleToRestaurantUser(
+    public ResponseEntity<RUserDTO> addRoleToRUser(
             @RequestParam String role,
-            @RequestParam Long restaurantUserId) {
+            @RequestParam Long RUserId) {
         validateRole(role);
-        RestaurantUserDTO updatedUser = restaurantUserService.addRestaurantUserRole(restaurantUserId, "ROLE_" + role.toUpperCase());
+        RUserDTO updatedUser = RUserService.addRUserRole(RUserId, "ROLE_" + role.toUpperCase());
         return ResponseEntity.ok(updatedUser);
     }
 
@@ -80,22 +80,22 @@ public class RUserController {
      * Removes a specific role from a restaurant user.
      *
      * @param role            The role to remove.
-     * @param restaurantUserId The ID of the restaurant user.
+     * @param RUserId The ID of the restaurant user.
      * @return ResponseEntity containing the updated user details.
      */
     @Operation(summary = "Remove a role from a restaurant user", description = "Remove a specific role from an existing restaurant user")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Role removed successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = RestaurantUserDTO.class))),
+            @ApiResponse(responseCode = "200", description = "Role removed successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = RUserDTO.class))),
             @ApiResponse(responseCode = "404", description = "User or role not found"),
             @ApiResponse(responseCode = "400", description = "Invalid role")
     })
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_' + #role.toUpperCase() + '_WRITE')")
     @PostMapping(value = "/remove_role")
-    public ResponseEntity<RestaurantUserDTO> removeRoleFromRestaurantUser(
+    public ResponseEntity<RUserDTO> removeRoleFromRUser(
             @RequestParam String role,
-            @RequestParam Long restaurantUserId) {
+            @RequestParam Long RUserId) {
         validateRole(role);
-        RestaurantUserDTO updatedUser = restaurantUserService.removeRestaurantUserRole(restaurantUserId, "ROLE_" + role.toUpperCase());
+        RUserDTO updatedUser = RUserService.removeRUserRole(RUserId, "ROLE_" + role.toUpperCase());
         return ResponseEntity.ok(updatedUser);
     }
 
@@ -114,7 +114,7 @@ public class RUserController {
     /**
      * Disables a restaurant user.
      *
-     * @param restaurantUserId The ID of the restaurant user to disable.
+     * @param RUserId The ID of the restaurant user to disable.
      * @return ResponseEntity with HTTP status.
      */
     @Operation(summary = "Disable a restaurant user", description = "Disable a restaurant user")
@@ -123,9 +123,9 @@ public class RUserController {
             @ApiResponse(responseCode = "404", description = "User or restaurant not found")
     })
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_MANAGER_WRITE')")
-    @DeleteMapping(value = "/disable_user/{restaurantUserId}")
-    public ResponseEntity<Void> disableRestaurantUser(@PathVariable Long restaurantUserId) {
-        restaurantUserService.disableRestaurantUser(ControllerUtils.getCurrentRestaurantUser().getId(), restaurantUserId);
+    @DeleteMapping(value = "/disable_user/{RUserId}")
+    public ResponseEntity<Void> disableRUser(@PathVariable Long RUserId) {
+        RUserService.disableRUser(ControllerUtils.getCurrentRUser().getId(), RUserId);
         return ResponseEntity.ok().build();
     }
 
@@ -146,10 +146,10 @@ public class RUserController {
     public GenericResponse changeUserPassword(
             @Parameter(description = "Locale for response messages") final Locale locale,
             @Parameter(description = "DTO containing the old and new password", required = true) @Valid UpdatePasswordDTO passwordDto) {
-        if (!restaurantUserService.checkIfValidOldPassword(getRestaurantUserId(), passwordDto.getOldPassword())) {
+        if (!RUserService.checkIfValidOldPassword(getRUserId(), passwordDto.getOldPassword())) {
             throw new InvalidOldPasswordException();
         }
-        restaurantUserService.changeRestaurantUserPassword(getRestaurantUserId(), passwordDto.getNewPassword());
+        RUserService.changeRUserPassword(getRUserId(), passwordDto.getNewPassword());
         return new GenericResponse(messages.getMessage("message.updatePasswordSuc", null, locale));
     }
 
@@ -166,8 +166,8 @@ public class RUserController {
             @ApiResponse(responseCode = "404", description = "User not found")
     })
     @GetMapping("/id")
-    public Long getRestaurantUserId() {
-        return getCurrentRestaurantUser().getId();
+    public Long getRUserId() {
+        return getCurrentRUser().getId();
     }
 
     /**
@@ -175,13 +175,13 @@ public class RUserController {
      *
      * @return The current authenticated restaurant user, or null if not authenticated.
      */
-    private RestaurantUser getCurrentRestaurantUser() {
+    private RUser getCurrentRUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.getPrincipal() instanceof RestaurantUser) {
+        if (authentication != null && authentication.getPrincipal() instanceof RUser) {
             System.out.println("\n\n\n\nAuthenticated restaurant user found.\n\n\n");
             System.out.println("Authorities: " + authentication.getAuthorities());
             System.out.println("User: " + authentication.getPrincipal());
-            return (RestaurantUser) authentication.getPrincipal();
+            return (RUser) authentication.getPrincipal();
         }
         System.out.println("\n\n\n\nNo authenticated restaurant user found.\n\n\n");
         return null;
@@ -193,14 +193,14 @@ public class RUserController {
     @PostMapping(value = "/new")
     @Operation(summary = "Add a user to a restaurant", description = "Add a new user to a restaurant")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = RestaurantUserDTO.class))),
+            @ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = RUserDTO.class))),
             @ApiResponse(responseCode = "404", description = "Restaurant not found"),
             @ApiResponse(responseCode = "400", description = "Invalid request")
     })
-    public ResponseEntity<RestaurantUserDTO> addRestaurantUserToRestaurant(
-            @RequestBody NewRestaurantUserDTO restaurantUserDTO,
+    public ResponseEntity<RUserDTO> addRUserToRestaurant(
+            @RequestBody NewRUserDTO RUserDTO,
             @RequestParam Long restaurantId) {
-        RestaurantUserDTO createdUser = restaurantUserService.addRestaurantUserToRestaurant(restaurantUserDTO, restaurantId);
+        RUserDTO createdUser = RUserService.addRUserToRestaurant(RUserDTO, restaurantId);
         return new ResponseEntity<>(createdUser, HttpStatus.OK);
     }
 
@@ -210,15 +210,15 @@ public class RUserController {
     @PostMapping(value = "/new_with_role")
     @Operation(summary = "Add a user with a role to a restaurant", description = "Add a new user with a specific role to a restaurant")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = RestaurantUserDTO.class))),
+            @ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = RUserDTO.class))),
             @ApiResponse(responseCode = "404", description = "Restaurant or role not found"),
             @ApiResponse(responseCode = "400", description = "Invalid request")
     })
-    public ResponseEntity<RestaurantUserDTO> addRestaurantUserToRestaurantWithRole(
-            @RequestBody NewRestaurantUserDTO restaurantUserDTO,
+    public ResponseEntity<RUserDTO> addRUserToRestaurantWithRole(
+            @RequestBody NewRUserDTO RUserDTO,
             @RequestParam Long restaurantId,
             @RequestParam String roleName) {
-        RestaurantUserDTO createdUser = restaurantUserService.addRestaurantUserToRestaurantWithRole(restaurantUserDTO, restaurantId, roleName);
+        RUserDTO createdUser = RUserService.addRUserToRestaurantWithRole(RUserDTO, restaurantId, roleName);
         return new ResponseEntity<>(createdUser, HttpStatus.OK);
     }
 
@@ -227,17 +227,17 @@ public class RUserController {
      */
     @Operation(summary = "Get restaurant user details", description = "Retrieve details of the current restaurant user")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = RestaurantUserDTO.class))),
+            @ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = RUserDTO.class))),
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
     @GetMapping("/get")
-    public ResponseEntity<RestaurantUserDTO> getRestaurantUserDetails() {
-        RestaurantUser currentUser = getCurrentRestaurantUser();
+    public ResponseEntity<RUserDTO> getRUserDetails() {
+        RUser currentUser = getCurrentRUser();
         if (currentUser == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        RestaurantUserDTO userDTO = new RestaurantUserDTO(currentUser);
+        RUserDTO userDTO = new RUserDTO(currentUser);
         return new ResponseEntity<>(userDTO, HttpStatus.OK);
     }
 }

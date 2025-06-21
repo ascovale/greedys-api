@@ -23,25 +23,27 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 
-import com.application.persistence.dao.restaurant.RestaurantUserDAO;
-import com.application.persistence.dao.restaurant.RestaurantUserHubDAO;
-import com.application.persistence.dao.restaurant.RestaurantUserPasswordResetTokenDAO;
+import com.application.persistence.dao.restaurant.RUserDAO;
+import com.application.persistence.dao.restaurant.RUserHubDAO;
+import com.application.persistence.dao.restaurant.RUserPasswordResetTokenDAO;
 import com.application.persistence.model.restaurant.Restaurant;
 import com.application.persistence.model.restaurant.user.RestaurantPrivilege;
-import com.application.persistence.model.restaurant.user.RestaurantUser;
-import com.application.persistence.model.restaurant.user.RestaurantUserHub;
-import com.application.persistence.model.restaurant.user.RestaurantUserPasswordResetToken;
-import com.application.persistence.model.restaurant.user.RestaurantUserVerificationToken;
-import com.application.security.google2fa.RestaurantUserAuthenticationDetails;
+import com.application.persistence.model.restaurant.user.RUser;
+import com.application.persistence.model.restaurant.user.RUserHub;
+import com.application.persistence.model.restaurant.user.RUserPasswordResetToken;
+import com.application.persistence.model.restaurant.user.RUserVerificationToken;
+import com.application.security.google2fa.RUserAuthenticationDetails;
 import com.application.security.jwt.JwtUtil;
 import com.application.security.user.ISecurityUserService;
 import com.application.service.EmailService;
-import com.application.service.RestaurantUserService;
+import com.application.service.RUserService;
 import com.application.web.dto.get.RestaurantDTO;
-import com.application.web.dto.get.RestaurantUserDTO;
+import com.application.web.dto.AuthRequestGoogleDTO;
+import com.application.web.dto.get.RUserDTO;
 import com.application.web.dto.post.AuthRequestDTO;
 import com.application.web.dto.post.AuthResponseDTO;
-import com.application.web.dto.post.RestaurantUserSelectRequestDTO;
+import com.application.web.dto.post.NewCustomerDTO;
+import com.application.web.dto.post.RUserSelectRequestDTO;
 import com.application.web.util.GenericResponse;
 
 import io.jsonwebtoken.Claims;
@@ -55,59 +57,62 @@ public class RestaurantAuthenticationService {
     private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
     private final AuthenticationManager authenticationManager;
-    private final RestaurantUserService restaurantUserService;
+    private final GoogleAuthService googleAuthService;
+    private final RUserService RUserService;
     private final JwtUtil jwtUtil;
-    private final RestaurantUserPasswordResetTokenDAO passwordTokenRepository;
+    private final RUserPasswordResetTokenDAO passwordTokenRepository;
     private final MessageSource messages;
     private final EmailService mailService;
-    private final ISecurityUserService securityRestaurantUserService;
-    private final RestaurantUserDAO restaurantUserDAO;
-    private final RestaurantUserHubDAO restaurantUserHubDAO;
+    private final ISecurityUserService securityRUserService;
+    private final RUserDAO RUserDAO;
+    private final RUserHubDAO RUserHubDAO;
     private final PasswordEncoder passwordEncoder;
 
     public RestaurantAuthenticationService(
             @Qualifier("restaurantAuthenticationManager") AuthenticationManager authenticationManager,
-            RestaurantUserService restaurantUserService,
-            RestaurantUserDAO restaurantUserDAO,
+            RUserService RUserService,
+            RUserDAO RUserDAO,
             JwtUtil jwtUtil,
-            RestaurantUserPasswordResetTokenDAO passwordTokenRepository,
+            RUserPasswordResetTokenDAO passwordTokenRepository,
             EmailService mailService,
-            @Qualifier("restaurantUserSecurityService") ISecurityUserService securityRestaurantUserService,
+            @Qualifier("RUserSecurityService") ISecurityUserService securityRUserService,
             MessageSource messages,
-            RestaurantUserHubDAO restaurantUserHubDAO,
-            PasswordEncoder passwordEncoder) {
+            RUserHubDAO RUserHubDAO,
+            PasswordEncoder passwordEncoder,
+            GoogleAuthService googleAuthService) {
         this.authenticationManager = authenticationManager;
-        this.restaurantUserService = restaurantUserService;
+        this.RUserService = RUserService;
         this.jwtUtil = jwtUtil;
         this.passwordTokenRepository = passwordTokenRepository;
         this.messages = messages;
         this.mailService = mailService;
-        this.securityRestaurantUserService = securityRestaurantUserService;
-        this.restaurantUserDAO = restaurantUserDAO;
-        this.restaurantUserHubDAO = restaurantUserHubDAO;
+        this.securityRUserService = securityRUserService;
+        this.RUserDAO = RUserDAO;
+        this.RUserHubDAO = RUserHubDAO;
         this.passwordEncoder = passwordEncoder;
+        this.googleAuthService = googleAuthService;
     }
 
     /*
      * public AuthResponseDTO login(AuthRequestDTO authenticationRequest) {
-     * RestaurantUser userDetails;
+     * RUser userDetails;
      * if (authenticationRequest.getRestaurantId() == null ||
      * authenticationRequest.getRestaurantId() == 0) {
-     * // Cerca il primo RestaurantUser associato al RestaurantUserHub
+     * // Cerca il primo RUser associato al RUserHub
      * System.out.
-     * println("Restaurant ID is null or zero, searching for RestaurantUserHub.");
-     * RestaurantUser hubUser =
-     * restaurantUserDAO.findByEmail(authenticationRequest.getUsername());
-     * if (hubUser == null || hubUser.getRestaurantUserHub() == null) {
+     * println("Restaurant ID is null or zero, searching for RUserHub.");
+     * RUser hubUser =
+     * RUserDAO.findByEmail(authenticationRequest.getUsername());
+     * if (hubUser == null || hubUser.getRUserHub() == null) {
      * throw new
-     * IllegalArgumentException("Invalid email or no associated RestaurantUserHub found."
+     * IllegalArgumentException("Invalid email or no associated RUserHub found."
      * );
      * }
-     * List<RestaurantUser> associatedUsers = restaurantUserDAO
-     * .findAllByRestaurantUserHubId(hubUser.getRestaurantUserHub().getId());
+     * List<RUser> associatedUsers = RUserDAO
+     * .findAllByRUserHubId(hubUser.getRUserHub().getId());
      * if (associatedUsers.isEmpty()) {
      * throw new IllegalArgumentException(
-     * "No associated RestaurantUser found for the given RestaurantUserHub.");
+     * "No associated RUser found for the given RUserHub.");
      * }
      * authenticationManager.authenticate(
      * new UsernamePasswordAuthenticationToken(
@@ -123,9 +128,9 @@ public class RestaurantAuthenticationService {
      * authenticationRequest.getRestaurantId(),
      * authenticationRequest.getPassword()));
      * 
-     * // Cerca il RestaurantUser specifico per email e restaurantId
+     * // Cerca il RUser specifico per email e restaurantId
      * userDetails =
-     * restaurantUserDAO.findByEmailAndRestaurantId(authenticationRequest.
+     * RUserDAO.findByEmailAndRestaurantId(authenticationRequest.
      * getUsername(),
      * authenticationRequest.getRestaurantId());
      * if (userDetails == null) {
@@ -134,29 +139,29 @@ public class RestaurantAuthenticationService {
      * }
      * }
      * String jwt = jwtUtil.generateToken(userDetails);
-     * return new AuthResponseDTO(jwt, new RestaurantUserDTO(userDetails));
+     * return new AuthResponseDTO(jwt, new RUserDTO(userDetails));
      * }
      */
-    public AuthResponseDTO adminLoginToRestaurantUser(Long restaurantUserId, HttpServletRequest request) {
-        RestaurantUser user = restaurantUserDAO.findById(restaurantUserId)
-                .orElseThrow(() -> new UsernameNotFoundException("No user found with ID: " + restaurantUserId));
+    public AuthResponseDTO adminLoginToRUser(Long RUserId, HttpServletRequest request) {
+        RUser user = RUserDAO.findById(RUserId)
+                .orElseThrow(() -> new UsernameNotFoundException("No user found with ID: " + RUserId));
 
         // Creazione di un token di autenticazione con bypass della password
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                 user.getUsername(), null);
         authToken.setDetails(
-                new RestaurantUserAuthenticationDetails(true, user.getRestaurant().getId(), user.getEmail()));
+                new RUserAuthenticationDetails(true, user.getRestaurant().getId(), user.getEmail()));
 
         // Autenticazione senza password
         SecurityContextHolder.getContext().setAuthentication(authToken);
 
         final String jwt = jwtUtil.generateToken(user);
-        return new AuthResponseDTO(jwt, new RestaurantUserDTO(user));
+        return new AuthResponseDTO(jwt, new RUserDTO(user));
     }
 
-    public ResponseEntity<String> createPasswordResetTokenForRestaurantUser(final RestaurantUser ru,
+    public ResponseEntity<String> createPasswordResetTokenForRUser(final RUser ru,
             final String token) {
-        final RestaurantUserPasswordResetToken myToken = new RestaurantUserPasswordResetToken(token, ru);
+        final RUserPasswordResetToken myToken = new RUserPasswordResetToken(token, ru);
         passwordTokenRepository.save(myToken);
         try {
             // Logica per mandarlo per email
@@ -171,42 +176,42 @@ public class RestaurantAuthenticationService {
 
     public ResponseEntity<String> forgotPassword(final String userEmail, final HttpServletRequest request) {
 
-        final RestaurantUser user = restaurantUserService.findRestaurantUserByEmail(userEmail);
+        final RUser user = RUserService.findRUserByEmail(userEmail);
         if (user == null) {
             return ResponseEntity.status(404)
                     .body(messages.getMessage("message.userNotFound", null, request.getLocale()));
         }
         String token = UUID.randomUUID().toString();
-        restaurantUserService.createPasswordResetTokenForRestaurantUser(user, token);
+        RUserService.createPasswordResetTokenForRUser(user, token);
         mailService.sendEmail(constructResetTokenEmail(getAppUrl(request), request.getLocale(), token, user));
 
         return ResponseEntity.ok("Password reset email sent successfully");
     }
 
     public GenericResponse resendRegistrationToken(final HttpServletRequest request, final String existingToken) {
-        RestaurantUser restaurantUser = restaurantUserService.getRestaurantUser(existingToken);
-        if (restaurantUser.getRestaurant() != null &&
-                restaurantUser.getRestaurant().getStatus().equals(Restaurant.Status.ENABLED)
-                && restaurantUser.isEnabled()) {
-            final RestaurantUserVerificationToken newToken = restaurantUserService
+        RUser RUser = RUserService.getRUser(existingToken);
+        if (RUser.getRestaurant() != null &&
+                RUser.getRestaurant().getStatus().equals(Restaurant.Status.ENABLED)
+                && RUser.isEnabled()) {
+            final RUserVerificationToken newToken = RUserService
                     .generateNewVerificationToken(existingToken);
             mailService.sendEmail(constructResendVerificationTokenEmail(getAppUrl(request),
-                    request.getLocale(), newToken, restaurantUser));
+                    request.getLocale(), newToken, RUser));
             return new GenericResponse(messages.getMessage("message.resendToken", null,
                     request.getLocale()));
         } else {
             return new GenericResponse(messages.getMessage(
-                    "message.restaurantOrRestaurantUserNotEnabled", null, request.getLocale()));
+                    "message.restaurantOrRUserNotEnabled", null, request.getLocale()));
         }
     }
 
-    public String confirmRestaurantUserRegistration(final HttpServletRequest request, final Model model,
+    public String confirmRUserRegistration(final HttpServletRequest request, final Model model,
             final String token) {
         Locale locale = request.getLocale();
-        final String result = restaurantUserService.validateVerificationToken(token);
+        final String result = RUserService.validateVerificationToken(token);
 
         if (result.equals("valid")) {
-            final RestaurantUser user = restaurantUserService.getRestaurantUser(token);
+            final RUser user = RUserService.getRUser(token);
             authWithoutPassword(user);
             model.addAttribute("message", messages.getMessage("message.accountVerified", null, locale));
             return "redirect:/console.html?lang=" + locale.getLanguage();
@@ -219,7 +224,7 @@ public class RestaurantAuthenticationService {
     }
 
     public String confirmPasswordChange(final String token) {
-        final String result = securityRestaurantUserService.validatePasswordResetToken(token);
+        final String result = securityRUserService.validatePasswordResetToken(token);
         if (result != null) {
             return "invalidToken";
         }
@@ -227,9 +232,9 @@ public class RestaurantAuthenticationService {
     }
 
     public AuthResponseDTO changeRestaurant(Long restaurantId) {
-        final RestaurantUser currentUser = (RestaurantUser) SecurityContextHolder.getContext().getAuthentication()
+        final RUser currentUser = (RUser) SecurityContextHolder.getContext().getAuthentication()
                 .getPrincipal();
-        final RestaurantUser updatedUser = restaurantUserDAO.findByEmailAndRestaurantId(currentUser.getEmail(),
+        final RUser updatedUser = RUserDAO.findByEmailAndRestaurantId(currentUser.getEmail(),
                 restaurantId);
         if (updatedUser == null) {
             throw new IllegalArgumentException("Restaurant not found or user does not have access to this restaurant.");
@@ -238,15 +243,15 @@ public class RestaurantAuthenticationService {
             throw new IllegalArgumentException("User is not enabled.");
         }
         final String newJwt = jwtUtil.generateToken(updatedUser);
-        return new AuthResponseDTO(newJwt, new RestaurantUserDTO(updatedUser));
+        return new AuthResponseDTO(newJwt, new RUserDTO(updatedUser));
     }
 
     public AuthResponseDTO selectRestaurant(Long restaurantId) {
         // Recupera l'email dell'utente autenticato
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        // Trova il RestaurantUser con quell'hubId e restaurantId
-        RestaurantUser user = restaurantUserDAO.findByEmailAndRestaurantId(email, restaurantId);
+        // Trova il RUser con quell'hubId e restaurantId
+        RUser user = RUserDAO.findByEmailAndRestaurantId(email, restaurantId);
         if (user == null) {
             throw new UnsupportedOperationException("User does not have access to this restaurant.");
         }
@@ -254,7 +259,7 @@ public class RestaurantAuthenticationService {
             throw new UnsupportedOperationException("User is not enabled for this restaurant.");
         }
         String jwt = jwtUtil.generateToken(user);
-        return new AuthResponseDTO(jwt, new RestaurantUserDTO(user));
+        return new AuthResponseDTO(jwt, new RUserDTO(user));
     }
 
     private String getAppUrl(HttpServletRequest request) {
@@ -263,20 +268,20 @@ public class RestaurantAuthenticationService {
     }
 
     private SimpleMailMessage constructResetTokenEmail(final String contextPath, final Locale locale,
-            final String token, final RestaurantUser user) {
+            final String token, final RUser user) {
         final String url = contextPath + "/changePassword?id=" + user.getId() + "&token=" + token;
         final String message = messages.getMessage("message.resetPassword", null, locale);
         return constructEmail("Reset Password", message + " \r\n" + url, user);
     }
 
     private SimpleMailMessage constructResendVerificationTokenEmail(final String contextPath, final Locale locale,
-            final RestaurantUserVerificationToken newToken, final RestaurantUser restaurantUser) {
+            final RUserVerificationToken newToken, final RUser RUser) {
         final String confirmationUrl = contextPath + "/registrationConfirm.html?token=" + newToken.getToken();
         final String message = messages.getMessage("message.resendToken", null, locale);
-        return constructEmail("Resend Registration Token", message + " \r\n" + confirmationUrl, restaurantUser);
+        return constructEmail("Resend Registration Token", message + " \r\n" + confirmationUrl, RUser);
     }
 
-    private SimpleMailMessage constructEmail(String subject, String body, RestaurantUser user) {
+    private SimpleMailMessage constructEmail(String subject, String body, RUser user) {
         final SimpleMailMessage email = new SimpleMailMessage();
         email.setSubject(subject);
         email.setText(body);
@@ -293,26 +298,26 @@ public class RestaurantAuthenticationService {
         }
     }
 
-    public void authWithoutPassword(RestaurantUser restaurantUser) {
-        List<RestaurantPrivilege> privileges = restaurantUser.getPrivileges().stream().collect(Collectors.toList());
+    public void authWithoutPassword(RUser RUser) {
+        List<RestaurantPrivilege> privileges = RUser.getPrivileges().stream().collect(Collectors.toList());
         List<GrantedAuthority> authorities = privileges.stream().map(p -> new SimpleGrantedAuthority(p.getName()))
                 .collect(Collectors.toList());
 
-        Authentication authentication = new UsernamePasswordAuthenticationToken(restaurantUser, null, authorities);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(RUser, null, authorities);
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
     public List<RestaurantDTO> getRestaurantsForUserHub(String email) {
-        return restaurantUserHubDAO.findAllRestaurantsByHubEmail(email)
+        return RUserHubDAO.findAllRestaurantsByHubEmail(email)
         .stream()
         .map(RestaurantDTO::new)
         .collect(Collectors.toList());
     }
 
     public AuthResponseDTO loginWithHubSupport(AuthRequestDTO authenticationRequest) {
-        // Trova il RestaurantUser associato all'email
-        RestaurantUserHub user = restaurantUserHubDAO.findByEmail(authenticationRequest.getUsername());
+        // Trova il RUser associato all'email
+        RUserHub user = RUserHubDAO.findByEmail(authenticationRequest.getUsername());
         if (user == null) {
             throw new UnsupportedOperationException("Invalid username or password.");
         }
@@ -322,9 +327,9 @@ public class RestaurantAuthenticationService {
             throw new UnsupportedOperationException("Invalid username or password.");
         }
 
-        // Recupera tutti i RestaurantUser associati a questo hub
-        List<RestaurantUser> associatedUsers = restaurantUserDAO
-                .findAllByRestaurantUserHubId(user.getId());
+        // Recupera tutti i RUser associati a questo hub
+        List<RUser> associatedUsers = RUserDAO
+                .findAllByRUserHubId(user.getId());
 
         if (associatedUsers == null || associatedUsers.isEmpty()) {
             throw new UnsupportedOperationException("No restaurants associated with this user.");
@@ -332,13 +337,13 @@ public class RestaurantAuthenticationService {
         System.out.println("\n\n\n\n\n>>>>Associated users: " + associatedUsers.size());
         if (associatedUsers.size() == 1) {
             // Login classico: un solo ristorante
-            RestaurantUser singleUser = associatedUsers.get(0);
+            RUser singleUser = associatedUsers.get(0);
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             authenticationRequest.getUsername() + ":" + singleUser.getRestaurant().getId(),
                             authenticationRequest.getPassword()));
             String jwt = jwtUtil.generateToken(singleUser);
-            return new AuthResponseDTO(jwt, new RestaurantUserDTO(singleUser));
+            return new AuthResponseDTO(jwt, new RUserDTO(singleUser));
         } else {
             // Login intermedio: più ristoranti
             // Genera un JWT "hub" (puoi aggiungere un claim "type":"hub" se vuoi)
@@ -354,15 +359,36 @@ public class RestaurantAuthenticationService {
         }
     }
 
-    public List<RestaurantUser> getAssociatedUsersByHubId(Long hubId) {
-        return restaurantUserDAO.findAllByRestaurantUserHubId(hubId);
+    public List<RUser> getAssociatedUsersByHubId(Long hubId) {
+        return RUserDAO.findAllByRUserHubId(hubId);
     }
 
     public List<RestaurantDTO> getRestaurantsByUserHubId(Long userHubId) {
-        return restaurantUserHubDAO.findAllRestaurantsByHubId(userHubId)
+        return RUserHubDAO.findAllRestaurantsByHubId(userHubId)
                 .stream()
                 .map(RestaurantDTO::new)
                 .collect(Collectors.toList());
     }
+
+    public ResponseEntity<AuthResponseDTO> loginWithGoogle(AuthRequestGoogleDTO authenticationRequest) {
+		try {
+			return googleAuthService.authenticateWithGoogle(authenticationRequest, 
+					RUserHubDAO::findByEmail,
+					(email, idToken) -> {
+                        String[] name = idToken.getPayload().get("name").toString().split(" ");
+                        RUserHub newUser = new RUserHub();
+                        newUser.setEmail(email);
+                        newUser.setFirstName(name[0]);
+                        newUser.setLastName(name[1]);
+                        newUser.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
+                        return RUserHubDAO.save(newUser);
+                    },
+                    jwtUtil::generateHubToken
+					);
+		} catch (Exception e) {
+			LOGGER.error("Google authentication failed: {}", e.getMessage(), e);
+			return null;
+		}
+	}
 
 }

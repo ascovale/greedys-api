@@ -26,7 +26,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "restaurant_user")
-public class RestaurantUser implements UserDetails {
+public class RUser implements UserDetails {
     @Id
     @Column(unique = true, nullable = false)
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -40,21 +40,21 @@ public class RestaurantUser implements UserDetails {
         inverseJoinColumns = @JoinColumn(name = "restaurant_role_id"))
     private List<RestaurantRole> restaurantRoles = new ArrayList<>();
     @OneToOne(fetch = FetchType.LAZY)
-    private RestaurantUserOptions options;
+    private RUserOptions options;
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private Status status = Status.VERIFY_TOKEN;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "restaurant_user_hub_id")
-    private RestaurantUserHub restaurantUserHub;
+    private RUserHub RUserHub;
 
-    public RestaurantUserHub getRestaurantUserHub() {
-        return restaurantUserHub;
+    public RUserHub getRUserHub() {
+        return RUserHub;
     }
 
-    public void setRestaurantUserHub(RestaurantUserHub restaurantUserHub) {
-        this.restaurantUserHub = restaurantUserHub;
+    public void setRUserHub(RUserHub RUserHub) {
+        this.RUserHub = RUserHub;
     }
    
     private boolean accepted;
@@ -110,11 +110,11 @@ public class RestaurantUser implements UserDetails {
         return id;
     }
 
-    public RestaurantUserOptions getUserOptions() {
+    public RUserOptions getUserOptions() {
         return options;
     }
 
-    public void setUserOptions(RestaurantUserOptions options) {
+    public void setUserOptions(RUserOptions options) {
         this.options = options;
     }
 
@@ -188,8 +188,8 @@ public class RestaurantUser implements UserDetails {
 
     @Override
     public String getUsername() {
-        if (restaurantUserHub != null && restaurant != null) {
-            return restaurantUserHub.getEmail() + ":" + restaurant.getId();
+        if (RUserHub != null && restaurant != null) {
+            return RUserHub.getEmail() + ":" + restaurant.getId();
         }
         return null;
     }
@@ -211,10 +211,10 @@ public class RestaurantUser implements UserDetails {
 
     @Override
     public String getPassword() {
-        return restaurantUserHub != null ? restaurantUserHub.getPassword() : null;
+        return RUserHub != null ? RUserHub.getPassword() : null;
     }
 
     public String getEmail() {
-        return restaurantUserHub != null ? restaurantUserHub.getEmail() : null;
+        return RUserHub != null ? RUserHub.getEmail() : null;
     }
 }

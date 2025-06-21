@@ -113,7 +113,7 @@ public class RestaurantServicesController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public Collection<ServiceTypeDto> getServiceTypes() {
-        return serviceService.getServiceTypesFromRestaurantUser();
+        return serviceService.getServiceTypesFromRUser();
     }
 
     @GetMapping(value = "/services")

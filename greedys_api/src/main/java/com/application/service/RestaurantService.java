@@ -18,12 +18,12 @@ import com.application.mapper.Mapper;
 import com.application.persistence.dao.restaurant.RestaurantCategoryDAO;
 import com.application.persistence.dao.restaurant.RestaurantDAO;
 import com.application.persistence.dao.restaurant.RestaurantRoleDAO;
-import com.application.persistence.dao.restaurant.RestaurantUserDAO;
+import com.application.persistence.dao.restaurant.RUserDAO;
 import com.application.persistence.model.Image;
 import com.application.persistence.model.restaurant.Restaurant;
 import com.application.persistence.model.restaurant.RestaurantCategory;
 import com.application.persistence.model.restaurant.user.RestaurantRole;
-import com.application.persistence.model.restaurant.user.RestaurantUser;
+import com.application.persistence.model.restaurant.user.RUser;
 import com.application.web.dto.RestaurantCategoryDTO;
 import com.application.web.dto.RestaurantFullDetailsDto;
 import com.application.web.dto.RestaurantImageDto;
@@ -31,7 +31,7 @@ import com.application.web.dto.get.RestaurantDTO;
 import com.application.web.dto.get.ServiceDTO;
 import com.application.web.dto.get.SlotDTO;
 import com.application.web.dto.post.NewRestaurantDTO;
-import com.application.web.dto.post.NewRestaurantUserDTO;
+import com.application.web.dto.post.NewRUserDTO;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -49,7 +49,7 @@ public class RestaurantService {
 	private RestaurantDAO rDAO;
 
 	@Autowired
-	private RestaurantUserDAO ruDAO;
+	private RUserDAO ruDAO;
 
 	@PersistenceContext
 	private EntityManager entityManager;
@@ -60,7 +60,7 @@ public class RestaurantService {
 	private RestaurantRoleDAO restaurantRoleDAO;
 
 	@Autowired
-	private RestaurantUserService restaurantUserService;
+	private RUserService RUserService;
 
 
 	public Restaurant getReference(Long id) {
@@ -104,13 +104,13 @@ public class RestaurantService {
 		rDAO.save(restaurant);
 		System.out.println("<<< ID= " + restaurant.getId());
 		RestaurantDTO r = new RestaurantDTO(restaurant);
-		NewRestaurantUserDTO restaurantUserDTO = new NewRestaurantUserDTO();
-		restaurantUserDTO.setRestaurantId(r.getId());
-		restaurantUserDTO.setEmail(restaurantDto.getEmail());
-		restaurantUserDTO.setPassword(restaurantDto.getPassword());
+		NewRUserDTO RUserDTO = new NewRUserDTO();
+		RUserDTO.setRestaurantId(r.getId());
+		RUserDTO.setEmail(restaurantDto.getEmail());
+		RUserDTO.setPassword(restaurantDto.getPassword());
 		RestaurantRole role = restaurantRoleDAO.findByName("ROLE_OWNER");
-		RestaurantUser owner = restaurantUserService.registerRestaurantUser(restaurantUserDTO, restaurant,role);
-		restaurantUserService.acceptRestaurantUser(owner.getId());
+		RUser owner = RUserService.registerRUser(RUserDTO, restaurant,role);
+		RUserService.acceptRUser(owner.getId());
 		return r;
 	}
 
@@ -144,7 +144,7 @@ public class RestaurantService {
 				.collect(Collectors.toList());
 	}
 
-	public Collection<RestaurantUser> findRestaurantUsers(Long id) {
+	public Collection<RUser> findRUsers(Long id) {
 		return ruDAO.findByRestaurantId(id);
 	}
 
@@ -178,10 +178,10 @@ public class RestaurantService {
 	}
 
 	public List<String> getRestaurantTypesNames() {
-		RestaurantUser restaurantUser = (RestaurantUser) SecurityContextHolder.getContext().getAuthentication()
+		RUser RUser = (RUser) SecurityContextHolder.getContext().getAuthentication()
 				.getPrincipal();
-		if (restaurantUser != null) {
-			Restaurant restaurant = restaurantUser.getRestaurant();
+		if (RUser != null) {
+			Restaurant restaurant = RUser.getRestaurant();
 			return restaurant.getRestaurantTypes().stream()
 					.map(RestaurantCategory::getName)
 					.collect(Collectors.toList());
@@ -256,9 +256,9 @@ public class RestaurantService {
 		Restaurant restaurant = rDAO.findById(restaurantId)
 				.orElseThrow(() -> new IllegalArgumentException("Invalid restaurant ID"));
 		restaurant.setStatus(Restaurant.Status.DISABLED);
-		Collection<RestaurantUser> restaurantUsers = ruDAO.findByRestaurantId(restaurantId);
-		for (RestaurantUser ru : restaurantUsers) {
-			Long restaurantUserId = ru.getId();
+		Collection<RUser> RUsers = ruDAO.findByRestaurantId(restaurantId);
+		for (RUser ru : RUsers) {
+			Long RUserId = ru.getId();
 			// Aggiorna lo stato del customer
 			ruDAO.save(ru);
 			ruDAO.save(ru);

@@ -28,17 +28,17 @@ public class RestaurantNotification {
 	@JoinColumn(name = "reservation_id")
 	private Reservation reservation;
 	@ManyToOne(fetch = FetchType.EAGER)
-	@JoinColumn(name = "restaurantuser_id")
-	private RestaurantUser restaurantUser;
+	@JoinColumn(name = "RUser_id")
+	private RUser RUser;
 	@Column(name = "n_type")
 	private Type type;
 
-	public RestaurantUser getRestaurantUser() {
-		return restaurantUser;
+	public RUser getRUser() {
+		return RUser;
 	}
 
-	public void setRestaurantUser(RestaurantUser restaurantUser) {
-		this.restaurantUser = restaurantUser;
+	public void setRUser(RUser RUser) {
+		this.RUser = RUser;
 	}
 
 	public RestaurantNotification() {

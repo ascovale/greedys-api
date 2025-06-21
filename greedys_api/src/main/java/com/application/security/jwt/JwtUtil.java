@@ -15,7 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-import com.application.persistence.model.restaurant.user.RestaurantUserHub;
+import com.application.persistence.model.restaurant.user.RUserHub;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -86,7 +86,7 @@ public class JwtUtil {
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 
-    public String generateHubToken(RestaurantUserHub user) {
+    public String generateHubToken(RUserHub user) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("type", "hub");
         claims.put("authorities", hubPrivileges());

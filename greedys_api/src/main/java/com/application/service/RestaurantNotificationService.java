@@ -11,26 +11,26 @@ import org.springframework.stereotype.Service;
 
 import com.application.persistence.dao.restaurant.RestaurantDAO;
 import com.application.persistence.dao.restaurant.RestaurantNotificationDAO;
-import com.application.persistence.dao.restaurant.RestaurantUserDAO;
+import com.application.persistence.dao.restaurant.RUserDAO;
 import com.application.persistence.model.reservation.Reservation;
 import com.application.persistence.model.restaurant.Restaurant;
 import com.application.persistence.model.restaurant.user.RestaurantNotification;
-import com.application.persistence.model.restaurant.user.RestaurantUser;
+import com.application.persistence.model.restaurant.user.RUser;
 
 import jakarta.transaction.Transactional;
 
 @Service
 @Transactional
 public class RestaurantNotificationService {
-	private final RestaurantUserDAO restaurantUserDAO;
+	private final RUserDAO RUserDAO;
 	private final RestaurantDAO restaurantDAO;
 	private final RestaurantNotificationDAO restaurantNotificationDAO;
-	private final RestaurantUserFirebaseService firebaseService;
+	private final RUserFirebaseService firebaseService;
 	private final EmailService emailService;
 
-	public RestaurantNotificationService(RestaurantUserDAO restaurantUserDAO, RestaurantNotificationDAO restaurantNotificationDAO,
-			RestaurantUserFirebaseService firebaseService, EmailService emailService,RestaurantDAO restaurantDAO) {
-		this.restaurantUserDAO = restaurantUserDAO;
+	public RestaurantNotificationService(RUserDAO RUserDAO, RestaurantNotificationDAO restaurantNotificationDAO,
+			RUserFirebaseService firebaseService, EmailService emailService,RestaurantDAO restaurantDAO) {
+		this.RUserDAO = RUserDAO;
 		this.restaurantNotificationDAO = restaurantNotificationDAO;
 		this.firebaseService = firebaseService;
 		this.emailService = emailService;
@@ -39,14 +39,14 @@ public class RestaurantNotificationService {
 
 	@Transactional
 	public void createNotificationsForRestaurant(Restaurant restaurant, RestaurantNotification.Type type) {
-		Collection<RestaurantUser> restaurantUsers = restaurant.getRestaurantUsers();
-		for (RestaurantUser restaurantUser : restaurantUsers) {
+		Collection<RUser> RUsers = restaurant.getRUsers();
+		for (RUser RUser : RUsers) {
 			RestaurantNotification notification = new RestaurantNotification();
-			notification.setRestaurantUser(restaurantUser);
+			notification.setRUser(RUser);
 			notification.setType(type);
 			notification.setOpened(false);
-			restaurantUser.setToReadNotification(restaurantUser.getToReadNotification() + 1);
-			restaurantUserDAO.save(restaurantUser);
+			RUser.setToReadNotification(RUser.getToReadNotification() + 1);
+			RUserDAO.save(RUser);
 			restaurantNotificationDAO.save(notification);
 			//firebaseService.sendFirebaseNotification(notification);
 			emailService.sendEmailNotification(notification);
@@ -56,16 +56,16 @@ public class RestaurantNotificationService {
 	public List<RestaurantNotification> newReservationNotification(Reservation reservation) {
 		List<RestaurantNotification> notifications = new ArrayList<>();
 		Restaurant restaurant = reservation.getRestaurant();
-		Collection<RestaurantUser> restaurantUsers = restaurant.getRestaurantUsers();
-		for (RestaurantUser restaurantUser : restaurantUsers) {
+		Collection<RUser> RUsers = restaurant.getRUsers();
+		for (RUser RUser : RUsers) {
 			RestaurantNotification notification = new RestaurantNotification();
-			notification.setRestaurantUser(restaurantUser);
+			notification.setRUser(RUser);
 			notification.setType(RestaurantNotification.Type.REQUEST);
 			notification.setOpened(false);
-			restaurantUser.setToReadNotification(restaurantUser.getToReadNotification() + 1);
-			restaurantUserDAO.save(restaurantUser);
+			RUser.setToReadNotification(RUser.getToReadNotification() + 1);
+			RUserDAO.save(RUser);
 			restaurantNotificationDAO.save(notification);
-			Hibernate.initialize(notification.getRestaurantUser());
+			Hibernate.initialize(notification.getRUser());
 			notifications.add(notification);
 			//firebaseService.sendFirebaseNotification(notification);
 		}
@@ -99,15 +99,15 @@ public class RestaurantNotificationService {
 		return restaurantNotificationDAO.findAll(pageable);
 	}
 
-	public Integer countNotification(RestaurantUser restaurantUser) {
-        RestaurantUser user = restaurantUserDAO.findById(restaurantUser.getId()).get();    
+	public Integer countNotification(RUser RUser) {
+        RUser user = RUserDAO.findById(RUser.getId()).get();    
         return user.getToReadNotification();
     }
 
 	@Transactional
-    public void readNotification(RestaurantUser user) {
+    public void readNotification(RUser user) {
         user.setToReadNotification(0);
-        restaurantUserDAO.save(user);    
+        RUserDAO.save(user);    
     }
 
     public RestaurantNotification getRestaurantNotification(Long notificationId) {
@@ -115,26 +115,26 @@ public class RestaurantNotificationService {
 		.orElseThrow(() -> new IllegalArgumentException("Notification not found"));
 	}
 
-    public void setAllNotificationsAsRead(Long idRestaurantUser) {
-        RestaurantUser user = restaurantUserDAO.findById(idRestaurantUser).get();
+    public void setAllNotificationsAsRead(Long idRUser) {
+        RUser user = RUserDAO.findById(idRUser).get();
 		user.setToReadNotification(0);
-		restaurantUserDAO.save(user);
+		RUserDAO.save(user);
 	}
 
-    public Long getUnreadNotificationsCount(Long idRestaurantUser) {
-		RestaurantUser user = restaurantUserDAO.findById(idRestaurantUser).get();
+    public Long getUnreadNotificationsCount(Long idRUser) {
+		RUser user = RUserDAO.findById(idRUser).get();
 		return user.getToReadNotification().longValue();
 	}
 
-    public void sendRestaurantNotification(String title, String body, Long idRestaurantUser) {
-		//firebaseService.sendFirebaseRestaurantNotification(title, body, idRestaurantUser);
+    public void sendRestaurantNotification(String title, String body, Long idRUser) {
+		//firebaseService.sendFirebaseRestaurantNotification(title, body, idRUser);
 	}
 	public void sendRestaurantNotificationToAllUsers(String title, String body, Long idRestaurant) {
 		Restaurant restaurant = restaurantDAO.findById(idRestaurant)
 				.orElseThrow(() -> new IllegalArgumentException("Restaurant not found"));
-		Collection<RestaurantUser> restaurantUsers = restaurant.getRestaurantUsers();
-		for (RestaurantUser restaurantUser : restaurantUsers) {
-			//firebaseService.sendFirebaseRestaurantNotification(title, body, restaurantUser.getId());
+		Collection<RUser> RUsers = restaurant.getRUsers();
+		for (RUser RUser : RUsers) {
+			//firebaseService.sendFirebaseRestaurantNotification(title, body, RUser.getId());
 		}
 	}
 }

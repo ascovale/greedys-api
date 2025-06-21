@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.application.mapper.Mapper.Weekday;
 import com.application.persistence.dao.customer.ReservationDAO;
 import com.application.persistence.dao.restaurant.RestaurantDAO;
-import com.application.persistence.dao.restaurant.RestaurantUserDAO;
+import com.application.persistence.dao.restaurant.RUserDAO;
 import com.application.persistence.dao.restaurant.ServiceDAO;
 import com.application.persistence.dao.restaurant.ServiceTypeDAO;
 import com.application.persistence.dao.restaurant.SlotDAO;
@@ -24,7 +24,7 @@ import com.application.persistence.model.reservation.Service;
 import com.application.persistence.model.reservation.ServiceType;
 import com.application.persistence.model.reservation.Slot;
 import com.application.persistence.model.restaurant.Restaurant;
-import com.application.persistence.model.restaurant.user.RestaurantUser;
+import com.application.persistence.model.restaurant.user.RUser;
 import com.application.web.dto.ServiceDto;
 import com.application.web.dto.ServiceSlotsDto;
 import com.application.web.dto.ServiceTypeDto;
@@ -55,7 +55,7 @@ public class ServiceService {
 
 
 	@Autowired
-	private RestaurantUserDAO restaurantUserDAO;
+	private RUserDAO RUserDAO;
 
 	@Autowired
 	RestaurantService rService;
@@ -139,8 +139,8 @@ public class ServiceService {
 		return serviceTypeDAO.findAll().stream().map(ServiceTypeDto::new).toList();
 	}
 
-	public List<ServiceSlotsDto> getServiceSlots(Long idRestaurantUser, LocalDate date) {
-		Long idRestaurant = restaurantUserDAO.findById(idRestaurantUser).get().getRestaurant().getId();
+	public List<ServiceSlotsDto> getServiceSlots(Long idRUser, LocalDate date) {
+		Long idRestaurant = RUserDAO.findById(idRUser).get().getRestaurant().getId();
 		List<Service> services = serviceDAO.findServicesByRestaurant(idRestaurant);
 		List<ServiceSlotsDto> servicesSlotsDto = new ArrayList<ServiceSlotsDto>();
 		for (Service service : services) {
@@ -245,16 +245,16 @@ public class ServiceService {
 	
 
 	@Transactional
-    public Collection<ServiceTypeDto> getServiceTypesFromRestaurantUser() {
+    public Collection<ServiceTypeDto> getServiceTypesFromRUser() {
 		Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-		if (!(principal instanceof RestaurantUser)) {
-			throw new IllegalArgumentException("User is not a RestaurantUser");
+		if (!(principal instanceof RUser)) {
+			throw new IllegalArgumentException("User is not a RUser");
 		}
-		RestaurantUser restaurantUser = (RestaurantUser) principal;
-		if (restaurantUser.getRestaurant() == null) {
+		RUser RUser = (RUser) principal;
+		if (RUser.getRestaurant() == null) {
 			throw new IllegalArgumentException("Restaurant not found");
 		}
-		Restaurant restaurant = rDAO.findById(restaurantUser.getRestaurant().getId()).orElseThrow(() -> new IllegalArgumentException("Restaurant not found"));
+		Restaurant restaurant = rDAO.findById(RUser.getRestaurant().getId()).orElseThrow(() -> new IllegalArgumentException("Restaurant not found"));
 		
 		Set<ServiceType> serviceTypes = new HashSet<>();
 		for (Service service : restaurant.getServices()) {
@@ -283,11 +283,11 @@ public class ServiceService {
 
 	public void newService(RestaurantNewServiceDTO servicesDto) {
 		Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-		if (!(principal instanceof RestaurantUser)) {
-			throw new IllegalArgumentException("User is not a RestaurantUser");
+		if (!(principal instanceof RUser)) {
+			throw new IllegalArgumentException("User is not a RUser");
 		}
-		RestaurantUser restaurantUser = (RestaurantUser) principal;
-		Restaurant restaurant = restaurantUser.getRestaurant();
+		RUser RUser = (RUser) principal;
+		Restaurant restaurant = RUser.getRestaurant();
 		if (restaurant == null) {
 			throw new IllegalArgumentException("Restaurant not found");
 		}

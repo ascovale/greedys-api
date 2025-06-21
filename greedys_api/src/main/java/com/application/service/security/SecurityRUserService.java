@@ -10,19 +10,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.application.persistence.dao.customer.ReservationDAO;
-import com.application.persistence.dao.restaurant.RestaurantUserHubDAO;
+import com.application.persistence.dao.restaurant.RUserHubDAO;
 import com.application.persistence.model.reservation.Reservation;
 import com.application.persistence.model.restaurant.Restaurant;
-import com.application.persistence.model.restaurant.user.RestaurantUser;
+import com.application.persistence.model.restaurant.user.RUser;
 
-@Service("securityRestaurantUserService")
+@Service("securityRUserService")
 @Transactional
-public class SecurityRestaurantUserService {
+public class SecurityRUserService {
 
     @Autowired
     private ReservationDAO reservationRepository;
     @Autowired
-    private RestaurantUserHubDAO restaurantUserHubDAO;
+    private RUserHubDAO RUserHubDAO;
 
     public boolean hasPermissionOnReservation(Long idReservation) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -31,17 +31,17 @@ public class SecurityRestaurantUserService {
         }
 
         Object principal = authentication.getPrincipal();
-        RestaurantUser restaurantUser = null;
+        RUser RUser = null;
 
-        if (principal instanceof RestaurantUser) {
-            restaurantUser = (RestaurantUser) principal;
-            if (!isRestaurantEnabled(restaurantUser)) {
+        if (principal instanceof RUser) {
+            RUser = (RUser) principal;
+            if (!isRestaurantEnabled(RUser)) {
                 return false;
             }
         } else {
             return false;
         }
-        // Check if the reservation exists and if the restaurantUser is of the same
+        // Check if the reservation exists and if the RUser is of the same
         // restaurant of the reservation
         // and if the customer is enabled
         Optional<Reservation> reservation = reservationRepository.findById(idReservation);
@@ -50,23 +50,23 @@ public class SecurityRestaurantUserService {
         }
 
         Long restaurantIdFromReservation = reservation.get().getRestaurant().getId();
-        Long restaurantIdFromUser = restaurantUser.getRestaurant().getId();
+        Long restaurantIdFromUser = RUser.getRestaurant().getId();
 
         if (!restaurantIdFromReservation.equals(restaurantIdFromUser)) {
             return false;
         }
-        if (!restaurantUser.isEnabled()) {
+        if (!RUser.isEnabled()) {
             return false;
         }
 
         return true;
     }
 
-    public boolean isRestaurantEnabled(RestaurantUser restaurantUser) {
-        if (restaurantUser == null || restaurantUser.getRestaurant() == null) {
+    public boolean isRestaurantEnabled(RUser RUser) {
+        if (RUser == null || RUser.getRestaurant() == null) {
             return false;
         }
-        return restaurantUser.getRestaurant().getStatus() == Restaurant.Status.ENABLED;
+        return RUser.getRestaurant().getStatus() == Restaurant.Status.ENABLED;
     }
 
     public boolean isRestaurantEnabled() {
@@ -76,36 +76,36 @@ public class SecurityRestaurantUserService {
         }
 
         Object principal = authentication.getPrincipal();
-        RestaurantUser restaurantUser = null;
+        RUser RUser = null;
 
-        if (principal instanceof RestaurantUser) {
-            restaurantUser = (RestaurantUser) principal;
+        if (principal instanceof RUser) {
+            RUser = (RUser) principal;
         } else {
             return false;
         }
 
-        if (restaurantUser.getRestaurant() == null) {
+        if (RUser.getRestaurant() == null) {
             return false;
         }
-        return restaurantUser.getRestaurant().getStatus() == Restaurant.Status.ENABLED;
+        return RUser.getRestaurant().getStatus() == Restaurant.Status.ENABLED;
     }
 
-    public boolean hasRestaurantUserId(Long userId, String email) {
+    public boolean hasRUserId(Long userId, String email) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
             return false;
         }
 
         Object principal = authentication.getPrincipal();
-        RestaurantUser restaurantUser = null;
+        RUser RUser = null;
 
-        if (principal instanceof RestaurantUser) {
-            restaurantUser = (RestaurantUser) principal;
+        if (principal instanceof RUser) {
+            RUser = (RUser) principal;
         } else {
             return false;
         }
 
-        if (!restaurantUser.isEnabled() || !isRestaurantEnabled(restaurantUser)) {
+        if (!RUser.isEnabled() || !isRestaurantEnabled(RUser)) {
             return false;
         }
 
@@ -120,13 +120,13 @@ public class SecurityRestaurantUserService {
         }
 
         Object principal = authentication.getPrincipal();
-        if (!(principal instanceof RestaurantUser)) {
+        if (!(principal instanceof RUser)) {
             return false;
         }
 
-        RestaurantUser restaurantUser = (RestaurantUser) principal;
+        RUser RUser = (RUser) principal;
 
-        return restaurantUserHubDAO.hasPermissionForRestaurant(restaurantUser.getRestaurantUserHub().getId(),
+        return RUserHubDAO.hasPermissionForRestaurant(RUser.getRUserHub().getId(),
                 restaurantId);
     }
 
@@ -143,7 +143,7 @@ public class SecurityRestaurantUserService {
             if (email == null || email.isEmpty()) {
                 return false;
             }
-            List<Restaurant> restaurants = restaurantUserHubDAO.findAllRestaurantsByHubEmail(email);
+            List<Restaurant> restaurants = RUserHubDAO.findAllRestaurantsByHubEmail(email);
             if (restaurants == null) {
                 return false;
             }

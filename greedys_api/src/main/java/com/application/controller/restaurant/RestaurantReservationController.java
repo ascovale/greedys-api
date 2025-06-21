@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.controller.utils.ControllerUtils;
-import com.application.persistence.model.restaurant.user.RestaurantUser;
+import com.application.persistence.model.restaurant.user.RUser;
 import com.application.service.ReservationService;
 import com.application.web.dto.get.ReservationDTO;
 import com.application.web.dto.post.restaurant.RestaurantNewReservationDTO;
@@ -78,9 +78,9 @@ public class RestaurantReservationController {
 			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
 	})
 	@PutMapping("/{reservationId}/accept")
-	@PreAuthorize("@securityRestaurantUserService.hasPermissionOnReservation(#reservationId)")
+	@PreAuthorize("@securityRUserService.hasPermissionOnReservation(#reservationId)")
 	public ResponseEntity<?> acceptReservation(@PathVariable Long reservationId, @RequestParam Boolean accepted) {
-		reservationService.markReservationAcceptedFromRestauantUser(getCurrentRestaurantUserId(), reservationId,
+		reservationService.markReservationAcceptedFromRestauantUser(getCurrentRUserId(), reservationId,
 				accepted);
 		return ResponseEntity.ok().build();
 	}
@@ -88,7 +88,7 @@ public class RestaurantReservationController {
 	@Operation(summary = "Reject a reservation", description = "Endpoint to reject a reservation by its ID")
 	@PutMapping("/{reservationId}/reject")
 	public ResponseEntity<?> rejectReservation(@PathVariable Long reservationId, @RequestParam Boolean rejected) {
-		reservationService.markReservationRejectedFromRestauantUser(getCurrentRestaurantUserId(), reservationId,
+		reservationService.markReservationRejectedFromRestauantUser(getCurrentRUserId(), reservationId,
 				rejected);
 		return ResponseEntity.ok().build();
 	}
@@ -102,7 +102,7 @@ public class RestaurantReservationController {
 	})
 	@PutMapping("/{reservationId}/no_show")
 	public ResponseEntity<?> markReservationNoShow(@PathVariable Long reservationId, @RequestParam Boolean noShow) {
-		reservationService.markReservationNoShowFromRestauantUser(getCurrentRestaurantUserId(), reservationId, noShow);
+		reservationService.markReservationNoShowFromRestauantUser(getCurrentRUserId(), reservationId, noShow);
 		return ResponseEntity.ok().build();
 	}
 
@@ -115,7 +115,7 @@ public class RestaurantReservationController {
 	})
 	@PutMapping("/{reservationId}/seated")
 	public ResponseEntity<?> markReservationSeated(@PathVariable Long reservationId, @RequestParam Boolean seated) {
-		reservationService.markReservationSeatedFromRestauantUser(getCurrentRestaurantUserId(), reservationId, seated);
+		reservationService.markReservationSeatedFromRestauantUser(getCurrentRUserId(), reservationId, seated);
 		return ResponseEntity.ok().build();
 	}
 
@@ -195,15 +195,15 @@ public class RestaurantReservationController {
 			throw new IllegalArgumentException("end cannot be null if start is not null");
 		} else {
 			reservations = reservationService
-					.getPendingReservationsFromRestaurantUser(ControllerUtils.getCurrentRestaurantUser().getId());
+					.getPendingReservationsFromRUser(ControllerUtils.getCurrentRUser().getId());
 		}
 		return reservations;
 	}
 
-	private Long getCurrentRestaurantUserId() {
+	private Long getCurrentRUserId() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		if (authentication != null && authentication.getPrincipal() instanceof RestaurantUser) {
-			return ((RestaurantUser) authentication.getPrincipal()).getId();
+		if (authentication != null && authentication.getPrincipal() instanceof RUser) {
+			return ((RUser) authentication.getPrincipal()).getId();
 		}
 		return null;
 	}

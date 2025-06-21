@@ -14,7 +14,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 
 @Entity
-public class RestaurantUserPasswordResetToken {
+public class RUserPasswordResetToken {
 
     private static final int EXPIRATION = 60 * 24;
 
@@ -24,23 +24,23 @@ public class RestaurantUserPasswordResetToken {
     private String token;
     @OneToOne(targetEntity = Customer.class, fetch = FetchType.EAGER)
     @JoinColumn(nullable = false, name = "user_id")
-    private RestaurantUser restaurantUser;
+    private RUser RUser;
     private LocalDateTime expiryDate;
 
-	public RestaurantUserPasswordResetToken() {
+	public RUserPasswordResetToken() {
         super();
     }
 
-    public RestaurantUserPasswordResetToken(final String token) {
+    public RUserPasswordResetToken(final String token) {
         super();
         this.token = token;
         this.expiryDate = calculateExpiryDate(EXPIRATION);
     }
 
-    public RestaurantUserPasswordResetToken(final String token, final RestaurantUser restaurantUser) {
+    public RUserPasswordResetToken(final String token, final RUser RUser) {
         super();
         this.token = token;
-        this.restaurantUser = restaurantUser;
+        this.RUser = RUser;
         this.expiryDate = calculateExpiryDate(EXPIRATION);
     }
 
@@ -56,12 +56,12 @@ public class RestaurantUserPasswordResetToken {
         this.token = token;
     }
 
-    public RestaurantUser getRestaurantUser() {
-        return restaurantUser;
+    public RUser getRUser() {
+        return RUser;
     }
 
-    public void setRestaurantUser(final RestaurantUser restaurantUser) {
-        this.restaurantUser = restaurantUser;
+    public void setRUser(final RUser RUser) {
+        this.RUser = RUser;
     }
 
     public LocalDateTime getExpiryDate() {
@@ -99,7 +99,7 @@ public class RestaurantUserPasswordResetToken {
         int result = 1;
         result = prime * result + ((expiryDate == null) ? 0 : expiryDate.hashCode());
         result = prime * result + ((token == null) ? 0 : token.hashCode());
-        result = prime * result + ((restaurantUser == null) ? 0 : restaurantUser.hashCode());
+        result = prime * result + ((RUser == null) ? 0 : RUser.hashCode());
         return result;
     }
 
@@ -114,7 +114,7 @@ public class RestaurantUserPasswordResetToken {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final RestaurantUserPasswordResetToken other = (RestaurantUserPasswordResetToken) obj;
+        final RUserPasswordResetToken other = (RUserPasswordResetToken) obj;
         if (expiryDate == null) {
             if (other.expiryDate != null) {
                 return false;
@@ -129,11 +129,11 @@ public class RestaurantUserPasswordResetToken {
         } else if (!token.equals(other.token)) {
             return false;
         }
-        if (restaurantUser == null) {
-            if (other.restaurantUser != null) {
+        if (RUser == null) {
+            if (other.RUser != null) {
                 return false;
             }
-        } else if (!restaurantUser.equals(other.restaurantUser)) {
+        } else if (!RUser.equals(other.RUser)) {
             return false;
         }
         return true;

@@ -65,10 +65,10 @@ public class AdminTestEmailController {
     @Operation(summary = "Send test notification to restaurant User", description = "Sends a test notification with the specified title and body to the specified restaurant user")
     @ApiResponse(responseCode = "200", description = "Notification sent successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "400", description = "Invalid request")
-    @PostMapping("/send_restaurantUser_test_notification")
+    @PostMapping("/send_RUser_test_notification")
     public GenericResponse sendTestNotification(@RequestBody NotificationRequest notificationRequest) {
         
-        restaurantNotificationService.sendRestaurantNotification(notificationRequest.getTitle(), notificationRequest.getBody(), notificationRequest.getIdRestaurantUser());
+        restaurantNotificationService.sendRestaurantNotification(notificationRequest.getTitle(), notificationRequest.getBody(), notificationRequest.getIdRUser());
         return new GenericResponse("Notification sent successfully");
     }
 
@@ -77,7 +77,7 @@ public class AdminTestEmailController {
     @ApiResponse(responseCode = "400", description = "Invalid request")
     @PostMapping("/send_user_test_notification")
     public GenericResponse sendUserTestNotification(@RequestBody NotificationRequest notificationRequest) {
-        notificationService.sendNotification(notificationRequest.getTitle(), notificationRequest.getBody(), null, notificationRequest.getIdRestaurantUser());
+        notificationService.sendNotification(notificationRequest.getTitle(), notificationRequest.getBody(), null, notificationRequest.getIdRUser());
         return new GenericResponse("Notification sent successfully");
     }
 
@@ -130,7 +130,7 @@ public class AdminTestEmailController {
     public static class NotificationRequest {
         private String title;
         private String body;
-        private Long idRestaurantUser;
+        private Long idRUser;
 
         // Getters and setters
         public String getTitle() {
@@ -149,12 +149,12 @@ public class AdminTestEmailController {
             this.body = body;
         }
 
-        public Long getIdRestaurantUser() {
-            return idRestaurantUser;
+        public Long getIdRUser() {
+            return idRUser;
         }
 
-        public void setIdRestaurantUser(Long idRestaurantUser) {
-            this.idRestaurantUser = idRestaurantUser;
+        public void setIdRUser(Long idRUser) {
+            this.idRUser = idRUser;
         }
     }
 
