@@ -1,18 +1,18 @@
 package com.application.web.dto.get;
 
-import com.application.persistence.model.restaurant.user.RestaurantUser;
+import com.application.persistence.model.restaurant.user.RUser;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@Schema(name = "RestaurantUserDTO", description = "DTO for restaurant user details")
-public class RestaurantUserDTO {
+@Schema(name = "RUserDTO", description = "DTO for restaurant user details")
+public class RUserDTO {
 
     private String username;
     private Long restaurantId;
 
-    public RestaurantUserDTO() {
+    public RUserDTO() {
     }
 
-    public RestaurantUserDTO(RestaurantUser user) {
+    public RUserDTO(RUser user) {
         this.username = user.getEmail();
         this.restaurantId = user.getRestaurant().getId();
     }

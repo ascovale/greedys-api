@@ -36,7 +36,7 @@ public class RestaurantSlotController {
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SLOT_WRITE')")
     @PostMapping("/new")
     public ResponseEntity<String> newSlot( @RequestBody RestaurantNewSlotDTO slotDto) {
-        slotService.addSlot(ControllerUtils.getCurrentRestaurantUser().getId(),slotDto);
+        slotService.addSlot(ControllerUtils.getCurrentRUser().getId(),slotDto);
         return ResponseEntity.ok().body("success");
     }
 
@@ -47,7 +47,7 @@ public class RestaurantSlotController {
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SLOT_WRITE')")
     @DeleteMapping("/cancel")
     public ResponseEntity<String> cancelSlot(@RequestBody Long slotId) {
-        boolean isCanceled = slotService.cancelSlot(ControllerUtils.getCurrentRestaurantUser().getId(), slotId);
+        boolean isCanceled = slotService.cancelSlot(ControllerUtils.getCurrentRUser().getId(), slotId);
         if (isCanceled) {
         return ResponseEntity.ok().body("Slot canceled successfully");
         } else {

@@ -25,6 +25,7 @@ import com.application.persistence.model.customer.PasswordResetToken;
 import com.application.persistence.model.customer.Role;
 import com.application.persistence.model.customer.VerificationToken;
 import com.application.security.jwt.JwtUtil;
+import com.application.web.dto.AuthRequestGoogleDTO;
 import com.application.web.dto.get.CustomerDTO;
 import com.application.web.dto.post.AuthRequestDTO;
 import com.application.web.dto.post.AuthResponseDTO;
@@ -48,6 +49,8 @@ public class CustomerAuthenticationService {
 	public static String QR_PREFIX = "https://chart.googleapis.com/chart?chs=200x200&chld=M%%7C0&cht=qr&chl=";
 	public static String APP_NAME = "SpringRegistration";
 
+	private final GoogleAuthService googleAuthService;
+	
 	private final CustomerDAO customerDAO;
 	private final VerificationTokenDAO tokenDAO;
 	private final PasswordResetTokenDAO passwordTokenRepository;
@@ -62,7 +65,8 @@ public class CustomerAuthenticationService {
 			PasswordEncoder passwordEncoder,
 			RoleDAO roleRepository,
             @Qualifier("customerAuthenticationManager") AuthenticationManager authenticationManager,
-			JwtUtil jwtUtil
+			JwtUtil jwtUtil,
+			GoogleAuthService googleAuthService
 	) {
 		this.customerDAO = customerDAO;
 		this.tokenDAO = tokenDAO;
@@ -70,11 +74,11 @@ public class CustomerAuthenticationService {
 		this.passwordEncoder = passwordEncoder;
 		this.roleRepository = roleRepository;
 		this.authenticationManager = authenticationManager;
-		this.jwtUtil = jwtUtil; 
+		this.jwtUtil = jwtUtil;
+		this.googleAuthService = googleAuthService;
 	}
 
-	    public ResponseEntity<?> 
-		login(AuthRequestDTO authenticationRequest) {
+	public ResponseEntity<?> login(AuthRequestDTO authenticationRequest) {
         
         logger.debug("Authentication request received for username: {}", authenticationRequest.getUsername());
 
@@ -102,6 +106,28 @@ public class CustomerAuthenticationService {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed");
         }
     }
+
+	public ResponseEntity<AuthResponseDTO> loginWithGoogle(AuthRequestGoogleDTO authenticationRequest) {
+		try {
+			return googleAuthService.authenticateWithGoogle(authenticationRequest, 
+					customerDAO::findByEmail,
+					(email, token) -> {
+						String[] name = ((String) token.getPayload().get("name")).split(" ");
+						NewCustomerDTO accountDto = new NewCustomerDTO();
+						accountDto.setEmail(email);
+						accountDto.setFirstName(name[0]); // Imposta un valore predefinito o calcolato
+						accountDto.setLastName(name[1]);   // Imposta un valore predefinito o calcolato
+						accountDto.setPassword(UUID.randomUUID().toString());  // Imposta un valore predefinito o generato
+						return registerNewCustomerAccount(accountDto);
+					},
+					jwtUtil::generateToken
+					);
+		} catch (Exception e) {
+			logger.error("Google authentication failed: {}", e.getMessage(), e);
+			return null;
+		}
+	}
+		
 
 
 	public Customer registerNewCustomerAccount(final NewCustomerDTO accountDto) {

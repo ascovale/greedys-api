@@ -16,26 +16,26 @@ import org.springframework.security.web.authentication.rememberme.PersistentReme
 import org.springframework.security.web.authentication.rememberme.PersistentTokenBasedRememberMeServices;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 
-import com.application.persistence.dao.restaurant.RestaurantUserDAO;
+import com.application.persistence.dao.restaurant.RUserDAO;
 import com.application.persistence.model.customer.Customer;
-import com.application.persistence.model.restaurant.user.RestaurantUser;
+import com.application.persistence.model.restaurant.user.RUser;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-@Qualifier("restaurantUserRememberMeServices")
-public class RestaurantUserRememberMeServices extends PersistentTokenBasedRememberMeServices {
+@Qualifier("RUserRememberMeServices")
+public class RUserRememberMeServices extends PersistentTokenBasedRememberMeServices {
 
     @Autowired
-    private RestaurantUserDAO userRepository;
+    private RUserDAO userRepository;
 
     private GrantedAuthoritiesMapper authoritiesMapper = new NullAuthoritiesMapper();
     private AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource = new WebAuthenticationDetailsSource();
     private PersistentTokenRepository tokenRepository = new InMemoryTokenRepositoryImpl();
     private String key;
 
-    public RestaurantUserRememberMeServices(String key, RestaurantUserDetailsService restaurantUserDetailsService, PersistentTokenRepository tokenRepository) {
-        super(key, restaurantUserDetailsService, tokenRepository);
+    public RUserRememberMeServices(String key, RUserDetailsService RUserDetailsService, PersistentTokenRepository tokenRepository) {
+        super(key, RUserDetailsService, tokenRepository);
         this.tokenRepository = tokenRepository;
         this.key = key;
     }
@@ -55,7 +55,7 @@ public class RestaurantUserRememberMeServices extends PersistentTokenBasedRememb
 
     @Override
     protected Authentication createSuccessfulAuthentication(HttpServletRequest request, UserDetails user) {
-        RestaurantUser auser = userRepository.findByEmail(user.getUsername());
+        RUser auser = userRepository.findByEmail(user.getUsername());
         RememberMeAuthenticationToken auth = new RememberMeAuthenticationToken(key, auser, authoritiesMapper.mapAuthorities(user.getAuthorities()));
         auth.setDetails(authenticationDetailsSource.buildDetails(request));
         return auth;

@@ -9,26 +9,26 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.application.persistence.model.restaurant.Restaurant;
-import com.application.persistence.model.restaurant.user.RestaurantUserHub;
+import com.application.persistence.model.restaurant.user.RUserHub;
 
 @Repository
-public interface RestaurantUserHubDAO extends JpaRepository<RestaurantUserHub, Long>{
+public interface RUserHubDAO extends JpaRepository<RUserHub, Long>{
 
     @Modifying
-    @Query("UPDATE RestaurantUserHub ruh SET ruh.accepted = true WHERE ruh.id = :id")
-    void acceptRestaurantUserHub(@Param("id") Long id);
+    @Query("UPDATE RUserHub ruh SET ruh.accepted = true WHERE ruh.id = :id")
+    void acceptRUserHub(@Param("id") Long id);
 
-    RestaurantUserHub findByEmail(@Param("email") String email);
+    RUserHub findByEmail(@Param("email") String email);
 
     @Query("SELECT EXISTS (" +
-           "SELECT 1 FROM RestaurantUser ru " +
-           "WHERE ru.restaurantUserHub.id = :hubId AND ru.restaurant.id = :restaurantId)")
+           "SELECT 1 FROM RUser ru " +
+           "WHERE ru.RUserHub.id = :hubId AND ru.restaurant.id = :restaurantId)")
     boolean hasPermissionForRestaurant(@Param("hubId") Long hubId, @Param("restaurantId") Long restaurantId);
     
-    @Query("SELECT ru.restaurant FROM RestaurantUser ru WHERE ru.restaurantUserHub.id = :hubId")
+    @Query("SELECT ru.restaurant FROM RUser ru WHERE ru.RUserHub.id = :hubId")
     List<Restaurant> findAllRestaurantsByHubId(@Param("hubId") Long hubId);
 
-    @Query("SELECT ru.restaurant FROM RestaurantUser ru WHERE ru.restaurantUserHub.email = :email")
+    @Query("SELECT ru.restaurant FROM RUser ru WHERE ru.RUserHub.email = :email")
     List<Restaurant> findAllRestaurantsByHubEmail(@Param("email") String email);
 
 

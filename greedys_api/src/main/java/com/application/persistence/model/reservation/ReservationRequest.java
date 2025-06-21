@@ -5,7 +5,7 @@ import java.time.LocalDate;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import com.application.persistence.model.customer.Customer;
-import com.application.persistence.model.restaurant.user.RestaurantUser;
+import com.application.persistence.model.restaurant.user.RUser;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -46,7 +46,7 @@ public class ReservationRequest {
 	private String notes;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idrestaurant_user")
- 	private RestaurantUser restaurantUser;
+ 	private RUser RUser;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idreservation", referencedColumnName = "id")
  	private Reservation reservation;
@@ -122,12 +122,12 @@ public class ReservationRequest {
 		this.notes = notes;
 	}
 
-	public RestaurantUser getRestaurantUser() {
-		return restaurantUser;
+	public RUser getRUser() {
+		return RUser;
 	}
 
-	public void setRestaurantUser(RestaurantUser restaurantUser) {
-		this.restaurantUser = restaurantUser;
+	public void setRUser(RUser RUser) {
+		this.RUser = RUser;
 	}
 
 	public Customer getCustomer() {

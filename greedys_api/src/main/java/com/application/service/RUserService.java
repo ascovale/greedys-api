@@ -14,24 +14,24 @@ import org.springframework.transaction.annotation.Transactional;
 import com.application.persistence.dao.restaurant.RestaurantDAO;
 import com.application.persistence.dao.restaurant.RestaurantPrivilegeDAO;
 import com.application.persistence.dao.restaurant.RestaurantRoleDAO;
-import com.application.persistence.dao.restaurant.RestaurantUserDAO;
-import com.application.persistence.dao.restaurant.RestaurantUserHubDAO;
-import com.application.persistence.dao.restaurant.RestaurantUserPasswordResetTokenDAO;
-import com.application.persistence.dao.restaurant.RestaurantUserVerificationTokenDAO;
+import com.application.persistence.dao.restaurant.RUserDAO;
+import com.application.persistence.dao.restaurant.RUserHubDAO;
+import com.application.persistence.dao.restaurant.RUserPasswordResetTokenDAO;
+import com.application.persistence.dao.restaurant.RUserVerificationTokenDAO;
 import com.application.persistence.model.restaurant.Restaurant;
 import com.application.persistence.model.restaurant.user.RestaurantRole;
-import com.application.persistence.model.restaurant.user.RestaurantUser;
-import com.application.persistence.model.restaurant.user.RestaurantUserHub;
-import com.application.persistence.model.restaurant.user.RestaurantUserPasswordResetToken;
-import com.application.persistence.model.restaurant.user.RestaurantUserVerificationToken;
+import com.application.persistence.model.restaurant.user.RUser;
+import com.application.persistence.model.restaurant.user.RUserHub;
+import com.application.persistence.model.restaurant.user.RUserPasswordResetToken;
+import com.application.persistence.model.restaurant.user.RUserVerificationToken;
 import com.application.security.jwt.JwtUtil;
-import com.application.security.user.restaurant.RestaurantUserDetailsService;
-import com.application.web.dto.get.RestaurantUserDTO;
-import com.application.web.dto.post.NewRestaurantUserDTO;
+import com.application.security.user.restaurant.RUserDetailsService;
+import com.application.web.dto.get.RUserDTO;
+import com.application.web.dto.post.NewRUserDTO;
 
 @Service
 @Transactional
-public class RestaurantUserService {
+public class RUserService {
 
     public static final String TOKEN_INVALID = "invalidToken";
     public static final String TOKEN_EXPIRED = "expired";
@@ -40,26 +40,26 @@ public class RestaurantUserService {
     public static String QR_PREFIX = "https://chart.googleapis.com/chart?chs=200x200&chld=M%%7C0&cht=qr&chl=";
     public static String APP_NAME = "SpringRegistration";
 
-    private RestaurantUserVerificationTokenDAO tokenDAO;
+    private RUserVerificationTokenDAO tokenDAO;
     private EmailService emailService;
-    private RestaurantUserDAO ruDAO;
+    private RUserDAO ruDAO;
     private RestaurantDAO restaurantDAO;
     private RestaurantRoleDAO rrDAO;
-    private RestaurantUserHubDAO ruhDAO;
+    private RUserHubDAO ruhDAO;
     private PasswordEncoder passwordEncoder;
-    private final RestaurantUserPasswordResetTokenDAO passwordTokenRepository;
+    private final RUserPasswordResetTokenDAO passwordTokenRepository;
 
-    public RestaurantUserService(
-            RestaurantUserVerificationTokenDAO tokenDAO,
-            RestaurantUserDetailsService userDetailsService,
+    public RUserService(
+            RUserVerificationTokenDAO tokenDAO,
+            RUserDetailsService userDetailsService,
             EmailService emailService,
-            RestaurantUserDAO ruDAO,
+            RUserDAO ruDAO,
             RestaurantDAO restaurantDAO,
             RestaurantRoleDAO rrDAO,
             RestaurantPrivilegeDAO rpDAO,
             PasswordEncoder passwordEncoder,
-            RestaurantUserHubDAO ruhDAO,
-            RestaurantUserPasswordResetTokenDAO passwordTokenRepository,
+            RUserHubDAO ruhDAO,
+            RUserPasswordResetTokenDAO passwordTokenRepository,
             @Qualifier("restaurantAuthenticationManager") AuthenticationManager authenticationManager,
             JwtUtil jwtUtil) {
         this.tokenDAO = tokenDAO;
@@ -77,31 +77,31 @@ public class RestaurantUserService {
     // se già esiste, lo prendo, altrimenti lo creo
     // invio di email come se fosse utente normale
 
-    public void acceptRestaurantUser(Long id) {
-        ruDAO.acceptRestaurantUser(id);
+    public void acceptRUser(Long id) {
+        ruDAO.acceptRUser(id);
     }
 
-    public void blockRestaurantUser(Long idRestaurantUser) {
-        RestaurantUser ru = ruDAO.findById(idRestaurantUser)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid restaurant user ID: " + idRestaurantUser));
-        ru.setStatus(RestaurantUser.Status.BLOCKED);
+    public void blockRUser(Long idRUser) {
+        RUser ru = ruDAO.findById(idRUser)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid restaurant user ID: " + idRUser));
+        ru.setStatus(RUser.Status.BLOCKED);
         ruDAO.save(ru);
     }
 
-    public void removeRestaurantUser(Long idRestaurantUser) {
-        ruDAO.deleteById(idRestaurantUser);
+    public void removeRUser(Long idRUser) {
+        ruDAO.deleteById(idRUser);
     }
 
     public void changeRestaurantOwner(Long idRestaurant, Long idOldOwner, Long idNewOwner) {
         // TODO
         // VERIFICARE CHE L'ID DEL Restaurant USer sia quello del restaurant corretto
-        // cioè che esista un restaurantUser che abbia i permessi ROLE_OWNER e abbia
+        // cioè che esista un RUser che abbia i permessi ROLE_OWNER e abbia
         // quel ristorante
         // basterebbe fare metodo findByIdandRestaurantId
         // e poi fare un controllo se il ru ha il ruolo ROLE_OWNER
-        RestaurantUser oldOwner = ruDAO.findById(idOldOwner)
+        RUser oldOwner = ruDAO.findById(idOldOwner)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid old owner ID: " + idOldOwner));
-        RestaurantUser newOwner = ruDAO.findById(idNewOwner)
+        RUser newOwner = ruDAO.findById(idNewOwner)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid new owner ID: " + idNewOwner));
         new RestaurantRole("ROLE_OWNER");
         // TODO verificare quando deve essere creato il ruolo
@@ -110,8 +110,8 @@ public class RestaurantUserService {
         if (ownerRole == null) {
             throw new IllegalArgumentException("Invalid role name: " + "ROLE_OWNER");
         }
-        oldOwner.setStatus(RestaurantUser.Status.DELETED);
-        newOwner.setStatus(RestaurantUser.Status.ENABLED);
+        oldOwner.setStatus(RUser.Status.DELETED);
+        newOwner.setStatus(RUser.Status.ENABLED);
         Hibernate.initialize(newOwner.getRestaurantRoles());
         newOwner.addRestaurantRole(new RestaurantRole("ROLE_OWNER"));
 
@@ -121,97 +121,106 @@ public class RestaurantUserService {
 
     }
 
-    public RestaurantUser registerRestaurantUser(NewRestaurantUserDTO restaurantUserDTO, Restaurant restaurant,
+    public RUserHub registerHub(RUserHub userHub) {
+        // Check if a user hub with the same email already exists
+        RUserHub existingUserHub = ruhDAO.findByEmail(userHub.getEmail());
+        if (existingUserHub != null) {
+            throw new IllegalArgumentException("User hub with email " + userHub.getEmail() + " already exists.");
+        }
+        return ruhDAO.save(userHub);
+    }
+
+    public RUser registerRUser(NewRUserDTO RUserDTO, Restaurant restaurant,
             RestaurantRole rr) {
-        System.out.println("Registering restaurant user with information:" + restaurantUserDTO.getRestaurantId() + " ");
+        System.out.println("Registering restaurant user with information:" + RUserDTO.getRestaurantId() + " ");
 
         // Check if a user with the same email already exists
-        RestaurantUserHub existingUserHub = ruhDAO.findByEmail(restaurantUserDTO.getEmail());
+        RUserHub existingUserHub = ruhDAO.findByEmail(RUserDTO.getEmail());
         if (existingUserHub != null) {
-            // Se esiste già un RestaurantUserHub con questa email, aggiungi il nuovo RestaurantUser a questo hub
-            RestaurantUser ru = new RestaurantUser();
-            ru.setRestaurantUserHub(existingUserHub);
+            // Se esiste già un RUserHub con questa email, aggiungi il nuovo RUser a questo hub
+            RUser ru = new RUser();
+            ru.setRUserHub(existingUserHub);
             Hibernate.initialize(ru.getRestaurantRoles());
             ru.addRestaurantRole(rr);
             ru.setRestaurant(restaurant);
-            existingUserHub.setPassword(passwordEncoder.encode(restaurantUserDTO.getPassword()));
+            existingUserHub.setPassword(passwordEncoder.encode(RUserDTO.getPassword()));
             ruDAO.save(ru);
             emailService.sendRestaurantAssociationConfirmationEmail(ru);
             return ru;
         }
         
-        RestaurantUser existingRestaurantUser = ruDAO.findByEmailAndRestaurantId(restaurantUserDTO.getEmail(), restaurant.getId());
-        if (existingRestaurantUser != null) {
+        RUser existingRUser = ruDAO.findByEmailAndRestaurantId(RUserDTO.getEmail(), restaurant.getId());
+        if (existingRUser != null) {
             throw new IllegalArgumentException("User already exists for this restaurant.");
         }
 
-        RestaurantUser ru = new RestaurantUser();
-        RestaurantUserHub restaurantUserHub = new RestaurantUserHub();
-        restaurantUserHub.setEmail(restaurantUserDTO.getEmail());
-        restaurantUserHub.setFirstName(restaurantUserDTO.getFirstName());
-        restaurantUserHub.setLastName(restaurantUserDTO.getLastName());
+        RUser ru = new RUser();
+        RUserHub RUserHub = new RUserHub();
+        RUserHub.setEmail(RUserDTO.getEmail());
+        RUserHub.setFirstName(RUserDTO.getFirstName());
+        RUserHub.setLastName(RUserDTO.getLastName());
         
-        // Save the RestaurantUserHub entity before associating it with RestaurantUser
-        ruhDAO.save(restaurantUserHub);
+        // Save the RUserHub entity before associating it with RUser
+        ruhDAO.save(RUserHub);
 
-        ru.setRestaurantUserHub(restaurantUserHub);
+        ru.setRUserHub(RUserHub);
         Hibernate.initialize(ru.getRestaurantRoles());
         ru.addRestaurantRole(rr);
         ru.setRestaurant(restaurant);
-        restaurantUserHub.setPassword(passwordEncoder.encode(restaurantUserDTO.getPassword()));
+        RUserHub.setPassword(passwordEncoder.encode(RUserDTO.getPassword()));
         ruDAO.save(ru);
         emailService.sendRestaurantAssociationConfirmationEmail(ru);
         return ru;
     }
 
-    public RestaurantUser registerRestaurantUser(NewRestaurantUserDTO restaurantUserDTO, Restaurant restaurant) {
-        System.out.println("Registering restaurant user with information:" + restaurantUserDTO.getRestaurantId() + " ");
+    public RUser registerRUser(NewRUserDTO RUserDTO, Restaurant restaurant) {
+        System.out.println("Registering restaurant user with information:" + RUserDTO.getRestaurantId() + " ");
 
         // Check if a user with the same email already exists
-        RestaurantUserHub existingUserHub = ruhDAO.findByEmail(restaurantUserDTO.getEmail());
+        RUserHub existingUserHub = ruhDAO.findByEmail(RUserDTO.getEmail());
         if (existingUserHub != null) {
-            throw new IllegalArgumentException("User hub with email " + restaurantUserDTO.getEmail() + " already exists.");
+            throw new IllegalArgumentException("User hub with email " + RUserDTO.getEmail() + " already exists.");
         }
 
-        RestaurantUser existingRestaurantUser = ruDAO.findByEmailAndRestaurantId(restaurantUserDTO.getEmail(), restaurant.getId());
-        if (existingRestaurantUser != null) {
+        RUser existingRUser = ruDAO.findByEmailAndRestaurantId(RUserDTO.getEmail(), restaurant.getId());
+        if (existingRUser != null) {
             throw new IllegalArgumentException("User already exists for this restaurant.");
         }
 
-        RestaurantUser ru = new RestaurantUser();
-        RestaurantUserHub restaurantUserHub = new RestaurantUserHub();
-        restaurantUserHub.setEmail(restaurantUserDTO.getEmail());
-        restaurantUserHub.setFirstName(restaurantUserDTO.getFirstName());
-        restaurantUserHub.setLastName(restaurantUserDTO.getLastName());
+        RUser ru = new RUser();
+        RUserHub RUserHub = new RUserHub();
+        RUserHub.setEmail(RUserDTO.getEmail());
+        RUserHub.setFirstName(RUserDTO.getFirstName());
+        RUserHub.setLastName(RUserDTO.getLastName());
         
-        // Save the RestaurantUserHub entity before associating it with RestaurantUser
-        ruhDAO.save(restaurantUserHub);
+        // Save the RUserHub entity before associating it with RUser
+        ruhDAO.save(RUserHub);
 
-        ru.setRestaurantUserHub(restaurantUserHub);
+        ru.setRUserHub(RUserHub);
         Hibernate.initialize(ru.getRestaurantRoles());
         ru.setRestaurant(restaurant);
-        restaurantUserHub.setPassword(passwordEncoder.encode(restaurantUserDTO.getPassword()));
+        RUserHub.setPassword(passwordEncoder.encode(RUserDTO.getPassword()));
         ruDAO.save(ru);
         emailService.sendRestaurantAssociationConfirmationEmail(ru);
         return ru;
     }
 
-    public RestaurantUser addRestaurantUserIfHubExists(NewRestaurantUserDTO restaurantUserDTO, Restaurant restaurant) {
+    public RUser addRUserIfHubExists(NewRUserDTO RUserDTO, Restaurant restaurant) {
         // Check if a user hub with the same email already exists
-        RestaurantUserHub existingUserHub = ruhDAO.findByEmail(restaurantUserDTO.getEmail());
+        RUserHub existingUserHub = ruhDAO.findByEmail(RUserDTO.getEmail());
         if (existingUserHub == null) {
-            throw new IllegalArgumentException("No user hub found with email: " + restaurantUserDTO.getEmail());
+            throw new IllegalArgumentException("No user hub found with email: " + RUserDTO.getEmail());
         }
 
-        // Check if a RestaurantUser already exists for this hub and restaurant
-        RestaurantUser existingRestaurantUser = ruDAO.findByEmailAndRestaurantId(restaurantUserDTO.getEmail(), restaurant.getId());
-        if (existingRestaurantUser != null) {
+        // Check if a RUser already exists for this hub and restaurant
+        RUser existingRUser = ruDAO.findByEmailAndRestaurantId(RUserDTO.getEmail(), restaurant.getId());
+        if (existingRUser != null) {
             throw new IllegalArgumentException("User already exists for this restaurant.");
         }
 
-        // Create and save a new RestaurantUser
-        RestaurantUser ru = new RestaurantUser();
-        ru.setRestaurantUserHub(existingUserHub);
+        // Create and save a new RUser
+        RUser ru = new RUser();
+        ru.setRUserHub(existingUserHub);
         ru.setRestaurant(restaurant);
         Hibernate.initialize(ru.getRestaurantRoles());
         ruDAO.save(ru);
@@ -221,13 +230,13 @@ public class RestaurantUserService {
 
     // Add restaurant user bisogna verificare che il ristorante esista
 
-    public RestaurantUserDTO addRestaurantUserRole(Long idRestaurantUser, String string) {
+    public RUserDTO addRUserRole(Long idRUser, String string) {
         if ("ROLE_OWNER".equals(string)) {
             throw new IllegalArgumentException("Cannot add the ROLE_OWNER role to a user.");
         }
 
-        RestaurantUser ru = ruDAO.findById(idRestaurantUser)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid restaurant user ID: " + idRestaurantUser));
+        RUser ru = ruDAO.findById(idRUser)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid restaurant user ID: " + idRUser));
         Restaurant restaurant = ru.getRestaurant();
         if (ru.getRestaurantRoles().stream().anyMatch(role -> role.getName().equals(string))) {
             throw new IllegalArgumentException("User already has the role: " + string);
@@ -236,24 +245,24 @@ public class RestaurantUserService {
         Hibernate.initialize(ru.getRestaurantRoles());
         ru.addRestaurantRole(role);
 
-        RestaurantUser newRestaurantUser = new RestaurantUser();
-        newRestaurantUser.setRestaurant(restaurant);
-        ruDAO.save(newRestaurantUser);
+        RUser newRUser = new RUser();
+        newRUser.setRestaurant(restaurant);
+        ruDAO.save(newRUser);
 
-        return new RestaurantUserDTO(newRestaurantUser);
+        return new RUserDTO(newRUser);
     }
 
-    public void disableRestaurantUser(Long idRestaurantUser, Long idRestaurantUserToDisable) {
-        RestaurantUser restaurantUserToDisable = ruDAO.findById(idRestaurantUserToDisable)
+    public void disableRUser(Long idRUser, Long idRUserToDisable) {
+        RUser RUserToDisable = ruDAO.findById(idRUserToDisable)
                 .orElseThrow(
-                        () -> new IllegalArgumentException("Invalid restaurant user ID: " + idRestaurantUserToDisable));
-        if (restaurantUserToDisable.hasRestaurantRole("ROLE_OWNER")) {
+                        () -> new IllegalArgumentException("Invalid restaurant user ID: " + idRUserToDisable));
+        if (RUserToDisable.hasRestaurantRole("ROLE_OWNER")) {
             throw new IllegalArgumentException("Cannot disable the owner of the restaurant");
         }
-        RestaurantUser ru = ruDAO.findById(idRestaurantUser)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid restaurant user ID: " + idRestaurantUser));
+        RUser ru = ruDAO.findById(idRUser)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid restaurant user ID: " + idRUser));
 
-        String roleNameWithoutPrefix = restaurantUserToDisable.getRestaurantRoles().stream()
+        String roleNameWithoutPrefix = RUserToDisable.getRestaurantRoles().stream()
                 .map(role -> role.getName().replace("ROLE_", ""))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("User does not have any roles"));
@@ -265,15 +274,15 @@ public class RestaurantUserService {
             throw new IllegalArgumentException("User does not have permission to disable this role");
         }
 
-        restaurantUserToDisable.setStatus(RestaurantUser.Status.DISABLED);
-        ruDAO.save(restaurantUserToDisable);
+        RUserToDisable.setStatus(RUser.Status.DISABLED);
+        ruDAO.save(RUserToDisable);
     }
 
-    public RestaurantUserDTO changeRestaurantUserRole(Long idRestaurantUser, Long idUser, String string) {
+    public RUserDTO changeRUserRole(Long idRUser, Long idUser, String string) {
         // TODO implementare una logica che capisca se il primo user ha ruolo per
         // cambiare il ruolo del secondo
-        RestaurantUser ru = ruDAO.findById(idRestaurantUser)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid restaurant user ID: " + idRestaurantUser));
+        RUser ru = ruDAO.findById(idRUser)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid restaurant user ID: " + idRUser));
         RestaurantRole role = rrDAO.findByName(string);
         if (role == null) {
             throw new IllegalArgumentException("Role not found: " + string);
@@ -286,21 +295,21 @@ public class RestaurantUserService {
         ru.addRestaurantRole(role);
         // non bisogna creare un nuovo ruolo bisogna mettere ruolo solo
         ruDAO.save(ru);
-        return new RestaurantUserDTO(ru);
+        return new RUserDTO(ru);
     }
 
     public boolean checkIfValidOldPassword(final Long id, final String oldPassword) {
         return passwordEncoder.matches(oldPassword, ruDAO.findById(id).get().getPassword());
     }
 
-    public void changeRestaurantUserPassword(final Long id, final String password) {
-        final RestaurantUser ru = ruDAO.findById(id).get();
-        ru.getRestaurantUserHub().setPassword(passwordEncoder.encode(password));
+    public void changeRUserPassword(final Long id, final String password) {
+        final RUser ru = ruDAO.findById(id).get();
+        ru.getRUserHub().setPassword(passwordEncoder.encode(password));
         ruDAO.save(ru);
     }
 
-    public void createPasswordResetTokenForRestaurantUser(final RestaurantUser ru, final String token) {
-        final RestaurantUserPasswordResetToken myToken = new RestaurantUserPasswordResetToken(token, ru);
+    public void createPasswordResetTokenForRUser(final RUser ru, final String token) {
+        final RUserPasswordResetToken myToken = new RUserPasswordResetToken(token, ru);
         passwordTokenRepository.save(myToken);
         try {
 
@@ -310,47 +319,47 @@ public class RestaurantUserService {
     }
 
        public String validateVerificationToken(String token) {
-        final RestaurantUserVerificationToken verificationToken = tokenDAO.findByToken(token);
+        final RUserVerificationToken verificationToken = tokenDAO.findByToken(token);
         if (verificationToken == null) {
             return TOKEN_INVALID;
         }
 
-        final RestaurantUser user = verificationToken.getRestaurantUser();
+        final RUser user = verificationToken.getRUser();
         final LocalDateTime now = LocalDateTime.now();
         if (verificationToken.getExpiryDate().isBefore(now)) {
             tokenDAO.delete(verificationToken);
             return TOKEN_EXPIRED;
         }
-        if (user.getStatus() != RestaurantUser.Status.VERIFY_TOKEN) {
+        if (user.getStatus() != RUser.Status.VERIFY_TOKEN) {
             return TOKEN_INVALID;
         }
-        user.setStatus(RestaurantUser.Status.ENABLED);
+        user.setStatus(RUser.Status.ENABLED);
         tokenDAO.delete(verificationToken);
         ruDAO.save(user);
         return TOKEN_VALID;
     }
 
-    public RestaurantUser getRestaurantUser(final String verificationToken) {
-        final RestaurantUserVerificationToken token = tokenDAO.findByToken(verificationToken);
+    public RUser getRUser(final String verificationToken) {
+        final RUserVerificationToken token = tokenDAO.findByToken(verificationToken);
         if (token != null) {
-            return token.getRestaurantUser();
+            return token.getRUser();
         }
         return null;
     }
 
-    public RestaurantUserVerificationToken generateNewVerificationToken(final String existingVerificationToken) {
-        RestaurantUserVerificationToken vToken = tokenDAO.findByToken(existingVerificationToken);
+    public RUserVerificationToken generateNewVerificationToken(final String existingVerificationToken) {
+        RUserVerificationToken vToken = tokenDAO.findByToken(existingVerificationToken);
         vToken.updateToken(UUID.randomUUID().toString());
         vToken = tokenDAO.save(vToken);
         return vToken;
     }
 
-    public RestaurantUser findRestaurantUserByEmail(String userEmail) {
+    public RUser findRUserByEmail(String userEmail) {
         return ruDAO.findByEmail(userEmail);
     }
 
-    public void updateRestaurantUserStatus(Long restaurantUserId, RestaurantUser.Status newStatus) {
-        RestaurantUser ru = ruDAO.findById(restaurantUserId)
+    public void updateRUserStatus(Long RUserId, RUser.Status newStatus) {
+        RUser ru = ruDAO.findById(RUserId)
                 .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
 
         // Aggiorna lo stato del customer
@@ -361,24 +370,24 @@ public class RestaurantUserService {
     }
 
     @Transactional
-    public RestaurantUserDTO addRestaurantUserToRestaurant(NewRestaurantUserDTO restaurantUserDTO, Long restaurantId) {
+    public RUserDTO addRUserToRestaurant(NewRUserDTO RUserDTO, Long restaurantId) {
         Restaurant restaurant = restaurantDAO.findById(restaurantId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid restaurant ID: " + restaurantId));
-        RestaurantUser restaurantUser = registerRestaurantUser(restaurantUserDTO, restaurant);
+        RUser RUser = registerRUser(RUserDTO, restaurant);
 
         // Generate and send verification token
         String token = UUID.randomUUID().toString();
-        createVerificationTokenForRestaurantUser(restaurantUser, token);
+        createVerificationTokenForRUser(RUser, token);
         // TODO: Verificare invio mail
-        // final SimpleMailMessage email = constructEmailMessage(event, restaurantUser,
+        // final SimpleMailMessage email = constructEmailMessage(event, RUser,
         // token);
         // mailSender.send(email);
 
-        return new RestaurantUserDTO(restaurantUser);
+        return new RUserDTO(RUser);
     }
 
     @Transactional
-    public RestaurantUserDTO addRestaurantUserToRestaurantWithRole(NewRestaurantUserDTO restaurantUserDTO,
+    public RUserDTO addRUserToRestaurantWithRole(NewRUserDTO RUserDTO,
             Long restaurantId, String roleName) {
         if ("ROLE_OWNER".equals(roleName)) {
             throw new IllegalArgumentException("Cannot assign the ROLE_OWNER role to a user.");
@@ -390,30 +399,30 @@ public class RestaurantUserService {
         if (role == null) {
             throw new IllegalArgumentException("Role not found: " + roleName);
         }
-        RestaurantUser restaurantUser = registerRestaurantUser(restaurantUserDTO, restaurant, role);
+        RUser RUser = registerRUser(RUserDTO, restaurant, role);
 
         // Generate and send verification token
         String token = UUID.randomUUID().toString();
-        createVerificationTokenForRestaurantUser(restaurantUser, token);
+        createVerificationTokenForRUser(RUser, token);
         // TODO: Verificare invio mail
-        // final SimpleMailMessage email = constructEmailMessage(event, restaurantUser,token);
+        // final SimpleMailMessage email = constructEmailMessage(event, RUser,token);
         // mailSender.send(email);
 
-        return new RestaurantUserDTO(restaurantUser);
+        return new RUserDTO(RUser);
     }
 
-    public void createVerificationTokenForRestaurantUser(final RestaurantUser user, final String token) {
-        final RestaurantUserVerificationToken myToken = new RestaurantUserVerificationToken(token, user);
+    public void createVerificationTokenForRUser(final RUser user, final String token) {
+        final RUserVerificationToken myToken = new RUserVerificationToken(token, user);
         tokenDAO.save(myToken);
     }
 
-    public RestaurantUserDTO removeRestaurantUserRole(Long restaurantUserId, String string) {
+    public RUserDTO removeRUserRole(Long RUserId, String string) {
         if ("ROLE_OWNER".equals(string)) {
             throw new IllegalArgumentException("Cannot remove the ROLE_OWNER role from a user.");
         }
 
-        RestaurantUser ru = ruDAO.findById(restaurantUserId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid restaurant user ID: " + restaurantUserId));
+        RUser ru = ruDAO.findById(RUserId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid restaurant user ID: " + RUserId));
 
         RestaurantRole role = rrDAO.findByName(string);
         if (role == null) {
@@ -428,12 +437,12 @@ public class RestaurantUserService {
         ru.removeRole(role);
         ruDAO.save(ru);
 
-        return new RestaurantUserDTO(ru);
+        return new RUserDTO(ru);
     }
 
-    public List<RestaurantUserDTO> getRestaurantUsersByRestaurantId(Long restaurantId) {
+    public List<RUserDTO> getRUsersByRestaurantId(Long restaurantId) {
         return ruDAO.findByRestaurantId(restaurantId).stream()
-            .map(RestaurantUserDTO::new)
+            .map(RUserDTO::new)
             .toList();
     }
 

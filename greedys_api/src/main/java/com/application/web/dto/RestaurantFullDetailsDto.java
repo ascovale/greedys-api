@@ -70,7 +70,7 @@ public class RestaurantFullDetailsDto {
 		}
 
 		@NotNull
-	    @Size(min = 1, message = "{Size.restaurantUserDto.email}")
+	    @Size(min = 1, message = "{Size.RUserDto.email}")
 	    private String email;    
 
 	    public Long getId() {

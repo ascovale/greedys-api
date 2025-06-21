@@ -71,7 +71,7 @@ public class SwaggerConfig {
     public GroupedOpenApi restaurantApi() {
         return GroupedOpenApi.builder()
                 .group("restaurant-api")
-                .packagesToScan("com.application.controller.restaurant", "com.application.controller.restaurantUser")
+                .packagesToScan("com.application.controller.restaurant", "com.application.controller.rUser")
                 .pathsToMatch("/restaurant/**")
                 .addOpenApiCustomizer(groupCustomizer(null, "restaurantBearerAuth"))
                 .addOpenApiCustomizer(sortSchemasCustomizer())

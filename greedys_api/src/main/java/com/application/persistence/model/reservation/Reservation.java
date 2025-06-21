@@ -8,7 +8,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import com.application.persistence.model.admin.Admin;
 import com.application.persistence.model.customer.Customer;
 import com.application.persistence.model.restaurant.Restaurant;
-import com.application.persistence.model.restaurant.user.RestaurantUser;
+import com.application.persistence.model.restaurant.user.RUser;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -67,7 +67,7 @@ public class Reservation {
 	private LocalDateTime lastModificationTime;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idrestaurant_user")
- 	private RestaurantUser restaurantUser;
+ 	private RUser RUser;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "creator_customer_id", nullable = true)
@@ -75,7 +75,7 @@ public class Reservation {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "creator_restaurant_user_id", nullable = true)
-	private RestaurantUser creatorRestaurantUser;
+	private RUser creatorRUser;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "creator_admin_id", nullable = true)
@@ -87,7 +87,7 @@ public class Reservation {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "last_modifier_restaurant_user_id", nullable = true)
-	private RestaurantUser lastModifierRestaurantUser;
+	private RUser lastModifierRUser;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "last_modifier_admin_id", nullable = true)
@@ -95,7 +95,7 @@ public class Reservation {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "acceptor_restaurant_user_id", nullable = true)
-	private RestaurantUser acceptorRestaurantUser;
+	private RUser acceptorRUser;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "acceptor_admin_id", nullable = true)
@@ -107,7 +107,7 @@ public class Reservation {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "created_by_restaurant_user_id", nullable = true)
-	private RestaurantUser createdByRestaurantUser;
+	private RUser createdByRUser;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "created_by_admin_id", nullable = true)
@@ -116,8 +116,8 @@ public class Reservation {
 	public Object getCreatedBy() {
 		if (createdByCustomer != null) {
 			return createdByCustomer;
-		} else if (createdByRestaurantUser != null) {
-			return createdByRestaurantUser;
+		} else if (createdByRUser != null) {
+			return createdByRUser;
 		} else if (createdByAdmin != null) {
 			return createdByAdmin;
 		}
@@ -127,12 +127,12 @@ public class Reservation {
 	// Separate setters for createdBy
 	public void setCreatedByCustomer(Customer customer) {
 		this.createdByCustomer = customer;
-		this.createdByRestaurantUser = null;
+		this.createdByRUser = null;
 		this.createdByAdmin = null;
 	}
 
-	public void setCreatedByRestaurantUser(RestaurantUser restaurantUser) {
-		this.createdByRestaurantUser = restaurantUser;
+	public void setCreatedByRUser(RUser RUser) {
+		this.createdByRUser = RUser;
 		this.createdByCustomer = null;
 		this.createdByAdmin = null;
 	}
@@ -140,18 +140,18 @@ public class Reservation {
 	public void setCreatedByAdmin(Admin admin) {
 		this.createdByAdmin = admin;
 		this.createdByCustomer = null;
-		this.createdByRestaurantUser = null;
+		this.createdByRUser = null;
 	}
 
 	// Separate setters for lastModifier
 	public void setLastModifiedByCustomer(Customer customer) {
 		this.lastModifierCustomer = customer;
-		this.lastModifierRestaurantUser = null;
+		this.lastModifierRUser = null;
 		this.lastModifierAdmin = null;
 	}
 
-	public void setLastModifiedByRestaurantUser(RestaurantUser restaurantUser) {
-		this.lastModifierRestaurantUser = restaurantUser;
+	public void setLastModifiedByRUser(RUser RUser) {
+		this.lastModifierRUser = RUser;
 		this.lastModifierCustomer = null;
 		this.lastModifierAdmin = null;
 	}
@@ -159,18 +159,18 @@ public class Reservation {
 	public void setLastModifiedByAdmin(Admin admin) {
 		this.lastModifierAdmin = admin;
 		this.lastModifierCustomer = null;
-		this.lastModifierRestaurantUser = null;
+		this.lastModifierRUser = null;
 	}
 
 	// Separate setters for acceptor
-	public void setAcceptedByRestaurantUser(RestaurantUser restaurantUser) {
-		this.acceptorRestaurantUser = restaurantUser;
+	public void setAcceptedByRUser(RUser RUser) {
+		this.acceptorRUser = RUser;
 		this.acceptorAdmin = null;
 	}
 
 	public void setAcceptedByAdmin(Admin admin) {
 		this.acceptorAdmin = admin;
-		this.acceptorRestaurantUser = null;
+		this.acceptorRUser = null;
 	}
 
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -283,12 +283,12 @@ public class Reservation {
 		this.lastModificationTime = lastModificationTime;
 	}
 
-	public RestaurantUser getRestaurantUser() {
-		return restaurantUser;
+	public RUser getRUser() {
+		return RUser;
 	}
 
-	public void setRestaurantUser(RestaurantUser restaurantUser) {
-		this.restaurantUser = restaurantUser;
+	public void setRUser(RUser RUser) {
+		this.RUser = RUser;
 	}
 
     public void setRestaurant(Restaurant restaurant) {
@@ -355,12 +355,12 @@ public class Reservation {
 		this.creatorCustomer = creatorCustomer;
 	}
 
-	public RestaurantUser getCreatorRestaurantUser() {
-		return creatorRestaurantUser;
+	public RUser getCreatorRUser() {
+		return creatorRUser;
 	}
 
-	public void setCreatorRestaurantUser(RestaurantUser creatorRestaurantUser) {
-		this.creatorRestaurantUser = creatorRestaurantUser;
+	public void setCreatorRUser(RUser creatorRUser) {
+		this.creatorRUser = creatorRUser;
 	}
 
 	public Admin getCreatorAdmin() {
@@ -379,12 +379,12 @@ public class Reservation {
 		this.lastModifierCustomer = lastModifierCustomer;
 	}
 
-	public RestaurantUser getLastModifierRestaurantUser() {
-		return lastModifierRestaurantUser;
+	public RUser getLastModifierRUser() {
+		return lastModifierRUser;
 	}
 
-	public void setLastModifierRestaurantUser(RestaurantUser lastModifierRestaurantUser) {
-		this.lastModifierRestaurantUser = lastModifierRestaurantUser;
+	public void setLastModifierRUser(RUser lastModifierRUser) {
+		this.lastModifierRUser = lastModifierRUser;
 	}
 
 	public Admin getLastModifierAdmin() {
@@ -395,12 +395,12 @@ public class Reservation {
 		this.lastModifierAdmin = lastModifierAdmin;
 	}
 
-	public RestaurantUser getAcceptorRestaurantUser() {
-		return acceptorRestaurantUser;
+	public RUser getAcceptorRUser() {
+		return acceptorRUser;
 	}
 
-	public void setAcceptorRestaurantUser(RestaurantUser acceptorRestaurantUser) {
-		this.acceptorRestaurantUser = acceptorRestaurantUser;
+	public void setAcceptorRUser(RUser acceptorRUser) {
+		this.acceptorRUser = acceptorRUser;
 	}
 
 	public Admin getAcceptorAdmin() {

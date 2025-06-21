@@ -97,7 +97,7 @@ public class RestaurantRegistrationController {
             @ApiResponse(responseCode = "403", description = "Access denied", content = @Content(mediaType = "application/json")),
             @ApiResponse(responseCode = "404", description = "Restaurant not found", content = @Content(mediaType = "application/json"))
     })
-    @PreAuthorize("@securityRestaurantUserService.hasPermissionForRestaurant(#restaurantId)")
+    @PreAuthorize("@securityRUserService.hasPermissionForRestaurant(#restaurantId)")
     @PostMapping(value = "/change-restaurant", produces = "application/json")
     public AuthResponseDTO changeRestaurant(@RequestParam Long restaurantId) {
         return restaurantAuthenticationService.changeRestaurant(restaurantId);
@@ -105,9 +105,9 @@ public class RestaurantRegistrationController {
 
     @Operation(summary = "Confirm restaurant user registration", description = "Conferma la registrazione")
     @GetMapping(value = "/confirm")
-    public String confirmRestaurantUserRegistration(final HttpServletRequest request, final Model model,
+    public String confirmRUserRegistration(final HttpServletRequest request, final Model model,
             @RequestParam final String token) throws UnsupportedEncodingException {
-        return restaurantAuthenticationService.confirmRestaurantUserRegistration(request, model, token);
+        return restaurantAuthenticationService.confirmRUserRegistration(request, model, token);
     }
 
     @Operation(summary = "Confirm password change with token", description = "Confirms the password change using a token")
@@ -129,15 +129,15 @@ public class RestaurantRegistrationController {
      * }
      * }
      * 
-     * public void authWithoutPassword(RestaurantUser restaurantUser) {
+     * public void authWithoutPassword(RUser RUser) {
      * List<RestaurantPrivilege> privileges =
-     * restaurantUser.getPrivileges().stream().collect(Collectors.toList());
+     * RUser.getPrivileges().stream().collect(Collectors.toList());
      * List<GrantedAuthority> authorities = privileges.stream().map(p -> new
      * SimpleGrantedAuthority(p.getName()))
      * .collect(Collectors.toList());
      * 
      * Authentication authentication = new
-     * UsernamePasswordAuthenticationToken(restaurantUser, null, authorities);
+     * UsernamePasswordAuthenticationToken(RUser, null, authorities);
      * 
      * SecurityContextHolder.getContext().setAuthentication(authentication);
      * }

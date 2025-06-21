@@ -24,7 +24,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "restaurantBearerAuth")
 @Tag(name = "Notification Management", description = "Restaurant Notification management APIs")
 public class RestaurantNotificationController {
-    //TODO: capire se dividere in restaurantNotification e restaurantUserNotification
+    //TODO: capire se dividere in restaurantNotification e RUserNotification
     //che avrebbe anche senso capire se ci sono delle notifiche che basta che le legge uno o che le devono leggere tutti
     private final RestaurantNotificationService restaurantNotificationService;
 
@@ -85,7 +85,7 @@ public class RestaurantNotificationController {
     @Operation(summary = "Set all notifications as read", description = "Sets all notifications for the given user as read")
     @PutMapping("/all-read")
     public ResponseEntity<Void> setAllNotificationsAsRead() {
-        restaurantNotificationService.setAllNotificationsAsRead(ControllerUtils.getCurrentRestaurantUser().getId());
+        restaurantNotificationService.setAllNotificationsAsRead(ControllerUtils.getCurrentRUser().getId());
         return ResponseEntity.ok().build();
     }
 
@@ -93,7 +93,7 @@ public class RestaurantNotificationController {
     @Operation(summary = "Get unread notifications count", description = "Returns the count of unread notifications")
     @GetMapping("/unread/count")
     public ResponseEntity<Long> getUnreadNotificationsCount() {
-        Long count = restaurantNotificationService.getUnreadNotificationsCount(ControllerUtils.getCurrentRestaurantUser().getId());
+        Long count = restaurantNotificationService.getUnreadNotificationsCount(ControllerUtils.getCurrentRUser().getId());
         return ResponseEntity.ok().body(count);
     }
 

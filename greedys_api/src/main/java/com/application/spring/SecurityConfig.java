@@ -26,16 +26,16 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.application.security.google2fa.AdminAuthenticationProvider;
 import com.application.security.google2fa.CustomerAuthenticationProvider;
-import com.application.security.google2fa.RestaurantUserAuthenticationProvider;
+import com.application.security.google2fa.RUserAuthenticationProvider;
 import com.application.security.user.admin.AdminUserDetailsService;
 import com.application.security.user.admin.AdminUserRememberMeServices;
 import com.application.security.user.customer.CustomerUserDetailsService;
 import com.application.security.user.customer.CustomerUserRememberMeServices;
-import com.application.security.user.restaurant.RestaurantUserDetailsService;
-import com.application.security.user.restaurant.RestaurantUserRememberMeServices;
+import com.application.security.user.restaurant.RUserDetailsService;
+import com.application.security.user.restaurant.RUserRememberMeServices;
 import com.application.spring.requestfilter.AdminRequestFilter;
 import com.application.spring.requestfilter.CustomerRequestFilter;
-import com.application.spring.requestfilter.RestaurantUserRequestFilter;
+import com.application.spring.requestfilter.RUserRequestFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -43,22 +43,22 @@ import com.application.spring.requestfilter.RestaurantUserRequestFilter;
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
-        private final RestaurantUserDetailsService restaurantUserDetailsService;
+        private final RUserDetailsService RUserDetailsService;
         private final CustomerUserDetailsService customerUserDetailsService;
         private final AdminUserDetailsService adminUserDetailsService;
-        private final RestaurantUserRequestFilter restaurantJwtRequestFilter;
+        private final RUserRequestFilter restaurantJwtRequestFilter;
         private final CustomerRequestFilter customerJwtRequestFilter;
         private final AdminRequestFilter adminJwtRequestFilter;
 
         public SecurityConfig(
-                        RestaurantUserDetailsService restaurantUserDetailsService,
+                        RUserDetailsService RUserDetailsService,
                         CustomerUserDetailsService customerUserDetailsService,
                         AdminUserDetailsService adminUserDetailsService,
-                        RestaurantUserRequestFilter restaurantJwtRequestFilter,
+                        RUserRequestFilter restaurantJwtRequestFilter,
                         CustomerRequestFilter customerJwtRequestFilter,
                         AdminRequestFilter adminJwtRequestFilter,
                         DataSource dataSource) {
-                this.restaurantUserDetailsService = restaurantUserDetailsService;
+                this.RUserDetailsService = RUserDetailsService;
                 this.customerUserDetailsService = customerUserDetailsService;
                 this.adminUserDetailsService = adminUserDetailsService;
                 this.restaurantJwtRequestFilter = restaurantJwtRequestFilter;
@@ -67,7 +67,7 @@ public class SecurityConfig {
         }
 
         @Bean
-        SecurityFilterChain restaurantUserFilterChain(HttpSecurity http,
+        SecurityFilterChain RUserFilterChain(HttpSecurity http,
                         @Qualifier("restaurantAuthenticationManager") AuthenticationManager authenticationManager)
                         throws Exception {
                 http
@@ -183,14 +183,14 @@ public class SecurityConfig {
         @Qualifier("restaurantAuthenticationManager")
         AuthenticationManager restaurantAuthenticationManager(HttpSecurity http) throws Exception {
                 AuthenticationManagerBuilder auth = http.getSharedObject(AuthenticationManagerBuilder.class);
-                auth.authenticationProvider(restaurantUserAuthenticationProvider());
+                auth.authenticationProvider(RUserAuthenticationProvider());
                 return auth.build();
         }
 
         @Bean
-        public RestaurantUserAuthenticationProvider restaurantUserAuthenticationProvider() {
-                RestaurantUserAuthenticationProvider provider = new RestaurantUserAuthenticationProvider();
-                provider.setUserDetailsService(restaurantUserDetailsService);
+        public RUserAuthenticationProvider RUserAuthenticationProvider() {
+                RUserAuthenticationProvider provider = new RUserAuthenticationProvider();
+                provider.setUserDetailsService(RUserDetailsService);
                 provider.setPasswordEncoder(passwordEncoder());
                 return provider;
         }
@@ -239,9 +239,9 @@ public class SecurityConfig {
                                 new InMemoryTokenRepositoryImpl());
         }
 
-        @Bean(name = "restaurantUserRememberMe")
+        @Bean(name = "RUserRememberMe")
         RememberMeServices rememberMeServices2() {
-                return new RestaurantUserRememberMeServices("theKey", restaurantUserDetailsService,
+                return new RUserRememberMeServices("theKey", RUserDetailsService,
                                 new InMemoryTokenRepositoryImpl());
         }
 

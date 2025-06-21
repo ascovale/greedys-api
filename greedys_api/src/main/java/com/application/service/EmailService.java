@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.application.persistence.model.notification.CustomerNotification;
 import com.application.persistence.model.notification.Notification;
 import com.application.persistence.model.restaurant.user.RestaurantNotification;
-import com.application.persistence.model.restaurant.user.RestaurantUser;
+import com.application.persistence.model.restaurant.user.RUser;
 import com.application.service.utils.NotificationUtils;
 
 @Service
@@ -50,7 +50,7 @@ public class EmailService {
 
         /* 
         try {
-            RestaurantUser user = notification.getRestaurantUser();
+            RUser user = notification.getRUser();
             if (user.getUserOptions().getNotificationPreferences().get(notification.getType())) {
                 final SimpleMailMessage email = constructRestaurantNotificationMessage(notification);
                 mailSender.send(email);
@@ -65,16 +65,16 @@ public class EmailService {
 
     // TODO: il link per rimuovere ristorante è sbagliato da sistemare
     // Creare link per rimuovere ristorante lato flutterApp
-    private SimpleMailMessage constructRestaurantAssociationConfirmationMessage(RestaurantUser restaurantUser) {
-        if (restaurantUser == null || restaurantUser.getRestaurant() == null || restaurantUser.getEmail() == null) {
+    private SimpleMailMessage constructRestaurantAssociationConfirmationMessage(RUser RUser) {
+        if (RUser == null || RUser.getRestaurant() == null || RUser.getEmail() == null) {
             throw new IllegalArgumentException("Invalid restaurant user or restaurant details");
         }
-        final String recipientAddress = restaurantUser.getEmail();
+        final String recipientAddress = RUser.getEmail();
         final String subject = "Conferma associazione con ristorante";
         final String message = "Ciao " + ",\n\n" +
-                "Sei stato associato al ristorante " + restaurantUser.getRestaurant().getName() + ".\n" +
+                "Sei stato associato al ristorante " + RUser.getRestaurant().getName() + ".\n" +
                 "Se non desideri essere associato a questo ristorante, clicca sul seguente link per rimuovere l'associazione:\n" +
-                "http://example.com/removeAssociation?userId=" + restaurantUser.getId() + "&restaurantId=" + restaurantUser.getRestaurant().getId() + "\n\n" +
+                "http://example.com/removeAssociation?userId=" + RUser.getId() + "&restaurantId=" + RUser.getRestaurant().getId() + "\n\n" +
                 "Grazie,\nIl team di supporto";
         final SimpleMailMessage email = new SimpleMailMessage();
         email.setTo(recipientAddress);
@@ -85,9 +85,9 @@ public class EmailService {
     }
 
     @Async
-    public void sendRestaurantAssociationConfirmationEmail(RestaurantUser restaurantUser) {
+    public void sendRestaurantAssociationConfirmationEmail(RUser RUser) {
         try {
-            final SimpleMailMessage email = constructRestaurantAssociationConfirmationMessage(restaurantUser);
+            final SimpleMailMessage email = constructRestaurantAssociationConfirmationMessage(RUser);
             mailSender.send(email);
         } catch (Exception e) {
             // Log the exception and handle it accordingly

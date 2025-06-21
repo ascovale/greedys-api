@@ -21,7 +21,7 @@ public class RestaurantRole {
     private Long id;
     private String name;
 	@ManyToMany
-    private Collection<RestaurantUser> users;
+    private Collection<RUser> users;
     @ManyToMany
     @JoinTable(name = 	"restaurant_privilege_has_restaurant_role", 
     	joinColumns = @JoinColumn(name = "restaurant_role_id"), 
@@ -54,11 +54,11 @@ public class RestaurantRole {
         this.name = name;
     }
 
-	public Collection<RestaurantUser> getUsers() {
+	public Collection<RUser> getUsers() {
 		return users;
 	}
 
-	public void setUsers(Collection<RestaurantUser> users) {
+	public void setUsers(Collection<RUser> users) {
 		this.users = users;
 	}
 

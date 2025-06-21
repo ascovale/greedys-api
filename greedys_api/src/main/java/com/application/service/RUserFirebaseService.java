@@ -6,25 +6,25 @@ import java.io.IOException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.application.persistence.dao.restaurant.RestaurantUserDAO;
+import com.application.persistence.dao.restaurant.RUserDAO;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
 
 @Service
 @Transactional
-public class RestaurantUserFirebaseService {
+public class RUserFirebaseService {
 
     private static final String PROJECT_ID ="greedy-36dec";
     public static final String SECURED_CHAT_SPECIFIC_USER = "/secured/user/queue/specific-user";
     private static final String FIREBASE_API_URL = "https://fcm.googleapis.com/v1/projects/"+PROJECT_ID+"/messages:send";
     private GoogleCredentials googleCredentials;
-    private final RestaurantUserFcmTokenService restaurantUserFcmTokenService;
-    private RestaurantUserDAO restaurantUserDAO;
+    private final RUserFcmTokenService RUserFcmTokenService;
+    private RUserDAO RUserDAO;
 
-    public RestaurantUserFirebaseService(RestaurantUserDAO restaurantUserDAO, RestaurantUserFcmTokenService restaurantUserFcmTokenService)
+    public RUserFirebaseService(RUserDAO RUserDAO, RUserFcmTokenService RUserFcmTokenService)
      {
-        this.restaurantUserDAO = restaurantUserDAO;
+        this.RUserDAO = RUserDAO;
         try {
             this.googleCredentials = GoogleCredentials.fromStream(new FileInputStream("/run/secrets/service_account"))
                     .createScoped("https://www.googleapis.com/auth/cloud-platform");
@@ -32,7 +32,7 @@ public class RestaurantUserFirebaseService {
         } catch (IOException e) {
             throw new RuntimeException("Failed to load Google Credentials: " + e.getMessage(), e);
         }
-        this.restaurantUserFcmTokenService = restaurantUserFcmTokenService;
+        this.RUserFcmTokenService = RUserFcmTokenService;
     }
 
     public FirebaseToken verifyToken(String idToken) {
@@ -47,7 +47,7 @@ public class RestaurantUserFirebaseService {
     @Async
     public void sendFirebaseNotification(Notification notification) {
         Customer user = notification.getCustomer();
-        List<CustomerFcmToken> tokens = restaurantUserFcmTokenService.getTokensByRestaurantUserId(user.getId());
+        List<CustomerFcmToken> tokens = RUserFcmTokenService.getTokensByRUserId(user.getId());
         for (CustomerFcmToken token : tokens) {
             try {
                 googleCredentials.refreshIfExpired();
@@ -91,8 +91,8 @@ public class RestaurantUserFirebaseService {
     
     @Async
     public void sendFirebaseNotification(RestaurantNotification notification) {
-        RestaurantUser user = notification.getRestaurantUser();
-        List<CustomerFcmToken> tokens = restaurantUserFcmTokenService.getTokensByCustomerId(user.getId());
+        RUser user = notification.getRUser();
+        List<CustomerFcmToken> tokens = RUserFcmTokenService.getTokensByCustomerId(user.getId());
         for (CustomerFcmToken token : tokens) {
             try {
                 googleCredentials.refreshIfExpired();
@@ -133,16 +133,16 @@ public class RestaurantUserFirebaseService {
     }
 
     public Optional<String> getOldTokenIfPresent(String deviceId) {
-        CustomerFcmToken token = restaurantUserFcmTokenService.getTokenByDeviceId(deviceId);
+        CustomerFcmToken token = RUserFcmTokenService.getTokenByDeviceId(deviceId);
         return Optional.of(token.getFcmToken());
     }
     @Async
-    public void sendFirebaseRestaurantNotification(String title, String body, Long idRestaurantUser) {
-        RestaurantUser restaurantUser = restaurantUserDAO.findById(idRestaurantUser)
-            .orElseThrow(() -> new RuntimeException("RestaurantUser not found with id: " + idRestaurantUser));
-        RestaurantUser user = restaurantUser;
+    public void sendFirebaseRestaurantNotification(String title, String body, Long idRUser) {
+        RUser RUser = RUserDAO.findById(idRUser)
+            .orElseThrow(() -> new RuntimeException("RUser not found with id: " + idRUser));
+        RUser user = RUser;
         Long idUser = user.getId();
-        List<CustomerFcmToken> tokens = restaurantUserFcmTokenService.getTokensByCustomerId(idUser);
+        List<CustomerFcmToken> tokens = RUserFcmTokenService.getTokensByCustomerId(idUser);
         for (CustomerFcmToken token : tokens) {
             try {
                 googleCredentials.refreshIfExpired();
@@ -182,7 +182,7 @@ public class RestaurantUserFirebaseService {
 
     @Async
     public void sendFirebaseCustomerNotification(String title, String body, Long idUser) {
-        List<CustomerFcmToken> tokens = restaurantUserFcmTokenService.getTokensByCustomerId(idUser);
+        List<CustomerFcmToken> tokens = RUserFcmTokenService.getTokensByCustomerId(idUser);
         for (CustomerFcmToken token : tokens) {
             try {
                 googleCredentials.refreshIfExpired();
