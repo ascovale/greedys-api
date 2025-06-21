@@ -1,7 +1,5 @@
 package com.application.controller.restaurant;
 
-import java.util.Collection;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -9,7 +7,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -20,11 +17,11 @@ import com.application.security.jwt.JwtUtil;
 import com.application.service.authentication.RestaurantAuthenticationService;
 import com.application.web.dto.get.RestaurantDTO;
 import com.application.web.dto.post.AuthResponseDTO;
-import com.application.web.dto.post.RestaurantUserSelectRequestDTO;
 
 import io.jsonwebtoken.Claims;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -50,8 +47,15 @@ public class RestaurantAuthenticationController {
 
     @Operation(summary = "Get list of restaurants for hub user", description = "Given a hub JWT, returns the list of restaurants associated with the hub user")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "List retrieved successfully", 
-                content = @Content(mediaType = "application/json", schema = @Schema(implementation = RestaurantDTO.class, type = "array"))),
+            @ApiResponse(responseCode = "200",
+                 description = "List retrieved successfully",
+                 content = @Content(
+                     mediaType = "application/json",
+                     array = @ArraySchema(
+                         schema = @Schema(implementation = RestaurantDTO.class)
+                     )
+                 )
+            ),
             @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content(mediaType = "application/json")),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content(mediaType = "application/json")),
             @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content(mediaType = "application/json"))
