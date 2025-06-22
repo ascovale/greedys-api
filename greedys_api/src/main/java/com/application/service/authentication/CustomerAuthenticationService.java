@@ -107,7 +107,7 @@ public class CustomerAuthenticationService {
         }
     }
 
-	public ResponseEntity<AuthResponseDTO> loginWithGoogle(AuthRequestGoogleDTO authenticationRequest) {
+	public AuthResponseDTO loginWithGoogle(AuthRequestGoogleDTO authenticationRequest) {
 		try {
 			return googleAuthService.authenticateWithGoogle(authenticationRequest, 
 					customerDAO::findByEmail,
@@ -124,7 +124,7 @@ public class CustomerAuthenticationService {
 					);
 		} catch (Exception e) {
 			logger.error("Google authentication failed: {}", e.getMessage(), e);
-			return null;
+			throw new RuntimeException("Google authentication failed: " + e.getMessage());
 		}
 	}
 		
