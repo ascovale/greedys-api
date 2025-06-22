@@ -8,7 +8,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.application.service.authentication.GoogleAuthService;
 import com.application.service.authentication.RestaurantAuthenticationService;
+import com.application.web.dto.AuthRequestGoogleDTO;
 import com.application.web.dto.post.AuthRequestDTO;
 import com.application.web.dto.post.AuthResponseDTO;
 
@@ -47,4 +49,21 @@ public class RUserAuthController {
             return ResponseEntity.status(401).body("Authentication failed: Invalid username or password.");
         }
     }
+
+    @Operation(summary = "Authenticate with Google", description = "Authenticates a restaurant user hub using Google OAuth2")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Google authentication successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthResponseDTO.class))),
+            @ApiResponse(responseCode = "401", description = "Google authentication failed", content = @Content(mediaType = "application/json"))
+    })
+    @PostMapping("/google")
+    public ResponseEntity<?> authenticateWithGoogle(@RequestBody AuthRequestGoogleDTO authRequest) {
+        try {
+            AuthResponseDTO response = restaurantAuthenticationService.loginWithGoogle(authRequest);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            LOGGER.error("Google authentication failed: {}", e.getMessage());
+            return ResponseEntity.status(401).body("Google authentication failed: " + e.getMessage());
+        }
+    }
+    
 }
