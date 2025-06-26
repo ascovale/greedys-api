@@ -1,6 +1,5 @@
 package com.application.spring;
 
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -16,7 +15,6 @@ import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
-import io.swagger.v3.oas.models.tags.Tag;
 
 @Configuration
 public class SwaggerConfig {
@@ -51,7 +49,7 @@ public class SwaggerConfig {
                 .group("admin-api")
                 .packagesToScan("com.application.controller.admin")
                 .pathsToMatch("/admin/**")
-                .addOpenApiCustomizer(groupCustomizer(null, "adminBearerAuth"))
+                .addOpenApiCustomizer(groupCustomizer())
                 .addOpenApiCustomizer(sortSchemasCustomizer())
                 .build();
     }
@@ -62,7 +60,7 @@ public class SwaggerConfig {
                 .group("customer-api")
                 .packagesToScan("com.application.controller.customer")
                 .pathsToMatch("/customer/**")
-                .addOpenApiCustomizer(groupCustomizer(null, "customerBearerAuth"))
+                .addOpenApiCustomizer(groupCustomizer())
                 .addOpenApiCustomizer(sortSchemasCustomizer())
                 .build();
     }
@@ -73,7 +71,7 @@ public class SwaggerConfig {
                 .group("restaurant-api")
                 .packagesToScan("com.application.controller.restaurant", "com.application.controller.rUser")
                 .pathsToMatch("/restaurant/**")
-                .addOpenApiCustomizer(groupCustomizer(null, "restaurantBearerAuth"))
+                .addOpenApiCustomizer(groupCustomizer())
                 .addOpenApiCustomizer(sortSchemasCustomizer())
                 .build();
     }
@@ -84,23 +82,19 @@ public class SwaggerConfig {
                 .group("public-api")
                 .packagesToScan("com.application.controller.pub", "com.application.web.dto")
                 .pathsToMatch("/public/**", "/register/**", "/auth/**")
-                .addOpenApiCustomizer(groupCustomizer(null, null))
+                .addOpenApiCustomizer(groupCustomizer())
                 .addOpenApiCustomizer(sortSchemasCustomizer())
                 .build();
     }
 
-    private OpenApiCustomizer groupCustomizer(List<Tag> tags, String securityName) {
+    private OpenApiCustomizer groupCustomizer() {
         return openApi -> {
-            if (tags != null) {
-                tags.forEach(openApi::addTagsItem);
-            }
-            if (securityName != null) {
-                openApi.addSecurityItem(new SecurityRequirement().addList(securityName));
-                Components components = openApi.getComponents();
-                if (components != null) {
-                    if (components.getSecuritySchemes() == null || !components.getSecuritySchemes().containsKey(securityName)) {
-                        components.addSecuritySchemes(securityName, bearerScheme());
-                    }
+            String securityName = "bearerAuth";
+            openApi.addSecurityItem(new SecurityRequirement().addList(securityName));
+            Components components = openApi.getComponents();
+            if (components != null) {
+                if (components.getSecuritySchemes() == null || !components.getSecuritySchemes().containsKey(securityName)) {
+                    components.addSecuritySchemes(securityName, bearerScheme());
                 }
             }
         };
