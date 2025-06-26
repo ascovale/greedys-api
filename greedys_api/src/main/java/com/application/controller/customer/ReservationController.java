@@ -33,7 +33,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/customer/reservation")
-@SecurityRequirement(name = "customerBearerAuth")
+@SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Reservation", description = "APIs for managing reservations of the customer")
 public class ReservationController {
 	@Autowired

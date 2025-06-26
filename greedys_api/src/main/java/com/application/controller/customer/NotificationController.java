@@ -30,7 +30,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/customer/notification")
-@SecurityRequirement(name = "customerBearerAuth")
+@SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Notification", description = "Notification management APIs for customers")
 public class NotificationController {
 

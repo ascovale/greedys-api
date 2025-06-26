@@ -37,7 +37,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/restaurant")
 // @PreAuthorize("@securityService.isRUserPermission(#idRUser)")
-@SecurityRequirement(name = "restaurantBearerAuth")
+@SecurityRequirement(name = "bearerAuth")
 public class RestaurantController {
 
 	// Creare un tester che fa le richieste all'api e ne verifica la correttezza dei

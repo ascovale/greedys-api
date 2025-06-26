@@ -33,7 +33,7 @@ import jakarta.servlet.http.HttpServletRequest;
 
 @RequestMapping("/admin/customer")
 @RestController
-@SecurityRequirement(name = "adminBearerAuth")
+@SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Admin Customer", description = "Admin Customer Management")
 public class AdminCustomerController {
     //TODO: aggiungere ruoli e permessi ai ruoli come metodi
