@@ -40,7 +40,7 @@ import jakarta.validation.Valid;
 @Tag(name = "Restaurant User Management", description = "Controller for managing restaurant users")
 @RestController
 @RequestMapping("/restaurant/user")
-@SecurityRequirement(name = "restaurantBearerAuth")
+@SecurityRequirement(name = "bearerAuth")
 public class RUserController {
 
     private final RUserService RUserService;

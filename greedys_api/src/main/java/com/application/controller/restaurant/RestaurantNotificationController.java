@@ -21,7 +21,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/restaurant/notification")
-@SecurityRequirement(name = "restaurantBearerAuth")
+@SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Notification Management", description = "Restaurant Notification management APIs")
 public class RestaurantNotificationController {
     //TODO: capire se dividere in restaurantNotification e RUserNotification

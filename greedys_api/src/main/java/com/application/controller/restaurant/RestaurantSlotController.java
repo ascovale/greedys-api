@@ -24,7 +24,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "Slot Management", description = "Controller for managing slots")
 @RestController
 @RequestMapping("/restaurant/slot")
-@SecurityRequirement(name = "restaurantBearerAuth")
+@SecurityRequirement(name = "bearerAuth")
 public class RestaurantSlotController {
     //TODO: Cancella slot
     @Autowired
