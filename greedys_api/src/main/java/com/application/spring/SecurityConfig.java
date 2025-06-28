@@ -77,21 +77,15 @@ public class SecurityConfig {
                                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                                 .authorizeHttpRequests(authz -> authz
 
-                                                .requestMatchers(/*
-                                                                  * "/restaurant/public/**",
-                                                                  * "/restaurant_user/swagger-ui/**",
-                                                                  * "/restaurant_user/v3/api-docs**",
-                                                                  */
-                                                                /*
-                                                                 * "/restaurant_user/swagger-ui/**",
-                                                                 * "/restaurant_user/v3/api-docs**",
-                                                                 */
+                                                .requestMatchers(
                                                                 "/doc**", "/swagger-ui/**",
                                                                 "/register/**", "/v3/api-docs*/**", "/api/**",
                                                                 "/auth/**",
                                                                 "/reservation/**", "/error*", "/actuator/health",
                                                                 "/public/**","/restaurant/user/auth/login")
-                                                .permitAll().requestMatchers("/restaurant/user/**").authenticated())
+                                                .permitAll()
+                                                .requestMatchers("/restaurant/service/**").authenticated()
+                                                .requestMatchers("/restaurant/user/**").authenticated())
                                 .sessionManagement(management -> management
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                                 .addFilterBefore(restaurantJwtRequestFilter, UsernamePasswordAuthenticationFilter.class)

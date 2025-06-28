@@ -1,5 +1,6 @@
 package com.application.controller.rUser;
 
+import java.util.List;
 import java.util.Locale;
 
 import org.springframework.context.MessageSource;
@@ -239,5 +240,26 @@ public class RUserController {
         }
         RUserDTO userDTO = new RUserDTO(currentUser);
         return new ResponseEntity<>(userDTO, HttpStatus.OK);
+    }
+
+    /**
+     * Restituisce i permessi (authorities) dell'utente autenticato.
+     *
+     * @return Lista dei permessi dell'utente corrente.
+     */
+    @Operation(summary = "Get user authorities", description = "Restituisce i permessi dell'utente autenticato")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))
+    })
+    @GetMapping("/authorities")
+    public ResponseEntity<List<String>> getRUserAuthorities() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication.getAuthorities() == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        List<String> authorities = authentication.getAuthorities().stream()
+                .map(a -> a.getAuthority())
+                .toList();
+        return new ResponseEntity<>(authorities, HttpStatus.OK);
     }
 }
