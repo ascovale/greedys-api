@@ -20,8 +20,8 @@ public class ControllerUtils {
 
     public static RUser getCurrentRUser() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (principal instanceof Customer) {
-            return ((RUser) principal);
+        if (principal instanceof RUser) {
+            return (RUser) principal;
         } else {
             System.out.println("Questo non dovrebbe succedere");
             return null;
@@ -30,8 +30,8 @@ public class ControllerUtils {
 
     public static Admin getCurrentAdmin() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (principal instanceof Customer) {
-            return ((Admin) principal);
+        if (principal instanceof Admin) {
+            return (Admin) principal;
         } else {
             System.out.println("Questo non dovrebbe succedere");
             return null;
@@ -40,7 +40,7 @@ public class ControllerUtils {
 
     public static Restaurant getCurrentRestaurant() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (principal instanceof Customer) {
+        if (principal instanceof RUser) {
             return ((RUser) principal).getRestaurant();
         } else {
             System.out.println("Questo non dovrebbe succedere");

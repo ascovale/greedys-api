@@ -54,7 +54,7 @@ public class RUserRequestFilter extends OncePerRequestFilter {
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             System.out.println("[FILTER] No authentication found in context. Loading user details...");
             UserDetails userDetails;
-            if ("hub".equals(type)) {
+            if ("hub".equals(tokenType)) {
                 // Crea un UserDetails custom per hub solo se claims non è null
                 String email = null;
                 if (claims != null) {
