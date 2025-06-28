@@ -65,6 +65,7 @@ public class SecurityConfig {
                 this.customerJwtRequestFilter = customerJwtRequestFilter;
                 this.adminJwtRequestFilter = adminJwtRequestFilter;
         }
+        //TODO fare in modo che il filtro di autenticazione non sia necessario per le richieste di login, registrazione e altre operazioni pubbliche
 
         @Bean
         SecurityFilterChain RUserFilterChain(HttpSecurity http,
