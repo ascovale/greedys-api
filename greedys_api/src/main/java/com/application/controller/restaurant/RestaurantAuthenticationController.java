@@ -31,7 +31,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @Tag(name = "Restaurant Authentication", description = "Controller for restaurant authentication")
 @RequestMapping("/restaurant/user/auth")
-@SecurityRequirement(name = "restaurantBearerAuth")
+@SecurityRequirement(name = "bearerAuth")
 public class RestaurantAuthenticationController {
 
     private final Logger LOGGER = LoggerFactory.getLogger(getClass());

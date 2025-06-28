@@ -26,7 +26,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "Menu Management", description = "Restaurant Menu Controller APIs")
-@SecurityRequirement(name = "restaurantBearerAuth")
+@SecurityRequirement(name = "bearerAuth")
 @RequestMapping("/restaurant/menu")
 @RestController
 public class RestaurantMenuController {

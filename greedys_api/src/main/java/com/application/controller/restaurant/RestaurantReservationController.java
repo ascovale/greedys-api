@@ -43,7 +43,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  * and marking as seated reservations.
  */
 @RestController
-@SecurityRequirement(name = "restaurantBearerAuth")
+@SecurityRequirement(name = "bearerAuth")
 @RequestMapping("/restaurant/reservation")
 @Tag(name = "Restaurant Reservation", description = "APIs for managing reservations from the restaurant")
 public class RestaurantReservationController {

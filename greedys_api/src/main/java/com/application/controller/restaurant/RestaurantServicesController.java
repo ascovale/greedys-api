@@ -37,7 +37,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "Service Management", description = "Controller for managing services offered by restaurants")
 @RestController
 @RequestMapping("/restaurant/service")
-@SecurityRequirement(name = "restaurantBearerAuth")
+@SecurityRequirement(name = "bearerAuth")
 public class RestaurantServicesController {
 
     @Autowired
