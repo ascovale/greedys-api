@@ -186,8 +186,8 @@ public class AdminRegistrationController {
         
     public void authWithoutPassword(Admin admin) {
 
-        List<AdminPrivilege> privileges = admin.getAdminRoles().stream()
-        .map(adminRole -> adminRole.getAdminPrivileges())
+        List<AdminPrivilege> privileges = admin.getRoles().stream()
+        .map(adminRole -> adminRole.getPrivileges())
         .flatMap(Collection::stream)
         .distinct()
         .collect(Collectors.toList());

@@ -2,6 +2,8 @@ package com.application.persistence.model.admin;
 
 import java.util.List;
 
+import com.application.persistence.model.user.BaseRole;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -13,7 +15,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "admin_role")
-public class AdminRole {
+public class AdminRole implements BaseRole<AdminPrivilege> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -36,8 +38,6 @@ public class AdminRole {
         this.name = name;
     }
 
-    //
-
     public Long getId() {
         return id;
     }
@@ -54,10 +54,6 @@ public class AdminRole {
         this.name = name;
     }
 
-
-	public List<AdminPrivilege> getAdminPrivileges() {
-		return adminPrivileges;
-	}
 
 	public void setAdminPrivileges(List<AdminPrivilege> adminPrivileges) {
 		this.adminPrivileges = adminPrivileges;
@@ -98,5 +94,25 @@ public class AdminRole {
         builder.append("Role [name=").append(name).append("]").append("[id=").append(id).append("]");
         return builder.toString();
     }
+
+
+    @Override
+    public List<AdminPrivilege> getPrivileges() {
+        return adminPrivileges;
+    }
+
+    @Override
+    public void setPrivileges(List<AdminPrivilege> privileges) {
+        this.adminPrivileges = privileges;
+    }
+
+    @Override
+    public void addPrivilege(AdminPrivilege privilege) {
+        if (adminPrivileges == null) {
+            adminPrivileges = List.of();
+        }
+        adminPrivileges.add(privilege);
+    }
+
 
 }

@@ -200,6 +200,20 @@ public class CustomerService {
 		roleRepository.save(role);
 	}
 
+	public void removePrivilegeFromRole(String roleName, String privilegeName) {
+        Role role = roleRepository.findByName(roleName);
+        if (role == null) {
+            throw new EntityNotFoundException("Role not found");
+        }
+        Privilege privilege = privilegeDAO.findByName(privilegeName);
+        if (privilege == null) {
+            throw new EntityNotFoundException("Permission not found");
+        }
+        Hibernate.initialize(role.getPrivileges());
+        role.getPrivileges().remove(privilege);
+        roleRepository.save(role);
+    }
+
 	public void updateCustomerStatus(Long customerId, Customer.Status newStatus) {
 		Customer customer = customerDAO.findById(customerId)
 				.orElseThrow(() -> new IllegalArgumentException("Customer not found"));
