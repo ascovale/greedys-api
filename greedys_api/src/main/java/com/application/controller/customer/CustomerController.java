@@ -33,7 +33,7 @@ import jakarta.validation.Valid;
 @Tag(name = "Customer", description = "Controller for managing customers")
 @RestController
 @RequestMapping("/customer")
-@SecurityRequirement(name = "customerBearerAuth")
+@SecurityRequirement(name = "bearerAuth")
 public class CustomerController {
     private final CustomerService customerService;
     private final MessageSource messages;

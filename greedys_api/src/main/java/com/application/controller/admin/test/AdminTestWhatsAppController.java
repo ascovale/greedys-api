@@ -20,7 +20,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
  */
 
 @RestController
-@SecurityRequirement(name = "adminBearerAuth")
+@SecurityRequirement(name = "bearerAuth")
 public class AdminTestWhatsAppController {
     @Autowired
     private WhatsAppService whatsappService;
