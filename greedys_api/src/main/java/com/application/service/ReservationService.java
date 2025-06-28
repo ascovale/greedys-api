@@ -21,8 +21,8 @@ import com.application.persistence.dao.customer.ReservationDAO;
 import com.application.persistence.dao.customer.ReservationLogDAO;
 import com.application.persistence.dao.customer.ReservationRequestDAO;
 import com.application.persistence.dao.restaurant.ClosedDayDAO;
-import com.application.persistence.dao.restaurant.RestaurantDAO;
 import com.application.persistence.dao.restaurant.RUserDAO;
+import com.application.persistence.dao.restaurant.RestaurantDAO;
 import com.application.persistence.dao.restaurant.ServiceDAO;
 import com.application.persistence.model.customer.Customer;
 import com.application.persistence.model.reservation.Reservation;
@@ -30,10 +30,11 @@ import com.application.persistence.model.reservation.ReservationLog;
 import com.application.persistence.model.reservation.ReservationRequest;
 import com.application.persistence.model.reservation.Slot;
 import com.application.persistence.model.restaurant.Restaurant;
-import com.application.persistence.model.restaurant.user.RestaurantNotification;
 import com.application.persistence.model.restaurant.user.RUser;
+import com.application.persistence.model.restaurant.user.RestaurantNotification;
 import com.application.service.notification.CustomerNotificationService;
 import com.application.web.dto.get.ReservationDTO;
+import com.application.web.dto.post.NewBaseReservationDTO;
 import com.application.web.dto.post.NewReservationDTO;
 import com.application.web.dto.post.admin.AdminNewReservationDTO;
 import com.application.web.dto.post.customer.CustomerNewReservationDTO;
@@ -45,7 +46,6 @@ import jakarta.persistence.PersistenceContext;
 @Service("reservationService")
 @Transactional
 public class ReservationService {
-    // TODO aggiungere controlli che la reservation è stata cancellata
     // TODO verificare quando si crea che lo slot non sia stato cancellato
     // TODO verificare che la data della prenotazione sia maggiore o uguale alla
     // data attuale
@@ -98,104 +98,67 @@ public class ReservationService {
     }
 
     @Transactional
-    public ReservationDTO createRestaurantReservation(RestaurantNewReservationDTO reservationDto)
+    public ReservationDTO createReservation(RestaurantNewReservationDTO reservationDto)
             throws NoSuchElementException {
-        Restaurant restaurant = restaurantDAO.findById(reservationDto.getRestaurantId())
+        Long restaurantId = getCurrentRUser().getRestaurant().getId();
+        Restaurant restaurant = restaurantDAO.findById(restaurantId)
                 .orElseThrow(() -> new NoSuchElementException("Restaurant not found"));
         Slot slot = entityManager.getReference(Slot.class, reservationDto.getIdSlot());
         if (slot == null || slot.getDeleted()) {
             throw new IllegalArgumentException("Slot is either null or deleted");
         }
-        Reservation reservation = new Reservation();
+        Reservation reservation = buildReservationFromBaseDTO(reservationDto, slot);
         reservation.setRestaurant(restaurant);
-        reservation.setPax(reservationDto.getPax());
-        reservation.setKids(reservationDto.getKids());
-        reservation.setNotes(reservationDto.getNotes());
-        reservation.setDate(reservationDto.getReservationDay());
-        reservation.setSlot(slot);
         reservation.setRejected(false);
         reservation.setAccepted(true);
         reservation.setNoShow(false);
-        reservation.setCreationDate(LocalDate.now());
-        // TODO forse deve essere RUser
-        // reservation.setCreator(getCurrentUser());
-
-        Customer user = entityManager.getReference(Customer.class, reservationDto.getUserId());
+        reservation.setCreator(getCurrentRUser());
+        Customer user = entityManager.getReference(Customer.class, reservationDto.getCustomerId());
         reservation.setCustomer(user);
-
         //TO DO
         ////customerNotificationService.createReservationNotification(reservation, Type.NEW_RESERVATION);
-
         reservation = reservationDAO.save(reservation);
-
         return new ReservationDTO(reservation);
     }
 
     @Transactional
-    public ReservationDTO createAdminReservation(AdminNewReservationDTO reservationDto) {
+    public ReservationDTO createReservation(AdminNewReservationDTO reservationDto) {
         Restaurant restaurant = restaurantDAO.findById(reservationDto.getRestaurant_id())
                 .orElseThrow(() -> new NoSuchElementException("Restaurant not found"));
         Slot slot = entityManager.getReference(Slot.class, reservationDto.getIdSlot());
         if (slot == null || slot.getDeleted()) {
             throw new IllegalArgumentException("Slot is either null or deleted");
         }
-        Reservation reservation = new Reservation();
+        Reservation reservation = buildReservationFromBaseDTO(reservationDto, slot);
         reservation.setRestaurant(restaurant);
-        reservation.setPax(reservationDto.getPax());
-        reservation.setKids(reservationDto.getKids());
-        reservation.setNotes(reservationDto.getNotes());
-        reservation.setDate(reservationDto.getReservationDay());
-        reservation.setSlot(slot);
         reservation.setRejected(reservationDto.getRejected());
         reservation.setAccepted(reservationDto.getAccept());
         reservation.setNoShow(reservationDto.getNoShow());
-        reservation.setCreationDate(LocalDate.now());
         reservationDAO.save(reservation);
         // reservation.setCreator(getCurrentUser());
         restaurantNotificationService.createNotificationsForRestaurant(reservation.getRestaurant(),
                 RestaurantNotification.Type.NEW_RESERVATION);
-
         //customerNotificationService.createReservationNotification(reservation, Type.NEW_RESERVATION);
         return new ReservationDTO(reservation);
     }
 
     @Transactional
-    public ReservationDTO askForReservation(CustomerNewReservationDTO dTO) throws NoSuchElementException {
-        Restaurant restaurant = restaurantDAO.findById(dTO.getRestaurant_id())
+    public ReservationDTO createReservation(CustomerNewReservationDTO dTO) throws NoSuchElementException {
+        Restaurant restaurant = restaurantDAO.findById(dTO.getRestaurantId())
                 .orElseThrow(() -> new NoSuchElementException("Restaurant not found"));
         Slot slot = entityManager.getReference(Slot.class, dTO.getIdSlot());
         if (slot == null || slot.getDeleted()) {
             throw new IllegalArgumentException("Slot is either null or deleted");
         }
-        // Session session = entityManager.unwrap(Session.class);
-        // System.out.println("\n\n\n****Session is open: " + session.isOpen());
-        Reservation reservation = new Reservation();
-        reservation.setRestaurant(entityManager.getReference(Restaurant.class, dTO.getRestaurant_id()));
-        reservation.setPax(dTO.getPax());
-        reservation.setKids(dTO.getKids());
-        reservation.setNotes(dTO.getNotes());
-        reservation.setDate(dTO.getReservationDay());
-        reservation.setSlot(entityManager.getReference(Slot.class, dTO.getIdSlot()));
+        Reservation reservation = buildReservationFromBaseDTO(dTO, slot);
+        reservation.setRestaurant(restaurant);
         reservation.setRejected(false);
         reservation.setAccepted(false);
-        reservation.setRestaurant(restaurant);
         reservation.setNoShow(false);
-        reservation.setCreationDate(LocalDate.now());
-
-        Customer user = customerDAO.findById(getCurrentUser().getId()).get();
-        reservation.setCreatorCustomer(user);
-        reservation.setCustomer(user);
-        // Hibernate.initialize(user.getReservations());
-        // user.getReservations().add(reservation);
-        logger.info("***************************************");
-        logger.info("*                                     *");
-        logger.info("*   Creating Reservation...           *");
-        logger.info("*                                     *");
-        logger.info("* Reservation details: {}", reservation);
-        logger.info("* Reservation created successfully with ID: {}", reservation.getId());
-        logger.info("***************************************");
+        Customer customer = customerDAO.findById(getCurrentCustomer().getId()).get();
+        reservation.setCreator(customer);
+        reservation.setCustomer(customer);
         Reservation r = reservationDAO.save(reservation);
-
         try {
             restaurantNotificationService.createNotificationsForRestaurant(reservation.getRestaurant(),
                     RestaurantNotification.Type.REQUEST);
@@ -263,23 +226,28 @@ public class ReservationService {
 
     @Transactional
     public Reservation modifyReservation(ReservationDTO dto) {
-        // Logica per modificare la prenotazione
         Reservation reservation = reservationDAO.findById(dto.getId()).get();
-        // Modifica i dettagli della prenotazione
-        // M
+        if (reservation.getDeleted() != null && reservation.getDeleted()) {
+            throw new IllegalStateException("Cannot modify a deleted reservation");
+        }
+        if (reservation.getLockedByAdmin() != null && reservation.getLockedByAdmin() && !isCurrentUserAdmin()) {
+            throw new IllegalStateException("Reservation is locked by admin and cannot be modified");
+        }
         reservation.setPax(dto.getPax());
         reservation.setKids(dto.getKids());
         reservation.setNotes(dto.getNotes());
         reservation.setDate(dto.getReservationDay());
         // reservation.setSlot(entityManager.getReference(Slot.class, dto.getIdSlot()));
         // TODO: aggiungere la modifica della data
-        // Salva la prenotazione modificata nel database
         return reservationDAO.save(reservation);
     }
 
     @Transactional
     public void adminDeleteReservation(Long reservationId) {
         Reservation reservation = reservationDAO.findById(reservationId).get();
+        if (reservation.getDeleted() != null && reservation.getDeleted()) {
+            throw new IllegalStateException("Cannot delete a reservation that is already deleted");
+        }
         reservation.setDeleted(true);
         // reservation.setCancelUser(getCurrentUser());
         reservationDAO.save(reservation);
@@ -291,6 +259,9 @@ public class ReservationService {
     @Transactional
     public void customerDeleteReservation(Long reservationId) {
         Reservation reservation = reservationDAO.findById(reservationId).get();
+        if (reservation.getDeleted() != null && reservation.getDeleted()) {
+            throw new IllegalStateException("Cannot delete a reservation that is already deleted");
+        }
         reservation.setDeleted(true);
         // TODO: implementare il cancelUser e dire chi ha cancellato cosi anche con chi
         // ha creato ecc
@@ -304,7 +275,13 @@ public class ReservationService {
     private Reservation modifyReservation(Long oldId, NewReservationDTO dTO) {
         Reservation reservation = reservationDAO.findById(oldId)
                 .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
-        reservationLogDAO.save(new ReservationLog(reservation, getCurrentUser()));
+        if (reservation.getDeleted() != null && reservation.getDeleted()) {
+            throw new IllegalStateException("Cannot modify a deleted reservation");
+        }
+        if (reservation.getLockedByAdmin() != null && reservation.getLockedByAdmin() && !isCurrentUserAdmin()) {
+            throw new IllegalStateException("Reservation is locked by admin and cannot be modified");
+        }
+        reservationLogDAO.save(new ReservationLog(reservation, getCurrentCustomer()));
         reservation.setPax(dTO.getPax());
         reservation.setKids(dTO.getKids());
         reservation.setNotes(dTO.getNotes());
@@ -317,7 +294,7 @@ public class ReservationService {
         Reservation reservation = modifyReservation(oldReservationId, dTO);
         //eventuali altre modifiche da admin
         reservationDAO.save(reservation);
-        reservationLogDAO.save(new ReservationLog(reservation, getCurrentUser()));
+        reservationLogDAO.save(new ReservationLog(reservation, getCurrentCustomer()));
         //customerNotificationService.createReservationNotification(reservation, Type.ALTERED);
         restaurantNotificationService.createNotificationsForRestaurant(reservation.getRestaurant(),
                 RestaurantNotification.Type.ALTERED);
@@ -327,15 +304,26 @@ public class ReservationService {
     public void restaurantModifyReservation(Long oldReservationId, NewReservationDTO dTO, Customer currentUser) {
         Reservation reservation = modifyReservation(oldReservationId, dTO);
         reservationDAO.save(reservation);
-        reservationLogDAO.save(new ReservationLog(reservation, getCurrentUser()));
+        reservationLogDAO.save(new ReservationLog(reservation, getCurrentCustomer()));
         //customerNotificationService.createReservationNotification(reservation, Type.ALTERED);
+    }
+
+    private boolean isCurrentUserAdmin() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return principal instanceof com.application.persistence.model.admin.Admin;
     }
 
     @Transactional
     public void requestModifyReservation(Long oldReservationId, CustomerNewReservationDTO dTO) {
-        Customer currentUser = getCurrentUser();
+        Customer currentUser = getCurrentCustomer();
         Reservation reservation = reservationDAO.findById(oldReservationId)
                 .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
+        if (reservation.getDeleted() != null && reservation.getDeleted()) {
+            throw new IllegalStateException("Cannot modify a deleted reservation");
+        }
+        if (reservation.getLockedByAdmin() != null && reservation.getLockedByAdmin() && !isCurrentUserAdmin()) {
+            throw new IllegalStateException("Reservation is locked by admin and cannot be modified");
+        }
         if (reservation.getRejected() == true || reservation.getSeated() == true || reservation.getDeleted() == true || reservation.getNoShow() == true) {
             throw new IllegalStateException("Cannot modify a reservation with status REJECTED, SEATED, DELETED, or NO SHOW");
         }
@@ -360,7 +348,7 @@ public class ReservationService {
         Reservation reservation = reservationRequest.getReservation();
 
         // Log the current reservation details
-        reservationLogDAO.save(new ReservationLog(reservation, getCurrentUser(), reservationRequest));
+        reservationLogDAO.save(new ReservationLog(reservation, getCurrentCustomer(), reservationRequest));
 
         // Update reservation with the details from the request
         reservation.setPax(reservationRequest.getPax());
@@ -383,6 +371,9 @@ public class ReservationService {
     public Reservation adminMarkReservationNoShow(Long reservationId, Boolean noShow) {
         Reservation reservation = reservationDAO.findById(reservationId)
                 .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
+        if (reservation.getDeleted() !=null && reservation.getDeleted()) {
+            throw new IllegalStateException("Cannot mark as no-show a deleted reservation");
+        }
         reservation.setNoShow(noShow);
         if (noShow) {
             reservation.setSeated(false);
@@ -398,6 +389,9 @@ public class ReservationService {
     public void markReservationNoShow(Long idRestaurant, Long reservationId, Boolean noShow) {
         Reservation reservation = reservationDAO.findById(reservationId)
                 .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
+        if (reservation.getDeleted() != null && reservation.getDeleted()) {
+            throw new IllegalStateException("Cannot mark as no-show a deleted reservation");
+        }
         if (!reservation.getRestaurant().getId().equals(idRestaurant)) {
             throw new IllegalArgumentException("Reservation does not belong to the specified restaurant");
         }
@@ -418,6 +412,9 @@ public class ReservationService {
     public Reservation adminMarkReservationSeated(Long reservationId, Boolean seated) {
         Reservation reservation = reservationDAO.findById(reservationId)
                 .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
+        if (reservation.getDeleted() != null && reservation.getDeleted()) {
+            throw new IllegalStateException("Cannot mark as seated a deleted reservation");
+        }
         reservation.setSeated(seated);
         if (seated)
             reservation.setNoShow(false);
@@ -432,6 +429,9 @@ public class ReservationService {
     public Reservation markReservationSeated(Long idRestaurant, Long reservationId, Boolean seated) {
         Reservation reservation = reservationDAO.findById(reservationId)
                 .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
+        if (reservation.getDeleted() != null && reservation.getDeleted()) {
+            throw new IllegalStateException("Cannot mark as seated a deleted reservation");
+        }
         if (!reservation.getRestaurant().getId().equals(idRestaurant)) {
             throw new IllegalArgumentException("Reservation does not belong to the specified restaurant");
         }
@@ -447,6 +447,9 @@ public class ReservationService {
     public Reservation adminMarkReservationAccepted(Long reservationId, Boolean accepted) {
         Reservation reservation = reservationDAO.findById(reservationId)
                 .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
+        if (reservation.getDeleted() != null && reservation.getDeleted()) {
+            throw new IllegalStateException("Cannot accept a deleted reservation");
+        }
         reservation.setAccepted(accepted);
         if (accepted) {
             reservation.setRejected(false);
@@ -462,6 +465,9 @@ public class ReservationService {
     public Reservation markReservationAccepted(Long idRestaurant, Long reservationId, Boolean accepted) {
         Reservation reservation = reservationDAO.findById(reservationId)
                 .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
+        if (reservation.getDeleted() != null && reservation.getDeleted()) {
+            throw new IllegalStateException("Cannot accept a deleted reservation");
+        }
         if (!reservation.getRestaurant().getId().equals(idRestaurant)) {
             throw new IllegalArgumentException("Reservation does not belong to the specified restaurant");
         }
@@ -477,6 +483,9 @@ public class ReservationService {
     public Reservation adminMarkReservationRejected(Long reservationId, Boolean rejected) {
         Reservation reservation = reservationDAO.findById(reservationId)
                 .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
+        if (reservation.getDeleted() != null && reservation.getDeleted()) {
+            throw new IllegalStateException("Cannot reject a deleted reservation");
+        }
         reservation.setRejected(rejected);
         if (rejected) {
             reservation.setAccepted(false);
@@ -492,6 +501,9 @@ public class ReservationService {
     public Reservation markReservationRejected(Long idRestaurant, Long reservationId, Boolean rejected) {
         Reservation reservation = reservationDAO.findById(reservationId)
                 .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
+        if (reservation.getDeleted() != null && reservation.getDeleted()) {
+            throw new IllegalStateException("Cannot reject a deleted reservation");
+        }
         if (!reservation.getRestaurant().getId().equals(idRestaurant)) {
             throw new IllegalArgumentException("Reservation does not belong to the specified restaurant");
         }
@@ -503,13 +515,13 @@ public class ReservationService {
         return reservation;
     }
 
-    private Customer getCurrentUser() {
+    private Customer getCurrentCustomer() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (principal instanceof Customer) {
-            return ((Customer) principal);
+            return (Customer) principal;
         } else {
-            logger.info("Questo non dovrebbe succedere");
-            return null;
+            logger.error("L'utente corrente non è un Customer. Principal: {}", principal.getClass().getName());
+            throw new IllegalStateException("L'utente corrente non è un Customer");
         }
     }
 
@@ -526,7 +538,10 @@ public class ReservationService {
     public void rejectReservationCreatedByAdminOrRestaurant(Long reservationId) {
         Reservation reservation = reservationDAO.findById(reservationId)
                 .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
-        reservationLogDAO.save(new ReservationLog(reservation, getCurrentUser()));
+        if (reservation.getDeleted() != null && reservation.getDeleted()) {
+            throw new IllegalStateException("Cannot reject a deleted reservation");
+        }
+        reservationLogDAO.save(new ReservationLog(reservation, getCurrentCustomer()));
         // TODO scrivere il codice per dire se è stata creata o collegata dall'utente
         reservation.setCustomer(null);
         reservationDAO.save(reservation);
@@ -656,6 +671,17 @@ public class ReservationService {
         Reservation reservation = reservationDAO.findById(reservationId)
             .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
         return new ReservationDTO(reservation);
+    }
+
+    private Reservation buildReservationFromBaseDTO(NewBaseReservationDTO dto, Slot slot) {
+        Reservation reservation = new Reservation();
+        reservation.setPax(dto.getPax());
+        reservation.setKids(dto.getKids());
+        reservation.setNotes(dto.getNotes());
+        reservation.setDate(dto.getReservationDay());
+        reservation.setSlot(slot);
+        reservation.setCreationDate(LocalDate.now());
+        return reservation;
     }
 
 }

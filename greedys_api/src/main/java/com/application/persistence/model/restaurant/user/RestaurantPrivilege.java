@@ -2,6 +2,8 @@ package com.application.persistence.model.restaurant.user;
 
 import java.util.Collection;
 
+import com.application.persistence.model.user.BasePrivilege;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -12,7 +14,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "restaurant_privilege")
-public class RestaurantPrivilege {
+public class RestaurantPrivilege extends BasePrivilege{
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;

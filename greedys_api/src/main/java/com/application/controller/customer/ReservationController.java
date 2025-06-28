@@ -48,7 +48,7 @@ public class ReservationController {
 	})
 	@PostMapping("/ask")
 	public ResponseEntity<ReservationDTO> askReservation(@RequestBody CustomerNewReservationDTO DTO) {
-		ReservationDTO reservationDTO = reservationService.askForReservation(DTO);
+		ReservationDTO reservationDTO = reservationService.createReservation(DTO);
 		return ResponseEntity.ok(reservationDTO);
 	}
 

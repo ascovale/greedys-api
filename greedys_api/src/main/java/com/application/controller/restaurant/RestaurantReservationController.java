@@ -66,7 +66,7 @@ public class RestaurantReservationController {
 	public ResponseEntity<?> createReservation(@RequestBody RestaurantNewReservationDTO dto) {
 		// TODO: rivedere i permessi va bene che controllo il ristorante
 		// ma devo controllare enabled e che abbia il permesso di scrivere
-		reservationService.createRestaurantReservation(dto);
+		reservationService.createReservation(dto);
 		return ResponseEntity.ok().build();
 	}
 

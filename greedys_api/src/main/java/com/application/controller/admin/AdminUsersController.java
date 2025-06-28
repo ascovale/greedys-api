@@ -2,7 +2,6 @@ package com.application.controller.admin;
 
 import java.util.Locale;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -43,7 +42,6 @@ public class AdminUsersController {
     private final AdminService adminService;
     private final MessageSource messages;
 
-    @Autowired
     public AdminUsersController(AdminService adminService, MessageSource messages) {
         this.messages = messages;
         this.adminService = adminService;

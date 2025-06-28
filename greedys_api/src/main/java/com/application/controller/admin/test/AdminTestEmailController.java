@@ -1,6 +1,5 @@
 package com.application.controller.admin.test;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -31,7 +30,6 @@ public class AdminTestEmailController {
     private CustomerNotificationService notificationService;
     private RestaurantNotificationService restaurantNotificationService;
 
-    @Autowired
     public AdminTestEmailController(EmailService emailService, CustomerNotificationService notificationService, RestaurantNotificationService restaurantNotificationService) {
         this.emailService = emailService;
         this.notificationService = notificationService;

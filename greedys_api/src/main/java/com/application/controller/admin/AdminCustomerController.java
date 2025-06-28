@@ -1,6 +1,5 @@
 package com.application.controller.admin;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
@@ -36,11 +35,9 @@ import jakarta.servlet.http.HttpServletRequest;
 @SecurityRequirement(name = "adminBearerAuth")
 @Tag(name = "Admin Customer", description = "Admin Customer Management")
 public class AdminCustomerController {
-    //TODO: aggiungere ruoli e permessi ai ruoli come metodi
     private final CustomerService customerService;
     private final AllergyService allergyService;
 
-    @Autowired
     public AdminCustomerController(CustomerService customerService, AllergyService allergyService) {
         this.customerService = customerService;
         this.allergyService = allergyService;
@@ -103,7 +100,7 @@ public class AdminCustomerController {
         return "users";
     }
 
-    //TODO: Da verificare
+    //TODO: Da verificare inserendo tanti utenti
 
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_READ')")
     @Operation(summary = "List users with pagination", description = "Returns a paginated list of users")
@@ -144,15 +141,25 @@ public class AdminCustomerController {
     }
 
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_WRITE')")
-    @Operation(summary = "Add permission to role", description = "Adds a permission to a role by its name")
-    @ApiResponse(responseCode = "200", description = "Permission added successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
-    @ApiResponse(responseCode = "400", description = "Invalid request")
-    @PutMapping("/role/{roleName}/add_privilege")
-    public GenericResponse addPrivilegeToRole(@PathVariable String roleName, @RequestParam String permission) {
+    @Operation(summary = "Add privilege to role", description = "Aggiunge un permesso a un ruolo specifico")
+    @ApiResponse(responseCode = "200", description = "Permesso aggiunto con successo", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
+    @ApiResponse(responseCode = "400", description = "Richiesta non valida")
+    @PutMapping("/role/{roleName}/add_permission")
+    public ResponseEntity<GenericResponse> addPermissionToRole(@PathVariable String roleName, @RequestParam String permission) {
         customerService.addPrivilegeToRole(roleName, permission);
-        return new GenericResponse("Permission added successfully");
+        return ResponseEntity.ok(new GenericResponse("Permission added successfully"));
     }
 
+    @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_WRITE')")
+    @Operation(summary = "Remove privilege from role", description = "Rimuove un permesso da un ruolo specifico")
+    @ApiResponse(responseCode = "200", description = "Permesso rimosso con successo", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
+    @ApiResponse(responseCode = "400", description = "Richiesta non valida")
+    @PutMapping("/role/{roleName}/remove_permission")
+    public ResponseEntity<GenericResponse> removePermissionFromRole(@PathVariable String roleName, @RequestParam String permission) {
+        customerService.removePrivilegeFromRole(roleName, permission);
+        return ResponseEntity.ok(new GenericResponse("Permission removed successfully"));
+    }
+    //TODO: Verificare la parte di sotto, se serve o meno
 /* 
     private Customer getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

@@ -76,7 +76,7 @@ public class RUserRequestFilter extends OncePerRequestFilter {
                     return;
                 }
                 userDetails = org.springframework.security.core.userdetails.User
-                    .withUsername(email) // Use only the email, no ":0"
+                    .withUsername(email) 
                     .password("") // Nessuna password
                     .authorities("PRIVILEGE_HUB","PRIVILEGE_CHANGE_PASSWORD")
                     .build();

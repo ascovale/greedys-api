@@ -27,26 +27,23 @@ import com.application.persistence.dao.restaurant.RUserDAO;
 import com.application.persistence.dao.restaurant.RUserHubDAO;
 import com.application.persistence.dao.restaurant.RUserPasswordResetTokenDAO;
 import com.application.persistence.model.restaurant.Restaurant;
-import com.application.persistence.model.restaurant.user.RestaurantPrivilege;
 import com.application.persistence.model.restaurant.user.RUser;
 import com.application.persistence.model.restaurant.user.RUserHub;
 import com.application.persistence.model.restaurant.user.RUserPasswordResetToken;
 import com.application.persistence.model.restaurant.user.RUserVerificationToken;
+import com.application.persistence.model.restaurant.user.RestaurantPrivilege;
 import com.application.security.google2fa.RUserAuthenticationDetails;
 import com.application.security.jwt.JwtUtil;
 import com.application.security.user.ISecurityUserService;
 import com.application.service.EmailService;
 import com.application.service.RUserService;
-import com.application.web.dto.get.RestaurantDTO;
 import com.application.web.dto.AuthRequestGoogleDTO;
 import com.application.web.dto.get.RUserDTO;
+import com.application.web.dto.get.RestaurantDTO;
 import com.application.web.dto.post.AuthRequestDTO;
 import com.application.web.dto.post.AuthResponseDTO;
-import com.application.web.dto.post.NewCustomerDTO;
-import com.application.web.dto.post.RUserSelectRequestDTO;
 import com.application.web.util.GenericResponse;
 
-import io.jsonwebtoken.Claims;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 

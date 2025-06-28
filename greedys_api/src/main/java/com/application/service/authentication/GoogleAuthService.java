@@ -8,30 +8,15 @@ import java.util.function.Function;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
-import com.application.controller.customer.CustomerAuthenticationController;
-import com.application.persistence.model.customer.Customer;
 import com.application.security.jwt.JwtUtil;
 import com.application.web.dto.AuthRequestGoogleDTO;
-import com.application.web.dto.get.CustomerDTO;
 import com.application.web.dto.post.AuthResponseDTO;
-import com.application.web.dto.post.NewCustomerDTO;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
-
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 @Service
 public class GoogleAuthService {
@@ -42,8 +27,6 @@ public class GoogleAuthService {
     public GoogleAuthService(JwtUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
     }
-
-
 
     /**
      * Authenticates a user with Google OAuth2 and returns an authentication response.

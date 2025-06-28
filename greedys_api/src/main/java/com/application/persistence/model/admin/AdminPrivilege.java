@@ -2,6 +2,8 @@ package com.application.persistence.model.admin;
 
 import java.util.List;
 
+import com.application.persistence.model.user.BasePrivilege;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -12,7 +14,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "admin_privilege")
-public class AdminPrivilege {
+public class AdminPrivilege extends BasePrivilege {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;

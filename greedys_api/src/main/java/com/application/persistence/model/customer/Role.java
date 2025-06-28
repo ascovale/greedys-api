@@ -2,6 +2,8 @@ package com.application.persistence.model.customer;
 
 import java.util.List;
 
+import com.application.persistence.model.user.BaseRole;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -13,18 +15,17 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "role")
-public class Role {
+public class Role implements BaseRole<Privilege> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private String name;
-
     @ManyToMany
-    @JoinTable(name = 	"role_has_privilege", 
-    	joinColumns = @JoinColumn(name = "role_id"), 
-    	inverseJoinColumns = @JoinColumn(name = "privilege_id")
-    )	
+    @JoinTable(name = "role_has_privilege", 
+        joinColumns = @JoinColumn(name = "role_id"), 
+        inverseJoinColumns = @JoinColumn(name = "privilege_id")
+    )
     private List<Privilege> privileges;
 
     public Role() {
@@ -35,8 +36,6 @@ public class Role {
         super();
         this.name = name;
     }
-
-    //
 
     public Long getId() {
         return id;
@@ -54,12 +53,25 @@ public class Role {
         this.name = name;
     }
 
-
+    @Override
 	public List<Privilege> getPrivileges() {
 		return privileges;
 	}
 
 	@Override
+    public void setPrivileges(List<Privilege> privileges) {
+		this.privileges = privileges;
+	}
+
+	@Override
+    public void addPrivilege(Privilege privilege) {
+        if (privileges == null) {
+            privileges = new java.util.ArrayList<>();
+        }
+        privileges.add(privilege);
+    }
+
+    @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
@@ -91,12 +103,16 @@ public class Role {
         builder.append("Role [name=").append(name).append("]").append("[id=").append(id).append("]");
         return builder.toString();
     }
-    public void setPrivileges(List<Privilege> privileges) {
-		this.privileges = privileges;
-	}
 
     public List<Privilege> getPermissions() {
         return this.privileges;
     }
+
+
+    public void setPermissions(List<Privilege> privileges) {
+        this.privileges = privileges;
+    }
+    
+
 
 }

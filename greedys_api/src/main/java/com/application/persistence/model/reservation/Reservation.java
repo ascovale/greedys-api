@@ -124,20 +124,19 @@ public class Reservation {
 		return null;
 	}
 
-	// Separate setters for createdBy
-	public void setCreatedByCustomer(Customer customer) {
+	public void setCreator(Customer customer) {
 		this.createdByCustomer = customer;
 		this.createdByRUser = null;
 		this.createdByAdmin = null;
 	}
 
-	public void setCreatedByRUser(RUser RUser) {
+	public void setCreator(RUser RUser) {
 		this.createdByRUser = RUser;
 		this.createdByCustomer = null;
 		this.createdByAdmin = null;
 	}
 
-	public void setCreatedByAdmin(Admin admin) {
+	public void setCreator(Admin admin) {
 		this.createdByAdmin = admin;
 		this.createdByCustomer = null;
 		this.createdByRUser = null;
@@ -418,4 +417,14 @@ public class Reservation {
 	public void setStatus(Status status) {
 		this.status = status;
 	}
+
+    private Boolean lockedByAdmin = false;
+
+    public Boolean getLockedByAdmin() {
+        return lockedByAdmin;
+    }
+
+    public void setLockedByAdmin(Boolean lockedByAdmin) {
+        this.lockedByAdmin = lockedByAdmin;
+    }
 }

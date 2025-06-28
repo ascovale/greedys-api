@@ -2,7 +2,6 @@ package com.application.controller.admin;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.application.persistence.model.reservation.Reservation;
 import com.application.service.ReservationService;
 import com.application.web.dto.get.ReservationDTO;
 import com.application.web.dto.post.admin.AdminNewReservationDTO;
@@ -35,7 +35,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class AdminReservationController {
 	private ReservationService reservationService;
 
-	@Autowired
 	public AdminReservationController(ReservationService reservationService) {
 		this.reservationService = reservationService;
 	}
@@ -50,7 +49,7 @@ public class AdminReservationController {
 	@PostMapping("/new")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_WRITE')")
 	public ResponseEntity<?> createReservation(@RequestBody AdminNewReservationDTO DTO) {
-		reservationService.createAdminReservation(DTO);
+		reservationService.createReservation(DTO);
 		return ResponseEntity.ok().build();
 	}
 
@@ -185,4 +184,25 @@ public class AdminReservationController {
 			return ResponseEntity.status(404).body("No reservations found for the customer");
 		}
 	}
+
+	@Operation(summary = "Lock or unlock a reservation for admin only modification", description = "Set lockedByAdmin flag on a reservation. When true, only admins can modify it.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Reservation lock status updated successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid reservation ID", content = @Content),
+        @ApiResponse(responseCode = "401", description = "Unauthorized access", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Reservation not found", content = @Content),
+        @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
+    })
+    @PutMapping("/{reservationId}/lock")
+    @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_WRITE')")
+    public ResponseEntity<?> setReservationLockedByAdmin(@PathVariable Long reservationId, @RequestParam Boolean locked) {
+        ReservationDTO reservationDTO = reservationService.findReservationById(reservationId);
+        if (reservationDTO == null) {
+            return ResponseEntity.status(404).body("Reservation not found");
+        }
+        Reservation reservation = reservationService.findById(reservationId);
+        reservation.setLockedByAdmin(locked);
+        reservationService.save(reservation);
+        return ResponseEntity.ok().build();
+    }
 }

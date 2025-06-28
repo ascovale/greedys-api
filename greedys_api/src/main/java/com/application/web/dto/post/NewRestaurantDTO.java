@@ -3,10 +3,9 @@ package com.application.web.dto.post;
 import com.application.controller.Validators.ValidEmail;
 import com.application.web.dto.RestaurantImageDto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-
-import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(name = "NewRestaurantDTO", description = "DTO for creating a new restaurant")
 public class NewRestaurantDTO {

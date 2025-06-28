@@ -5,9 +5,9 @@ import java.util.List;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import com.application.persistence.model.restaurant.Restaurant;
+import com.application.persistence.model.user.BaseUser;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -26,7 +26,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "restaurant_user")
-public class RUser implements UserDetails {
+public class RUser extends BaseUser {
     @Id
     @Column(unique = true, nullable = false)
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -35,9 +35,7 @@ public class RUser implements UserDetails {
     @JoinColumn(name = "restaurant_id")
     private Restaurant restaurant;
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "restaurant_user_has_role", 
-        joinColumns = @JoinColumn(name = "restaurant_user_id"), 
-        inverseJoinColumns = @JoinColumn(name = "restaurant_role_id"))
+    @JoinTable(name = "restaurant_user_has_role", joinColumns = @JoinColumn(name = "restaurant_user_id"), inverseJoinColumns = @JoinColumn(name = "restaurant_role_id"))
     private List<RestaurantRole> restaurantRoles = new ArrayList<>();
     @OneToOne(fetch = FetchType.LAZY)
     private RUserOptions options;
@@ -56,7 +54,7 @@ public class RUser implements UserDetails {
     public void setRUserHub(RUserHub RUserHub) {
         this.RUserHub = RUserHub;
     }
-   
+
     private boolean accepted;
 
     public enum Status {
@@ -67,7 +65,6 @@ public class RUser implements UserDetails {
         DISABLED
     }
 
-
     public boolean isAccepted() {
         return accepted;
     }
@@ -75,6 +72,7 @@ public class RUser implements UserDetails {
     public void setAccepted(boolean accepted) {
         this.accepted = accepted;
     }
+
     @Override
     public boolean isEnabled() {
         return status == Status.ENABLED && restaurant != null && restaurant.getStatus() == Restaurant.Status.ENABLED;
@@ -122,8 +120,8 @@ public class RUser implements UserDetails {
         this.id = id;
     }
 
-
-    public List<RestaurantRole> getRestaurantRoles() {
+    @Override
+    public List<RestaurantRole> getRoles() {
         return restaurantRoles;
     }
 
@@ -155,22 +153,22 @@ public class RUser implements UserDetails {
     public List<RestaurantPrivilege> getPrivileges() {
         List<RestaurantPrivilege> privileges = new ArrayList<>();
         for (RestaurantRole restaurantRole : restaurantRoles) {
-            privileges.addAll(restaurantRole.getRestaurantPrivileges());
+            privileges.addAll(restaurantRole.getPrivileges());
         }
         return privileges;
     }
 
     @Override
     public List<? extends GrantedAuthority> getAuthorities() {
-        return getGrantedAuthorities(getRestaurantPrivileges());
+        return getGrantedAuthorities(getPrivilegesStrings());
     }
 
-    private final List<String> getRestaurantPrivileges() {
+    public final List<String> getPrivilegesStrings() {
         final List<String> privileges = new ArrayList<String>();
 
         for (final RestaurantRole role : restaurantRoles) {
             privileges.add(role.getName());
-            for (final RestaurantPrivilege item : role.getRestaurantPrivileges()) {
+            for (final RestaurantPrivilege item : role.getPrivileges()) {
                 privileges.add(item.getName());
             }
         }
@@ -178,7 +176,7 @@ public class RUser implements UserDetails {
         return privileges;
     }
 
-    private final List<GrantedAuthority> getGrantedAuthorities(final List<String> privileges) {
+    protected final List<GrantedAuthority> getGrantedAuthorities(final List<String> privileges) {
         final List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
         for (final String privilege : privileges) {
             authorities.add(new SimpleGrantedAuthority(privilege));
@@ -217,4 +215,22 @@ public class RUser implements UserDetails {
     public String getEmail() {
         return RUserHub != null ? RUserHub.getEmail() : null;
     }
+
+    @Override
+    public String getPhoneNumber() {
+        return RUserHub != null ? RUserHub.getPhoneNumber() : null;
+    }
+
+    @Override
+    public String getName() {
+        return RUserHub != null ? RUserHub.getFirstName() : null;
+    }
+
+    @Override
+    public String getSurname() {
+        return RUserHub != null ? RUserHub.getLastName() : null;
+    }
+
+
+
 }

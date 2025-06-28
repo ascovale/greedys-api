@@ -11,9 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.application.persistence.model.notification.CustomerNotification;
 import com.application.persistence.model.notification.Notification;
-import com.application.persistence.model.restaurant.user.RestaurantNotification;
 import com.application.persistence.model.restaurant.user.RUser;
-import com.application.service.utils.NotificationUtils;
+import com.application.persistence.model.restaurant.user.RestaurantNotification;
 
 @Service
 @Transactional

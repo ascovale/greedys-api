@@ -2,6 +2,9 @@ package com.application.persistence.model.restaurant.user;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+
+import com.application.persistence.model.user.BaseRole;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -14,7 +17,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "restaurant_role")
-public class RestaurantRole {
+public class RestaurantRole implements BaseRole<RestaurantPrivilege> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -27,7 +30,7 @@ public class RestaurantRole {
     	joinColumns = @JoinColumn(name = "restaurant_role_id"), 
     	inverseJoinColumns = @JoinColumn(name = "restaurant_privilege_id")
     )	
-    private Collection<RestaurantPrivilege> restaurantPrivileges;
+    private List<RestaurantPrivilege> restaurantPrivileges;
 
     public RestaurantRole() {
         super();
@@ -62,11 +65,11 @@ public class RestaurantRole {
 		this.users = users;
 	}
 
-	public Collection<RestaurantPrivilege> getRestaurantPrivileges() {
+	public List<RestaurantPrivilege> getPrivileges() {
 		return restaurantPrivileges;
 	}
 
-	public void setRestaurantPrivileges(Collection<RestaurantPrivilege> restaurantPrivileges) {
+	public void setRestaurantPrivileges(List<RestaurantPrivilege> restaurantPrivileges) {
 		this.restaurantPrivileges = restaurantPrivileges;
 	}
 
@@ -85,10 +88,7 @@ public class RestaurantRole {
         .append("[id=").append(id).append("]");
         return builder.toString();
     }
-    public void setPrivileges(Collection<RestaurantPrivilege> privileges) {
-		this.restaurantPrivileges = privileges;
-	}
-
+    
     public void addRestaurantPrivilege(RestaurantPrivilege rp) {
         if (restaurantPrivileges == null) {
             restaurantPrivileges = new ArrayList<>();
@@ -112,5 +112,18 @@ public class RestaurantRole {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public void setPrivileges(List<RestaurantPrivilege> privileges) {
+        this.restaurantPrivileges = privileges;
+    }
+
+    @Override
+    public void addPrivilege(RestaurantPrivilege privilege) {
+        if (restaurantPrivileges == null) {
+            restaurantPrivileges = new ArrayList<>();
+        }
+        restaurantPrivileges.add(privilege);
     }
 }

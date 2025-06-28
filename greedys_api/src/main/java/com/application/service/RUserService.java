@@ -11,19 +11,19 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.application.persistence.dao.restaurant.RestaurantDAO;
-import com.application.persistence.dao.restaurant.RestaurantPrivilegeDAO;
-import com.application.persistence.dao.restaurant.RestaurantRoleDAO;
 import com.application.persistence.dao.restaurant.RUserDAO;
 import com.application.persistence.dao.restaurant.RUserHubDAO;
 import com.application.persistence.dao.restaurant.RUserPasswordResetTokenDAO;
 import com.application.persistence.dao.restaurant.RUserVerificationTokenDAO;
+import com.application.persistence.dao.restaurant.RestaurantDAO;
+import com.application.persistence.dao.restaurant.RestaurantPrivilegeDAO;
+import com.application.persistence.dao.restaurant.RestaurantRoleDAO;
 import com.application.persistence.model.restaurant.Restaurant;
-import com.application.persistence.model.restaurant.user.RestaurantRole;
 import com.application.persistence.model.restaurant.user.RUser;
 import com.application.persistence.model.restaurant.user.RUserHub;
 import com.application.persistence.model.restaurant.user.RUserPasswordResetToken;
 import com.application.persistence.model.restaurant.user.RUserVerificationToken;
+import com.application.persistence.model.restaurant.user.RestaurantRole;
 import com.application.security.jwt.JwtUtil;
 import com.application.security.user.restaurant.RUserDetailsService;
 import com.application.web.dto.get.RUserDTO;
@@ -112,7 +112,7 @@ public class RUserService {
         }
         oldOwner.setStatus(RUser.Status.DELETED);
         newOwner.setStatus(RUser.Status.ENABLED);
-        Hibernate.initialize(newOwner.getRestaurantRoles());
+        Hibernate.initialize(newOwner.getRoles());
         newOwner.addRestaurantRole(new RestaurantRole("ROLE_OWNER"));
 
         oldOwner.removeRole(ownerRole);
@@ -140,7 +140,7 @@ public class RUserService {
             // Se esiste già un RUserHub con questa email, aggiungi il nuovo RUser a questo hub
             RUser ru = new RUser();
             ru.setRUserHub(existingUserHub);
-            Hibernate.initialize(ru.getRestaurantRoles());
+            Hibernate.initialize(ru.getRoles());
             ru.addRestaurantRole(rr);
             ru.setRestaurant(restaurant);
             existingUserHub.setPassword(passwordEncoder.encode(RUserDTO.getPassword()));
@@ -164,7 +164,7 @@ public class RUserService {
         ruhDAO.save(RUserHub);
 
         ru.setRUserHub(RUserHub);
-        Hibernate.initialize(ru.getRestaurantRoles());
+        Hibernate.initialize(ru.getRoles());
         ru.addRestaurantRole(rr);
         ru.setRestaurant(restaurant);
         RUserHub.setPassword(passwordEncoder.encode(RUserDTO.getPassword()));
@@ -197,7 +197,7 @@ public class RUserService {
         ruhDAO.save(RUserHub);
 
         ru.setRUserHub(RUserHub);
-        Hibernate.initialize(ru.getRestaurantRoles());
+        Hibernate.initialize(ru.getRoles());
         ru.setRestaurant(restaurant);
         RUserHub.setPassword(passwordEncoder.encode(RUserDTO.getPassword()));
         ruDAO.save(ru);
@@ -222,7 +222,7 @@ public class RUserService {
         RUser ru = new RUser();
         ru.setRUserHub(existingUserHub);
         ru.setRestaurant(restaurant);
-        Hibernate.initialize(ru.getRestaurantRoles());
+        Hibernate.initialize(ru.getRoles());
         ruDAO.save(ru);
 
         return ru;
@@ -238,11 +238,11 @@ public class RUserService {
         RUser ru = ruDAO.findById(idRUser)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid restaurant user ID: " + idRUser));
         Restaurant restaurant = ru.getRestaurant();
-        if (ru.getRestaurantRoles().stream().anyMatch(role -> role.getName().equals(string))) {
+        if (ru.getRoles().stream().anyMatch(role -> role.getName().equals(string))) {
             throw new IllegalArgumentException("User already has the role: " + string);
         }
         RestaurantRole role = rrDAO.findByName(string);
-        Hibernate.initialize(ru.getRestaurantRoles());
+        Hibernate.initialize(ru.getRoles());
         ru.addRestaurantRole(role);
 
         RUser newRUser = new RUser();
@@ -262,12 +262,12 @@ public class RUserService {
         RUser ru = ruDAO.findById(idRUser)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid restaurant user ID: " + idRUser));
 
-        String roleNameWithoutPrefix = RUserToDisable.getRestaurantRoles().stream()
+        String roleNameWithoutPrefix = RUserToDisable.getRoles().stream()
                 .map(role -> role.getName().replace("ROLE_", ""))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("User does not have any roles"));
-        boolean hasPermission = ru.getRestaurantRoles().stream()
-                .flatMap(role -> role.getRestaurantPrivileges().stream())
+        boolean hasPermission = ru.getRoles().stream()
+                .flatMap(role -> role.getPrivileges().stream())
                 .anyMatch(privilege -> privilege.getName().equals("PRIVILEGE_DISABLE_" + roleNameWithoutPrefix));
 
         if (!hasPermission) {
@@ -287,11 +287,11 @@ public class RUserService {
         if (role == null) {
             throw new IllegalArgumentException("Role not found: " + string);
         }
-        if (ru.getRestaurantRoles().stream().anyMatch(r -> r.getName().equals("ROLE_OWNER"))) {
+        if (ru.getRoles().stream().anyMatch(r -> r.getName().equals("ROLE_OWNER"))) {
             throw new IllegalArgumentException("Cannot change role for a user with ROLE_OWNER");
         }
-        ru.getRestaurantRoles().clear();
-        Hibernate.initialize(ru.getRestaurantRoles());
+        ru.getRoles().clear();
+        Hibernate.initialize(ru.getRoles());
         ru.addRestaurantRole(role);
         // non bisogna creare un nuovo ruolo bisogna mettere ruolo solo
         ruDAO.save(ru);
@@ -429,11 +429,11 @@ public class RUserService {
             throw new IllegalArgumentException("Role not found: " + string);
         }
 
-        if (ru.getRestaurantRoles().stream().noneMatch(r -> r.getName().equals(string))) {
+        if (ru.getRoles().stream().noneMatch(r -> r.getName().equals(string))) {
             throw new IllegalArgumentException("User does not have the role: " + string);
         }
 
-        Hibernate.initialize(ru.getRestaurantRoles());
+        Hibernate.initialize(ru.getRoles());
         ru.removeRole(role);
         ruDAO.save(ru);
 
