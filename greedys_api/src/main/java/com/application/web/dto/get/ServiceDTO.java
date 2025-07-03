@@ -6,6 +6,8 @@ import com.application.persistence.model.reservation.Service;
 import com.application.web.dto.ServiceTypeDto;
 import java.util.Collection;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(name = "ServiceDTO", description = "DTO for service details")
@@ -15,6 +17,8 @@ public class ServiceDTO {
     private long restaurantId;
     private Collection<ServiceTypeDto> serviceType;
     private String info;
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate validFrom;
     private LocalDate validTo;
     private boolean active;

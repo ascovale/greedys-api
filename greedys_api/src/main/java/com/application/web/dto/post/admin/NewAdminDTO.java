@@ -1,10 +1,10 @@
 package com.application.web.dto.post.admin;
 
-import com.application.controller.Validators.ValidEmail;
-import com.application.controller.Validators.ValidPassword;
-
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+
+import com.application.controller.validators.ValidEmail;
+import com.application.controller.validators.ValidPassword;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 

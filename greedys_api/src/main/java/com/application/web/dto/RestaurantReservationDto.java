@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotNull;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
-import com.application.controller.Validators.PasswordMatches;
+import com.application.controller.validators.PasswordMatches;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 

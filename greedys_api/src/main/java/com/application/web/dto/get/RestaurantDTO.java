@@ -3,8 +3,7 @@ package com.application.web.dto.get;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-import com.application.controller.Validators.ValidEmail;
-
+import com.application.controller.validators.ValidEmail;
 import com.application.persistence.model.restaurant.Restaurant;
 import com.application.web.dto.RestaurantImageDto;
 

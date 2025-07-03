@@ -4,9 +4,6 @@ import java.time.LocalTime;
 
 import com.application.mapper.Mapper.Weekday;
 import com.application.persistence.model.reservation.Slot;
-import com.application.web.dto.post.LocalTimeDeserializer;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -14,12 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public class SlotDTO {
 		
 	Long id;
-    @JsonDeserialize(using = LocalTimeDeserializer.class)
-    @JsonSerialize(using = LocalTimeSerializer.class)
 
 	LocalTime start;
-    @JsonDeserialize(using = LocalTimeDeserializer.class)
-    @JsonSerialize(using = LocalTimeSerializer.class)
 
 	LocalTime end;
     Weekday weekday;

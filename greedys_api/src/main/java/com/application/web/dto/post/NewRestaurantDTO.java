@@ -1,6 +1,6 @@
 package com.application.web.dto.post;
 
-import com.application.controller.Validators.ValidEmail;
+import com.application.controller.validators.ValidEmail;
 import com.application.web.dto.RestaurantImageDto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
