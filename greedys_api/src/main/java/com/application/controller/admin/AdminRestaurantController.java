@@ -131,6 +131,8 @@ public class AdminRestaurantController {
 			@RequestParam(required = false) LocalDate end) {
 
 		Collection<ReservationDTO> reservations;
+
+		/// FIX: questo IF ELSE andrebbe dento il metodo invece di avere più metodi overloaded
 		if (end != null && start != null) {
 			reservations = reservationService.getPendingReservations(restaurantId, start, end);
 		} else if (start != null) {

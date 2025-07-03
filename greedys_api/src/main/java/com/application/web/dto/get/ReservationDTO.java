@@ -2,11 +2,8 @@ package com.application.web.dto.get;
 
 import java.time.LocalDate;
 
-import com.application.controller.Validators.ValidEmail;
+import com.application.controller.validators.ValidEmail;
 import com.application.persistence.model.reservation.Reservation;
-import com.application.web.dto.post.LocalDateDeserializer;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -23,8 +20,6 @@ public class ReservationDTO {
 	@ValidEmail
 	private String email;
 	private String notes;
-	@JsonSerialize(using = LocalDateSerializer.class)
-	@JsonDeserialize(using = LocalDateDeserializer.class)
 	private LocalDate reservationDay;
 	private Long restaurant;
 

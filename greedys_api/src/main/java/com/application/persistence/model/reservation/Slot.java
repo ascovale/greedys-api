@@ -3,7 +3,6 @@ package com.application.persistence.model.reservation;
 import java.time.LocalTime;
 
 import com.application.mapper.Mapper.Weekday;
-import com.application.web.dto.get.LocalTimeSerializer;
 import com.application.web.dto.post.LocalTimeDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -28,12 +27,8 @@ public class Slot {
 	@Id		
 	@GeneratedValue(strategy=GenerationType.AUTO)
 	Long id;
-	@JsonDeserialize(using = LocalTimeDeserializer.class)
-    @JsonSerialize(using = LocalTimeSerializer.class)
 	@Schema(type = "string", format = "time", example = "14:30")
 	LocalTime start;
-	@JsonDeserialize(using = LocalTimeDeserializer.class)
-    @JsonSerialize(using = LocalTimeSerializer.class)
 	@Schema(type = "string", format = "time", example = "15:30")
 	LocalTime end;
 	@Column(name="weekday")

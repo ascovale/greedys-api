@@ -1,4 +1,4 @@
-package com.application.controller.Validators;
+package com.application.controller.validators;
 
 public class EmailExistsException extends Throwable {
 
