@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Greedys API Docs</title>
+  <link rel="icon" type="image/png" href="/swagger-ui/greedys.png" />
+  <link rel="stylesheet" type="text/css" href="swagger-ui.css" />
+  <link rel="stylesheet" type="text/css" href="theme-monokai.css" />
+  <style>
+    /* Logo custom nella vera topbar Swagger UI, più grande e visibile */
+    .swagger-ui .topbar .topbar-wrapper img[alt="Swagger UI"] {
+      display: none;
+    }
+    .swagger-ui .topbar {
+      margin: 0 !important;
+      padding: 0 !important;
+      width: 100vw !important;
+      left: 0;
+      right: 0;
+      border-radius: 0 !important;
+      box-sizing: border-box;
+    }
+    .swagger-ui .topbar .topbar-wrapper:before {
+      content: "";
+      display: inline-block;
+      vertical-align: middle;
+      background: url('../logo_api.png') no-repeat left center;
+      background-size: contain;
+      width: 64px;
+      height: 64px;
+      margin-right: 20px;
+      opacity: 1;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    }
+    /* Nascondi solo il titolo centrale, lascia il logo nella topbar */
+    .swagger-ui .information-container .title {
+      font-size: 0;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .swagger-ui .information-container .title:before {
+      content: "";
+      display: inline-block;
+      vertical-align: middle;
+      background: url('/swagger-ui/greedys.png') no-repeat left center;
+      background-size: contain;
+      width: 84px;
+      height: 48px;
+      margin-right: 0;
+      opacity: 1;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+      border: none;
+    }
+    /* Mostra di nuovo il testo Greedys API accanto al logo */
+    .swagger-ui .information-container .title > span {
+      font-size: 2em !important;
+      font-weight: bold;
+      color: #fff;
+      display: inline-block;
+    }
+    .topbar-wrapper.custom {
+      display: none;
+    }
+    /* Rimuovi padding/margin dal body e dal wrapper principale */
+    body, .swagger-ui {
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+  </style>
+</head>
+<body>
+  <!-- Rimuoviamo la topbar custom statica, lasciamo solo quella Swagger UI -->
+  <div id="swagger-ui"></div>
+  <script src="swagger-ui-bundle.js"></script>
+  <script src="swagger-ui-standalone-preset.js"></script>
+  <script>
+    window.onload = function() {
+      fetch('/swagger-groups')
+        .then(response => response.json())
+        .then(groups => {
+          const urls = groups.map(group => ({
+            url: `/v3/api-docs/${group}`,
+            name: group.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+          }));
+          window.ui = SwaggerUIBundle({
+            urls: urls,
+            dom_id: '#swagger-ui',
+            presets: [
+              SwaggerUIBundle.presets.apis,
+              SwaggerUIStandalonePreset
+            ],
+            layout: "StandaloneLayout",
+            operationsSorter: (a, b) => {
+              // Ordine: GET, POST, PUT, DELETE, altri
+              const order = { get: 1, post: 2, put: 3, delete: 4 };
+              return (order[a.get("method")] || 99) - (order[b.get("method")] || 99);
+            },
+            tagsSorter: 'alpha', // Ordina i controller (tag) in ordine alfabetico
+          });
+        });
+    };
+  </script>
+</body>
+</html>
