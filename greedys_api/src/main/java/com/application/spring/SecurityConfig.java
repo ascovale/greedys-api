@@ -84,6 +84,7 @@ public class SecurityConfig {
                                                                 "/auth/**",
                                                                 "/reservation/**", "/error*", "/actuator/health",
                                                                 "/public/**","/restaurant/user/auth/login",
+                                                                "/restaurant/user/auth/google",
                                                                 "/logo_api.png", // accesso libero al logo
                                                                 "/swagger-groups" // accesso libero alla lista gruppi swagger
                                                                 )
@@ -116,6 +117,7 @@ public class SecurityConfig {
                                                                 "/auth/**",
                                                                 "/reservation/**", "/error*", "/actuator/health",
                                                                 "/public/**","/customer/auth/**",
+                                                                "/customer/user/auth/google",
                                                                 "/logo_api.png", // accesso libero al logo
                                                                 "/swagger-groups" // accesso libero alla lista gruppi swagger
                                                                 )
