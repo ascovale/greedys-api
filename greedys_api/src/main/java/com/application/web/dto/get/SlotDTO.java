@@ -2,6 +2,8 @@ package com.application.web.dto.get;
 
 import java.time.LocalTime;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
 import com.application.mapper.Mapper.Weekday;
 import com.application.persistence.model.reservation.Slot;
 
@@ -12,9 +14,14 @@ public class SlotDTO {
 		
 	Long id;
 
-	LocalTime start;
+    @DateTimeFormat(pattern = "HH:mm")
+    @Schema(type = "string", format = "time", example = "14:30")
+    LocalTime start;
 
-	LocalTime end;
+    @DateTimeFormat(pattern = "HH:mm")
+    @Schema(type = "string", format = "time", example = "15:30")
+    LocalTime end;
+    
     Weekday weekday;
     ServiceDTO service;
 
