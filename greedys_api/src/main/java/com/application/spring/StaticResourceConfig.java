@@ -8,13 +8,14 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class StaticResourceConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // Mapping per logo custom
         registry.addResourceHandler("/logo_api.png")
                 .addResourceLocations("classpath:/static/logo_api.png");
-        // Regola per servire la custom Swagger UI
-        registry.addResourceHandler("/swagger-ui/**")
-                .addResourceLocations("classpath:/static/swagger-ui/");
         // Mapping per favicon
         registry.addResourceHandler("/favicon.ico")
                 .addResourceLocations("classpath:/static/favicon.ico");
+        // Regola per servire la custom Swagger UI con priorità sulla cartella custom
+        registry.addResourceHandler("/swagger-ui/**")
+                .addResourceLocations("classpath:/static/swagger-ui/", "classpath:/META-INF/resources/webjars/");
     }
 }

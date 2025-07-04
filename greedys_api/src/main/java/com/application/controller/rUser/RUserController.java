@@ -24,7 +24,6 @@ import com.application.persistence.model.restaurant.user.RUser;
 import com.application.service.RUserService;
 import com.application.web.dto.get.RUserDTO;
 import com.application.web.dto.post.NewRUserDTO;
-import com.application.web.dto.put.UpdatePasswordDTO;
 import com.application.web.error.InvalidOldPasswordException;
 import com.application.web.util.GenericResponse;
 
@@ -36,7 +35,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 
 @Tag(name = "Restaurant User Management", description = "Controller for managing restaurant users")
 @RestController
@@ -134,23 +132,27 @@ public class RUserController {
      * Changes the user's password after verifying the old password.
      *
      * @param locale      The locale for response messages.
-     * @param passwordDto DTO containing the old and new passwords.
+     * @param oldPassword The old password.
+     * @param newPassword The new password.
+     * @param email       The user's email (optional).
      * @return GenericResponse indicating the result of the operation.
      */
     @Operation(summary = "Generate new token for password change", description = "Changes the user's password after verifying the old password")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Password changed successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid old password or invalid data"),
+            @ApiResponse(responseCode = "400", description = "Invalid old password or invalid data", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class))),
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
     @PostMapping(value = "/password/new_token")
     public GenericResponse changeUserPassword(
             @Parameter(description = "Locale for response messages") final Locale locale,
-            @Parameter(description = "DTO containing the old and new password", required = true) @Valid UpdatePasswordDTO passwordDto) {
-        if (!RUserService.checkIfValidOldPassword(getRUserId(), passwordDto.getOldPassword())) {
+            @Parameter(description = "The old password", required = true) @RequestParam String oldPassword,
+            @Parameter(description = "The new password", required = true) @RequestParam String newPassword,
+            @Parameter(description = "The user's email (optional)") @RequestParam(required = false) String email) {
+        if (!RUserService.checkIfValidOldPassword(getRUserId(), oldPassword)) {
             throw new InvalidOldPasswordException();
         }
-        RUserService.changeRUserPassword(getRUserId(), passwordDto.getNewPassword());
+        RUserService.changeRUserPassword(getRUserId(), newPassword);
         return new GenericResponse(messages.getMessage("message.updatePasswordSuc", null, locale));
     }
 
