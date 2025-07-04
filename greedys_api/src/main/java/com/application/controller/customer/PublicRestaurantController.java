@@ -1,4 +1,4 @@
-package com.application.controller.pub;
+package com.application.controller.customer;
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -28,9 +28,11 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "PubRestaurant", description = "Controller for managing restaurants")
+@SecurityRequirement(name = "bearerAuth")
 @RestController
 public class PublicRestaurantController {
 
@@ -61,7 +63,7 @@ public class PublicRestaurantController {
 		return new ResponseEntity<>(restaurants, HttpStatus.OK);
 	}
 
-	@GetMapping(value = "/public/restaurant/{restaurantId}/open-days")
+	@GetMapping(value = "/customer/restaurant/{restaurantId}/open-days")
 	@Operation(summary = "Get open days of a restaurant", description = "Retrieve the open days of a restaurant")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = LocalDate.class)))),
@@ -76,7 +78,7 @@ public class PublicRestaurantController {
 		return new ResponseEntity<>(openDays, HttpStatus.OK);
 	}
 
-	@GetMapping(value = "/public/restaurant/{restaurantId}/closed-days")
+	@GetMapping(value = "/customer/restaurant/{restaurantId}/closed-days")
 	@Operation(summary = "Get closed days of a restaurant", description = "Retrieve the closed days of a restaurant")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = LocalDate.class)))),
@@ -91,7 +93,7 @@ public class PublicRestaurantController {
 		return new ResponseEntity<>(openDays, HttpStatus.OK);
 	}
 
-	@GetMapping(value = "/public/restaurant/{restaurantId}/day-slots")
+	@GetMapping(value = "/customer/restaurant/{restaurantId}/day-slots")
 	@Operation(summary = "Get day slots of a restaurant", description = "Retrieve the daily slots of a restaurant")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = SlotDTO.class)))),
@@ -110,13 +112,13 @@ public class PublicRestaurantController {
 			@ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = RestaurantDTO.class)))),
 			@ApiResponse(responseCode = "404", description = "Restaurant not found")
 	})
-	@GetMapping(value = "/public/restaurant/search")
+	@GetMapping(value = "/customer/restaurant/search")
 	public ResponseEntity<Collection<RestaurantDTO>> searchRestaurants(@RequestParam String name) {
 		Collection<RestaurantDTO> restaurants = restaurantService.findBySearchTerm(name);
 		return new ResponseEntity<>(restaurants, HttpStatus.OK);
 	}
 
-	@GetMapping(value = "/public/restaurant/{restaurantId}/services")
+	@GetMapping(value = "/customer/restaurant/{restaurantId}/services")
 	@Operation(summary = "Get services of a restaurant", description = "Retrieve the services of a restaurant")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ServiceDTO.class)))),
@@ -130,7 +132,7 @@ public class PublicRestaurantController {
 
 	/* -- === *** ROOMS AND TABLES *** === --- */
 
-	@GetMapping(value = "/public/restaurant/{restaurantId}/rooms")
+	@GetMapping(value = "/customer/restaurant/{restaurantId}/rooms")
 	@Operation(summary = "Get rooms of a restaurant", description = "Retrieve the rooms of a restaurant")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = RoomDTO.class)))),
@@ -142,7 +144,7 @@ public class PublicRestaurantController {
 		return new ResponseEntity<>(rooms, HttpStatus.OK);
 	}
 
-	@GetMapping(value = "/public/restaurant/room/{roomId}/tables")
+	@GetMapping(value = "/customer/restaurant/room/{roomId}/tables")
 	@Operation(summary = "Get tables of a room", description = "Retrieve the tables of a room")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = TableDTO.class)))),
@@ -154,7 +156,7 @@ public class PublicRestaurantController {
 		return new ResponseEntity<>(tables, HttpStatus.OK);
 	}
 
-	@GetMapping(value = "/public/restaurant/{restaurantId}/types")
+	@GetMapping(value = "/customer/restaurant/{restaurantId}/types")
 	@Operation(summary = "Get types of a restaurant", description = "Retrieve the types of a restaurant")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = String.class)))),
@@ -165,7 +167,7 @@ public class PublicRestaurantController {
 		List<String> types = restaurantService.getRestaurantTypesNames(restaurantId);
 		return new ResponseEntity<>(types, HttpStatus.OK);
 	}
-	@GetMapping(value = "/public/restaurant/{restaurantId}/slots")
+	@GetMapping(value = "/customer/restaurant/{restaurantId}/slots")
 	@Operation(summary = "Get all slots by restaurant ID", description = "Retrieve all available slots for a specific restaurant")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = SlotDTO.class)))),
@@ -183,7 +185,7 @@ public class PublicRestaurantController {
 			@ApiResponse(responseCode = "404", description = "Slot not found"),
 			@ApiResponse(responseCode = "400", description = "Invalid request")
 	})
-	@GetMapping("/public/restaurant/slot/{slotId}")
+	@GetMapping("/customer/restaurant/slot/{slotId}")
 	public SlotDTO getSlotById(@PathVariable Long slotId) {
 		return slotService.findById(slotId);
 	}
