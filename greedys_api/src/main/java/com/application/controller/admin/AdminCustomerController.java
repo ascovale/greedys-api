@@ -258,13 +258,14 @@ public class AdminCustomerController {
         return new GenericResponse("Abuse reported successfully");
     }
 
+    // Correzione: usa @RequestBody invece di @RequestParam per DTO complessi
+    @PutMapping("/reservations/request-modify")
     @Operation(summary = "Request reservation modification", description = "Richiede una modifica alla prenotazione specificata")
     @ApiResponse(responseCode = "200", description = "Richiesta di modifica inviata con successo", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @ApiResponse(responseCode = "404", description = "Prenotazione non trovata")
-    @PutMapping("/reservations/request-modify")
     public GenericResponse requestModifyReservation(
             @PathVariable Long reservationId,
-            @RequestParam CustomerNewReservationDTO reservationDto) {
+            @RequestBody CustomerNewReservationDTO reservationDto) {
         reservationService.requestModifyReservation(reservationId, reservationDto);
         return new GenericResponse("Reservation modification requested successfully");
     }*/

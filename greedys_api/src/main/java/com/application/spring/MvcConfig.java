@@ -17,7 +17,6 @@ import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
@@ -45,12 +44,6 @@ public class MvcConfig implements WebMvcConfigurer, ApplicationContextAware {
     }
 
     @Override
-    public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/swagger-ui/**")
-                .addResourceLocations("classpath:/META-INF/resources/webjars/");
-    }
-
-    @Override
     public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
         configurer
                 .favorParameter(false) // Non usare parametri per il content-type
@@ -58,8 +51,6 @@ public class MvcConfig implements WebMvcConfigurer, ApplicationContextAware {
                 .ignoreAcceptHeader(true) // Ignora l'header Accept (usa il default)
                 .defaultContentType(MediaType.APPLICATION_JSON); // Imposta JSON come default
     }
-
-    
 
     @Override
     public void addInterceptors(final InterceptorRegistry registry) {

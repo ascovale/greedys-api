@@ -20,8 +20,6 @@ services:
       - db_password
       - email_password
       - service_account
-    volumes:
-      - ./greedys_api/src/main/resources/static:/app/static:ro
 
   db:
     image: mysql:latest

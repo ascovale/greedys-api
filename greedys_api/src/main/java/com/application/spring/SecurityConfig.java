@@ -84,7 +84,8 @@ public class SecurityConfig {
                                                                 "/auth/**",
                                                                 "/reservation/**", "/error*", "/actuator/health",
                                                                 "/public/**","/restaurant/user/auth/login",
-                                                                "/logo_api.png" // accesso libero al logo
+                                                                "/logo_api.png", // accesso libero al logo
+                                                                "/swagger-groups" // accesso libero alla lista gruppi swagger
                                                                 )
                                                 .permitAll()
                                                 .requestMatchers("/restaurant/service/**").authenticated()
@@ -116,7 +117,8 @@ public class SecurityConfig {
                                                                 "/auth/**",
                                                                 "/reservation/**", "/error*", "/actuator/health",
                                                                 "/public/**","/customer/auth/**",
-                                                                "/logo_api.png" // accesso libero al logo
+                                                                "/logo_api.png", // accesso libero al logo
+                                                                "/swagger-groups" // accesso libero alla lista gruppi swagger
                                                                 )
                                                 .permitAll()
                                                 .requestMatchers("/customer/**").authenticated())
@@ -145,7 +147,8 @@ public class SecurityConfig {
                                                                 "/auth/**",
                                                                 "/reservation/**", "/error*", "/actuator/health",
                                                                 "/public/**","/admin/auth/**",
-                                                                "/logo_api.png" // accesso libero al logo
+                                                                "/logo_api.png", // accesso libero al logo
+                                                                "/swagger-groups" // accesso libero alla lista gruppi swagger
                                                                 )
                                                 .permitAll()
                                                 .requestMatchers("/admin/**").authenticated())
