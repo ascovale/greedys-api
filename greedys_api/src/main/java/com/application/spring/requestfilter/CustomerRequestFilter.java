@@ -56,4 +56,14 @@ public class CustomerRequestFilter extends OncePerRequestFilter {
         }
         chain.doFilter(request, response);
     }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getRequestURI();
+        return path.startsWith("/swagger-ui/") ||
+               path.startsWith("/favicon.ico") ||
+               path.startsWith("/logo_api.png") ||
+               path.startsWith("/css/") ||
+               path.startsWith("/js/");
+    }
 }

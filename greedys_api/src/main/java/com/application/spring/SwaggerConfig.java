@@ -81,9 +81,10 @@ public class SwaggerConfig {
         return GroupedOpenApi.builder()
                 .group("public-api")
                 .packagesToScan("com.application.controller.pub", "com.application.web.dto")
-                .pathsToMatch("/public/**", "/register/**", "/auth/**")
-                .addOpenApiCustomizer(groupCustomizer())
-                .addOpenApiCustomizer(sortSchemasCustomizer())
+                .pathsToMatch(
+                        "/public/**"
+                )
+                .addOpenApiCustomizer(sortSchemasCustomizer()) // Solo sort, nessuna security per il gruppo pubblico
                 .build();
     }
 

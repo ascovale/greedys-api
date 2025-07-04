@@ -83,7 +83,10 @@ public class SecurityConfig {
                                                                 "/register/**", "/v3/api-docs*/**", "/api/**",
                                                                 "/auth/**",
                                                                 "/reservation/**", "/error*", "/actuator/health",
-                                                                "/public/**","/restaurant/user/auth/login")
+                                                                "/public/**","/restaurant/user/auth/login",
+                                                                "/logo_api.png", // accesso libero al logo
+                                                                "/swagger-groups" // accesso libero alla lista gruppi swagger
+                                                                )
                                                 .permitAll()
                                                 .requestMatchers("/restaurant/**").authenticated())
                                 .sessionManagement(management -> management
@@ -112,7 +115,10 @@ public class SecurityConfig {
                                                                 "/register/**", "/v3/api-docs*/**", "/api/**",
                                                                 "/auth/**",
                                                                 "/reservation/**", "/error*", "/actuator/health",
-                                                                "/public/**","/customer/auth/**")
+                                                                "/public/**","/customer/auth/**",
+                                                                "/logo_api.png", // accesso libero al logo
+                                                                "/swagger-groups" // accesso libero alla lista gruppi swagger
+                                                                )
                                                 .permitAll()
                                                 .requestMatchers("/customer/**").authenticated())
                                 .sessionManagement(management -> management
@@ -139,7 +145,10 @@ public class SecurityConfig {
                                                                 "/register/**", "/v3/api-docs*/**", "/api/**",
                                                                 "/auth/**",
                                                                 "/reservation/**", "/error*", "/actuator/health",
-                                                                "/public/**","/admin/auth/**")
+                                                                "/public/**","/admin/auth/**",
+                                                                "/logo_api.png", // accesso libero al logo
+                                                                "/swagger-groups" // accesso libero alla lista gruppi swagger
+                                                                )
                                                 .permitAll()
                                                 .requestMatchers("/admin/**").authenticated())
                                 .sessionManagement(management -> management
