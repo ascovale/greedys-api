@@ -35,7 +35,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RequestMapping("/customer/reservation")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Reservation", description = "APIs for managing reservations of the customer")
-public class ReservationController {
+public class CustomerReservationController {
 	@Autowired
 	private ReservationService reservationService;
 
@@ -133,7 +133,7 @@ public class ReservationController {
 		if (authentication != null && authentication.getPrincipal() instanceof Customer) {
 			return (Customer) authentication.getPrincipal();
 		} else {
-			Logger.getLogger(ReservationController.class.getName()).warning("User not found in SecurityContextHolder");
+			Logger.getLogger(CustomerReservationController.class.getName()).warning("User not found in SecurityContextHolder");
 			throw new RuntimeException("User not found");
 		}
 	}

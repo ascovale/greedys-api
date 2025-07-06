@@ -66,7 +66,7 @@ public class SecurityConfig {
                 this.adminJwtRequestFilter = adminJwtRequestFilter;
         }
 
-        //TODO fare in modo che il filtro di autenticazione non sia necessario per le richieste di login, registrazione e altre operazioni pubbliche
+        // TODO: make sure the authentication filter is not required for login, registration, and other public operations
         @Bean
         SecurityFilterChain RUserFilterChain(HttpSecurity http,
                         @Qualifier("restaurantAuthenticationManager") AuthenticationManager authenticationManager)
@@ -108,7 +108,8 @@ public class SecurityConfig {
                                 .csrf(csrf -> csrf.disable())
                                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                                 .authorizeHttpRequests(authz -> authz
-                                                .requestMatchers(/*
+                                                .requestMatchers(
+                                                                /*
                                                                   * "/customer/public/**", "/customer/swagger-ui/**",
                                                                   * "/customer/v3/api-docs**",
                                                                   */
@@ -118,8 +119,9 @@ public class SecurityConfig {
                                                                 "/reservation/**", "/error*", "/actuator/health",
                                                                 "/public/**","/customer/auth/**",
                                                                 "/customer/user/auth/google",
-                                                                "/logo_api.png", // accesso libero al logo
-                                                                "/swagger-groups" // accesso libero alla lista gruppi swagger
+                                                                "/logo_api.png", // free access to the logo
+                                                                "/swagger-groups", // free access to the swagger groups list
+                                                                "/customer/restaurant/**" // Makes all customer/restaurant endpoints public
                                                                 )
                                                 .permitAll()
                                                 .requestMatchers("/customer/**").authenticated())

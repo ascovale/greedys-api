@@ -29,7 +29,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "Allergy", description = "Controller for managing customer allergies")
 
 @RestController
-public class AllergyController {
+public class CustomerAllergyController {
     // TODO: togliere ovunque isEnabled() che è ridondante che errore lancia spring
     // in caso di isEnabled false?
     // Rivedere il token che abilita il customer
@@ -37,7 +37,7 @@ public class AllergyController {
     private final CustomerService customerService;
     private final AllergyService allergyService;
 
-    public AllergyController(CustomerService customerService, AllergyService allergyService) {
+    public CustomerAllergyController(CustomerService customerService, AllergyService allergyService) {
         this.allergyService = allergyService;
         this.customerService = customerService;
     }
