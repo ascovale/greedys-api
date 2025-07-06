@@ -15,23 +15,24 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.application.mapper.Mapper;
+import com.application.persistence.dao.restaurant.RUserDAO;
 import com.application.persistence.dao.restaurant.RestaurantCategoryDAO;
 import com.application.persistence.dao.restaurant.RestaurantDAO;
 import com.application.persistence.dao.restaurant.RestaurantRoleDAO;
-import com.application.persistence.dao.restaurant.RUserDAO;
+import com.application.persistence.dao.restaurant.ServiceDAO;
 import com.application.persistence.model.Image;
 import com.application.persistence.model.restaurant.Restaurant;
 import com.application.persistence.model.restaurant.RestaurantCategory;
-import com.application.persistence.model.restaurant.user.RestaurantRole;
 import com.application.persistence.model.restaurant.user.RUser;
+import com.application.persistence.model.restaurant.user.RestaurantRole;
 import com.application.web.dto.RestaurantCategoryDTO;
 import com.application.web.dto.RestaurantFullDetailsDto;
 import com.application.web.dto.RestaurantImageDto;
 import com.application.web.dto.get.RestaurantDTO;
 import com.application.web.dto.get.ServiceDTO;
 import com.application.web.dto.get.SlotDTO;
-import com.application.web.dto.post.NewRestaurantDTO;
 import com.application.web.dto.post.NewRUserDTO;
+import com.application.web.dto.post.NewRestaurantDTO;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -61,6 +62,9 @@ public class RestaurantService {
 
 	@Autowired
 	private RUserService RUserService;
+
+	@Autowired
+	private ServiceDAO sDAO;
 
 
 	public Restaurant getReference(Long id) {
@@ -266,6 +270,16 @@ public class RestaurantService {
 		}
 	}
 
-	
+    public Collection<ServiceDTO> getActiveEnabledServices(Long restaurantId, LocalDate date) {
+		return sDAO.findActiveEnabledServices(restaurantId, date).stream()
+			.map(ServiceDTO::new)
+			.collect(Collectors.toList());
+    }
+
+	public Collection<ServiceDTO> findActiveEnabledServicesInPeriod(Long restaurantId, LocalDate start, LocalDate end) {
+		return sDAO.findActiveEnabledServicesInPeriod(restaurantId, start, end).stream()
+			.map(ServiceDTO::new)
+			.collect(Collectors.toList());
+	}
     
 }

@@ -30,13 +30,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RequestMapping("/customer/notification")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Notification", description = "Notification management APIs for customers")
-public class NotificationController {
+public class CustomerNotificationController {
 
     private final CustomerFcmTokenService customerFcmTokenRepository;
     private final FirebaseService firebaseService;
     private final CustomerNotificationService notificationService;
 
-    public NotificationController(CustomerFcmTokenService customerFcmTokenRepository, FirebaseService firebaseService,
+    public CustomerNotificationController(CustomerFcmTokenService customerFcmTokenRepository, FirebaseService firebaseService,
             CustomerNotificationService notificationService) {
         this.customerFcmTokenRepository = customerFcmTokenRepository;
         this.firebaseService = firebaseService;
