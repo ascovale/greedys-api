@@ -1210,11 +1210,6 @@
   color: #3b4151
 }
 
-.swagger-ui .parameters-col_description input[type=text] {
-  width: 100%;
-  max-width: 340px
-}
-
 .swagger-ui .parameter__name {
   font-size: 16px;
   font-weight: 400;
@@ -1789,4 +1784,66 @@
     margin: 0;
     font-family: Open Sans, sans-serif;
     color: #ffffff;
+}
+
+/* Lucchetto bianco nelle righe dei metodi (lock icon) */
+.swagger-ui .authorization__btn.locked svg {
+  fill: #fff !important;
+}
+
+/* Freccia bianca nelle righe dei metodi (expand/collapse arrow) */
+.swagger-ui .expand-methods svg,
+.swagger-ui .expand-operation svg {
+  fill: #fff !important;
+}
+
+/* Forza il colore bianco sulle icone lock e freccia nelle summary dei metodi */
+.swagger-ui .opblock-summary .authorization__btn.locked svg {
+  fill: #fff !important;
+  color: #fff !important;
+}
+.swagger-ui .opblock-summary .expand-methods svg,
+.swagger-ui .opblock-summary .expand-operation svg {
+  fill: #fff !important;
+  color: #fff !important;
+}
+/* Forza anche sulle icone direttamente dentro .opblock-summary */
+.swagger-ui .opblock-summary svg {
+  fill: #fff !important;
+  color: #fff !important;
+}
+
+/* Testi bianchi per messaggi di autenticazione, media type, links, tipi base */
+.swagger-ui .auth-container .wrapper span, /* Authentication successful/failed */
+.swagger-ui .auth-container .wrapper div,  /* Authentication successful/failed (a volte div) */
+.swagger-ui .response-col_links,           /* Links, No Links */
+.swagger-ui .response-col_links h4,        /* Links titolo */
+.swagger-ui .response-col_links span,      /* No Links */
+.swagger-ui .response-col_links p,         /* No Links */
+.swagger-ui .opblock .opblock-section-header h4, /* Media type */
+.swagger-ui .parameter__type,              /* string, integer, ... */
+.swagger-ui .model .prop-type,             /* string, integer, ... in model */
+.swagger-ui .model .prop-format            /* format info in model */
+{
+  color: #fff !important;
+}
+
+/* Anche per i tipi base nelle tabelle */
+.swagger-ui td .prop-type,
+.swagger-ui td .prop-format {
+  color: #fff !important;
+}
+
+/* Forza il colore bianco per i messaggi di autenticazione (Authentication successful/failed) */
+.swagger-ui .auth-container .wrapper span,
+.swagger-ui .auth-container .wrapper div,
+.swagger-ui .auth-container .wrapper .auth-container__message {
+  color: #fff !important;
+}
+
+/* Forza il colore bianco per Media type */
+.swagger-ui .opblock .opblock-section-header h4,
+.swagger-ui .opblock .opblock-section-header label,
+.swagger-ui .opblock .opblock-section-header {
+  color: #fff !important;
 }

@@ -19,6 +19,7 @@ public class Menu {
     private Long id;
     private String name;
     private String description; 
+    private boolean enabled = true;
     @ManyToMany
     @JoinTable(
         name = "menu_service",
@@ -59,6 +60,12 @@ public class Menu {
     public void setServices(List<Service> services) {
         this.services = services;
     }
+    public boolean isEnabled() {
+        return enabled;
+    }
 
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
 
 }
