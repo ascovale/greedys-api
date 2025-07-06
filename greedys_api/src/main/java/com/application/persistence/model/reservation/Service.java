@@ -53,6 +53,24 @@ public class Service {
 
 	private boolean active = true;
 
+	private boolean enabled = true;
+
+	public boolean isEnabled() {
+		return enabled;
+	}
+
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+	}
+
+	public List<Menu> getMenus() {
+		return menus;
+	}
+
+	public void setMenus(List<Menu> menus) {
+		this.menus = menus;
+	}
+
 	// colore del servizio
 	private String color;
 	@ManyToMany
@@ -63,9 +81,21 @@ public class Service {
 	)
 	private List<Menu> menus;
 	
-
-
 	public boolean isActive() {
+		return active;
+	}
+	
+	public boolean isActiveNow() {
+		LocalDate today = LocalDate.now();
+		return isActiveInDate(today);
+	}
+
+	public boolean isActiveInDate(LocalDate date) {
+		if (validFrom != null && validTo != null) {
+			if (date.isBefore(validFrom) || date.isAfter(validTo)) {
+				return false;
+			}
+		}
 		return active;
 	}
 
