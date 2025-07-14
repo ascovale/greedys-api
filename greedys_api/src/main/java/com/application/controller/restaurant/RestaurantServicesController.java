@@ -15,10 +15,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.controller.utils.ControllerUtils;
-import com.application.service.ReservationService;
 import com.application.service.RestaurantService;
 import com.application.service.ServiceService;
 import com.application.service.SlotService;
+import com.application.service.reservation.ReservationService;
 import com.application.web.dto.ServiceTypeDto;
 import com.application.web.dto.get.ServiceDTO;
 import com.application.web.dto.get.SlotDTO;

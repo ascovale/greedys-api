@@ -39,7 +39,7 @@ public class CustomerNotificationService {
                 .map(notification -> new NotificationDto(
                     notification.getId(), 
                     notification.getCustomer().getId(), 
-                    notification.getUnopened(),
+                    notification.isRead(),
                     notification.getBody(),
                     notification.getCreationTime()
 
@@ -53,7 +53,7 @@ public class CustomerNotificationService {
     @Transactional
     public void read(Long idNotification) {
         CustomerNotification notification = findById(idNotification).get();
-        notification.setUnopened(false);
+        notification.setRead(true);
         notificationDAO.save(notification);
     }
     
@@ -77,19 +77,10 @@ public class CustomerNotificationService {
     }
 
     @Transactional
-    public void setNotificationAsRead(Long notificationId, Boolean read) {
-        Optional<CustomerNotification> notificationOpt = notificationDAO.findById(notificationId);
-        if (notificationOpt.isPresent()) {
-            CustomerNotification notification = notificationOpt.get();
-            notification.setUnopened(!read);
-            notificationDAO.save(notification);
-        }
+    public Page<CustomerNotification> getUnreadNotifications(Pageable pageable) {
+        return notificationDAO.findByCustomerAndReadFalse(getCurrentUser(), pageable);
     }
 
-    @Transactional
-    public Page<CustomerNotification> getUnreadNotifications(Pageable pageable) {
-        return notificationDAO.findByCustomerAndUnopenedTrue(getCurrentUser(), pageable);
-    }
     //TODO da testare
     public Page<CustomerNotification> getAllNotifications(Pageable pageable) {
     Customer currentUser = getCurrentUser();

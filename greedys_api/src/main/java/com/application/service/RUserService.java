@@ -78,7 +78,7 @@ public class RUserService {
     // invio di email come se fosse utente normale
 
     public void acceptRUser(Long id) {
-        ruDAO.acceptRUser(id);
+        ruDAO.setUserStatus(id, RUser.Status.ENABLED);
     }
 
     public void blockRUser(Long idRUser) {
@@ -130,101 +130,41 @@ public class RUserService {
         return ruhDAO.save(userHub);
     }
 
-    public RUser registerRUser(NewRUserDTO RUserDTO, Restaurant restaurant,
-            RestaurantRole rr) {
-        System.out.println("Registering restaurant user with information:" + RUserDTO.getRestaurantId() + " ");
-
-        // Check if a user with the same email already exists
-        RUserHub existingUserHub = ruhDAO.findByEmail(RUserDTO.getEmail());
-        if (existingUserHub != null) {
-            // Se esiste già un RUserHub con questa email, aggiungi il nuovo RUser a questo hub
-            RUser ru = new RUser();
-            ru.setRUserHub(existingUserHub);
-            Hibernate.initialize(ru.getRoles());
-            ru.addRestaurantRole(rr);
-            ru.setRestaurant(restaurant);
-            existingUserHub.setPassword(passwordEncoder.encode(RUserDTO.getPassword()));
-            ruDAO.save(ru);
-            emailService.sendRestaurantAssociationConfirmationEmail(ru);
-            return ru;
-        }
-        
-        RUser existingRUser = ruDAO.findByEmailAndRestaurantId(RUserDTO.getEmail(), restaurant.getId());
-        if (existingRUser != null) {
-            throw new IllegalArgumentException("User already exists for this restaurant.");
-        }
-
-        RUser ru = new RUser();
-        RUserHub RUserHub = new RUserHub();
-        RUserHub.setEmail(RUserDTO.getEmail());
-        RUserHub.setFirstName(RUserDTO.getFirstName());
-        RUserHub.setLastName(RUserDTO.getLastName());
-        
-        // Save the RUserHub entity before associating it with RUser
-        ruhDAO.save(RUserHub);
-
-        ru.setRUserHub(RUserHub);
-        Hibernate.initialize(ru.getRoles());
-        ru.addRestaurantRole(rr);
-        ru.setRestaurant(restaurant);
-        RUserHub.setPassword(passwordEncoder.encode(RUserDTO.getPassword()));
-        ruDAO.save(ru);
-        emailService.sendRestaurantAssociationConfirmationEmail(ru);
-        return ru;
-    }
-
     public RUser registerRUser(NewRUserDTO RUserDTO, Restaurant restaurant) {
-        System.out.println("Registering restaurant user with information:" + RUserDTO.getRestaurantId() + " ");
-
-        // Check if a user with the same email already exists
-        RUserHub existingUserHub = ruhDAO.findByEmail(RUserDTO.getEmail());
-        if (existingUserHub != null) {
-            throw new IllegalArgumentException("User hub with email " + RUserDTO.getEmail() + " already exists.");
-        }
-
         RUser existingRUser = ruDAO.findByEmailAndRestaurantId(RUserDTO.getEmail(), restaurant.getId());
         if (existingRUser != null) {
             throw new IllegalArgumentException("User already exists for this restaurant.");
         }
 
-        RUser ru = new RUser();
-        RUserHub RUserHub = new RUserHub();
-        RUserHub.setEmail(RUserDTO.getEmail());
-        RUserHub.setFirstName(RUserDTO.getFirstName());
-        RUserHub.setLastName(RUserDTO.getLastName());
-        
-        // Save the RUserHub entity before associating it with RUser
-        ruhDAO.save(RUserHub);
 
-        ru.setRUserHub(RUserHub);
-        Hibernate.initialize(ru.getRoles());
-        ru.setRestaurant(restaurant);
-        RUserHub.setPassword(passwordEncoder.encode(RUserDTO.getPassword()));
-        ruDAO.save(ru);
-        emailService.sendRestaurantAssociationConfirmationEmail(ru);
-        return ru;
-    }
+        System.out.println("Registering restaurant user with information:" + RUserDTO.getRestaurantId() + " ");
+        RestaurantRole role = rrDAO.findById(RUserDTO.getRoleId()).get();
 
-    public RUser addRUserIfHubExists(NewRUserDTO RUserDTO, Restaurant restaurant) {
-        // Check if a user hub with the same email already exists
+        // Check if a user with the same email already exists
         RUserHub existingUserHub = ruhDAO.findByEmail(RUserDTO.getEmail());
         if (existingUserHub == null) {
-            throw new IllegalArgumentException("No user hub found with email: " + RUserDTO.getEmail());
+            existingUserHub = RUserHub.builder()
+                .email(RUserDTO.getEmail())
+                .firstName(RUserDTO.getFirstName())
+                .lastName(RUserDTO.getLastName())
+                .password(RUserDTO.getPassword())
+                .build();
+            ruhDAO.save(existingUserHub);
         }
 
-        // Check if a RUser already exists for this hub and restaurant
-        RUser existingRUser = ruDAO.findByEmailAndRestaurantId(RUserDTO.getEmail(), restaurant.getId());
-        if (existingRUser != null) {
-            throw new IllegalArgumentException("User already exists for this restaurant.");
-        }
-
-        // Create and save a new RUser
-        RUser ru = new RUser();
-        ru.setRUserHub(existingUserHub);
-        ru.setRestaurant(restaurant);
+        RUser ru = RUser.builder()
+            .RUserHub(existingUserHub)
+            .email(existingUserHub.getEmail())
+            .name(existingUserHub.getFirstName())
+            .surname(existingUserHub.getLastName())
+            .password(existingUserHub.getPassword())
+            .restaurant(restaurant)
+            .build();
         Hibernate.initialize(ru.getRoles());
+        ru.addRestaurantRole(role);
+        existingUserHub.setPassword(passwordEncoder.encode(RUserDTO.getPassword()));
         ruDAO.save(ru);
-
+        emailService.sendRestaurantAssociationConfirmationEmail(ru);
         return ru;
     }
 
@@ -237,19 +177,18 @@ public class RUserService {
 
         RUser ru = ruDAO.findById(idRUser)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid restaurant user ID: " + idRUser));
-        Restaurant restaurant = ru.getRestaurant();
         if (ru.getRoles().stream().anyMatch(role -> role.getName().equals(string))) {
             throw new IllegalArgumentException("User already has the role: " + string);
         }
         RestaurantRole role = rrDAO.findByName(string);
+        if (role == null) {
+            throw new IllegalArgumentException("Role not found: " + string);
+        }
         Hibernate.initialize(ru.getRoles());
         ru.addRestaurantRole(role);
+        ruDAO.save(ru);
 
-        RUser newRUser = new RUser();
-        newRUser.setRestaurant(restaurant);
-        ruDAO.save(newRUser);
-
-        return new RUserDTO(newRUser);
+        return new RUserDTO(ru);
     }
 
     public void disableRUser(Long idRUser, Long idRUserToDisable) {
@@ -381,31 +320,6 @@ public class RUserService {
         // TODO: Verificare invio mail
         // final SimpleMailMessage email = constructEmailMessage(event, RUser,
         // token);
-        // mailSender.send(email);
-
-        return new RUserDTO(RUser);
-    }
-
-    @Transactional
-    public RUserDTO addRUserToRestaurantWithRole(NewRUserDTO RUserDTO,
-            Long restaurantId, String roleName) {
-        if ("ROLE_OWNER".equals(roleName)) {
-            throw new IllegalArgumentException("Cannot assign the ROLE_OWNER role to a user.");
-        }
-
-        Restaurant restaurant = restaurantDAO.findById(restaurantId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid restaurant ID: " + restaurantId));
-        RestaurantRole role = rrDAO.findByName(roleName);
-        if (role == null) {
-            throw new IllegalArgumentException("Role not found: " + roleName);
-        }
-        RUser RUser = registerRUser(RUserDTO, restaurant, role);
-
-        // Generate and send verification token
-        String token = UUID.randomUUID().toString();
-        createVerificationTokenForRUser(RUser, token);
-        // TODO: Verificare invio mail
-        // final SimpleMailMessage email = constructEmailMessage(event, RUser,token);
         // mailSender.send(email);
 
         return new RUserDTO(RUser);

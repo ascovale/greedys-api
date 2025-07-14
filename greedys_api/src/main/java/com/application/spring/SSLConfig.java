@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
 public class SSLConfig {
 
     @Bean
-    public WebServerFactoryCustomizer<TomcatServletWebServerFactory> servletContainerCustomizer() {
+    WebServerFactoryCustomizer<TomcatServletWebServerFactory> servletContainerCustomizer() {
         return factory -> {
             Ssl ssl = new Ssl();
             ssl.setKeyStore("/run/secrets/keystore");

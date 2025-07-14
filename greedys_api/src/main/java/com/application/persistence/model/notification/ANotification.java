@@ -11,17 +11,24 @@ import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.MapKeyColumn;
 
 @MappedSuperclass
-public abstract class Notification {
+public abstract class ANotification {
     
+    @Column(name = "title", nullable = false)
     String title;
+
+    @Column(name = "body", nullable = false)
     String body;
+
     @ElementCollection
     @CollectionTable(name = "notification_properties", joinColumns = @JoinColumn(name = "notification_id"))
     @MapKeyColumn(name = "property_key")
     @Column(name = "property_value")
     private Map<String, String> properties = new HashMap<>();
 
-    public Notification(String title, String body, Map<String, String> data) {
+    private Boolean read = false;
+
+
+    public ANotification(String title, String body, Map<String, String> data) {
         this.title = title;
         this.body = body;
         this.properties = data;
@@ -37,5 +44,13 @@ public abstract class Notification {
 
     public Map<String, String> getData() {
         return properties;
+    }
+
+    public Boolean isRead() {
+        return read;
+    }
+
+    public void setRead(Boolean read) {
+        this.read = read;
     }
 }

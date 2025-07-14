@@ -70,6 +70,7 @@ public class AdminSetup {
     @Transactional
     public void createSomeAdmin() {
         logger.info(">>> --- Creating Admin --- <<<");
+
         Admin existingAdmin = adminDAO.findByEmail("ascolesevalentino@gmail.com");
         if (existingAdmin != null) {
             logger.info("Admin with email ascolesevalentino@gmail.com already exists.");
@@ -77,22 +78,24 @@ public class AdminSetup {
         }
 
         logger.info("Creating admin Valentino Ascolese");
-        NewAdminDTO adminDTO = new NewAdminDTO();
-        adminDTO.setEmail("ascolesevalentino@gmail.com");
-        adminDTO.setFirstName("Valentino");
-        adminDTO.setLastName("Ascolese");
-        adminDTO.setPassword("Minosse100%");
-        Admin admin =adminService.registerNewAdminAccount(adminDTO);
-        adminService.updateAdminStatus(admin.getId(), Admin.Status.ENABLED);
+        Admin admin = Admin.builder()
+            .email("ascolesevalentino@gmail.com")
+            .name("Valentino")
+            .surname("Ascolese")
+            .password("Minosse100%")
+            .status(Admin.Status.ENABLED)
+            .build();
+        admin = adminDAO.save(admin);
 
         logger.info("Creating admin Matteo Rossi");
-        NewAdminDTO admin2DTO = new NewAdminDTO();
-        admin2DTO.setEmail("matteo.rossi1902@gmail.com");
-        admin2DTO.setFirstName("Matteo");
-        admin2DTO.setLastName("Rossi");
-        admin2DTO.setPassword("Minosse100%");
-        admin =adminService.registerNewAdminAccount(admin2DTO);
-        adminService.updateAdminStatus(admin.getId(), Admin.Status.ENABLED);
+        Admin admin2 = Admin.builder()
+            .email("matteo.rossi1902@gmail.com")
+            .name("Matteo")
+            .surname("Rossi")
+            .password("Minosse100%")
+            .status(Admin.Status.ENABLED)
+            .build();
+        adminDAO.save(admin2);
     }
 
     @Transactional

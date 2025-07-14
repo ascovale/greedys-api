@@ -7,55 +7,43 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import com.application.persistence.model.restaurant.Restaurant;
-import com.application.persistence.model.user.BaseUser;
+import com.application.persistence.model.user.AbstractUser;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
+@SuperBuilder
 @Entity
 @Table(name = "restaurant_user")
-public class RUser extends BaseUser {
-    @Id
-    @Column(unique = true, nullable = false)
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+@Getter
+@Setter
+public class RUser extends AbstractUser {
+
     @ManyToOne(targetEntity = Restaurant.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "restaurant_id")
     private Restaurant restaurant;
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "restaurant_user_has_role", joinColumns = @JoinColumn(name = "restaurant_user_id"), inverseJoinColumns = @JoinColumn(name = "restaurant_role_id"))
+    @Builder.Default
     private List<RestaurantRole> restaurantRoles = new ArrayList<>();
+
     @OneToOne(fetch = FetchType.LAZY)
     private RUserOptions options;
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status")
-    private Status status = Status.VERIFY_TOKEN;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "restaurant_user_hub_id")
-    private RUserHub RUserHub;
-
-    public RUserHub getRUserHub() {
-        return RUserHub;
-    }
-
-    public void setRUserHub(RUserHub RUserHub) {
-        this.RUserHub = RUserHub;
-    }
-
-    private boolean accepted;
 
     public enum Status {
         VERIFY_TOKEN,
@@ -65,59 +53,19 @@ public class RUser extends BaseUser {
         DISABLED
     }
 
-    public boolean isAccepted() {
-        return accepted;
-    }
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    @Builder.Default
+    private Status status = Status.VERIFY_TOKEN;
 
-    public void setAccepted(boolean accepted) {
-        this.accepted = accepted;
-    }
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "restaurant_user_hub_id")
+    private RUserHub RUserHub;
+
 
     @Override
     public boolean isEnabled() {
         return status == Status.ENABLED && restaurant != null && restaurant.getStatus() == Restaurant.Status.ENABLED;
-    }
-
-    public Status getStatus() {
-        return status;
-    }
-
-    public void setStatus(Status status) {
-        this.status = status;
-    }
-
-    private Integer toReadNotification = 0;
-
-    public Integer getToReadNotification() {
-        return toReadNotification;
-    }
-
-    public void setToReadNotification(Integer toReadNotification) {
-        this.toReadNotification = toReadNotification;
-    }
-
-    public void setRestaurant(Restaurant restaurant) {
-        this.restaurant = restaurant;
-    }
-
-    public Restaurant getRestaurant() {
-        return restaurant;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public RUserOptions getUserOptions() {
-        return options;
-    }
-
-    public void setUserOptions(RUserOptions options) {
-        this.options = options;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     @Override
@@ -210,10 +158,6 @@ public class RUser extends BaseUser {
     @Override
     public String getPassword() {
         return RUserHub != null ? RUserHub.getPassword() : null;
-    }
-
-    public String getEmail() {
-        return RUserHub != null ? RUserHub.getEmail() : null;
     }
 
     @Override

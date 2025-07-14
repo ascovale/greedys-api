@@ -65,19 +65,19 @@ public class RestaurantDataLoader {
             return;
         }
 
-        NewRestaurantDTO restaurantDto = new NewRestaurantDTO();
-        restaurantDto.setName("La Soffitta Renovatio");
-        restaurantDto.setAddress("Piazza del Risorgimento 46A");
-        restaurantDto.setEmail("info@lasoffittarenovatio.it");
-        restaurantDto.setPassword("Minosse100%");
+        NewRestaurantDTO restaurantDto = NewRestaurantDTO.builder()
+            .name("La Soffitta Renovatio")
+            .address("Piazza del Risorgimento 46A")
+            .email("info@lasoffittarenovatio.it")
+            .password("Minosse100%")
+            .ownerName("Luca")
+            .ownerSurname("Bianchi")
+            .build();
         restaurantService.registerRestaurant(restaurantDto);
 
         restaurant = restaurantDAO.findByName("La Soffitta Renovatio");
         restaurant.setStatus(Restaurant.Status.ENABLED);
         restaurantDAO.save(restaurant);
-        RUser ru = RUserDAO.findByEmail("info@lasoffittarenovatio.it");
-        ru.setStatus(RUser.Status.ENABLED);
-        RUserDAO.save(ru);
 
         ServiceType pranzoType = serviceTypeDAO.findByName("Lunch");
         Service pranzo = new Service();
@@ -107,11 +107,14 @@ public class RestaurantDataLoader {
             return;
         }
 
-        NewRestaurantDTO restaurantDto = new NewRestaurantDTO();
-        restaurantDto.setName("Trattoria Da Mario");
-        restaurantDto.setAddress("Piazza del Risorgimento 46A");
-        restaurantDto.setEmail("info@lasoffittarenovatio.it"); // Stesso indirizzo e-mail
-        restaurantDto.setPassword("Mario123%");
+        NewRestaurantDTO restaurantDto = NewRestaurantDTO.builder()
+            .name("Trattoria Da Mario")
+            .address("Piazza del Risorgimento 46A")
+            .email("info@damario.it") 
+            .password("Mario123%")
+            .ownerName("Mario")
+            .ownerSurname("Rossi")
+            .build();
         restaurantService.registerRestaurant(restaurantDto);
 
         restaurant = restaurantDAO.findByName("Trattoria Da Mario");
@@ -287,35 +290,5 @@ public class RestaurantDataLoader {
         logger.info("    >>>  ---   Categories Assigned to La Soffitta Renovatio   ---  <<< ");
     }
     
-    @Transactional void createAdditionalRestaurants() {
-        logger.info("    >>>  ---   Creating Additional Restaurants   ---  <<< ");
-        List<NewRestaurantDTO> restaurants = new ArrayList<>();
-        restaurants.add(new NewRestaurantDTO("Ristorante Da Mario", "Via Roma 10", "info@lasoffittarenovatio.it", "Minosse100%"));
-        //restaurants.add(new NewRestaurantDTO("Trattoria Bella Napoli", "Piazza Garibaldi 5", "info@bellanapoli.it", "Password123"));
-        //restaurants.add(new NewRestaurantDTO("Osteria La Pergola", "Via Dante 15", "info@lapergola.it", "Password123"));
-        //restaurants.add(new NewRestaurantDTO("Pizzeria Il Forno", "Corso Italia 20", "info@ilforno.it", "Password123"));
-        //restaurants.add(new NewRestaurantDTO("Ristorante Al Mare", "Lungomare 25", "info@almare.it", "Password123"));
-        //restaurants.add(new NewRestaurantDTO("Steakhouse La Griglia", "Via Veneto 30", "info@lagriglia.it", "Password123"));
-        //restaurants.add(new NewRestaurantDTO("Sushi Bar Tokyo", "Via Milano 40", "info@sushitokyo.it", "Password123"));
-        //restaurants.add(new NewRestaurantDTO("Ristorante Vegetariano Verde", "Via Firenze 50", "info@verde.it", "Password123"));
-        //restaurants.add(new NewRestaurantDTO("Ristorante Gourmet Stella", "Via Torino 60", "info@stellagourmet.it", "Password123"));
-        //restaurants.add(new NewRestaurantDTO("Ristorante Fusion Asia", "Via Napoli 70", "info@fusionasia.it", "Password123"));
-        //restaurants.add(new NewRestaurantDTO("Ristorante Prova", "Via Napoli 70", "info@lasoffittarenovatio.it", "Minosse100%%"));
-
-        for (NewRestaurantDTO restaurantDto : restaurants) {
-            if (restaurantDAO.findByName(restaurantDto.getName()) == null) {
-                try {
-                    restaurantService.registerRestaurant(restaurantDto);
-                    Restaurant restaurant = restaurantDAO.findByName(restaurantDto.getName());
-                    if (restaurant != null) {
-                        restaurant.setStatus(Restaurant.Status.ENABLED);
-                        restaurantDAO.save(restaurant);
-                    }
-                } catch (Exception e) {
-                    logger.error("Error creating restaurant: " + restaurantDto.getName(), e);
-                }
-            }
-        }
-        logger.info("    >>>  ---   Additional Restaurants Created   ---  <<< ");
-    }
+   
 }

@@ -18,7 +18,7 @@ import com.application.persistence.model.notification.CustomerNotification;
 import com.application.service.CustomerFcmTokenService;
 import com.application.service.FirebaseService;
 import com.application.service.notification.CustomerNotificationService;
-import com.application.web.dto.post.UserFcmTokenDTO;
+import com.application.web.dto.post.FcmTokenDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -33,13 +33,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class NotificationController {
 
     private final CustomerFcmTokenService customerFcmTokenRepository;
-    private final FirebaseService firebaseService;
     private final CustomerNotificationService notificationService;
 
     public NotificationController(CustomerFcmTokenService customerFcmTokenRepository, FirebaseService firebaseService,
             CustomerNotificationService notificationService) {
         this.customerFcmTokenRepository = customerFcmTokenRepository;
-        this.firebaseService = firebaseService;
         this.notificationService = notificationService;
     }
 
@@ -90,14 +88,14 @@ public class NotificationController {
     @Operation(summary = "Set notification as read", description = "Sets the notification with the given ID as the given read boolean")
     @PutMapping("/read")
     public ResponseEntity<Void> setNotificationAsRead(@RequestParam Long notificationId, @RequestParam Boolean read) {
-        notificationService.setNotificationAsRead(notificationId, read);
+        notificationService.read(notificationId);
         return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "Register a user's FCM token", description = "Registers a user's FCM token")
     @PostMapping("/token")
     public ResponseEntity<Void> registerUserFcmToken(
-            @RequestBody UserFcmTokenDTO userFcmToken) {
+            @RequestBody FcmTokenDTO userFcmToken) {
         customerFcmTokenRepository.saveUserFcmToken(userFcmToken);
         return ResponseEntity.ok().build();
     }

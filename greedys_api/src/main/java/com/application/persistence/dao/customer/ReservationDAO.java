@@ -3,6 +3,7 @@ package com.application.persistence.dao.customer;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -90,68 +91,35 @@ public interface ReservationDAO extends JpaRepository<Reservation, Long> {
             SELECT r FROM Reservation r
             WHERE r.restaurant.id = :restaurantId
                 AND r.date BETWEEN :startDate AND :endDate
-                AND r.status = 'NOT_ACCEPTED'
+                AND r.status = :status
                 ORDER BY r.date, r.slot.start
             """)
-    Collection<Reservation> findByRestaurantAndDateBetweenAndPending(Long restaurantId, LocalDate startDate, LocalDate endDate);
-
-    @Query(value = """
-            SELECT r FROM Reservation r
-            WHERE r.restaurant.id = :restaurantId
-                AND r.date BETWEEN :startDate AND :endDate
-                AND r.status = 'ACCEPTED'
-                ORDER BY r.date, r.slot.start
-            """)
-    Collection<Reservation> findByRestaurantAndDateBetweenAndAccepted(Long restaurantId, LocalDate startDate, LocalDate endDate);
+    Collection<Reservation> findByRestaurantAndDateBetweenAndStatus(Long restaurantId, LocalDate startDate, LocalDate endDate, Reservation.Status status);
 
     @Query(value = """
             SELECT r FROM Reservation r
             WHERE r.restaurant.id = :restaurantId
                 AND r.date >= :startDate
-                AND r.status = 'NOT_ACCEPTED'
+                AND r.status = :status
                 ORDER BY r.date, r.slot.start
             """)
-    Collection<Reservation> findByRestaurantAndDateAndPending(Long restaurantId, LocalDate startDate);
+    Collection<Reservation> findByRestaurantAndDateAndStatus(Long restaurantId, LocalDate startDate, Reservation.Status status);
 
     @Query(value = """
             SELECT r FROM Reservation r
             WHERE r.restaurant.id = :restaurantId
-                AND r.date >= :startDate
-                AND r.status = 'ACCEPTED'
-                ORDER BY r.date, r.slot.start
+                AND r.status = :status
+                ORDER BY r.createdAt, r.date, r.slot.start
             """)
-    Collection<Reservation> findByRestaurantAndDateAndAccepted(Long restaurantId, LocalDate startDate);
-
-    @Query(value = """
-            SELECT r FROM Reservation r
-            WHERE r.restaurant.id = :restaurantId
-                AND r.status = 'NOT_ACCEPTED'
-                ORDER BY r.creationDate, r.date, r.slot.start
-            """)
-    Collection<Reservation> findByRestaurantIdAndPending(Long restaurantId);
+    Collection<Reservation> findByRestaurantIdAndStatus(Long restaurantId, Reservation.Status status);
 
     @Query(value = """
             SELECT r FROM Reservation r
             WHERE r.customer.id = :customerId
+                AND r.status = :status
                 ORDER BY r.date, r.slot.start
             """)
-    Collection<Reservation> findByCustomer(Long customerId);
-
-    @Query(value = """
-            SELECT r FROM Reservation r
-            WHERE r.customer.id = :customerId
-                AND r.status = 'NOT_ACCEPTED'
-                ORDER BY r.date, r.slot.start
-            """)
-    Collection<Reservation> findByCustomerAndPending(Long customerId);
-
-    @Query(value = """
-            SELECT r FROM Reservation r
-            WHERE r.customer.id = :customerId
-                AND r.status = 'ACCEPTED'
-                ORDER BY r.date, r.slot.start
-            """)
-    Collection<Reservation> findByCustomerAndAccepted(Long customerId);
+    Collection<Reservation> findByCustomerAndStatus(Long customerId, Reservation.Status status);
 
     Collection<Reservation> findBySlot_Id(Long slotId);
 
@@ -159,41 +127,39 @@ public interface ReservationDAO extends JpaRepository<Reservation, Long> {
             SELECT r FROM Reservation r
             WHERE r.restaurant.id = :restaurantId
                 AND r.date BETWEEN :startDate AND :endDate
-                AND r.status = 'ACCEPTED'
+                AND r.status = :status
                 ORDER BY r.date, r.slot.start
             """)
-    Page<Reservation> findByRestaurantAndDateBetweenAndAccepted(Long restaurantId, LocalDate startDate, LocalDate endDate, Pageable pageable);
-
-    @Query(value = """
-            SELECT r FROM Reservation r
-            WHERE r.customer.id = :customerId
-                ORDER BY r.date, r.slot.start
-            """)
-    Page<Reservation> findByCustomer(Long customerId, Pageable pageable);
-
-    @Query(value = """
-            SELECT r FROM Reservation r
-            WHERE r.restaurant.id = :restaurantId
-                AND r.date BETWEEN :startDate AND :endDate
-                AND r.status = 'NOT_ACCEPTED'
-                ORDER BY r.date, r.slot.start
-            """)
-    Page<Reservation> findByRestaurantAndDateBetweenAndPending(Long restaurantId, LocalDate startDate, LocalDate endDate, Pageable pageable);
+    Page<Reservation> findByRestaurantAndDateBetweenAndStatus(Long restaurantId, LocalDate startDate, LocalDate endDate, Reservation.Status status, Pageable pageable);
 
     @Query(value = """
             SELECT r FROM Reservation r
             WHERE r.restaurant.id = :restaurantId
                 AND r.date >= :startDate
-                AND r.status = 'NOT_ACCEPTED'
+                AND r.status = :status
                 ORDER BY r.date, r.slot.start
             """)
-    Page<Reservation> findByRestaurantAndDateAndPending(Long restaurantId, LocalDate startDate, Pageable pageable);
+    Page<Reservation> findByRestaurantAndDateAndStatus(Long restaurantId, LocalDate startDate, Reservation.Status status, Pageable pageable);
+
+    @Query(value = """
+            SELECT r FROM Reservation r
+            WHERE r.customer.id = :customerId
+                AND r.status = :status
+                ORDER BY r.date, r.slot.start
+            """)
+    Page<Reservation> findByCustomerAndStatus(Long customerId, Reservation.Status status, Pageable pageable);
 
     @Query(value = """
             SELECT r FROM Reservation r
             WHERE r.restaurant.id = :restaurantId
-                AND r.status = 'NOT_ACCEPTED'
-                ORDER BY r.creationDate, r.date, r.slot.start
+                AND r.date BETWEEN :startDate AND :endDate
+                ORDER BY r.date, r.slot.start
             """)
-    Page<Reservation> findByRestaurantIdAndPending(Long restaurantId, Pageable pageable);
+    Page<Reservation> findReservationsByRestaurantAndDateRange(Long restaurantId, LocalDate startDate, LocalDate endDate, Pageable pageable);
+
+    @Query(value = """
+            SELECT r FROM Reservation r
+            WHERE r.customer.id = :customerId
+            """)
+    Optional<Reservation> findByCustomer(Long customerId);
 }

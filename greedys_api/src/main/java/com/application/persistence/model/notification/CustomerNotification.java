@@ -18,18 +18,18 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "notification")
-public class CustomerNotification extends Notification {
+public class CustomerNotification extends ANotification {
 
 	
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
+	
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idcustomer")
 	private Customer customer;
-	@Column(columnDefinition = "TINYINT(1)")
-	private Boolean unopened = true;
+
 	@Column(name = "creation_time", updatable = false)
 	@CreationTimestamp
 	private Instant creationTime;
@@ -47,14 +47,6 @@ public class CustomerNotification extends Notification {
 
 	public Customer getCustomer() {
 		return customer;
-	}
-
-	public Boolean getUnopened() {
-		return unopened;
-	}
-
-	public void setUnopened(Boolean unopened) {
-		this.unopened = unopened;
 	}
 
 	public Instant getCreationTime() {

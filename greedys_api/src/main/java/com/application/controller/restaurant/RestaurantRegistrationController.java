@@ -52,7 +52,7 @@ public class RestaurantRegistrationController {
     }
 
     @Bean
-    public AuthenticationManager noOpAuthenticationManager() {
+    AuthenticationManager noOpAuthenticationManager() {
         return authentication -> {
             throw new UnsupportedOperationException("No global AuthenticationManager configured");
         };

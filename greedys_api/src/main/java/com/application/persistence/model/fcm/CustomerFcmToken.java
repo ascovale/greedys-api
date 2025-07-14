@@ -1,4 +1,4 @@
-package com.application.persistence.model.notification;
+package com.application.persistence.model.fcm;
 
 import com.application.persistence.model.customer.Customer;
 
@@ -7,7 +7,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 
 @Entity
-public class CustomerFcmToken extends FcmToken {
+public class CustomerFcmToken extends AFcmToken {
 
     @ManyToOne
     @JoinColumn(nullable = false)

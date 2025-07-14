@@ -113,11 +113,12 @@ public class CustomerAuthenticationService {
 					customerDAO::findByEmail,
 					(email, token) -> {
 						String[] name = ((String) token.getPayload().get("name")).split(" ");
-						NewCustomerDTO accountDto = new NewCustomerDTO();
-						accountDto.setEmail(email);
-						accountDto.setFirstName(name[0]); // Imposta un valore predefinito o calcolato
-						accountDto.setLastName(name[1]);   // Imposta un valore predefinito o calcolato
-						accountDto.setPassword(UUID.randomUUID().toString());  // Imposta un valore predefinito o generato
+						NewCustomerDTO accountDto = NewCustomerDTO.builder()
+							.email(email)
+							.firstName(name[0])
+							.lastName(name[1])
+							.password(UUID.randomUUID().toString())
+							.build();
 						return registerNewCustomerAccount(accountDto);
 					},
 					jwtUtil::generateToken
@@ -137,16 +138,15 @@ public class CustomerAuthenticationService {
 		if (accountDto.getPassword() == null) {
 			throw new IllegalArgumentException("rawPassword cannot be null");
 		}
-		final Customer customer = new Customer();
-
-		customer.setName(accountDto.getFirstName());
-		customer.setSurname(accountDto.getLastName());
-		customer.setPassword(passwordEncoder.encode(accountDto.getPassword()));
-		customer.setEmail(accountDto.getEmail());
-		// customer.setUsing2FA(accountDto.isUsing2FA());
-		ArrayList<Role> roles = new ArrayList<>();
-		roles.add(roleRepository.findByName("ROLE_CUSTOMER"));
-		customer.setRoles(roles);
+		final Customer customer = Customer.builder()
+			.name(accountDto.getFirstName())
+			.surname(accountDto.getLastName())
+			.password(passwordEncoder.encode(accountDto.getPassword()))
+			.email(accountDto.getEmail())
+			.roles(new ArrayList<Role>() {{
+				add(roleRepository.findByName("ROLE_CUSTOMER"));
+			}})
+			.build();
 		return customerDAO.save(customer);
 	}
 

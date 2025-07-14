@@ -1,43 +1,84 @@
 package com.application.persistence.model.user;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+
 import jakarta.persistence.Column;
-import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
+import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.Builder;
+import lombok.experimental.SuperBuilder;
 
-@MappedSuperclass
-public abstract class AbstractUser extends BaseUser{
-    protected String name;
-    protected String surname;
-    protected String nickName;
-    protected String email;
+@Entity
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
+@Getter
+@Setter
+@SuperBuilder
+public abstract class AbstractUser implements UserDetails {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    private Long id;
+
+    @NotNull
+    @Builder.Default
+    private Integer toReadNotification = 0;
+
+    @NotNull
+    private String name;
+
+    @NotNull
+    private String surname;
+
+    private String nickName;
+
+    @NotNull
+    private String email;
+
+    @NotNull
     @Column(length = 60)
-    protected String password;
-    protected String phoneNumber;
+    private String password;
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-
-    public String getSurname() { return surname; }
-    public void setSurname(String surname) { this.surname = surname; }
+    private String phoneNumber;
 
     @Override
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-
-    @Override
-    public String getPhoneNumber() { return phoneNumber; }
-    public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
-
-    public String getNickName(){ return nickName;}
-    public void setNickName(String nickName){this.nickName=nickName;}
-
-    @Override
-    public String getPassword() { return password; }
-    @Override
-    public int hashCode() { return Objects.hash(email);}
-    public void setPassword(String password) {
-        this.password = password;
+    public int hashCode() {
+        return Objects.hash(email);
     }
 
+    // Abstract methods for roles and privileges
+    public abstract List<? extends BaseRole<?>> getRoles();
+    public abstract List<? extends BasePrivilege> getPrivileges();
+    public abstract List<String> getPrivilegesStrings();
+
+    @Override
+    public List<? extends GrantedAuthority> getAuthorities() {
+        return getGrantedAuthorities(getPrivilegesStrings());
+    }
+
+    protected List<GrantedAuthority> getGrantedAuthorities(List<String> privileges) {
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        for (String privilege : privileges) {
+            authorities.add(new SimpleGrantedAuthority(privilege));
+        }
+        return authorities;
+    }
+
+    @Override
+    public String getUsername() {
+        return email;
+    }
 }

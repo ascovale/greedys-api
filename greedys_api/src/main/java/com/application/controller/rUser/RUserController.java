@@ -208,24 +208,6 @@ public class RUserController {
     }
 
     /**
-     * Adds a new user with a specific role to a restaurant.
-     */
-    @PostMapping(value = "/new_with_role")
-    @Operation(summary = "Add a user with a role to a restaurant", description = "Add a new user with a specific role to a restaurant")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = RUserDTO.class))),
-            @ApiResponse(responseCode = "404", description = "Restaurant or role not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid request")
-    })
-    public ResponseEntity<RUserDTO> addRUserToRestaurantWithRole(
-            @RequestBody NewRUserDTO RUserDTO,
-            @RequestParam Long restaurantId,
-            @RequestParam String roleName) {
-        RUserDTO createdUser = RUserService.addRUserToRestaurantWithRole(RUserDTO, restaurantId, roleName);
-        return new ResponseEntity<>(createdUser, HttpStatus.OK);
-    }
-
-    /**
      * Retrieves details of the current restaurant user.
      */
     @Operation(summary = "Get restaurant user details", description = "Retrieve details of the current restaurant user")

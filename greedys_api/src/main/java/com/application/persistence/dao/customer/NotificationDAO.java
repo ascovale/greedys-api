@@ -15,7 +15,7 @@ public interface NotificationDAO extends JpaRepository<CustomerNotification, Lon
 	//@Query("SELECT * FROM Notification n WHERE n.iduser = ?1")
 	public List<CustomerNotification> findByCustomer(Customer customer);
 
-    Page<CustomerNotification> findByCustomerAndUnopenedTrue(Customer customer, Pageable pageable);
+    Page<CustomerNotification> findByCustomerAndReadFalse(Customer customer, Pageable pageable);
 
     public Page<CustomerNotification> findAllByCustomer(Customer customer, Pageable pageable);
 }

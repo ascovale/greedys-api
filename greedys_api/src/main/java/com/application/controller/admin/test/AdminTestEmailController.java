@@ -66,7 +66,7 @@ public class AdminTestEmailController {
     @PostMapping("/send_RUser_test_notification")
     public GenericResponse sendTestNotification(@RequestBody NotificationRequest notificationRequest) {
         
-        restaurantNotificationService.sendRestaurantNotification(notificationRequest.getTitle(), notificationRequest.getBody(), notificationRequest.getIdRUser());
+        //restaurantNotificationService.sendRestaurantNotification(notificationRequest.getTitle(), notificationRequest.getBody(), notificationRequest.getIdRUser());
         return new GenericResponse("Notification sent successfully");
     }
 
@@ -84,7 +84,7 @@ public class AdminTestEmailController {
     @ApiResponse(responseCode = "400", description = "Invalid request")
     @PostMapping("/send_test_restaurant_notification")
     public GenericResponse sendTestRestaurantNotification(@RequestBody NotificationRequest notificationRequest) {
-        restaurantNotificationService.sendRestaurantNotification(notificationRequest.getTitle(), notificationRequest.getBody(), null);
+        //restaurantNotificationService.sendRestaurantNotification(notificationRequest.getTitle(), notificationRequest.getBody(), null);
         return new GenericResponse("Notification sent successfully");
     }
     /**

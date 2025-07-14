@@ -3,7 +3,13 @@ package com.application.web.dto.post.admin;
 import com.application.web.dto.post.NewBaseReservationDTO;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
+@Getter
+@Setter
+@SuperBuilder
 @Schema(name = "AdminNewReservationDTO", description = "DTO for creating a new admin reservation")
 public class AdminNewReservationDTO extends NewBaseReservationDTO {
     private Long restaurant_id;

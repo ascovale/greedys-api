@@ -9,6 +9,15 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@Builder
+@AllArgsConstructor
 @PasswordMatches
 @Schema(name = "AdminDTO", description = "DTO for admin details")
 public class AdminDTO {
@@ -27,7 +36,7 @@ public class AdminDTO {
     private String email;
 
     @NotNull
-    private Long id;
+    private final Long id;
 
     public AdminDTO(Admin user) {
         this.id = user.getId();
@@ -35,46 +44,4 @@ public class AdminDTO {
         this.lastName = user.getSurname();
         this.email = user.getEmail();
     }
-
-    public AdminDTO() {
-        super();
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(final String email) {
-        this.email = email;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(final String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(final String lastName) {
-        this.lastName = lastName;
-    }
-
-    @Override
-    public String toString() {
-        final StringBuilder builder = new StringBuilder();
-        builder.append("UserDto [firstName=").append(firstName)
-                .append(", lastName=").append(lastName)
-                .append(", email=").append(email);
-        return builder.toString();
-    }
-
-	public Long getId() {
-		return id;
-	}
-
 }

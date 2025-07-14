@@ -21,10 +21,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.application.service.ReservationService;
+import com.application.service.RUserService;
 import com.application.service.RestaurantService;
 import com.application.service.RoomService;
 import com.application.service.TableService;
+import com.application.service.reservation.ReservationService;
+import com.application.service.reservation.RestaurantReservationService;
 import com.application.web.dto.RestaurantCategoryDTO;
 import com.application.web.dto.get.ReservationDTO;
 import com.application.web.dto.get.RestaurantDTO;
@@ -56,17 +58,19 @@ public class AdminRestaurantController {
 	//TODO: Aggiungere createRestaurant
 
 	private final RestaurantService restaurantService;
-	private final ReservationService reservationService;
+	private final RestaurantReservationService reservationService;
 	private final RoomService roomService;
 	private final TableService tableService;
+	private final RUserService rUserService;
 
-	public AdminRestaurantController(RestaurantService restaurantService, ReservationService reservationService,
+	public AdminRestaurantController(RestaurantService restaurantService, RestaurantReservationService reservationService,
 			RoomService roomService,
-			TableService tableService) {
+			TableService tableService, RUserService rUserService) {
 		this.restaurantService = restaurantService;
 		this.reservationService = reservationService;
 		this.roomService = roomService;
 		this.tableService = tableService;
+		this.rUserService = rUserService;
 	}
 
 	@Operation(summary = "Get all reservations of a restaurant", description = "Retrieve all reservations of a restaurant")
@@ -162,30 +166,21 @@ public class AdminRestaurantController {
 		Pageable pageable = PageRequest.of(page, size);
 		Page<ReservationDTO> reservations;
 
-		if (end != null && start != null) {
 		reservations = reservationService.getPendingReservationsPageable(restaurantId, start, end, pageable);
-		} else if (start != null) {
-		reservations = reservationService.getPendingReservationsPageable(restaurantId, start, pageable);
-		} else if (end != null) {
-		throw new IllegalArgumentException("end cannot be null if start is not null");
-		} else {
-		reservations = reservationService.getPendingReservationsPageable(restaurantId, pageable);
-		}
+
 		return new ResponseEntity<>(reservations, HttpStatus.OK);
 	}
 
-/* 
+	@PostMapping("/{RUserId}/accept")
 	@Operation(summary = "Accept a user", description = "Accept a user for a specific restaurant")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class))),
 			@ApiResponse(responseCode = "404", description = "Restaurant or user not found")
 	})
-	@PostMapping("{RUserId}/accept")
 	public GenericResponse acceptUser(@PathVariable Long RUserId) {
-		RUserService.acceptRUser(RUserId);
+		rUserService.acceptRUser(RUserId);
 		return new GenericResponse("success");
 	}
-*/
 	@GetMapping(value = "/{restaurantId}/services")
 	@Operation(summary = "Get services of a restaurant", description = "Retrieve the services of a restaurant")
 	@ApiResponses(value = {
