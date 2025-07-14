@@ -3,6 +3,7 @@ package com.application.controller.restaurant;
 import java.util.Collection;
 import java.util.List;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -46,13 +47,16 @@ public class RestaurantController {
 	private final RestaurantService restaurantService;
 	private final RoomService roomService;
 	private final TableService tableService;
+	private final com.application.service.SlotService slotService;
 
 	public RestaurantController(RestaurantService restaurantService,
 			RoomService roomService,
-			TableService tableService) {
+			TableService tableService,
+			com.application.service.SlotService slotService) {
 		this.restaurantService = restaurantService;
 		this.roomService = roomService;
 		this.tableService = tableService;
+		this.slotService = slotService;
 	}
 
 	/* -- === *** ROOMS AND TABLES *** === --- */
@@ -156,5 +160,104 @@ public class RestaurantController {
 		roomService.deleteRoom(roomId);
 		return new GenericResponse("Room removed successfully");
 	}
+
+	// --- METODI DI SOLA CONSULTAZIONE PER IL RISTORANTE AUTENTICATO ---
+
+    @GetMapping(value = "/open-days")
+    @Operation(summary = "Get open days of the authenticated restaurant", description = "Retrieve the open days of the authenticated restaurant")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = String.class)))),
+        @ApiResponse(responseCode = "404", description = "Restaurant not found"),
+        @ApiResponse(responseCode = "400", description = "Invalid request")
+    })
+    public ResponseEntity<Collection<String>> getOpenDays(
+            @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate start,
+            @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate end) {
+        Long restaurantId = ControllerUtils.getCurrentRestaurant().getId();
+        Collection<String> openDays = restaurantService.getOpenDays(restaurantId, start, end);
+        return new ResponseEntity<>(openDays, HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/closed-days")
+    @Operation(summary = "Get closed days of the authenticated restaurant", description = "Retrieve the closed days of the authenticated restaurant")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = java.time.LocalDate.class)))),
+        @ApiResponse(responseCode = "404", description = "Restaurant not found"),
+        @ApiResponse(responseCode = "400", description = "Invalid request")
+    })
+    public ResponseEntity<Collection<java.time.LocalDate>> getClosedDays(
+            @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate start,
+            @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate end) {
+        Long restaurantId = ControllerUtils.getCurrentRestaurant().getId();
+        Collection<java.time.LocalDate> closedDays = restaurantService.getClosedDays(restaurantId, start, end);
+        return new ResponseEntity<>(closedDays, HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/day-slots")
+    @Operation(summary = "Get day slots of the authenticated restaurant", description = "Retrieve the daily slots of the authenticated restaurant")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = com.application.web.dto.get.SlotDTO.class)))),
+        @ApiResponse(responseCode = "404", description = "Restaurant not found"),
+        @ApiResponse(responseCode = "400", description = "Invalid request")
+    })
+    public ResponseEntity<Collection<com.application.web.dto.get.SlotDTO>> getDaySlots(
+            @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate date) {
+        Long restaurantId = ControllerUtils.getCurrentRestaurant().getId();
+        Collection<com.application.web.dto.get.SlotDTO> slots = restaurantService.getDaySlots(restaurantId, date);
+        return new ResponseEntity<>(slots, HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/slots")
+    @Operation(summary = "Get all slots of the authenticated restaurant", description = "Retrieve all available slots for the authenticated restaurant")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = com.application.web.dto.get.SlotDTO.class)))),
+        @ApiResponse(responseCode = "404", description = "Restaurant not found"),
+        @ApiResponse(responseCode = "400", description = "Invalid request")
+    })
+    public ResponseEntity<?> getAllSlots() {
+        Long restaurantId = ControllerUtils.getCurrentRestaurant().getId();
+        List<com.application.web.dto.get.SlotDTO> slots = slotService.findSlotsByRestaurantId(restaurantId);
+        return new ResponseEntity<>(slots, HttpStatus.OK);
+    }
+
+    @GetMapping("/slot/{slotId}")
+    @Operation(summary = "Get slot by id", description = "Retrieve a slot by its ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Slot found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = com.application.web.dto.get.SlotDTO.class))),
+        @ApiResponse(responseCode = "404", description = "Slot not found"),
+        @ApiResponse(responseCode = "400", description = "Invalid request")
+    })
+    public com.application.web.dto.get.SlotDTO getSlotById(@PathVariable Long slotId) {
+        return slotService.findById(slotId);
+    }
+
+    @GetMapping(value = "/active-services-in-period")
+    @Operation(summary = "Get active and enabled services of the authenticated restaurant for a specific period", description = "Retrieve the services of the authenticated restaurant that are active and enabled in a given date range")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = com.application.web.dto.get.ServiceDTO.class)))),
+        @ApiResponse(responseCode = "404", description = "Restaurant not found"),
+        @ApiResponse(responseCode = "400", description = "Invalid request")
+    })
+    public ResponseEntity<Collection<com.application.web.dto.get.ServiceDTO>> getActiveEnabledServicesInPeriod(
+            @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate start,
+            @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate end) {
+        Long restaurantId = ControllerUtils.getCurrentRestaurant().getId();
+        Collection<com.application.web.dto.get.ServiceDTO> services = restaurantService.findActiveEnabledServicesInPeriod(restaurantId, start, end);
+        return new ResponseEntity<>(services, HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/active-services-in-date")
+    @Operation(summary = "Get active and enabled services of the authenticated restaurant for a specific date", description = "Retrieve the services of the authenticated restaurant that are active and enabled on a given date")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = com.application.web.dto.get.ServiceDTO.class)))),
+        @ApiResponse(responseCode = "404", description = "Restaurant not found"),
+        @ApiResponse(responseCode = "400", description = "Invalid request")
+    })
+    public ResponseEntity<Collection<com.application.web.dto.get.ServiceDTO>> getActiveEnabledServicesInDate(
+            @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate date) {
+        Long restaurantId = ControllerUtils.getCurrentRestaurant().getId();
+        Collection<com.application.web.dto.get.ServiceDTO> services = restaurantService.getActiveEnabledServices(restaurantId, date);
+        return new ResponseEntity<>(services, HttpStatus.OK);
+    }
 
 }

@@ -1,5 +1,6 @@
 package com.application.service;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 
@@ -59,7 +60,9 @@ public class RestaurantMenuService {
     }
 
 
-
+    public Collection<MenuDTO> getActiveMenusByRestaurant(Long id) {
+        return menuDAO.findByRestaurantId(id).stream().map(MenuDTO::new).toList();
+    }
     public Collection<MenuDTO> getMenusByRestaurant(Long id) {
         return menuDAO.findByRestaurantId(id).stream().map(MenuDTO::new).toList();
     }
@@ -102,6 +105,27 @@ public class RestaurantMenuService {
 
     public void deleteMenu(Long id) {
         menuDAO.deleteById(id);
+    }
+
+    public Collection<MenuDTO> getMenusWithServicesValidInPeriod(Long restaurantId, LocalDate startDate, LocalDate endDate) {
+        return menuDAO.findMenusWithServicesValidInPeriod(restaurantId, startDate, endDate)
+                .stream()
+                .map(MenuDTO::new)
+                .toList();
+    }
+
+    public Collection<MenuDTO> getActiveEnabledMenusByServiceId(Long serviceId, LocalDate date) {
+        return menuDAO.findActiveEnabledMenusByServiceIdAndDate(serviceId, date)
+                .stream()
+                .map(MenuDTO::new)
+                .toList();
+    }
+
+    public Collection<MenuDTO> getActiveEnabledMenusByServiceIdAndPeriod(Long serviceId, LocalDate startDate, LocalDate endDate) {
+        return menuDAO.findActiveEnabledMenusByServiceIdAndPeriod(serviceId, startDate, endDate)
+                .stream()
+                .map(MenuDTO::new)
+                .toList();
     }
 
 }
