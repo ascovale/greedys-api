@@ -1,5 +1,6 @@
 package com.application.controller.customer;
 
+import java.util.Date;
 import java.util.Locale;
 
 import org.springframework.context.MessageSource;
@@ -75,7 +76,7 @@ public class CustomerController {
     @ApiResponse(responseCode = "401", description = "Unauthorized")
     @ApiResponse(responseCode = "404", description = "User not found")
     @PutMapping("/update/dateOfBirth")
-    public GenericResponse updateDateOfBirth(@RequestParam String dateOfBirth) {
+    public GenericResponse updateDateOfBirth(@RequestParam Date dateOfBirth) {
         customerService.updateDateOfBirth(getCustomerId(), dateOfBirth);
         return new GenericResponse("Date of birth updated successfully");
     }
