@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.application.persistence.dao.customer.AllergyDAO;
 import com.application.persistence.dao.customer.CustomerDAO;
 import com.application.persistence.dao.customer.PrivilegeDAO;
+import com.application.persistence.dao.customer.ReservationDAO;
 import com.application.persistence.dao.customer.RoleDAO;
 import com.application.persistence.model.Image;
 import com.application.persistence.model.customer.Allergy;
@@ -22,6 +23,7 @@ import com.application.persistence.model.customer.Privilege;
 import com.application.persistence.model.customer.Role;
 import com.application.web.dto.get.AllergyDTO;
 import com.application.web.dto.get.CustomerDTO;
+import com.application.web.dto.get.CustomerStatisticsDTO;
 import com.application.web.dto.post.NewCustomerDTO;
 import com.application.web.error.UserAlreadyExistException;
 
@@ -38,17 +40,20 @@ public class CustomerService {
 	private final EntityManager entityManager;
 	private final AllergyDAO allergyDAO;
 	private final PrivilegeDAO privilegeDAO;
+	private final ReservationDAO reservationDAO;
 
 	public CustomerService(CustomerDAO customerDAO,
 			RoleDAO roleRepository,
 			EntityManager entityManager,
 			AllergyDAO allergyDAO,
-			PrivilegeDAO privilegeDAO) {
+			PrivilegeDAO privilegeDAO,
+			ReservationDAO reservationDAO) {
 		this.customerDAO = customerDAO;
 		this.roleRepository = roleRepository;
 		this.entityManager = entityManager;
 		this.privilegeDAO = privilegeDAO;
 		this.allergyDAO = allergyDAO;
+		this.reservationDAO = reservationDAO;
 	}
 
 	public CustomerDTO findById(long id) {
@@ -253,6 +258,20 @@ public class CustomerService {
 		saveCustomer(customer);
 	}
 
+	public void updatePhone(Long customerId, String newPhone) {
+		Customer customer = customerDAO.findById(customerId)
+				.orElseThrow(() -> new EntityNotFoundException("Customer not found"));
+		customer.setPhoneNumber(newPhone);
+		customerDAO.save(customer);
+	}
+
+	public void updateDateOfBirth(Long customerId, String newDateOfBirth) {
+		Customer customer = customerDAO.findById(customerId)
+				.orElseThrow(() -> new EntityNotFoundException("Customer not found"));
+		customer.setDateOfBirth(newDateOfBirth);
+		customerDAO.save(customer);
+	}
+
 	private Customer findCustomerById(Long customerId) {
 		return null;
 	}
@@ -270,6 +289,31 @@ public class CustomerService {
 	public Object adminLoginToCustomer(Long customerId, HttpServletRequest request) {
 		throw new UnsupportedOperationException("Unimplemented method 'adminLoginToCustomer'");
 	}
+
+    public CustomerStatisticsDTO getCustomerStatistics(Long customerId) {
+        // Verify customer exists
+        customerDAO.findById(customerId)
+                .orElseThrow(() -> new EntityNotFoundException("Customer not found"));
+        
+        // Get all statistics counts
+        long totalReservations = reservationDAO.countByCustomer(customerId);
+        long acceptedReservations = reservationDAO.countByCustomerAndAccepted(customerId);
+        long pendingReservations = reservationDAO.countByCustomerAndPending(customerId);
+        long rejectedReservations = reservationDAO.countByCustomerAndRejected(customerId);
+        long noShowReservations = reservationDAO.countByCustomerAndNoShow(customerId);
+        long seatedReservations = reservationDAO.countByCustomerAndSeated(customerId);
+        long deletedReservations = reservationDAO.countByCustomerAndDeleted(customerId);
+        
+        return new CustomerStatisticsDTO(
+            totalReservations,
+            acceptedReservations,
+            pendingReservations,
+            rejectedReservations,
+            noShowReservations,
+            seatedReservations,
+            deletedReservations
+        );
+    }
 
     public List<AllergyDTO> getPaginatedAllergies(int page, int size) {
 		PageRequest pageRequest = PageRequest.of(page, size);

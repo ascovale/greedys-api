@@ -35,6 +35,7 @@ public class Customer extends AbstractUser {
     @ManyToMany
     @JoinTable(name = "user_allergy", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "allergy_id"))
     private List<Allergy> allergies;
+    private String dateOfBirth;
 
     public enum Status {
         BLOCKED,
@@ -159,5 +160,11 @@ public class Customer extends AbstractUser {
 	public void setRoles(List<Role> roles) {
 		this.roles = roles;
 	}
-
+    public String getDateOfBirth() {
+        return dateOfBirth;
+    }
+    
+    public void setDateOfBirth(String dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
+    }
 }
