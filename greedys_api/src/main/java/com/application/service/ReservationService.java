@@ -110,6 +110,7 @@ public class ReservationService {
         Reservation reservation = buildReservationFromBaseDTO(reservationDto, slot);
         reservation.setRestaurant(restaurant);
         reservation.setRejected(false);
+        
         reservation.setAccepted(true);
         reservation.setNoShow(false);
         reservation.setCreator(getCurrentRUser());

@@ -196,4 +196,53 @@ public interface ReservationDAO extends JpaRepository<Reservation, Long> {
                 ORDER BY r.creationDate, r.date, r.slot.start
             """)
     Page<Reservation> findByRestaurantIdAndPending(Long restaurantId, Pageable pageable);
+
+    // Statistics queries for customer
+    @Query(value = """
+            SELECT COUNT(r) FROM Reservation r
+            WHERE r.customer.id = :customerId
+            """)
+    long countByCustomer(Long customerId);
+
+    @Query(value = """
+            SELECT COUNT(r) FROM Reservation r
+            WHERE r.customer.id = :customerId
+                AND r.status = 'ACCEPTED'
+            """)
+    long countByCustomerAndAccepted(Long customerId);
+
+    @Query(value = """
+            SELECT COUNT(r) FROM Reservation r
+            WHERE r.customer.id = :customerId
+                AND r.status = 'NOT_ACCEPTED'
+            """)
+    long countByCustomerAndPending(Long customerId);
+
+    @Query(value = """
+            SELECT COUNT(r) FROM Reservation r
+            WHERE r.customer.id = :customerId
+                AND r.status = 'REJECTED'
+            """)
+    long countByCustomerAndRejected(Long customerId);
+
+    @Query(value = """
+            SELECT COUNT(r) FROM Reservation r
+            WHERE r.customer.id = :customerId
+                AND r.status = 'NO_SHOW'
+            """)
+    long countByCustomerAndNoShow(Long customerId);
+
+    @Query(value = """
+            SELECT COUNT(r) FROM Reservation r
+            WHERE r.customer.id = :customerId
+                AND r.status = 'SEATED'
+            """)
+    long countByCustomerAndSeated(Long customerId);
+
+    @Query(value = """
+            SELECT COUNT(r) FROM Reservation r
+            WHERE r.customer.id = :customerId
+                AND r.status = 'DELETED'
+            """)
+    long countByCustomerAndDeleted(Long customerId);
 }
