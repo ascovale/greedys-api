@@ -19,6 +19,13 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@Builder
 @Entity
 @Table(name = "reservation_request")
 public class ReservationRequest {
@@ -33,116 +40,37 @@ public class ReservationRequest {
 	@Temporal(TemporalType.DATE)
 	@Column(name = "r_date")
 	private LocalDate date;
+
 	@Column(name = "creation_date")
 	private LocalDate creationDate;
+
 	@ManyToOne(optional = true)
 	@JoinColumn(name = "customer_id")
 	private Customer customer;
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idslot")
 	private	Slot slot;
+
 	private Integer pax;
+
+	@Builder.Default
 	private Integer kids = 0;
+
 	private String notes;
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idrestaurant_user")
  	private RUser RUser;
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idreservation", referencedColumnName = "id")
  	private Reservation reservation;
 
-
 	@ManyToOne(fetch = FetchType.LAZY)
 	private com.application.persistence.model.restaurant.Table table;
 
-	public com.application.persistence.model.restaurant.Table getTable() {
-		return table;
-	}
 
-	public void setTable(com.application.persistence.model.restaurant.Table table) {
-		this.table = table;
-	}
 
-	public Long getCustomerId() {
-		if (customer == null) {
-			throw new IllegalArgumentException("User id is null, the reservation is anonymous.");
-		}
-		return customer.getId();
-	}
 
-	public LocalDate getCreationDate() {
-		return creationDate;
-	}
-
-	public void setCreationDate(LocalDate creationDate) {
-		this.creationDate = creationDate;
-	}
-
-	public Long getId() {
-		return id;
-	}
-
-	public Integer getPax() {
-		return pax;
-	}
-
-	public void setPax(Integer pax) {
-		this.pax = pax;
-	}
-
-	public LocalDate getDate() {
-		return date;
-	}
-
-	public void setDate(LocalDate date) {
-		this.date = date;
-	}
-
-	public Slot getSlot() {
-		return slot;
-	}
-
-	public void setSlot(Slot slot) {
-		this.slot = slot;
-	}
-
-	public Integer getKids() {
-		return kids;
-	}
-
-	public void setKids(Integer kids) {
-		this.kids = kids;
-	}
-
-	public String getNotes() {
-		return notes;
-	}
-
-	public void setNotes(String notes) {
-		this.notes = notes;
-	}
-
-	public RUser getRUser() {
-		return RUser;
-	}
-
-	public void setRUser(RUser RUser) {
-		this.RUser = RUser;
-	}
-
-	public Customer getCustomer() {
-		return customer;
-	}
-
-	public void setCustomer(Customer customer) {
-		this.customer = customer;
-	}
-	
-	public Reservation getReservation() {
-		return reservation;
-	}
-
-	public void setReservation(Reservation reservation) {
-		this.reservation = reservation;
-	}
 }

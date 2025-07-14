@@ -15,8 +15,8 @@ import com.application.persistence.model.restaurant.user.RUser;
 public interface RUserDAO extends JpaRepository<RUser, Long>{
 
     @Modifying
-    @Query("UPDATE RUser ru SET ru.accepted = true WHERE ru.id = :id")
-    void acceptRUser(@Param("id") Long id);
+    @Query("UPDATE RUser ru SET ru.status = :status WHERE ru.id = :id")
+    void setUserStatus(@Param("id") Long id, @Param("status") RUser.Status status);
 
     Collection<RUser> findByRestaurantId(Long id);
 

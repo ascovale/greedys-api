@@ -159,9 +159,9 @@ public class SecurityConfig {
                 return http.build();
         }
 
-        @Bean
-        @Primary
-        public AuthenticationManager fallbackAuthenticationManager() {
+    @Bean
+    @Primary
+    AuthenticationManager fallbackAuthenticationManager() {
                 return authentication -> {
                         throw new UnsupportedOperationException(
                                         "No global AuthenticationManager configured. Use specific ones with @Qualifier.");
@@ -190,8 +190,8 @@ public class SecurityConfig {
                 return auth.build();
         }
 
-        @Bean
-        public RUserAuthenticationProvider RUserAuthenticationProvider() {
+    @Bean
+    RUserAuthenticationProvider RUserAuthenticationProvider() {
                 RUserAuthenticationProvider provider = new RUserAuthenticationProvider();
                 provider.setUserDetailsService(RUserDetailsService);
                 provider.setPasswordEncoder(passwordEncoder());
@@ -206,8 +206,8 @@ public class SecurityConfig {
                 return auth.build();
         }
 
-        @Bean
-        public CustomerAuthenticationProvider customerAuthenticationProvider() {
+    @Bean
+    CustomerAuthenticationProvider customerAuthenticationProvider() {
                 CustomerAuthenticationProvider provider = new CustomerAuthenticationProvider();
                 provider.setUserDetailsService(customerUserDetailsService);
                 provider.setPasswordEncoder(passwordEncoder());
@@ -228,8 +228,8 @@ public class SecurityConfig {
                 return new BCryptPasswordEncoder();
         }
 
-        @Bean
-        public AdminAuthenticationProvider adminAuthenticationProvider() {
+    @Bean
+    AdminAuthenticationProvider adminAuthenticationProvider() {
                 AdminAuthenticationProvider provider = new AdminAuthenticationProvider();
                 provider.setUserDetailsService(adminUserDetailsService);
                 provider.setPasswordEncoder(passwordEncoder());

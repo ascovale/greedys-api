@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.persistence.model.reservation.Reservation;
-import com.application.service.ReservationService;
+import com.application.service.reservation.AdminReservationService;
 import com.application.web.dto.get.ReservationDTO;
 import com.application.web.dto.post.admin.AdminNewReservationDTO;
 
@@ -33,10 +33,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Admin Reservation", description = "Admin Reservation Management")
 public class AdminReservationController {
-	private ReservationService reservationService;
+	private final AdminReservationService adminReservationService;
 
-	public AdminReservationController(ReservationService reservationService) {
-		this.reservationService = reservationService;
+	public AdminReservationController(AdminReservationService adminReservationService) {
+		this.adminReservationService = adminReservationService;
 	}
 
 	@Operation(summary = "Create a new reservation", description = "Endpoint to create a new reservation")
@@ -49,7 +49,7 @@ public class AdminReservationController {
 	@PostMapping("/new")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_WRITE')")
 	public ResponseEntity<?> createReservation(@RequestBody AdminNewReservationDTO DTO) {
-		reservationService.createReservation(DTO);
+		adminReservationService.createReservation(DTO);
 		return ResponseEntity.ok().build();
 	}
 
@@ -63,8 +63,8 @@ public class AdminReservationController {
 			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
 	})
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_WRITE')")
-	public ResponseEntity<?> acceptReservation(@PathVariable Long reservationId, @RequestParam Boolean accepted) {
-		reservationService.adminMarkReservationAccepted(reservationId, accepted);
+	public ResponseEntity<?> acceptReservation(@PathVariable Long reservationId) {
+		adminReservationService.setStatus(reservationId, Reservation.Status.ACCEPTED);
 		return ResponseEntity.ok().build();
 	}
 
@@ -78,8 +78,8 @@ public class AdminReservationController {
 	})
 	@PutMapping("/{reservationId}/reject")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_WRITE')")
-	public ResponseEntity<?> rejectReservation(@PathVariable Long reservationId, @RequestParam Boolean rejected) {
-		reservationService.adminMarkReservationRejected(reservationId, rejected);
+	public ResponseEntity<?> rejectReservation(@PathVariable Long reservationId) {
+		adminReservationService.setStatus(reservationId, Reservation.Status.REJECTED);
 		return ResponseEntity.ok().build();
 	}
 
@@ -93,8 +93,8 @@ public class AdminReservationController {
 	})
 	@PutMapping("/{reservationId}/no_show")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_WRITE')")
-	public ResponseEntity<?> markReservationNoShow(@PathVariable Long reservationId, @RequestParam Boolean noShow) {
-		reservationService.adminMarkReservationNoShow(reservationId, noShow);
+	public ResponseEntity<?> markReservationNoShow(@PathVariable Long reservationId) {
+		adminReservationService.setStatus(reservationId, Reservation.Status.NO_SHOW);
 		return ResponseEntity.ok().build();
 	}
 
@@ -108,8 +108,8 @@ public class AdminReservationController {
 	})
 	@PutMapping("/{reservationId}/seated")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_WRITE')")
-	public ResponseEntity<?> markReservationSeated(@PathVariable Long reservationId, @RequestParam Boolean seated) {
-		reservationService.adminMarkReservationSeated(reservationId, seated);
+	public ResponseEntity<?> markReservationSeated(@PathVariable Long reservationId) {
+		adminReservationService.setStatus(reservationId, Reservation.Status.SEATED);
 		return ResponseEntity.ok().build();
 	}
 
@@ -124,85 +124,8 @@ public class AdminReservationController {
 	@PutMapping("/{reservationId}/delete")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_WRITE')")
 	public ResponseEntity<?> deleteReservation(@PathVariable Long reservationId) {
-		reservationService.adminDeleteReservation(reservationId);
+		adminReservationService.setStatus(reservationId, Reservation.Status.DELETED);
 		return ResponseEntity.ok().build();
 	}
 
-	@Operation(summary = "Get a reservation", description = "Endpoint to get a reservation by its ID")
-	@ApiResponses(value = {
-		@ApiResponse(responseCode = "200", description = "Reservation retrieved successfully"),
-		@ApiResponse(responseCode = "400", description = "Invalid reservation ID", content = @Content),
-		@ApiResponse(responseCode = "401", description = "Unauthorized access", content = @Content),
-		@ApiResponse(responseCode = "404", description = "Reservation not found", content = @Content),
-		@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
-	})
-	@GetMapping("/{reservationId}")
-	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_READ')")
-	public ResponseEntity<?> getReservation(@PathVariable Long reservationId) {
-		ReservationDTO reservationDTO = reservationService.getReservation(reservationId);
-		if (reservationDTO != null) {
-		return ResponseEntity.ok(reservationDTO);
-		} else {
-		return ResponseEntity.status(404).body("Reservation not found");
-		}
-	}
-
-	@Operation(summary = "Get customer reservations", description = "Endpoint to get all reservations for a specific customer by their ID")
-	@ApiResponses(value = {
-		@ApiResponse(responseCode = "200", description = "Reservations retrieved successfully"),
-		@ApiResponse(responseCode = "400", description = "Invalid customer ID", content = @Content),
-		@ApiResponse(responseCode = "401", description = "Unauthorized access", content = @Content),
-		@ApiResponse(responseCode = "404", description = "Customer not found", content = @Content),
-		@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
-	})
-	@GetMapping("/customer/{customerId}")
-	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_READ')")
-	public ResponseEntity<?> getCustomerReservations(@PathVariable Long customerId) {
-		List<ReservationDTO> reservations = reservationService.getCustomerReservations(customerId);
-		if (reservations != null && !reservations.isEmpty()) {
-			return ResponseEntity.ok(reservations);
-		} else {
-			return ResponseEntity.status(404).body("No reservations found for the customer");
-		}
-	}
-
-	@Operation(summary = "Get paginated customer reservations", description = "Endpoint to get paginated reservations for a specific customer by their ID")
-	@ApiResponses(value = {
-		@ApiResponse(responseCode = "200", description = "Reservations retrieved successfully"),
-		@ApiResponse(responseCode = "400", description = "Invalid customer ID", content = @Content),
-		@ApiResponse(responseCode = "401", description = "Unauthorized access", content = @Content),
-		@ApiResponse(responseCode = "404", description = "Customer not found", content = @Content),
-		@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
-	})
-	@GetMapping("/customer/{customerId}/paginated")
-	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_READ')")
-	public ResponseEntity<?> getCustomerReservationsPaginated(@PathVariable Long customerId, Pageable pageable) {
-		Page<ReservationDTO> reservations = reservationService.getCustomerReservationsPaginated(customerId, pageable);
-		if (reservations != null && !reservations.isEmpty()) {
-			return ResponseEntity.ok(reservations);
-		} else {
-			return ResponseEntity.status(404).body("No reservations found for the customer");
-		}
-	}
-
-	@Operation(summary = "Lock or unlock a reservation for admin only modification", description = "Set lockedByAdmin flag on a reservation. When true, only admins can modify it.")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Reservation lock status updated successfully"),
-        @ApiResponse(responseCode = "400", description = "Invalid reservation ID", content = @Content),
-        @ApiResponse(responseCode = "401", description = "Unauthorized access", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Reservation not found", content = @Content),
-        @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
-    })
-    @PutMapping("/{reservationId}/lock")
-    @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_WRITE')")
-    public ResponseEntity<?> setReservationLockedByAdmin(@PathVariable Long reservationId, @RequestParam Boolean locked) {
-        ReservationDTO reservationDTO = reservationService.findReservationById(reservationId);
-        if (reservationDTO == null) {
-            return ResponseEntity.status(404).body("Reservation not found");
-        }
-        Reservation reservation = reservationService.findById(reservationId);
-        reservation.setLockedByAdmin(locked);
-        reservationService.save(reservation);
-        return ResponseEntity.ok().build();
-    }
 }

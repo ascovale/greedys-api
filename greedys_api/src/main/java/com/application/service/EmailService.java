@@ -10,9 +10,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.application.persistence.model.notification.CustomerNotification;
-import com.application.persistence.model.notification.Notification;
+import com.application.persistence.model.notification.RestaurantNotification;
+import com.application.persistence.model.notification.ANotification;
 import com.application.persistence.model.restaurant.user.RUser;
-import com.application.persistence.model.restaurant.user.RestaurantNotification;
 
 @Service
 @Transactional
@@ -22,7 +22,7 @@ public class EmailService {
     @Qualifier("reservationMailSender")
     private JavaMailSender mailSender;
 
-    private SimpleMailMessage constructNotificationMessage(Notification notification) {
+    private SimpleMailMessage constructNotificationMessage(ANotification notification) {
         final String subject = notification.getTitle();
         final String message = notification.getBody();
         final SimpleMailMessage email = new SimpleMailMessage();

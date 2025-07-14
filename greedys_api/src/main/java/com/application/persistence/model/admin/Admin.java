@@ -8,11 +8,22 @@ import org.springframework.security.core.GrantedAuthority;
 import com.application.persistence.model.user.AbstractUser;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
+
+@SuperBuilder
+@Getter
+@Setter
 @Entity
 @Table(name = "admin")
 public class Admin extends AbstractUser {
@@ -20,10 +31,8 @@ public class Admin extends AbstractUser {
     @JoinTable(name = "admin_has_role", 
         joinColumns = @JoinColumn(name = "admin_id"), 
         inverseJoinColumns = @JoinColumn(name = "admin_role_id"))
+    @Builder.Default
     private List<AdminRole> adminRoles = new ArrayList<>();
-    private Boolean blocked = false;
-    private Boolean deleted = false;
-    private Integer toReadNotification = 0;
 
     public enum Status {
         VERIFY_TOKEN,
@@ -32,39 +41,12 @@ public class Admin extends AbstractUser {
         ENABLED,
         DISABLED
     }
+
+    @NotNull
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
     private Status status = Status.VERIFY_TOKEN;
 
-    public Status getStatus() {
-        return status;
-    }
-    public void setStatus(Status status) {
-        this.status = status;
-    }
-    public void setToReadNotification(Integer toReadNotification) {
-        this.toReadNotification = toReadNotification;
-    }
-    public Boolean getDeleted() {
-        return deleted;
-    }
-    public void setDeleted(Boolean deleted) {
-        this.deleted = deleted;
-    }
-    public Boolean getBlocked() {
-        return blocked;
-    }
-    public void setIsBlocked(Boolean blocked) {
-        this.blocked = blocked;
-    }
-    @Override
-    public boolean isEnabled() {
-        return status == Status.ENABLED ;    
-    }
-    public void setAdminRoles(List<AdminRole> adminRoles) {
-        this.adminRoles = adminRoles;
-    }
-    public Integer getToReadNotification() {
-        return toReadNotification;
-    }
     public void addAdminRole(AdminRole adminRole) {
         if (this.adminRoles == null) {
             this.adminRoles = new ArrayList<>();
@@ -90,22 +72,7 @@ public class Admin extends AbstractUser {
     protected List<GrantedAuthority> getGrantedAuthorities(List<String> privileges) {
         return super.getGrantedAuthorities(privileges);
     }
-    @Override
-    public String getUsername() {
-        return email;
-    }
-    @Override
-    public boolean isAccountNonExpired() {
-        return status != Status.DELETED;
-    }
-    @Override
-    public boolean isAccountNonLocked() {
-        return status == Status.ENABLED;
-    }
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
+
     @Override
     public List<? extends GrantedAuthority> getAuthorities() {
         return getGrantedAuthorities(getPrivilegesStrings());

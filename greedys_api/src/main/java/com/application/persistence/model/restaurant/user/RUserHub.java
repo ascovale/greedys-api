@@ -12,9 +12,20 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "restaurant_user_hub")
+@SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
 public class RUserHub {
     @Id
     @Column(unique = true, nullable = false)
@@ -24,6 +35,7 @@ public class RUserHub {
     private RUserOptions options;
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
+    @Builder.Default
     private Status status = Status.ENABLED;
     private String phoneNumber;
     @Column(length = 60)
@@ -42,88 +54,6 @@ public class RUserHub {
         DELETED,
         ENABLED,
         DISABLED
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public boolean isAccepted() {
-        return accepted;
-    }
-
-    public void setAccepted(boolean accepted) {
-        this.accepted = accepted;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public Status getStatus() {
-        return status;
-    }
-
-    public void setStatus(Status status) {
-        this.status = status;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
-    private Integer toReadNotification = 0;
-
-    public Integer getToReadNotification() {
-        return toReadNotification;
-    }
-
-    public void setToReadNotification(Integer toReadNotification) {
-        this.toReadNotification = toReadNotification;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public RUserOptions getUserOptions() {
-        return options;
-    }
-
-    public void setUserOptions(RUserOptions options) {
-        this.options = options;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
     }
 
     public String getUsername() {

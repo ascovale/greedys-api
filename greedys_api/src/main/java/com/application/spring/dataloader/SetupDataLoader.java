@@ -57,7 +57,6 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
             restaurantDataLoader.createRestaurantCategories();
             restaurantDataLoader.createRestaurantLaSoffittaRenovatio();
             restaurantDataLoader.assignCategoriesToLaSoffittaRenovatio();
-            restaurantDataLoader.createAdditionalRestaurants();
             logger.info("    >>>  ---   Test data Created   ---  <<< ");
         }
     }

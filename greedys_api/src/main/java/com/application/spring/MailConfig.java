@@ -39,7 +39,7 @@ public class MailConfig {
     @Bean
     @Qualifier("reservationMailSender")
     @ConfigurationProperties(prefix = "mail.reservation")
-    public JavaMailSender reservationMailSender() {
+    JavaMailSender reservationMailSender() {
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
         return mailSender;
     }
@@ -47,7 +47,7 @@ public class MailConfig {
     @Bean
     @Qualifier("supportMailSender")
     @ConfigurationProperties(prefix = "mail.support")
-    public JavaMailSender supportMailSender() {
+    JavaMailSender supportMailSender() {
         return new JavaMailSenderImpl();
     }
 

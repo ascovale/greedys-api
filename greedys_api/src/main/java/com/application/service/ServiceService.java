@@ -18,7 +18,6 @@ import com.application.persistence.dao.restaurant.RUserDAO;
 import com.application.persistence.dao.restaurant.ServiceDAO;
 import com.application.persistence.dao.restaurant.ServiceTypeDAO;
 import com.application.persistence.dao.restaurant.SlotDAO;
-import com.application.persistence.model.customer.Customer;
 import com.application.persistence.model.reservation.Reservation;
 import com.application.persistence.model.reservation.Service;
 import com.application.persistence.model.reservation.ServiceType;
@@ -213,6 +212,8 @@ public class ServiceService {
 		serviceDAO.save(service);
 	}
 
+
+	// TODO: considerare il fatto di annullare le prenotazioni per un servizio e notificare l'utente
 	@Transactional
 	public void deleteService(Long serviceId) {
 		Service service = serviceDAO.findById(serviceId)
@@ -226,23 +227,12 @@ public class ServiceService {
 			slotDAO.save(slot);
 			Collection<Reservation> reservations = reservationDAO.findBySlot_Id(slot.getId());
 			for (Reservation reservation : reservations) {
-				reservation.setDeleted(true);
+				reservation.setStatus(Reservation.Status.DELETED);
 				//reservation.setCancelUser(getCurrentUser());
 				reservationDAO.save(reservation);
 			}
 		}
 	}
-
-	private Customer getCurrentUser() {
-		Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-		if (principal instanceof Customer) {
-			return ((Customer) principal);
-		} else {
-			System.out.println("Questo non dovrebbe succedere");
-			return null;
-		}
-	}
-	
 
 	@Transactional
     public Collection<ServiceTypeDto> getServiceTypesFromRUser() {

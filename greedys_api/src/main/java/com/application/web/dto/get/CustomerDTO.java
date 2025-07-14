@@ -8,14 +8,22 @@ import com.application.persistence.model.customer.Customer.Status;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
+@Builder
+@AllArgsConstructor
 @PasswordMatches
 @Schema(name = "CustomerDTO", description = "DTO for customer details")
 public class CustomerDTO {
 
     @Schema(description = "ID of the customer", example = "1")
     @NotNull
-    private Long id;
+    private final Long id;
 
     @Schema(description = "First name of the customer", example = "John")
     @NotNull
@@ -42,54 +50,5 @@ public class CustomerDTO {
         this.lastName = customer.getSurname();
         this.email = customer.getEmail();
         this.status = customer.getStatus();
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(final String email) {
-        this.email = email;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(final String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(final String lastName) {
-        this.lastName = lastName;
-    }
-
-    @Override
-    public String toString() {
-        final StringBuilder builder = new StringBuilder();
-        builder.append("CustomerDto [firstName=").append(firstName)
-                .append(", lastName=").append(lastName)
-                .append(", email=").append(email);
-        return builder.toString();
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Status getStatus() {
-        return status;
-    }
-
-    public void setStatus(Status status) {
-        this.status = status;
     }
 }

@@ -12,7 +12,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(name = "ServiceDTO", description = "DTO for service details")
 public class ServiceDTO {
-    private long id;
+    private Long id;
     private String name;
     private long restaurantId;
     private Collection<ServiceTypeDto> serviceType;

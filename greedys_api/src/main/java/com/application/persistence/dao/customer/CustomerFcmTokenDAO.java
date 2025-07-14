@@ -6,7 +6,7 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.application.persistence.model.notification.CustomerFcmToken;
+import com.application.persistence.model.fcm.CustomerFcmToken;
 
 @Repository
 public interface CustomerFcmTokenDAO extends JpaRepository<CustomerFcmToken, Long> {
@@ -23,4 +23,5 @@ public interface CustomerFcmTokenDAO extends JpaRepository<CustomerFcmToken, Lon
 
     CustomerFcmToken findByDeviceId(String deviceId);
 
+    CustomerFcmToken findByCustomerIdAndDeviceId(Long customerId, String deviceId);
 }

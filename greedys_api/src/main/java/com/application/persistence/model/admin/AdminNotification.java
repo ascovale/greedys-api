@@ -32,8 +32,7 @@ public class AdminNotification {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idreservation")
 	private Reservation reservation;
-	@Column(columnDefinition = "TINYINT(1)")
-	private Boolean unopened = true;
+
 	private String text;
 	@Column(name = "creation_time")
 	private Timestamp creationTime;
@@ -68,14 +67,6 @@ public class AdminNotification {
 
 	public void setReservation(Reservation reservation) {
 		this.reservation = reservation;
-	}
-
-	public Boolean getUnopened() {
-		return unopened;
-	}
-
-	public void setUnopened(Boolean unopened) {
-		this.unopened = unopened;
 	}
 
 	public String getText() {

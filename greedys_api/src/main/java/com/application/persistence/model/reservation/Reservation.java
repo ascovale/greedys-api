@@ -3,15 +3,15 @@ package com.application.persistence.model.reservation;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import org.springframework.format.annotation.DateTimeFormat;
-
-import com.application.persistence.model.admin.Admin;
-import com.application.persistence.model.customer.Customer;
-import com.application.persistence.model.restaurant.Restaurant;
-import com.application.persistence.model.restaurant.user.RUser;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
@@ -21,410 +21,121 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
+import jakarta.persistence.Version;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import com.application.persistence.model.customer.Customer;
+import com.application.persistence.model.restaurant.Restaurant;
+import com.application.persistence.model.user.AbstractUser;
+
+/**
+ * Refactored Reservation entity with centralized auditing and reduced duplication.
+ */
 @Entity
 @Table(name = "reservation")
+@EntityListeners(AuditingEntityListener.class)
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Reservation {
-	@Id		
-	@GeneratedValue(strategy=GenerationType.AUTO)
-	private Long id;
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "id_restaurant")
-	private Restaurant restaurant;
-	@DateTimeFormat(pattern = "yyyy/MM/dd")
-	@Temporal(TemporalType.DATE)
-	@Column(name = "r_date")
-	private LocalDate date;
-	@Column(name = "creation_date")
-	private LocalDate creationDate;
-	@ManyToOne(optional = true)
-	@JoinColumn(name = "customer_id")
-	private Customer customer;
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "idslot")
-	private	Slot slot;
-	private Integer pax;
-	private Integer kids = 0;
-	private String notes;
 
-	public enum Status {
-		NOT_ACCEPTED,
-		ACCEPTED,
-		REJECTED,
-		SEATED,
-		NO_SHOW,
-		DELETED
-	}
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-	@Enumerated(EnumType.STRING)
-	@Column(name = "status", nullable = false)
-	private Status status = Status.NOT_ACCEPTED;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "id_restaurant")
+    private Restaurant restaurant;
 
-	Integer version=1;
-	@DateTimeFormat(pattern = "yyyy/MM/dd/HH:mm")
-	private LocalDateTime lastModificationTime;
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "idrestaurant_user")
- 	private RUser RUser;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "id_customer")
+    private Customer customer;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "creator_customer_id", nullable = true)
-	private Customer creatorCustomer;
+    @Column(name = "r_date", nullable = false)
+    private LocalDate date;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "creator_restaurant_user_id", nullable = true)
-	private RUser creatorRUser;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "slot_id", nullable = false)
+    private Slot slot;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "creator_admin_id", nullable = true)
-	private Admin creatorAdmin;
+    @Column(nullable = false)
+    private Integer pax;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "last_modifier_customer_id", nullable = true)
-	private Customer lastModifierCustomer;
+    @Column(nullable = false)
+	@Builder.Default
+    private Integer kids = 0;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "last_modifier_restaurant_user_id", nullable = true)
-	private RUser lastModifierRUser;
+    @Column(length = 500)
+    private String notes;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "last_modifier_admin_id", nullable = true)
-	private Admin lastModifierAdmin;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+	@Builder.Default
+    private Status status = Status.NOT_ACCEPTED;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "acceptor_restaurant_user_id", nullable = true)
-	private RUser acceptorRUser;
+    @Version
+    private Integer version;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "acceptor_admin_id", nullable = true)
-	private Admin acceptorAdmin;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "table_id")
+    private com.application.persistence.model.restaurant.Table table;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "created_by_customer_id", nullable = true)
-	private Customer createdByCustomer;
+    // -- Auditing fields -- //
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "created_by_restaurant_user_id", nullable = true)
-	private RUser createdByRUser;
+    @CreatedDate
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "created_by_admin_id", nullable = true)
-	private Admin createdByAdmin;
+    @LastModifiedDate
+    @Column(name = "modified_at")
+    private LocalDateTime modifiedAt;
 
-	public Object getCreatedBy() {
-		if (createdByCustomer != null) {
-			return createdByCustomer;
-		} else if (createdByRUser != null) {
-			return createdByRUser;
-		} else if (createdByAdmin != null) {
-			return createdByAdmin;
-		}
-		return null;
-	}
+    @CreatedBy
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by_user_id", updatable = false)
+    private AbstractUser createdBy;
 
-	public void setCreator(Customer customer) {
-		this.createdByCustomer = customer;
-		this.createdByRUser = null;
-		this.createdByAdmin = null;
-	}
+    @LastModifiedBy
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "modified_by_user_id")
+    private AbstractUser modifiedBy;
 
-	public void setCreator(RUser RUser) {
-		this.createdByRUser = RUser;
-		this.createdByCustomer = null;
-		this.createdByAdmin = null;
-	}
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "accepted_by_user_id")
+    private AbstractUser acceptedBy;
 
-	public void setCreator(Admin admin) {
-		this.createdByAdmin = admin;
-		this.createdByCustomer = null;
-		this.createdByRUser = null;
-	}
-
-	// Separate setters for lastModifier
-	public void setLastModifiedByCustomer(Customer customer) {
-		this.lastModifierCustomer = customer;
-		this.lastModifierRUser = null;
-		this.lastModifierAdmin = null;
-	}
-
-	public void setLastModifiedByRUser(RUser RUser) {
-		this.lastModifierRUser = RUser;
-		this.lastModifierCustomer = null;
-		this.lastModifierAdmin = null;
-	}
-
-	public void setLastModifiedByAdmin(Admin admin) {
-		this.lastModifierAdmin = admin;
-		this.lastModifierCustomer = null;
-		this.lastModifierRUser = null;
-	}
-
-	// Separate setters for acceptor
-	public void setAcceptedByRUser(RUser RUser) {
-		this.acceptorRUser = RUser;
-		this.acceptorAdmin = null;
-	}
-
-	public void setAcceptedByAdmin(Admin admin) {
-		this.acceptorAdmin = admin;
-		this.acceptorRUser = null;
-	}
-
-	@ManyToOne(fetch = FetchType.LAZY)
-	private com.application.persistence.model.restaurant.Table table;
-
-	public com.application.persistence.model.restaurant.Table getTable() {
-		return table;
-	}
-
-	public void setTable(com.application.persistence.model.restaurant.Table table) {
-		this.table = table;
-	}
-
-	public Boolean getSeated() {
-		return status == Status.SEATED;
-	}
-
-	public void setSeated(Boolean seated) {
-		this.status = seated ? Status.SEATED : Status.NOT_ACCEPTED;
-	}
-
-	public Long getCustomerId() {
-		if (customer == null) {
-			throw new IllegalArgumentException("User id is null, the reservation is anonymous.");
-		}
-		return customer.getId();
-	}
-
-	public LocalDate getCreationDate() {
-		return creationDate;
-	}
-
-	public void setCreationDate(LocalDate creationDate) {
-		this.creationDate = creationDate;
-	}
-
-	public Long getId() {
-		return id;
-	}
-
-	public Integer getPax() {
-		return pax;
-	}
-
-	public void setPax(Integer pax) {
-		this.pax = pax;
-	}
-
-	public LocalDate getDate() {
-		return date;
-	}
-
-	public void setDate(LocalDate date) {
-		this.date = date;
-	}
-
-	public Slot getSlot() {
-		return slot;
-	}
-
-	public void setSlot(Slot slot) {
-		this.slot = slot;
-	}
-
-	public Integer getKids() {
-		return kids;
-	}
-
-	public void setKids(Integer kids) {
-		this.kids = kids;
-	}
-
-	public String getNotes() {
-		return notes;
-	}
-
-	public void setNotes(String notes) {
-		this.notes = notes;
-	}
-
-	public Boolean getRejected() {
-		return status == Status.REJECTED;
-	}
-
-	public void setRejected(Boolean rejected) {
-		this.status = rejected ? Status.REJECTED : Status.NOT_ACCEPTED;
-	}
-
-	public Boolean getAccepted() {
-		return status == Status.ACCEPTED;
-	}
-
-	public void setAccepted(Boolean accepted) {
-		this.status = accepted ? Status.ACCEPTED : Status.NOT_ACCEPTED;
-	}
-
-	public Boolean getNoShow() {
-		return status == Status.NO_SHOW;
-	}
-
-	public void setNoShow(Boolean noShow) {
-		this.status = noShow ? Status.NO_SHOW : Status.NOT_ACCEPTED;
-	}
-
-	public LocalDateTime getLastModificationTime() {
-		return lastModificationTime;
-	}
-
-	public void setLastModificationTime(LocalDateTime lastModificationTime) {
-		this.lastModificationTime = lastModificationTime;
-	}
-
-	public RUser getRUser() {
-		return RUser;
-	}
-
-	public void setRUser(RUser RUser) {
-		this.RUser = RUser;
-	}
-
-    public void setRestaurant(Restaurant restaurant) {
-        this.restaurant = restaurant;
-
-	}
-
-	public Restaurant getRestaurant() {
-		return restaurant;
-	}
-	public Customer getCustomer() {
-		return customer;
-	}
-
-	public void setCustomer(Customer customer) {
-		this.customer = customer;
-	}
-
-	public Boolean getDeleted() {
-		return status == Status.DELETED;
-	}
-
-	public void setDeleted(Boolean deleted) {
-		this.status = deleted ? Status.DELETED : Status.NOT_ACCEPTED;
-	}
-
-	public Integer getVersion() {
-        return version;
+    @Column(name = "accepted_at")
+    private LocalDateTime acceptedAt;
+    public enum Status {
+        NOT_ACCEPTED,
+        ACCEPTED,
+        REJECTED,
+        SEATED,
+        NO_SHOW,
+        DELETED
     }
 
-    public void setVersion(Integer version) {
-        this.version = version;
-    }
-	public void setId(Long id) {
-		this.id = id;
-	}
-
-	public void setVersion(int version) {
-		this.version = version;
-	}
-
-	public LocalDateTime getReservationDateTime() {
-        if (date != null && slot != null && slot.getStart() != null) {
-            return LocalDateTime.of(date, slot.getStart());
-        }
-        return null;
+    /**
+     * Combines date and slot start into a single LocalDateTime.
+     */
+    public LocalDateTime getReservationDateTime() {
+        return LocalDateTime.of(date, slot.getStart());
     }
 
-	public boolean isAfterNoShowTimeLimit(LocalDateTime dateTime) {
-		long noShowTimeLimit = this.getRestaurant().getNoShowTimeLimit();
-		LocalDateTime reservationDateTime = getReservationDateTime();
-		if (reservationDateTime == null) {
-			throw new IllegalArgumentException("Reservation date time or slot start time is null.");
-		}
-		LocalDateTime noShowDeadline = reservationDateTime.plusMinutes(noShowTimeLimit);
-		return dateTime.isAfter(noShowDeadline);
-	}
-
-	public Customer getCreatorCustomer() {
-		return creatorCustomer;
-	}
-
-	public void setCreatorCustomer(Customer creatorCustomer) {
-		this.creatorCustomer = creatorCustomer;
-	}
-
-	public RUser getCreatorRUser() {
-		return creatorRUser;
-	}
-
-	public void setCreatorRUser(RUser creatorRUser) {
-		this.creatorRUser = creatorRUser;
-	}
-
-	public Admin getCreatorAdmin() {
-		return creatorAdmin;
-	}
-
-	public void setCreatorAdmin(Admin creatorAdmin) {
-		this.creatorAdmin = creatorAdmin;
-	}
-
-	public Customer getLastModifierCustomer() {
-		return lastModifierCustomer;
-	}
-
-	public void setLastModifierCustomer(Customer lastModifierCustomer) {
-		this.lastModifierCustomer = lastModifierCustomer;
-	}
-
-	public RUser getLastModifierRUser() {
-		return lastModifierRUser;
-	}
-
-	public void setLastModifierRUser(RUser lastModifierRUser) {
-		this.lastModifierRUser = lastModifierRUser;
-	}
-
-	public Admin getLastModifierAdmin() {
-		return lastModifierAdmin;
-	}
-
-	public void setLastModifierAdmin(Admin lastModifierAdmin) {
-		this.lastModifierAdmin = lastModifierAdmin;
-	}
-
-	public RUser getAcceptorRUser() {
-		return acceptorRUser;
-	}
-
-	public void setAcceptorRUser(RUser acceptorRUser) {
-		this.acceptorRUser = acceptorRUser;
-	}
-
-	public Admin getAcceptorAdmin() {
-		return acceptorAdmin;
-	}
-
-	public void setAcceptorAdmin(Admin acceptorAdmin) {
-		this.acceptorAdmin = acceptorAdmin;
-	}
-
-	public Status getStatus() {
-		return status;
-	}
-
-	public void setStatus(Status status) {
-		this.status = status;
-	}
-
-    private Boolean lockedByAdmin = false;
-
-    public Boolean getLockedByAdmin() {
-        return lockedByAdmin;
-    }
-
-    public void setLockedByAdmin(Boolean lockedByAdmin) {
-        this.lockedByAdmin = lockedByAdmin;
+    /**
+     * Checks if current time is after the restaurant's no-show limit.
+     */
+	// TODO: MOVE TO A SERVICE
+    public boolean isAfterNoShowTimeLimit(LocalDateTime now) {
+        return getReservationDateTime()
+                .plusMinutes(restaurant.getNoShowTimeLimit())
+                .isBefore(now.plusNanos(1));
     }
 }

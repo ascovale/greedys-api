@@ -15,7 +15,7 @@ public interface AdminNotificationDAO extends JpaRepository<AdminNotification, L
 	//@Query("SELECT * FROM Notification n WHERE n.idadmin = ?1")
 	public List<AdminNotification> findByAdmin(Admin admin);
 
-    Page<AdminNotification> findByAdminAndUnopenedTrue(Admin admin, Pageable pageable);
+    //Page<AdminNotification> findByAdminAndReadFalse(Admin admin, Pageable pageable);
 
     public Page<AdminNotification> findAllByAdmin(Admin admin, Pageable pageable);
 }

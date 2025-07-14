@@ -3,13 +3,14 @@ package com.application.service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.application.persistence.dao.customer.CustomerFcmTokenDAO;
 import com.application.persistence.model.customer.Customer;
-import com.application.persistence.model.notification.CustomerFcmToken;
-import com.application.web.dto.post.UserFcmTokenDTO;
+import com.application.persistence.model.fcm.CustomerFcmToken;
+import com.application.web.dto.post.FcmTokenDTO;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
 
@@ -26,8 +27,8 @@ public class CustomerFcmTokenService {
         this.entityManager = entityManager;
     }
 
-    public void saveUserFcmToken(UserFcmTokenDTO userFcmTokenDTO) {
-        Customer customer = entityManager.getReference(Customer.class, userFcmTokenDTO.getUserId());
+    public void saveUserFcmToken(FcmTokenDTO userFcmTokenDTO) {
+        Customer customer = (Customer) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String token = userFcmTokenDTO.getFcmToken();
         String deviceId = userFcmTokenDTO.getDeviceId();
 
@@ -68,5 +69,7 @@ public class CustomerFcmTokenService {
         }
     }
 
-    
+    public CustomerFcmToken findByUserIdAndDeviceId(Long userId, String deviceId) {
+        return customerFcmTokenRepository.findByCustomerIdAndDeviceId(userId, deviceId);
+    }
 }

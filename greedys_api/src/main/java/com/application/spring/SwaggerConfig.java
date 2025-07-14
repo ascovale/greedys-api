@@ -20,7 +20,7 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 public class SwaggerConfig {
 
     @Bean
-    public OpenAPI baseOpenAPI() {
+    OpenAPI baseOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
                         .title("Greedys API")
@@ -30,7 +30,7 @@ public class SwaggerConfig {
     }
 
     @Bean
-    public OpenApiCustomizer sortSchemasCustomizer() {
+    OpenApiCustomizer sortSchemasCustomizer() {
         return openApi -> {
             if (openApi.getComponents() != null && openApi.getComponents().getSchemas() != null) {
                 Map<String, Schema> original = openApi.getComponents().getSchemas();
@@ -44,7 +44,7 @@ public class SwaggerConfig {
     }
 
     @Bean
-    public GroupedOpenApi adminApi() {
+    GroupedOpenApi adminApi() {
         return GroupedOpenApi.builder()
                 .group("admin-api")
                 .packagesToScan("com.application.controller.admin")
@@ -55,7 +55,7 @@ public class SwaggerConfig {
     }
 
     @Bean
-    public GroupedOpenApi customerApi() {
+    GroupedOpenApi customerApi() {
         return GroupedOpenApi.builder()
                 .group("customer-api")
                 .packagesToScan("com.application.controller.customer")
@@ -66,7 +66,7 @@ public class SwaggerConfig {
     }
 
     @Bean
-    public GroupedOpenApi restaurantApi() {
+    GroupedOpenApi restaurantApi() {
         return GroupedOpenApi.builder()
                 .group("restaurant-api")
                 .packagesToScan("com.application.controller.restaurant", "com.application.controller.rUser")
@@ -77,7 +77,7 @@ public class SwaggerConfig {
     }
 
     @Bean
-    public GroupedOpenApi publicApi() {
+    GroupedOpenApi publicApi() {
         return GroupedOpenApi.builder()
                 .group("public-api")
                 .packagesToScan("com.application.controller.pub", "com.application.web.dto")

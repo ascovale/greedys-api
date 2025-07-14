@@ -1,4 +1,4 @@
-package com.application.persistence.model.notification;
+package com.application.persistence.model.fcm;
 
 import com.application.persistence.model.restaurant.user.RUser;
 
@@ -7,7 +7,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 
 @Entity
-public class RUserFcmToken extends FcmToken {
+public class RUserFcmToken extends AFcmToken {
 
     @ManyToOne
     @JoinColumn(nullable = false)

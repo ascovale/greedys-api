@@ -3,10 +3,12 @@ package com.application.controller.customer;
 import java.util.Collection;
 import java.util.logging.Logger;
 
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,7 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.persistence.model.customer.Customer;
-import com.application.service.ReservationService;
+import com.application.service.reservation.CustomerReservationService;
 import com.application.web.dto.get.ReservationDTO;
 import com.application.web.dto.post.customer.CustomerNewReservationDTO;
 
@@ -37,7 +39,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "Reservation", description = "APIs for managing reservations of the customer")
 public class ReservationController {
 	@Autowired
-	private ReservationService reservationService;
+	private CustomerReservationService customerReservationService;
 
 	@Operation(summary = "The customer user asks for a reservation", description = "Endpoint for the customer to request a reservation")
 	@ApiResponses(value = {
@@ -47,9 +49,9 @@ public class ReservationController {
 			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
 	})
 	@PostMapping("/ask")
-	public ResponseEntity<ReservationDTO> askReservation(@RequestBody CustomerNewReservationDTO DTO) {
-		ReservationDTO reservationDTO = reservationService.createReservation(DTO);
-		return ResponseEntity.ok(reservationDTO);
+	public ResponseEntity<?> askReservation(@RequestBody CustomerNewReservationDTO DTO, @AuthenticationPrincipal Customer customer) {
+		customerReservationService.createReservation(DTO, customer);
+		return ResponseEntity.ok().build();
 	}
 
 	@PreAuthorize("@securityCustomerService.hasPermissionOnReservation(#reservationId)")
@@ -62,7 +64,7 @@ public class ReservationController {
 	})
 	@DeleteMapping("/{reservationId}/delete")
 	public ResponseEntity<?> deleteReservation(@PathVariable Long reservationId) {
-		reservationService.customerDeleteReservation(reservationId);
+		customerReservationService.deleteReservation(reservationId);
 		return ResponseEntity.ok().build();
 	}
 
@@ -76,8 +78,9 @@ public class ReservationController {
 	})
 	@PostMapping("/{reservationId}/request_modify")
 	public ResponseEntity<?> requestModifyReservation(@PathVariable Long reservationId,
-			@RequestBody CustomerNewReservationDTO DTO) {
-		reservationService.requestModifyReservation(reservationId, DTO);
+			@RequestBody CustomerNewReservationDTO DTO,
+			@AuthenticationPrincipal Customer customer) {
+		customerReservationService.requestModifyReservation(reservationId, DTO, customer);
 		return ResponseEntity.ok().build();
 	}
 
@@ -91,7 +94,7 @@ public class ReservationController {
 	})
 	@PutMapping("/{reservationId}/reject")
 	public ResponseEntity<?> rejectReservationCreatedByAdminOrRestaurant(@PathVariable Long reservationId) {
-		reservationService.rejectReservationCreatedByAdminOrRestaurant(reservationId);
+		customerReservationService.rejectReservation(reservationId);
 		return ResponseEntity.ok().build();
 	}
 
@@ -100,42 +103,8 @@ public class ReservationController {
 	@ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
 	@ApiResponse(responseCode = "404", description = "User not found")
 	@GetMapping("/reservations")
-	public Collection<ReservationDTO> getCustomerReservations() {
-		System.out.println("->->->      Getting customer reservations");
-		return reservationService.findAllCustomerReservations(getUserId());
+	public Collection<ReservationDTO> getCustomerReservations(@AuthenticationPrincipal Customer customer) {
+		return customerReservationService.findAllCustomerReservations(customer.getId());
 	}
 
-	@PreAuthorize("@securityCustomerService.hasPermissionOnReservation(#reservationId)")
-	@Operation(summary = "Get a single reservation by ID", description = "Retrieve a specific reservation for the user by its ID")
-	@ApiResponses(value = {
-		@ApiResponse(responseCode = "200", description = "Reservation retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ReservationDTO.class))),
-		@ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-		@ApiResponse(responseCode = "404", description = "Reservation not found", content = @Content),
-		@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
-	})
-	@GetMapping("/{reservationId}")
-	public ResponseEntity<ReservationDTO> getReservationById(@PathVariable Long reservationId) {
-		ReservationDTO reservationDTO = reservationService.findReservationById(reservationId);
-		return ResponseEntity.ok(reservationDTO);
-	}
-
-	public Long getUserId() {
-		Customer currentUser = getCurrentCustomer();
-		if (currentUser == null) {
-			throw new RuntimeException("Current user is null");
-		}
-		System.out.println(".-.-.-.-.-.-. Current user: " + currentUser.getId());
-		return currentUser.getId();
-	}
-
-	private Customer getCurrentCustomer() {
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		if (authentication != null && authentication.getPrincipal() instanceof Customer) {
-			return (Customer) authentication.getPrincipal();
-		} else {
-			Logger.getLogger(ReservationController.class.getName()).warning("User not found in SecurityContextHolder");
-			throw new RuntimeException("User not found");
-		}
-	}
-	
 }

@@ -69,15 +69,15 @@ public class AdminService {
 		if (accountDto.getPassword() == null) {
 			throw new IllegalArgumentException("rawPassword cannot be null");
 		}
-		final Admin admin = new Admin();
+		final Admin admin = Admin.builder()
+			.name(accountDto.getFirstName())
+			.surname(accountDto.getLastName())
+			.password(passwordEncoder.encode(accountDto.getPassword()))
+			.email(accountDto.getEmail())
+			//.status(Admin.Status.ENABLED)
+			.build();
 
-		admin.setName(accountDto.getFirstName());
-		admin.setSurname(accountDto.getLastName());
-		admin.setPassword(passwordEncoder.encode(accountDto.getPassword()));
-		admin.setEmail(accountDto.getEmail());
-		//admin.setStatus(Admin.Status.ENABLED);
 		AdminRole adminRole = adminRoleDAO.findByName("ROLE_SUPER_ADMIN");
-
 		admin.addAdminRole(adminRole);
 		// user.setUsing2FA(accountDto.isUsing2FA());
 		//admin.setAdminRoles(Arrays.asList(roleRepository.findByName("ROLE_USER")));

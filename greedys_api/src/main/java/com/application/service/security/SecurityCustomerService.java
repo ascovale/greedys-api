@@ -36,7 +36,7 @@ public class SecurityCustomerService {
         // Check if the reservation exists and if the customer is the owner of the reservation
         // and if the customer is enabled
         Optional<Reservation> reservation = reservationRepository.findById(idReservation);
-        return reservation.isPresent() && reservation.get().getCustomer().getId().equals(customerId) && customer.isEnabled();
+        return reservation.isPresent() && reservation.get().getCreatedBy().getId().equals(customerId) && customer.isEnabled();
     }
 
     public boolean hasAllergy(Long idAllergy) {

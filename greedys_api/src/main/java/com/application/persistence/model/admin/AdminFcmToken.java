@@ -2,6 +2,9 @@ package com.application.persistence.model.admin;
 
 import java.time.LocalDateTime;
 
+import com.application.persistence.model.fcm.AFcmToken;
+import com.google.auto.value.AutoValue.Builder;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -9,11 +12,16 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import lombok.AccessLevel;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
+@SuperBuilder
 @Entity
-public class AdminFcmToken {
+public class AdminFcmToken extends AFcmToken {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Setter(AccessLevel.NONE)
     private Long id;
 
     @ManyToOne
@@ -29,10 +37,10 @@ public class AdminFcmToken {
     @Column(nullable = false)
     private String deviceId;
 
-    // Getters and Setters
+    // Getters only for id
     public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
 
+    // Other Getters and Setters
     public Admin getAdmin() { return admin; }
     public void setAdmin(Admin admin) { this.admin = admin; }
 

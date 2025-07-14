@@ -24,6 +24,7 @@ import com.application.persistence.model.restaurant.Restaurant;
 import com.application.persistence.model.restaurant.RestaurantCategory;
 import com.application.persistence.model.restaurant.user.RestaurantRole;
 import com.application.persistence.model.restaurant.user.RUser;
+import com.application.persistence.model.restaurant.user.RUserHub;
 import com.application.web.dto.RestaurantCategoryDTO;
 import com.application.web.dto.RestaurantFullDetailsDto;
 import com.application.web.dto.RestaurantImageDto;
@@ -93,25 +94,30 @@ public class RestaurantService {
 
 	@Transactional
 	public RestaurantDTO registerRestaurant(NewRestaurantDTO restaurantDto) {
+
 		Restaurant restaurant = new Restaurant();
 		restaurant.setEmail(restaurantDto.getEmail());
 		restaurant.setName(restaurantDto.getName());
 		restaurant.setAddress(restaurantDto.getAddress());
 		restaurant.setCreationDate(LocalDate.now());
-		restaurant.setpI(restaurantDto.getpi());
+		restaurant.setpI(restaurantDto.getPi());
 		restaurant.setPostCode(restaurantDto.getPost_code());
 		restaurant.setStatus(Restaurant.Status.DISABLED);
 		rDAO.save(restaurant);
-		System.out.println("<<< ID= " + restaurant.getId());
-		RestaurantDTO r = new RestaurantDTO(restaurant);
-		NewRUserDTO RUserDTO = new NewRUserDTO();
-		RUserDTO.setRestaurantId(r.getId());
-		RUserDTO.setEmail(restaurantDto.getEmail());
-		RUserDTO.setPassword(restaurantDto.getPassword());
+
 		RestaurantRole role = restaurantRoleDAO.findByName("ROLE_OWNER");
-		RUser owner = RUserService.registerRUser(RUserDTO, restaurant,role);
+		NewRUserDTO RUserDTO = NewRUserDTO.builder()
+			.restaurantId(restaurant.getId())
+			.email(restaurant.getEmail())
+			.password(restaurantDto.getPassword())
+			.firstName(restaurantDto.getOwnerName())
+			.lastName(restaurantDto.getOwnerSurname())
+			.roleId(role.getId())
+			.build();
+		
+		RUser owner = RUserService.registerRUser(RUserDTO, restaurant);
 		RUserService.acceptRUser(owner.getId());
-		return r;
+		return new RestaurantDTO(restaurant);
 	}
 
 	public RestaurantFullDetailsDto findByIdRestaurantFullDetails(Long idRestaurant) {

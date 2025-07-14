@@ -23,4 +23,5 @@ public interface AdminFcmTokenDAO extends JpaRepository<AdminFcmToken, Long> {
 
     AdminFcmToken findByDeviceId(String deviceId);
 
+    AdminFcmToken findByAdminIdAndDeviceId(Long adminId, String deviceId);
 }

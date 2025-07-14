@@ -215,12 +215,13 @@ public class CustomerRegistrationController {
             // quali dati vogliamo prendere da google?
             Customer customer = customerService.findCustomerByEmail(email);
             if (customer == null) {
-                NewCustomerDTO accountDto = new NewCustomerDTO();
-                // devo verificare questa cosa
-                accountDto.setFirstName(name.split(" ")[0]);
-                accountDto.setLastName(name.split(" ")[1]);
-                accountDto.setEmail(email);
-                accountDto.setPassword(generateRandomPassword()); // Generate and set a random password
+                String[] nameParts = name != null ? name.split(" ", 2) : new String[]{"", ""};
+                NewCustomerDTO accountDto = NewCustomerDTO.builder()
+                        .firstName(nameParts[0])
+                        .lastName(nameParts.length > 1 ? nameParts[1] : "")
+                        .email(email)
+                        .password(generateRandomPassword())
+                        .build();
                 customer = customerAuthenticationService.registerNewCustomerAccount(accountDto);
             }
             String jwt = jwtUtil.generateToken(customer);

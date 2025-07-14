@@ -18,6 +18,7 @@ import com.application.persistence.model.customer.Customer;
 import com.application.persistence.model.customer.Privilege;
 import com.application.persistence.model.customer.Role;
 import com.application.service.authentication.CustomerAuthenticationService;
+import com.application.web.dto.get.CustomerDTO;
 import com.application.web.dto.post.NewCustomerDTO;
 
 @Component
@@ -57,24 +58,16 @@ public class CustomerSetup {
             return;
         }
 
-        Customer user = null;
         try {
-            NewCustomerDTO userDTO = new NewCustomerDTO();
-            userDTO.setFirstName("Stefano");
-            userDTO.setLastName("Di Michele");
-            userDTO.setPassword("Minosse100%");
-            userDTO.setEmail("info@lasoffittarenovatio.it");
-            user = userService.registerNewCustomerAccount(userDTO);
-        } catch (Exception e) {
-            logger.error("Error creating customer account", e);
-            return;
-        }
+            logger.info("Creating customer Stefano Di Michele");
+            NewCustomerDTO newUser = NewCustomerDTO.builder()
+                .firstName("Stefano")
+                .lastName("Di Michele")
+                .password("Minosse100%")
+                .email("info@lasoffittarenovatio.it")
+                .build();
+            Customer user = userService.registerNewCustomerAccount(newUser);
 
-        try {
-            if (user == null) {
-                return;
-            }
-            user = userDAO.findByEmail("info@lasoffittarenovatio.it");
             Role premiumRole = roleDAO.findByName("ROLE_PREMIUM_USER");
             if (premiumRole != null) {
                 Hibernate.initialize(user.getRoles());
@@ -83,11 +76,10 @@ public class CustomerSetup {
                     roles.add(premiumRole);
                 }
                 user.setRoles(roles);
-                user.setStatus(Customer.Status.ENABLED);
                 userDAO.save(user);
             }
         } catch (Exception e) {
-            logger.error("Error assigning roles to customer", e);
+            logger.error("Error creating customer account or assigning roles", e);
         }
     }
 
