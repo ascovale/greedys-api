@@ -115,7 +115,6 @@ public class CustomerController {
         return null;
     }
 
-    // TODO: Implement customerStats to view characteristics like no-show, etc.
     @Operation(summary = "Get current customer statistics", description = "Retrieves statistics for the current authenticated customer including no-show rate, reservations count, etc.")
     @ApiResponse(responseCode = "200", description = "Statistics retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = CustomerStatisticsDTO.class)))
     @ApiResponse(responseCode = "401", description = "Unauthorized")
