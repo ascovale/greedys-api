@@ -162,4 +162,17 @@ public interface ReservationDAO extends JpaRepository<Reservation, Long> {
             WHERE r.customer.id = :customerId
             """)
     Optional<Reservation> findByCustomer(Long customerId);
+
+
+    @Query(value = """
+            SELECT COUNT(r) FROM Reservation r
+            WHERE r.customer.id = :customerId
+            """)
+    Integer countByCustomer(Long customerId);
+
+    @Query(value = """
+            SELECT COUNT(r) FROM Reservation r
+            WHERE r.customer.id = :customerId AND r.status = :status
+            """)
+    Integer countByCustomerAndStatus(Long customerId, Reservation.Status status);
 }

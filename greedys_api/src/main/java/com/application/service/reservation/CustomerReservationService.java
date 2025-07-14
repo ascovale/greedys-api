@@ -108,7 +108,20 @@ public class CustomerReservationService {
 
 
     public void rejectReservation(Long reservationId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'rejectReservation'");
+        Reservation.Status status = Reservation.Status.REJECTED;
+        Reservation reservation = reservationDAO.findById(reservationId)
+                .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
+        reservation.setStatus(status);
+        reservationDAO.save(reservation);
     }
+
+
+
+    public ReservationDTO findReservationById(Long reservationId) {
+        return reservationDAO.findById(reservationId)
+                .map(ReservationDTO::new)
+                .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
+    }
+
+
 }

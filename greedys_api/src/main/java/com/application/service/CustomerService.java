@@ -1,5 +1,6 @@
 package com.application.service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -21,6 +22,9 @@ import com.application.persistence.model.customer.Allergy;
 import com.application.persistence.model.customer.Customer;
 import com.application.persistence.model.customer.Privilege;
 import com.application.persistence.model.customer.Role;
+
+import com.application.persistence.model.reservation.Reservation;
+
 import com.application.web.dto.get.AllergyDTO;
 import com.application.web.dto.get.CustomerDTO;
 import com.application.web.dto.get.CustomerStatisticsDTO;
@@ -265,7 +269,7 @@ public class CustomerService {
 		customerDAO.save(customer);
 	}
 
-	public void updateDateOfBirth(Long customerId, String newDateOfBirth) {
+	public void updateDateOfBirth(Long customerId, Date newDateOfBirth) {
 		Customer customer = customerDAO.findById(customerId)
 				.orElseThrow(() -> new EntityNotFoundException("Customer not found"));
 		customer.setDateOfBirth(newDateOfBirth);
@@ -297,13 +301,14 @@ public class CustomerService {
         
         // Get all statistics counts
         long totalReservations = reservationDAO.countByCustomer(customerId);
-        long acceptedReservations = reservationDAO.countByCustomerAndAccepted(customerId);
-        long pendingReservations = reservationDAO.countByCustomerAndPending(customerId);
-        long rejectedReservations = reservationDAO.countByCustomerAndRejected(customerId);
-        long noShowReservations = reservationDAO.countByCustomerAndNoShow(customerId);
-        long seatedReservations = reservationDAO.countByCustomerAndSeated(customerId);
-        long deletedReservations = reservationDAO.countByCustomerAndDeleted(customerId);
-        
+		long acceptedReservations = reservationDAO.countByCustomerAndStatus(customerId, Reservation.Status.ACCEPTED);
+		long pendingReservations = reservationDAO.countByCustomerAndStatus(customerId, Reservation.Status.NOT_ACCEPTED);
+		long rejectedReservations = reservationDAO.countByCustomerAndStatus(customerId, Reservation.Status.REJECTED);
+		long noShowReservations = reservationDAO.countByCustomerAndStatus(customerId, Reservation.Status.NO_SHOW);
+		long seatedReservations = reservationDAO.countByCustomerAndStatus(customerId, Reservation.Status.SEATED);
+		long deletedReservations = reservationDAO.countByCustomerAndStatus(customerId, Reservation.Status.DELETED);
+
+		
         return new CustomerStatisticsDTO(
             totalReservations,
             acceptedReservations,
