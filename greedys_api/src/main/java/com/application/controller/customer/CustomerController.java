@@ -7,6 +7,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,6 +18,7 @@ import com.application.persistence.model.customer.Customer;
 import com.application.service.CustomerService;
 import com.application.service.authentication.CustomerAuthenticationService;
 import com.application.web.dto.get.CustomerDTO;
+import com.application.web.dto.get.CustomerStatisticsDTO;
 import com.application.web.dto.put.UpdatePasswordDTO;
 import com.application.web.error.InvalidOldPasswordException;
 import com.application.web.util.GenericResponse;
@@ -38,8 +40,6 @@ public class CustomerController {
     private final CustomerService customerService;
     private final MessageSource messages;
     private final CustomerAuthenticationService customerAuthenticationService; // aggiunto
-
-    //TODO: Emails should be sent in the service layer
     //TODO: Implementare tutti i metodi per la configurazione delle notifiche del customer
 
     public CustomerController(CustomerService customerService,
@@ -60,7 +60,25 @@ public class CustomerController {
     public Long getCustomerId() {
         return getCurrentCustomer().getId();
     }
+    @Operation(summary = "Update customer phone number", description = "Updates the phone number of a specific customer by their ID")
+    @ApiResponse(responseCode = "200", description = "Phone number updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
+    @ApiResponse(responseCode = "401", description = "Unauthorized")
+    @ApiResponse(responseCode = "404", description = "User not found")
+    @PutMapping("/update/phone")
+    public GenericResponse updatePhone(@RequestParam String phone) {
+        customerService.updatePhone(getCustomerId(), phone);
+        return new GenericResponse("Phone number updated successfully");
+    }
 
+    @Operation(summary = "Update customer date of birth", description = "Updates the date of birth of a specific customer by their ID")
+    @ApiResponse(responseCode = "200", description = "Date of birth updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
+    @ApiResponse(responseCode = "401", description = "Unauthorized")
+    @ApiResponse(responseCode = "404", description = "User not found")
+    @PutMapping("/update/dateOfBirth")
+    public GenericResponse updateDateOfBirth(@RequestParam String dateOfBirth) {
+        customerService.updateDateOfBirth(getCustomerId(), dateOfBirth);
+        return new GenericResponse("Date of birth updated successfully");
+    }
     // TODO: Notification preferences settings
     // TODO: System preferences settings, e.g., how to receive notifications, but this is more restaurant-related
 
@@ -97,9 +115,28 @@ public class CustomerController {
         return null;
     }
 
+    @Operation(summary = "Get current customer statistics", description = "Retrieves statistics for the current authenticated customer including no-show rate, reservations count, etc.")
+    @ApiResponse(responseCode = "200", description = "Statistics retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = CustomerStatisticsDTO.class)))
+    @ApiResponse(responseCode = "401", description = "Unauthorized")
+    @ApiResponse(responseCode = "404", description = "Customer not found")
+    @GetMapping("/statistics/current")
+    public CustomerStatisticsDTO getCurrentCustomerStatistics() {
+        Customer currentCustomer = getCurrentCustomer();
+        return customerService.getCustomerStatistics(currentCustomer.getId());
+    }
+
+    @Operation(summary = "Get customer statistics", description = "Retrieves statistics for a specific customer by ID including no-show rate, reservations count, etc.")
+    @ApiResponse(responseCode = "200", description = "Statistics retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = CustomerStatisticsDTO.class)))
+    @ApiResponse(responseCode = "401", description = "Unauthorized")
+    @ApiResponse(responseCode = "404", description = "Customer not found")
+    @GetMapping("/{customerId}/statistics")
+    public CustomerStatisticsDTO getCustomerStatistics(
+            @Parameter(description = "The ID of the customer to retrieve statistics for", required = true, example = "1")
+            @PathVariable Long customerId) {
+        return customerService.getCustomerStatistics(customerId);
+    }
+
     // TODO: This method should also be available for other user types
-    // TODO: Implement customerStats to view characteristics like no-show, etc.
-    // TODO: Implement restaurantStats
 
     @Operation(summary = "Get current customer", description = "Retrieves the current authenticated customer")
     @ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = CustomerDTO.class)))
@@ -167,6 +204,8 @@ public class CustomerController {
         customerService.updateEmail(getCustomerId(), email);
         return new GenericResponse("Email updated successfully");
     }
+
+
 
     // TODO: Implement the method in the service to report abuse
     // The abuse should be reported to the system admin and should also contain a message

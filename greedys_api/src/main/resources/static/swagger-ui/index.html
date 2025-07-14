@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Greedys API Docs</title>
-  <link rel="icon" type="image/png" href="/swagger-ui/greedys.png" />
+  <link rel="icon" type="image/png" href="/swagger-ui/icona_v4.png" />
   <link rel="stylesheet" type="text/css" href="swagger-ui.css" />
   <link rel="stylesheet" type="text/css" href="theme-monokai.css" />
   <style>
@@ -33,7 +33,6 @@
       border-radius: 8px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.12);
     }
-    /* Nascondi solo il titolo centrale, lascia il logo nella topbar */
     .swagger-ui .information-container .title {
       font-size: 0;
       display: flex;
@@ -44,10 +43,10 @@
       content: "";
       display: inline-block;
       vertical-align: middle;
-      background: url('/swagger-ui/greedys.png') no-repeat left center;
+      background: url('/swagger-ui/favicon_v4.png') no-repeat left center;
       background-size: contain;
-      width: 84px;
-      height: 48px;
+      width: 96px;
+      height: 96px;
       margin-right: 0;
       opacity: 1;
       border-radius: 4px;
@@ -94,12 +93,47 @@
             ],
             layout: "StandaloneLayout",
             operationsSorter: (a, b) => {
-              // Ordine: GET, POST, PUT, DELETE, altri
               const order = { get: 1, post: 2, put: 3, delete: 4 };
               return (order[a.get("method")] || 99) - (order[b.get("method")] || 99);
             },
-            tagsSorter: 'alpha', // Ordina i controller (tag) in ordine alfabetico
+            tagsSorter: 'alpha',
+            onComplete: function() { updateGroupName(); }
           });
+
+          function updateGroupName() {
+            const select = document.querySelector('.topbar select');
+            if (!select) return;
+            function setGroupName() {
+              const group = select.options[select.selectedIndex].text;
+              const desc = document.querySelector('.swagger-ui .information-container .description');
+              if (!desc) return;
+              let wrapper = desc.parentNode.querySelector('.group-and-desc');
+              let groupSpan;
+              if (!wrapper) {
+                wrapper = document.createElement('div');
+                wrapper.className = 'group-and-desc';
+                wrapper.style.display = 'flex';
+                wrapper.style.alignItems = 'center';
+                wrapper.style.gap = '16px';
+                groupSpan = document.createElement('span');
+                groupSpan.id = 'swagger-group-name';
+                groupSpan.style.fontSize = '1.1em';
+                groupSpan.style.fontWeight = 'bold';
+                groupSpan.style.color = '#1ec773';
+                groupSpan.style.whiteSpace = 'nowrap';
+                wrapper.appendChild(groupSpan);
+                desc.parentNode.insertBefore(wrapper, desc);
+                wrapper.appendChild(desc);
+              } else {
+                groupSpan = wrapper.querySelector('#swagger-group-name');
+              }
+              groupSpan.textContent = group;
+              groupSpan.style.display = 'inline-block';
+            }
+            setGroupName();
+            select.addEventListener('change', setGroupName);
+          }
+          setTimeout(updateGroupName, 1000);
         });
     };
   </script>

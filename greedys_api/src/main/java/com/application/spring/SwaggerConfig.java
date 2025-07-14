@@ -50,7 +50,6 @@ public class SwaggerConfig {
                 .packagesToScan("com.application.controller.admin")
                 .pathsToMatch("/admin/**")
                 .addOpenApiCustomizer(groupCustomizer())
-                .addOpenApiCustomizer(sortSchemasCustomizer())
                 .build();
     }
 
@@ -61,7 +60,6 @@ public class SwaggerConfig {
                 .packagesToScan("com.application.controller.customer")
                 .pathsToMatch("/customer/**")
                 .addOpenApiCustomizer(groupCustomizer())
-                .addOpenApiCustomizer(sortSchemasCustomizer())
                 .build();
     }
 
@@ -72,22 +70,10 @@ public class SwaggerConfig {
                 .packagesToScan("com.application.controller.restaurant", "com.application.controller.rUser")
                 .pathsToMatch("/restaurant/**")
                 .addOpenApiCustomizer(groupCustomizer())
-                .addOpenApiCustomizer(sortSchemasCustomizer())
                 .build();
     }
 
-    @Bean
-    GroupedOpenApi publicApi() {
-        return GroupedOpenApi.builder()
-                .group("public-api")
-                .packagesToScan("com.application.controller.pub", "com.application.web.dto")
-                .pathsToMatch(
-                        "/public/**"
-                )
-                .addOpenApiCustomizer(sortSchemasCustomizer()) // Solo sort, nessuna security per il gruppo pubblico
-                .build();
-    }
-
+    
     private OpenApiCustomizer groupCustomizer() {
         return openApi -> {
             String securityName = "bearerAuth";

@@ -37,7 +37,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RequestMapping("/customer/reservation")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Reservation", description = "APIs for managing reservations of the customer")
-public class ReservationController {
+public class CustomerReservationController {
 	@Autowired
 	private CustomerReservationService customerReservationService;
 
@@ -107,4 +107,17 @@ public class ReservationController {
 		return customerReservationService.findAllCustomerReservations(customer.getId());
 	}
 
+	@PreAuthorize("@securityCustomerService.hasPermissionOnReservation(#reservationId)")
+	@Operation(summary = "Get a single reservation by ID", description = "Retrieve a specific reservation for the user by its ID")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Reservation retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ReservationDTO.class))),
+		@ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+		@ApiResponse(responseCode = "404", description = "Reservation not found", content = @Content),
+		@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
+	})
+	@GetMapping("/{reservationId}")
+	public ResponseEntity<ReservationDTO> getReservationById(@PathVariable Long reservationId) {
+		ReservationDTO reservationDTO = customerReservationService.findReservationById(reservationId);
+		return ResponseEntity.ok(reservationDTO);
+	}
 }
