@@ -57,6 +57,7 @@ public class RestaurantReservationService {
                 .status(Reservation.Status.ACCEPTED)
                 .build();
         reservation = reservationDAO.save(reservation);
+        
         return new ReservationDTO(reservation);
     }
 

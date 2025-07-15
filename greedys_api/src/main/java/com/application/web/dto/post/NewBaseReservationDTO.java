@@ -15,6 +15,10 @@ import lombok.Builder.Default;
 @SuperBuilder
 @Schema(name = "NewBaseReservationDTO", description = "Base DTO for creating a reservation")
 public abstract class NewBaseReservationDTO {
+
+    @Schema(description = "Name of the reservation holder")
+    private String userName;
+
     @Schema(description = "Slot ID for the reservation")
     private Long idSlot;
 

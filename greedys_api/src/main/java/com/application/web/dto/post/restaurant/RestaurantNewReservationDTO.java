@@ -15,9 +15,6 @@ public class RestaurantNewReservationDTO extends NewBaseReservationDTO {
     
     private String userEmail;
     private String userPhoneNumber;
-    private String userName;
-    private String userSurname;
-
 
 }
 

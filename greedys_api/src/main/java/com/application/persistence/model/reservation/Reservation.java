@@ -29,7 +29,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import com.application.persistence.model.customer.Customer;
 import com.application.persistence.model.restaurant.Restaurant;
 import com.application.persistence.model.user.AbstractUser;
 
@@ -54,9 +53,7 @@ public class Reservation {
     @JoinColumn(name = "id_restaurant")
     private Restaurant restaurant;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "id_customer")
-    private Customer customer;
+    private String userName;
 
     @Column(name = "r_date", nullable = false)
     private LocalDate date;

@@ -25,7 +25,6 @@ public class ReservationDTO {
 	@Builder.Default
 	private Integer kids = 0;
 	private String name;
-	private String surname;
 	private String phone;
 	@ValidEmail
 	private String email;
@@ -40,12 +39,7 @@ public class ReservationDTO {
 		this.id = reservation.getId();
 		this.pax = reservation.getPax();
 		this.kids = reservation.getKids();
-		if (reservation.getCustomer() != null) {
-			this.name = reservation.getCustomer().getName();
-			this.surname = reservation.getCustomer().getSurname();
-			this.email = reservation.getCustomer().getEmail();
-			this.phone = reservation.getCustomer().getPhoneNumber();
-		}
+		this.name = reservation.getUserName();
 		this.notes = reservation.getNotes();
 		this.reservationDay = reservation.getDate();
 		this.restaurant = reservation.getSlot().getService().getRestaurant().getId();
