@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.application.controller.utils.ControllerUtils;
 import com.application.persistence.model.reservation.Reservation;
 import com.application.persistence.model.restaurant.user.RUser;
+import com.application.service.RestaurantNotificationService;
 import com.application.service.reservation.RestaurantReservationService;
 import com.application.web.dto.get.ReservationDTO;
 import com.application.web.dto.post.restaurant.RestaurantNewReservationDTO;
@@ -51,9 +52,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class RestaurantReservationController {
 	//
 	private final RestaurantReservationService restaurantReservationService;
+	private final RestaurantNotificationService restaurantNotificationService;
 
-	public RestaurantReservationController(RestaurantReservationService restaurantReservationService) {
+	public RestaurantReservationController(RestaurantReservationService restaurantReservationService, RestaurantNotificationService restaurantNotificationService) {
 		this.restaurantReservationService = restaurantReservationService;
+		this.restaurantNotificationService = restaurantNotificationService;
 	}
 
 	@Operation(summary = "Create a new reservation", description = "Endpoint to create a new reservation")
@@ -65,7 +68,15 @@ public class RestaurantReservationController {
 	@PostMapping("/new")
 	@PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_RESERVATION_WRITE')")
 	public ResponseEntity<?> createReservation(@RequestBody RestaurantNewReservationDTO dto, @AuthenticationPrincipal RUser rUser) {
+		
 		restaurantReservationService.createReservation(dto, rUser.getRestaurant());
+
+		restaurantNotificationService.sendNotificationToAllUsers(
+				"New reservation created",
+				"Reservation for " + dto.getPax() + " pax on " + dto.getReservationDay() + " at " + dto.getIdSlot(),
+				null,
+				rUser.getRestaurant().getId()
+		);
 		return ResponseEntity.ok().build();
 	}
 
