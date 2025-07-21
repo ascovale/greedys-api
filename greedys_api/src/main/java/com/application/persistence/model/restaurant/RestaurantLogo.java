@@ -8,9 +8,17 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "logo_restaurant")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class RestaurantLogo {
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
@@ -18,30 +26,6 @@ public class RestaurantLogo {
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "restaurant_id")
     private Restaurant restaurant;
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
-
-	public Restaurant getRestaurant() {
-		return restaurant;
-	}
-
-	public void setRestaurant(Restaurant restaurant) {
-		this.restaurant = restaurant;
-	}
-
-	String path;
-
-	public String getPath() {
-		return path;
-	}
-
-	public void setPath(String path) {
-		this.path = path;
-	}
+	private String path;
 
 }

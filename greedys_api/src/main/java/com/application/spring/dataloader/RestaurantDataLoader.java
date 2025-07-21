@@ -13,11 +13,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.application.mapper.Mapper.Weekday;
+import com.application.persistence.dao.restaurant.RUserDAO;
 import com.application.persistence.dao.restaurant.RestaurantCategoryDAO;
 import com.application.persistence.dao.restaurant.RestaurantDAO;
 import com.application.persistence.dao.restaurant.RestaurantPrivilegeDAO;
 import com.application.persistence.dao.restaurant.RestaurantRoleDAO;
-import com.application.persistence.dao.restaurant.RUserDAO;
 import com.application.persistence.dao.restaurant.ServiceDAO;
 import com.application.persistence.dao.restaurant.ServiceTypeDAO;
 import com.application.persistence.dao.restaurant.SlotDAO;
@@ -28,7 +28,6 @@ import com.application.persistence.model.restaurant.Restaurant;
 import com.application.persistence.model.restaurant.RestaurantCategory;
 import com.application.persistence.model.restaurant.user.RestaurantPrivilege;
 import com.application.persistence.model.restaurant.user.RestaurantRole;
-import com.application.persistence.model.restaurant.user.RUser;
 import com.application.service.RestaurantService;
 import com.application.web.dto.post.NewRestaurantDTO;
 
@@ -80,20 +79,22 @@ public class RestaurantDataLoader {
         restaurantDAO.save(restaurant);
 
         ServiceType pranzoType = serviceTypeDAO.findByName("Lunch");
-        Service pranzo = new Service();
+        Service pranzo = Service.builder()
+            .validFrom(LocalDate.now())
+            .validTo(LocalDate.now())
+            .restaurant(restaurant)
+            .build();
         pranzo.addServiceType(pranzoType);
-        pranzo.setValidFrom(LocalDate.now());
-        pranzo.setValidTo(LocalDate.now());
-        pranzo.setRestaurant(restaurant);
         serviceDAO.save(pranzo);
         createSlotsForService(pranzo, LocalTime.of(11, 0), LocalTime.of(17, 0));
 
         ServiceType cenaType = serviceTypeDAO.findByName("Dinner");
-        Service cena = new Service();
+        Service cena = Service.builder()
+            .validFrom(LocalDate.now())
+            .validTo(LocalDate.now())
+            .restaurant(restaurant)
+            .build();
         cena.addServiceType(cenaType);
-        cena.setValidFrom(LocalDate.now());
-        cena.setValidTo(LocalDate.now());
-        cena.setRestaurant(restaurant);
         serviceDAO.save(cena);
         createSlotsForService(cena, LocalTime.of(17, 30), LocalTime.of(23, 0));
     }
@@ -122,20 +123,22 @@ public class RestaurantDataLoader {
         restaurantDAO.save(restaurant);
 
         ServiceType pranzoType = serviceTypeDAO.findByName("Lunch");
-        Service pranzo = new Service();
+        Service pranzo = Service.builder()
+            .validFrom(LocalDate.now())
+            .validTo(LocalDate.now())
+            .restaurant(restaurant)
+            .build();
         pranzo.addServiceType(pranzoType);
-        pranzo.setValidFrom(LocalDate.now());
-        pranzo.setValidTo(LocalDate.now());
-        pranzo.setRestaurant(restaurant);
         serviceDAO.save(pranzo);
         createSlotsForService(pranzo, LocalTime.of(11, 0), LocalTime.of(17, 0));
 
         ServiceType cenaType = serviceTypeDAO.findByName("Dinner");
-        Service cena = new Service();
+        Service cena = Service.builder()
+            .validFrom(LocalDate.now())
+            .validTo(LocalDate.now())
+            .restaurant(restaurant)
+            .build();
         cena.addServiceType(cenaType);
-        cena.setValidFrom(LocalDate.now());
-        cena.setValidTo(LocalDate.now());
-        cena.setRestaurant(restaurant);
         serviceDAO.save(cena);
         createSlotsForService(cena, LocalTime.of(17, 30), LocalTime.of(23, 0));
     }
@@ -146,9 +149,12 @@ public class RestaurantDataLoader {
         while (time.isBefore(endTime)) {
             for (int day = 1; day <= 7; day++) {
                 Weekday weekday = Weekday.values()[day - 1];
-                Slot slot = new Slot(time, time.plusMinutes(30));
-                slot.setService(service);
-                slot.setWeekday(weekday);
+                Slot slot = Slot.builder()
+                    .start(time)
+                    .end(time.plusMinutes(30))
+                    .service(service)
+                    .weekday(weekday)
+                    .build();
                 slots.add(slot);
             }
             time = time.plusMinutes(30);
@@ -163,7 +169,9 @@ public class RestaurantDataLoader {
     private RestaurantPrivilege createRestaurantPrivilegeIfNotFound(final String name) {
         RestaurantPrivilege privilege = restaurantPrivilegeDAO.findByName(name);
         if (privilege == null) {
-            privilege = new RestaurantPrivilege(name);
+            privilege = RestaurantPrivilege.builder()
+                    .name(name)
+                    .build();
             privilege = restaurantPrivilegeDAO.save(privilege);
         }
         return privilege;
@@ -173,7 +181,8 @@ public class RestaurantDataLoader {
     public RestaurantRole createRestaurantRoleIfNotFound(String name, List<RestaurantPrivilege> privileges) {
         RestaurantRole role = restaurantRoleDAO.findByName(name);
         if (role == null) {
-            role = new RestaurantRole(name);
+            role = new RestaurantRole();
+            role.setName(name);
         }
         // Ensure privileges is always a mutable list
         role.setPrivileges(new ArrayList<>(privileges));
@@ -234,7 +243,9 @@ public class RestaurantDataLoader {
     private ServiceType createServiceIfNotFound(String name) {
         ServiceType serviceType = serviceTypeDAO.findByName(name);
         if (serviceType == null) {
-            serviceType = new ServiceType(name);
+            serviceType = ServiceType.builder()
+                .name(name)
+                .build();
             serviceTypeDAO.save(serviceType);
         }
         return serviceType;
@@ -259,8 +270,9 @@ public class RestaurantDataLoader {
 
         for (String categoryName : categories) {
             if (restaurantCategoryDAO.findByName(categoryName) == null) {
-                RestaurantCategory category = new RestaurantCategory();
-                category.setName(categoryName);
+                RestaurantCategory category = RestaurantCategory.builder()
+                        .name(categoryName)
+                        .build();
                 restaurantCategoryDAO.save(category);
             }
         }

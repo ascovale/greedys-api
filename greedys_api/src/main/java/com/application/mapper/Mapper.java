@@ -92,7 +92,7 @@ public class Mapper {
         dto.setAddress(r.getAddress());
         dto.setEmail(r.getEmail());
         dto.setName(r.getName());
-        dto.setpI(r.getpI());
+        dto.setpI(r.getPI());
         dto.setDescription(r.getDescription());
         dto.setPost_code(r.getPostCode());
        // dto.setRestaurantLogoDto(new RestaurantLogoDto(r.getRestaurantLogo().getPath()));

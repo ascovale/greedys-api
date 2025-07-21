@@ -3,9 +3,6 @@ package com.application.persistence.model.reservation;
 import java.time.LocalTime;
 
 import com.application.mapper.Mapper.Weekday;
-import com.application.web.dto.post.LocalTimeDeserializer;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
@@ -19,9 +16,19 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "slot")
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Slot {
 		
 	@Id		
@@ -38,69 +45,7 @@ public class Slot {
 	@ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "service_id")
 	Service service;
+	@Builder.Default
 	private Boolean deleted = false;
 	
-	public Boolean getDeleted() {
-		return deleted;
-	}
-
-	public void setDeleted(Boolean deleted) {
-		this.deleted = deleted;
-	}
-
-	public Slot() {
-	}
-
-	public Slot(LocalTime start, LocalTime end) {
-		this.start = start;
-		this.end = end;
-    }
-
-    // Getter and Setter for 'id'
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
-
-	// Getter and Setter for 'start'
-	public LocalTime getStart() {
-		return start;
-	}
-
-	public void setStart(LocalTime start) {
-		this.start = start;
-	}
-
-	// Getter and Setter for 'end'
-	public LocalTime getEnd() {
-		return end;
-	}
-
-	public void setEnd(LocalTime end) {
-		this.end = end;
-	}
-
-	// Getter and Setter for 'service'
-	public Service getService() {
-		return service;
-	}
-
-	public void setService(Service service) {
-		this.service = service;
-	}
-
-	public Weekday getWeekday() {
-		return weekday;
-	}
-
-	public void setWeekday(Weekday weekday) {
-		this.weekday = weekday;
-	}
-
-    public void setDeleted(boolean b) {
-		this.deleted = b;
-    }
 }

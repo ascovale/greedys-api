@@ -103,7 +103,7 @@ public class RestaurantService {
 		restaurant.setName(restaurantDto.getName());
 		restaurant.setAddress(restaurantDto.getAddress());
 		restaurant.setCreationDate(LocalDate.now());
-		restaurant.setpI(restaurantDto.getPi());
+		restaurant.setPI(restaurantDto.getPi());
 		restaurant.setPostCode(restaurantDto.getPost_code());
 		restaurant.setStatus(Restaurant.Status.DISABLED);
 		rDAO.save(restaurant);
@@ -220,7 +220,7 @@ public class RestaurantService {
 		restaurant.setEmail(restaurantDto.getEmail());
 		restaurant.setAddress(restaurantDto.getAddress());
 		restaurant.setCreationDate(LocalDate.now());
-		restaurant.setpI(restaurantDto.getpi());
+		restaurant.setPI(restaurantDto.getpi());
 		restaurant.setPostCode(restaurantDto.getPost_code());
 		rDAO.save(restaurant);
 	}

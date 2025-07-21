@@ -97,7 +97,5 @@ public class Admin extends AbstractUser {
 		}
 		return privileges;
 	}
-	
-
 
 }

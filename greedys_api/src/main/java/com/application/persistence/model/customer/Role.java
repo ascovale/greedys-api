@@ -12,9 +12,13 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "role")
+@Getter
+@Setter
 public class Role implements BaseRole<Privilege> {
 
     @Id
@@ -34,22 +38,6 @@ public class Role implements BaseRole<Privilege> {
 
     public Role(final String name) {
         super();
-        this.name = name;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(final Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(final String name) {
         this.name = name;
     }
 
@@ -103,16 +91,5 @@ public class Role implements BaseRole<Privilege> {
         builder.append("Role [name=").append(name).append("]").append("[id=").append(id).append("]");
         return builder.toString();
     }
-
-    public List<Privilege> getPermissions() {
-        return this.privileges;
-    }
-
-
-    public void setPermissions(List<Privilege> privileges) {
-        this.privileges = privileges;
-    }
-    
-
 
 }

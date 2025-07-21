@@ -1,24 +1,24 @@
 package com.application.service.reservation;
 
+import java.util.Collection;
+import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.application.persistence.dao.customer.ReservationDAO;
 import com.application.persistence.dao.customer.ReservationRequestDAO;
 import com.application.persistence.model.customer.Customer;
 import com.application.persistence.model.reservation.Reservation;
+import com.application.persistence.model.reservation.Reservation.Status;
 import com.application.persistence.model.reservation.ReservationRequest;
 import com.application.persistence.model.reservation.Slot;
-import com.application.persistence.model.reservation.Reservation.Status;
 import com.application.web.dto.get.ReservationDTO;
 import com.application.web.dto.post.customer.CustomerNewReservationDTO;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Collection;
-import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -49,6 +49,7 @@ public class CustomerReservationService {
                 .notes(reservationDto.getNotes())
                 .date(reservationDto.getReservationDay())
                 .slot(slot)
+                .customer(customer)
                 .createdBy(customer) // TODO : Test this that it works
                 .status(Reservation.Status.ACCEPTED)
                 .build();

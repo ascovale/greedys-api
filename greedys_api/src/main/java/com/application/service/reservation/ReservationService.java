@@ -1,18 +1,9 @@
 package com.application.service.reservation;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,19 +14,9 @@ import com.application.persistence.dao.restaurant.ClosedDayDAO;
 import com.application.persistence.dao.restaurant.RUserDAO;
 import com.application.persistence.dao.restaurant.RestaurantDAO;
 import com.application.persistence.dao.restaurant.ServiceDAO;
-import com.application.persistence.model.customer.Customer;
 import com.application.persistence.model.reservation.Reservation;
-import com.application.persistence.model.reservation.ReservationRequest;
-import com.application.persistence.model.reservation.Slot;
-import com.application.persistence.model.restaurant.Restaurant;
-import com.application.persistence.model.restaurant.user.RUser;
 import com.application.service.RestaurantNotificationService;
 import com.application.service.notification.CustomerNotificationService;
-import com.application.web.dto.get.ReservationDTO;
-import com.application.web.dto.post.NewBaseReservationDTO;
-import com.application.web.dto.post.NewReservationDTO;
-import com.application.web.dto.post.customer.CustomerNewReservationDTO;
-import com.application.web.dto.post.restaurant.RestaurantNewReservationDTO;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
