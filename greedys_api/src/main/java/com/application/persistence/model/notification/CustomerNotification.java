@@ -1,11 +1,11 @@
 package com.application.persistence.model.notification;
 
 import java.time.Instant;
-import java.util.Map;
 
 import org.hibernate.annotations.CreationTimestamp;
 
 import com.application.persistence.model.customer.Customer;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -15,12 +15,18 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "notification")
+@SuperBuilder
+@Getter
+@Setter
+@NoArgsConstructor
 public class CustomerNotification extends ANotification {
-
-	
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -34,23 +40,4 @@ public class CustomerNotification extends ANotification {
 	@CreationTimestamp
 	private Instant creationTime;
 
-	public CustomerNotification(Customer customer, String title, String body, Map<String, String> data) {
-		super(title, body, data);
-		this.customer = customer;
-		
-	}
-
-
-	public Long getId() {
-		return id;
-	}
-
-	public Customer getCustomer() {
-		return customer;
-	}
-
-	public Instant getCreationTime() {
-		return creationTime;
-	}
- 
 }

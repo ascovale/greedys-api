@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.application.service.authentication.GoogleAuthService;
 import com.application.service.authentication.RestaurantAuthenticationService;
 import com.application.web.dto.AuthRequestGoogleDTO;
 import com.application.web.dto.post.AuthRequestDTO;

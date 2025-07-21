@@ -14,9 +14,17 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "restaurant_role")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class RestaurantRole implements BaseRole<RestaurantPrivilege> {
 
     @Id
@@ -32,63 +40,12 @@ public class RestaurantRole implements BaseRole<RestaurantPrivilege> {
     )	
     private List<RestaurantPrivilege> restaurantPrivileges;
 
-    public RestaurantRole() {
-        super();
-    }
-
+    // Costruttore personalizzato per mantenere la logica esistente
     public RestaurantRole(final String name) {
         super();
         this.name = name;
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(final Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(final String name) {
-        this.name = name;
-    }
-
-	public Collection<RUser> getUsers() {
-		return users;
-	}
-
-	public void setUsers(Collection<RUser> users) {
-		this.users = users;
-	}
-
-	public List<RestaurantPrivilege> getPrivileges() {
-		return restaurantPrivileges;
-	}
-
-	public void setRestaurantPrivileges(List<RestaurantPrivilege> restaurantPrivileges) {
-		this.restaurantPrivileges = restaurantPrivileges;
-	}
-
-	@Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
-        return result;
-    }
-
-    @Override
-    public String toString() {
-        final StringBuilder builder = new StringBuilder();
-        builder.append("Role [name=").append(name).append("] ")
-        .append("[id=").append(id).append("]");
-        return builder.toString();
-    }
-    
     public void addRestaurantPrivilege(RestaurantPrivilege rp) {
         if (restaurantPrivileges == null) {
             restaurantPrivileges = new ArrayList<>();
@@ -96,22 +53,9 @@ public class RestaurantRole implements BaseRole<RestaurantPrivilege> {
         restaurantPrivileges.add(rp);
     }
 
-    @Override
-    public boolean equals(final Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final RestaurantRole role = (RestaurantRole) obj;
-        if (!name.equals(role.name)) {
-            return false;
-        }
-        return true;
+    // Metodi richiesti dall'interfaccia BaseRole
+    public List<RestaurantPrivilege> getPrivileges() {
+        return restaurantPrivileges;
     }
 
     @Override
@@ -126,4 +70,5 @@ public class RestaurantRole implements BaseRole<RestaurantPrivilege> {
         }
         restaurantPrivileges.add(privilege);
     }
+
 }

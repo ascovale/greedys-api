@@ -75,8 +75,8 @@ public class RestaurantAuthenticationController {
             Object principal = authentication.getPrincipal();
             LOGGER.info("[DEBUG] Principal class: {}", principal != null ? principal.getClass().getName() : "null");
             if (principal instanceof RUser) {
-                RUser RUser = (RUser) principal;
-                hubEmail = RUser.getEmail();
+                RUser rUser = (RUser) principal;
+                hubEmail = rUser.getEmail();
                 LOGGER.info("[DEBUG] Extracted hubEmail from RUser: {}", hubEmail);
             } else {
                 LOGGER.info("[DEBUG] Principal is not RUser, checking Authorization header");

@@ -17,7 +17,6 @@ import com.application.persistence.model.admin.Admin;
 import com.application.persistence.model.admin.AdminPrivilege;
 import com.application.persistence.model.admin.AdminRole;
 import com.application.service.AdminService;
-import com.application.web.dto.post.admin.NewAdminDTO;
 
 @Component
 public class AdminSetup {

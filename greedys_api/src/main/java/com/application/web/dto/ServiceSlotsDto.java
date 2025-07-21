@@ -24,7 +24,7 @@ public class ServiceSlotsDto {
 	
 	public ServiceSlotsDto(Service service) {
 		this.name = service.getName();
-		this.serviceType = service.getServiceType().stream()
+		this.serviceType = service.getServiceTypes().stream()
 			.map(ServiceType::getName)
 			.collect(Collectors.joining(", ")); // Aggiungi questa linea
 		List<SlotDTO> slotDtos = new ArrayList<>();

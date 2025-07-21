@@ -8,10 +8,19 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @jakarta.persistence.Table(name = "room")
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Room {
     
     @Id
@@ -25,34 +34,5 @@ public class Room {
 
     @ManyToOne(targetEntity = Restaurant.class)
     private Restaurant restaurant;
-
-    public void setRestaurant(Restaurant restaurant) {
-        this.restaurant = restaurant;
-    }
-
-    public Restaurant getRestaurant() {
-        return restaurant;
-    }
-
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setTables(List<Table> tables) {
-        this.tables = tables;
-    }
-
-    public List<Table> getTables() {
-        return tables;
-    }
-
-    public Long getId() {
-        return id;
-    }
 
 }

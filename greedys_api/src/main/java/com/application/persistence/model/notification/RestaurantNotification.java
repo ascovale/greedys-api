@@ -1,11 +1,11 @@
 package com.application.persistence.model.notification;
 
 import java.time.Instant;
-import java.util.Map;
 
 import org.hibernate.annotations.CreationTimestamp;
 
 import com.application.persistence.model.restaurant.user.RUser;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -17,9 +17,17 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "notification_restaurant")
+@SuperBuilder
+@Getter
+@Setter
+@NoArgsConstructor
 public class RestaurantNotification extends ANotification {
 
     @Id
@@ -38,22 +46,4 @@ public class RestaurantNotification extends ANotification {
 	@Column(name = "type", nullable = false)
 	private RNotificationType type;
 
-
-    public RestaurantNotification(RNotificationType type, RUser RUser, String title, String body, Map<String, String> data) {
-        super(title, body, data);
-		this.type = type;
-        this.RUser = RUser;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public RUser getRUser() {
-        return RUser;
-    }
-
-    public Instant getCreationTime() {
-        return creationTime;
-    }
 }

@@ -70,28 +70,32 @@ public class RestaurantMenuService {
     public void addMenuDish(NewMenuDishDTO menuDishDTO) {
         Dish dish = entityManager.getReference(Dish.class, menuDishDTO.getDishId());
         Menu menu = entityManager.getReference(Menu.class, menuDishDTO.getMenuId());
-        MenuDish menuDish = new MenuDish(menu, dish);
-        menuDish.setPrice(menuDishDTO.getPrice());
+        MenuDish menuDish = MenuDish.builder()
+                .menu(menu)
+                .dish(dish)
+                .price(menuDishDTO.getPrice())
+                .build();
         menuDishDAO.save(menuDish);
     }
 
     public void createDish(NewDishDTO menuItem) {
-
-        Dish item = new Dish();
-        item.setName(menuItem.getName());
-        item.setDescription(menuItem.getDescription());
+        Dish item = Dish.builder()
+                .name(menuItem.getName())
+                .description(menuItem.getDescription())
+                .restaurant(entityManager.getReference(Restaurant.class, menuItem.getRestaurantId()))
+                .build();
         // item.setAllergens(menuItem.getAllergen());
-        item.setRestaurant(entityManager.getReference(Restaurant.class, menuItem.getRestaurantId()));
         dishDAO.save(item);
     }
 
     public void addMenu(NewMenuDTO menu) {
-        Menu newMenu = new Menu();
-        newMenu.setName(menu.getName());
-        newMenu.setDescription(menu.getDescription());
-        newMenu.setServices(menu.getServiceIds().stream()
-                .map(serviceId -> entityManager.getReference(Service.class, serviceId))
-                .toList());
+        Menu newMenu = Menu.builder()
+                .name(menu.getName())
+                .description(menu.getDescription())
+                .services(menu.getServiceIds().stream()
+                        .map(serviceId -> entityManager.getReference(Service.class, serviceId))
+                        .toList())
+                .build();
         menuDAO.save(newMenu);
     }
 

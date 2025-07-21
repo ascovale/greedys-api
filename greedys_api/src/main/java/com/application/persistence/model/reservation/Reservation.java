@@ -3,11 +3,15 @@ package com.application.persistence.model.reservation;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import com.application.persistence.model.customer.Customer;
+import com.application.persistence.model.restaurant.Restaurant;
+import com.application.persistence.model.user.AbstractUser;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -22,15 +26,11 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import com.application.persistence.model.restaurant.Restaurant;
-import com.application.persistence.model.user.AbstractUser;
 
 /**
  * Refactored Reservation entity with centralized auditing and reduced duplication.
@@ -83,6 +83,10 @@ public class Reservation {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "table_id")
     private com.application.persistence.model.restaurant.Table table;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id")
+    private Customer customer;
 
     // -- Auditing fields -- //
 

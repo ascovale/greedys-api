@@ -12,9 +12,13 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "admin_role")
+@Getter
+@Setter
 public class AdminRole implements BaseRole<AdminPrivilege> {
 
     @Id
@@ -37,27 +41,6 @@ public class AdminRole implements BaseRole<AdminPrivilege> {
         super();
         this.name = name;
     }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(final Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(final String name) {
-        this.name = name;
-    }
-
-
-	public void setAdminPrivileges(List<AdminPrivilege> adminPrivileges) {
-		this.adminPrivileges = adminPrivileges;
-	}
 
 	@Override
     public int hashCode() {

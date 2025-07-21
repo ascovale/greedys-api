@@ -8,8 +8,12 @@ public enum RNotificationType {
         public RestaurantNotification create(RUser user) {
             String title = "New Reservation Request";
             String body = "You have a new reservation request.";
-            // Assuming no additional information in data
-            return new RestaurantNotification(this, user, title, body, null);
+            return RestaurantNotification.builder()
+                    .type(this)
+                    .RUser(user)
+                    .title(title)
+                    .body(body)
+                    .build();
         }}
     ,
     RESERVATION_ACCEPTED
@@ -17,16 +21,24 @@ public enum RNotificationType {
         public RestaurantNotification create(RUser user) {
             String title = "Reservation Accepted";
             String body = "A reservation has been accepted.";
-            // Assuming no additional information in data
-            return new RestaurantNotification(this, user, title, body, null);
+            return RestaurantNotification.builder()
+                    .type(this)
+                    .RUser(user)
+                    .title(title)
+                    .body(body)
+                    .build();
         }},
     RESERVATION_REJECTED{
         @Override
         public RestaurantNotification create(RUser user) {
             String title = "Reservation Rejected";
             String body = "A reservation has been rejected.";
-            // Assuming no additional information in data
-            return new RestaurantNotification(this, user, title, body, null);
+            return RestaurantNotification.builder()
+                    .type(this)
+                    .RUser(user)
+                    .title(title)
+                    .body(body)
+                    .build();
         }
     },
     RESERVATION_NO_SHOW{
@@ -34,8 +46,12 @@ public enum RNotificationType {
         public RestaurantNotification create(RUser user) {
             String title = "Reservation No Show";
             String body = "A customer didn't show at the time of the reservation.";
-            // Assuming no additional information in data
-            return new RestaurantNotification(this, user, title, body, null);
+            return RestaurantNotification.builder()
+                    .type(this)
+                    .RUser(user)
+                    .title(title)
+                    .body(body)
+                    .build();
         }
     },
     RESERVATION_SEATED{
@@ -43,8 +59,12 @@ public enum RNotificationType {
         public RestaurantNotification create(RUser user) {
             String title = "Reservation Seated";
             String body = "A customer has been seated.";
-            // Assuming no additional information in data
-            return new RestaurantNotification(this, user, title, body, null);
+            return RestaurantNotification.builder()
+                    .type(this)
+                    .RUser(user)
+                    .title(title)
+                    .body(body)
+                    .build();
         }
     };
 

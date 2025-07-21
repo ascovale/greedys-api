@@ -39,7 +39,7 @@ public class CustomerNotificationService {
                 .map(notification -> new NotificationDto(
                     notification.getId(), 
                     notification.getCustomer().getId(), 
-                    notification.isRead(),
+                    notification.getRead(),
                     notification.getBody(),
                     notification.getCreationTime()
 

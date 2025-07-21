@@ -1,11 +1,12 @@
 package com.application.persistence.dao.restaurant;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.stream.Stream;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.application.persistence.model.restaurant.user.RUser;
@@ -16,13 +17,14 @@ public interface RUserPasswordResetTokenDAO extends JpaRepository<RUserPasswordR
 
     RUserPasswordResetToken findByToken(String token);
 
-    RUserPasswordResetToken findByRUser(RUser RUser);
+    @Query("SELECT p FROM RUserPasswordResetToken p WHERE p.rUser = :rUser")
+    RUserPasswordResetToken findByRUser(@Param("rUser") RUser rUser);
 
-    Stream<RUserPasswordResetToken> findAllByExpiryDateLessThan(LocalDate now);
+    Stream<RUserPasswordResetToken> findAllByExpiryDateLessThan(LocalDateTime now);
 
-    void deleteByExpiryDateLessThan(LocalDate now);
+    void deleteByExpiryDateLessThan(LocalDateTime now);
 
     @Modifying
     @Query("delete from RUserPasswordResetToken t where t.expiryDate <= ?1")
-    void deleteAllExpiredSince(LocalDate now);
+    void deleteAllExpiredSince(LocalDateTime now);
 }

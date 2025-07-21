@@ -7,10 +7,19 @@ import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.MapKeyColumn;
+import jakarta.persistence.MappedSuperclass;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @MappedSuperclass
+@SuperBuilder
+@Getter
+@Setter
+@NoArgsConstructor
 public abstract class ANotification {
     
     @Column(name = "title", nullable = false)
@@ -23,34 +32,10 @@ public abstract class ANotification {
     @CollectionTable(name = "notification_properties", joinColumns = @JoinColumn(name = "notification_id"))
     @MapKeyColumn(name = "property_key")
     @Column(name = "property_value")
+    @Builder.Default
     private Map<String, String> properties = new HashMap<>();
 
+    @Builder.Default
     private Boolean read = false;
 
-
-    public ANotification(String title, String body, Map<String, String> data) {
-        this.title = title;
-        this.body = body;
-        this.properties = data;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public String getBody() {
-        return body;
-    }
-
-    public Map<String, String> getData() {
-        return properties;
-    }
-
-    public Boolean isRead() {
-        return read;
-    }
-
-    public void setRead(Boolean read) {
-        this.read = read;
-    }
 }
