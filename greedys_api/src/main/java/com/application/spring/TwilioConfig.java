@@ -1,21 +1,25 @@
 package com.application.spring;
 
-import com.twilio.Twilio;
+import javax.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+
+import com.twilio.Twilio;
 
 @Configuration
 public class TwilioConfig {
 
-    @Value("${TWILIO_ACCOUNT_SID}")
+    @Value("${twilio.account.sid}")
     private String accountSid;
 
-    @Value("${TWILIO_AUTH_TOKEN}")
+    @Value("${twilio.auth.token}")
     private String authToken;
 
-    @Value("${TWILIO_WHATSAPP_NUMBER}")
+    @Value("${twilio.whatsapp.number}")
     private String whatsappNumber;
 
+    @PostConstruct
     public void init() {
         Twilio.init(accountSid, authToken);
     }

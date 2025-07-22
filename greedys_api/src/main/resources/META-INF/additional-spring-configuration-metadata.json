@@ -1,5 +1,128 @@
-{"properties": [{
-  "name": "mail.reservation.username",
-  "type": "java.lang.String",
-  "description": "A description for 'mail.reservation.username'"
-}]}
+{"properties": [
+  {
+    "name": "mail.reservation.username",
+    "type": "java.lang.String",
+    "description": "A description for 'mail.reservation.username'"
+  },
+  {
+    "name": "purge.cron.expression",
+    "type": "java.lang.String", 
+    "description": "Cron expression for scheduling the token purge task",
+    "defaultValue": "0 0 2 * * ?"
+  },
+  {
+    "name": "jwt.secret",
+    "type": "java.lang.String",
+    "description": "Secret key for JWT token generation and validation"
+  },
+  {
+    "name": "jwt.expiration",
+    "type": "java.lang.Long",
+    "description": "JWT token expiration time in milliseconds",
+    "defaultValue": "3600000"
+  },
+  {
+    "name": "baseUrl",
+    "type": "java.lang.String",
+    "description": "Base URL of the application",
+    "defaultValue": "http://localhost:8080"
+  },
+  {
+    "name": "twilio.account.sid",
+    "type": "java.lang.String",
+    "description": "Twilio Account SID for SMS/WhatsApp services"
+  },
+  {
+    "name": "twilio.auth.token",
+    "type": "java.lang.String",
+    "description": "Twilio Auth Token for authentication"
+  },
+  {
+    "name": "twilio.whatsapp.number",
+    "type": "java.lang.String",
+    "description": "Twilio WhatsApp number for sending messages"
+  },
+  {
+    "name": "mail.reservation.host",
+    "type": "java.lang.String",
+    "description": "SMTP host for reservation emails"
+  },
+  {
+    "name": "mail.reservation.port",
+    "type": "java.lang.Integer",
+    "description": "SMTP port for reservation emails",
+    "defaultValue": "587"
+  },
+  {
+    "name": "mail.reservation.password",
+    "type": "java.lang.String",
+    "description": "Password for reservation email account"
+  },
+  {
+    "name": "mail.reservation.properties.mail.smtp.auth",
+    "type": "java.lang.Boolean",
+    "description": "Enable SMTP authentication for reservation emails",
+    "defaultValue": "true"
+  },
+  {
+    "name": "mail.reservation.properties.mail.smtp.starttls.enable",
+    "type": "java.lang.Boolean",
+    "description": "Enable STARTTLS for reservation emails",
+    "defaultValue": "true"
+  },
+  {
+    "name": "mail.reservation.properties.mail.smtp.starttls.required",
+    "type": "java.lang.Boolean",
+    "description": "Require STARTTLS for reservation emails",
+    "defaultValue": "true"
+  },
+  {
+    "name": "mail.reservation.properties.mail.smtp.ssl.trust",
+    "type": "java.lang.String",
+    "description": "SSL trust host for reservation emails"
+  },
+  {
+    "name": "mail.support.host",
+    "type": "java.lang.String",
+    "description": "SMTP host for support emails"
+  },
+  {
+    "name": "mail.support.port",
+    "type": "java.lang.Integer",
+    "description": "SMTP port for support emails",
+    "defaultValue": "587"
+  },
+  {
+    "name": "mail.support.username",
+    "type": "java.lang.String",
+    "description": "Username for support email account"
+  },
+  {
+    "name": "mail.support.password",
+    "type": "java.lang.String",
+    "description": "Password for support email account"
+  },
+  {
+    "name": "mail.support.properties.mail.smtp.auth",
+    "type": "java.lang.Boolean",
+    "description": "Enable SMTP authentication for support emails",
+    "defaultValue": "true"
+  },
+  {
+    "name": "mail.support.properties.mail.smtp.starttls.enable",
+    "type": "java.lang.Boolean",
+    "description": "Enable STARTTLS for support emails",
+    "defaultValue": "true"
+  },
+  {
+    "name": "mail.support.properties.mail.smtp.starttls.required",
+    "type": "java.lang.Boolean",
+    "description": "Require STARTTLS for support emails",
+    "defaultValue": "true"
+  },
+  {
+    "name": "mail.support.properties.mail.smtp.ssl.trust",
+    "type": "java.lang.String",
+    "description": "SSL trust host for support emails"
+  }
+]}
