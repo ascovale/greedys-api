@@ -13,11 +13,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.application.common.controller.utils.ControllerUtils;
 import com.application.common.web.dto.ServiceTypeDto;
 import com.application.common.web.dto.get.ServiceDTO;
 import com.application.common.web.dto.get.SlotDTO;
 import com.application.common.web.util.GenericResponse;
+import com.application.restaurant.controller.utils.RestaurantControllerUtils;
 import com.application.restaurant.service.RestaurantService;
 import com.application.restaurant.service.ServiceService;
 import com.application.restaurant.service.SlotService;
@@ -120,7 +120,7 @@ public class RestaurantServicesController {
             @ApiResponse(responseCode = "400", description = "Invalid request")
     })
     public ResponseEntity<Collection<ServiceDTO>> getServices() {
-        Collection<ServiceDTO> services = restaurantService.getServices(ControllerUtils.getCurrentRestaurant().getId());
+        Collection<ServiceDTO> services = restaurantService.getServices(RestaurantControllerUtils.getCurrentRestaurant().getId());
         return new ResponseEntity<>(services, HttpStatus.OK);
     }
 

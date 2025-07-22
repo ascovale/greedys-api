@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.application.common.persistence.model.reservation.Reservation;
 import com.application.common.persistence.model.reservation.ReservationRequest;
 import com.application.common.persistence.model.reservation.Slot;
+import com.application.common.service.ReservationBusinessService;
 import com.application.common.web.dto.get.ReservationDTO;
 import com.application.customer.dao.ReservationDAO;
 import com.application.customer.dao.ReservationRequestDAO;
@@ -24,9 +25,11 @@ import com.application.restaurant.web.post.RestaurantNewReservationDTO;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class RestaurantReservationService {
 
     private final ReservationDAO reservationDAO;
@@ -34,15 +37,10 @@ public class RestaurantReservationService {
     private final ServiceDAO serviceDAO;
     private final ClosedDayDAO closedDaysDAO;
 
+    private final ReservationBusinessService reservationBusinessService;
+
     @PersistenceContext
     private EntityManager entityManager;
-
-    public RestaurantReservationService(ReservationDAO reservationDAO, ReservationRequestDAO reservationRequestDAO, ServiceDAO serviceDAO, ClosedDayDAO closedDaysDAO) {
-        this.reservationDAO = reservationDAO;
-        this.reservationRequestDAO = reservationRequestDAO;
-        this.serviceDAO = serviceDAO;
-        this.closedDaysDAO = closedDaysDAO;
-    }
 
     public ReservationDTO createReservation(RestaurantNewReservationDTO reservationDto, Restaurant restaurant) {
         Slot slot = entityManager.getReference(Slot.class, reservationDto.getIdSlot());
@@ -87,10 +85,7 @@ public class RestaurantReservationService {
     }
 
     public void setStatus(Long reservationId, Reservation.Status status) {
-        Reservation reservation = reservationDAO.findById(reservationId)
-                .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
-        reservation.setStatus(status);
-        reservationDAO.save(reservation);
+        reservationBusinessService.setStatus(reservationId, status);
     }
 
     public List<LocalDate> findNotAvailableDays(Long idRestaurant) {
@@ -106,47 +101,25 @@ public class RestaurantReservationService {
                 .map(ReservationDTO::new).collect(Collectors.toList());
     }
 
+    public Collection<ReservationDTO> getPendingReservations(Long restaurantId, LocalDate start, LocalDate end) {
+        return reservationBusinessService.getPendingReservations(restaurantId, start, end);
+    }
+
     public Collection<ReservationDTO> getReservations(Long restaurantId, LocalDate start, LocalDate end) {
-        return reservationDAO.findByRestaurantAndDateBetween(restaurantId, start, end).stream()
-                .map(ReservationDTO::new).collect(Collectors.toList());
+        return reservationBusinessService.getReservations(restaurantId, start, end);
     }
 
     public Collection<ReservationDTO> getAcceptedReservations(Long restaurantId, LocalDate start, LocalDate end) {
-        Reservation.Status status = Reservation.Status.ACCEPTED;
-        return reservationDAO.findByRestaurantAndDateBetweenAndStatus(restaurantId, start, end, status).stream()
-                .map(ReservationDTO::new)
-                .collect(Collectors.toList());
-    }
-
-    public Collection<ReservationDTO> getPendingReservations(Long restaurantId, LocalDate start) {
-        Reservation.Status status = Reservation.Status.NOT_ACCEPTED;
-        return reservationDAO.findByRestaurantAndDateAndStatus(restaurantId, start, status).stream()
-                .map(ReservationDTO::new)
-                .collect(Collectors.toList());
-    }
-
-    public Collection<ReservationDTO> getPendingReservations(Long restaurantId, LocalDate start, LocalDate end) {
-        Reservation.Status status = Reservation.Status.NOT_ACCEPTED;
-        return reservationDAO.findByRestaurantAndDateBetweenAndStatus(restaurantId, start, end, status).stream()
-                .map(ReservationDTO::new)
-                .collect(Collectors.toList());
-    }
-
-    public Collection<ReservationDTO> getPendingReservations(Long restaurantId) {
-        Reservation.Status status = Reservation.Status.NOT_ACCEPTED;
-        return reservationDAO.findByRestaurantIdAndStatus(restaurantId, status).stream()
-                .map(ReservationDTO::new)
-                .collect(Collectors.toList());
+        return reservationBusinessService.getAcceptedReservations(restaurantId, start, end);
     }
 
     public Page<ReservationDTO> getReservationsPageable(Long restaurantId, LocalDate start, LocalDate end, Pageable pageable) {
-        return reservationDAO.findReservationsByRestaurantAndDateRange(restaurantId, start, end, pageable).map(ReservationDTO::new);
+        return reservationBusinessService.getReservationsPageable(restaurantId, start, end, pageable);
     }
 
     public Page<ReservationDTO> getPendingReservationsPageable(Long restaurantId, LocalDate start, LocalDate end,
             Pageable pageable) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getPendingReservationsPageable'");
+        return reservationBusinessService.getPendingReservationsPageable(restaurantId, start, end, pageable);
     }
  
 }

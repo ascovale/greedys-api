@@ -13,19 +13,15 @@ import com.application.restaurant.web.post.NewTableDTO;
 
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class TableService {
     
     private final TableDAO tableDAO;
-
     private final EntityManager entityManager;
-    
-    public TableService(TableDAO tableDAO, EntityManager entityManager) {
-        this.tableDAO = tableDAO;
-        this.entityManager = entityManager;
-    }
 
     public void deleteById(Long id) {
         tableDAO.deleteById(id);
@@ -46,7 +42,8 @@ public class TableService {
     }
 
     public Table findById(Long id) {
-        return tableDAO.findById(id).get();
+        return tableDAO.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Table not found with id: " + id));
     }
 
     public Collection<TableDTO> findByRoom(Long idRoom) {

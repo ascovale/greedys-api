@@ -5,10 +5,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.application.common.mapper.Mapper.Weekday;
-import com.application.common.persistence.model.reservation.Service;
 import com.application.common.persistence.model.reservation.Slot;
 import com.application.common.web.dto.get.SlotDTO;
 import com.application.restaurant.dao.RUserDAO;
@@ -18,18 +17,16 @@ import com.application.restaurant.web.post.NewSlotDTO;
 import com.application.restaurant.web.post.RestaurantNewSlotDTO;
 
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
-@org.springframework.stereotype.Service
+@Service
 @Transactional
+@RequiredArgsConstructor
 public class SlotService {
 
-    @Autowired
-    private SlotDAO slotDAO;
-
-    @Autowired
-    private ServiceDAO serviceDao;
-    @Autowired
-    private RUserDAO RUserDao;
+    private final SlotDAO slotDAO;
+    private final ServiceDAO serviceDao;
+    private final RUserDAO RUserDao;
 
     public Set<Weekday> getAvailableDays(Long idService) {
         return slotDAO.findByService_Id(idService).stream()
@@ -39,10 +36,9 @@ public class SlotService {
 
     @Transactional
     public void addSlot(NewSlotDTO slotDto) {
-        Service service = serviceDao.findById(slotDto.getServiceId()).get();
-        if (service == null) {
-            throw new IllegalArgumentException("Service not found.");
-        }
+        com.application.common.persistence.model.reservation.Service service = serviceDao.findById(slotDto.getServiceId())
+            .orElseThrow(() -> new IllegalArgumentException("Service not found with id: " + slotDto.getServiceId()));
+        
         Slot slot = new Slot();
         slot.setStart(slotDto.getStart());
         slot.setEnd(slotDto.getEnd());
@@ -53,19 +49,22 @@ public class SlotService {
 
     @Transactional
     public void addSlot(Long idRUser, RestaurantNewSlotDTO slotDto) {
-        Long idRestaurant = RUserDao.findById(idRUser).get().getRestaurant().getId();
-        Service service = serviceDao.findById(slotDto.getServiceId()).get();
-        if (service == null) {
-            throw new IllegalArgumentException("Service not found.");
-        }
+        Long idRestaurant = RUserDao.findById(idRUser)
+            .orElseThrow(() -> new IllegalArgumentException("RUser not found with id: " + idRUser))
+            .getRestaurant().getId();
+            
+        com.application.common.persistence.model.reservation.Service service = serviceDao.findById(slotDto.getServiceId())
+            .orElseThrow(() -> new IllegalArgumentException("Service not found with id: " + slotDto.getServiceId()));
+            
         if (!service.getRestaurant().getId().equals(idRestaurant)) {
             throw new IllegalArgumentException("Service does not belong to the specified restaurant.");
         }
+        
         Slot slot = new Slot();
         slot.setStart(slotDto.getStart());
         slot.setEnd(slotDto.getEnd());
         slot.setWeekday(slotDto.getWeekday());
-        slot.setService(serviceDao.findById(slotDto.getServiceId()).get());
+        slot.setService(service);
         slotDAO.save(slot);
     }
 
@@ -80,7 +79,9 @@ public class SlotService {
     }
 
     public SlotDTO findById(Long id) {
-        return new SlotDTO(slotDAO.findById(id).get());
+        return slotDAO.findById(id)
+            .map(SlotDTO::new)
+            .orElseThrow(() -> new IllegalArgumentException("Slot not found with id: " + id));
     }
 
     public boolean cancelSlot(Long id, Long slotId) {

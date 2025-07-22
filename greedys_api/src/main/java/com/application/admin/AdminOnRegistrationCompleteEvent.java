@@ -6,6 +6,9 @@ import org.springframework.context.ApplicationEvent;
 
 import com.application.admin.model.Admin;
 
+import lombok.Getter;
+
+@Getter
 public class AdminOnRegistrationCompleteEvent extends ApplicationEvent {
 
     private final String appUrl;
@@ -17,18 +20,6 @@ public class AdminOnRegistrationCompleteEvent extends ApplicationEvent {
         this.admin = registered;
         this.locale = locale;
         this.appUrl = appUrl;
-    }
-
-    public String getAppUrl() {
-        return appUrl;
-    }
-
-    public Locale getLocale() {
-        return locale;
-    }
-
-    public Admin getAdmin() {
-        return admin;
     }
 
 }

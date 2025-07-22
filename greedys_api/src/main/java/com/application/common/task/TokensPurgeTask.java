@@ -4,7 +4,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,33 +15,33 @@ import com.application.customer.dao.VerificationTokenDAO;
 import com.application.restaurant.dao.RUserPasswordResetTokenDAO;
 import com.application.restaurant.dao.RUserVerificationTokenDAO;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 @Service
 @Transactional
+@RequiredArgsConstructor
+@Slf4j
 public class TokensPurgeTask {
     
     // Customer tokens (nomi originali)
-    @Autowired
-    VerificationTokenDAO tokenRepository;
+    private final VerificationTokenDAO tokenRepository;
 
-    @Autowired
-    PasswordResetTokenDAO passwordTokenRepository;
+    private final PasswordResetTokenDAO passwordTokenRepository;
     
     // Admin tokens
-    @Autowired
-    AdminVerificationTokenDAO adminVerificationTokenRepository;
+    private final AdminVerificationTokenDAO adminVerificationTokenRepository;
     
-    @Autowired
-    AdminPasswordResetTokenDAO adminPasswordTokenRepository;
+    private final AdminPasswordResetTokenDAO adminPasswordTokenRepository;
     
     // Restaurant tokens
-    @Autowired
-    RUserVerificationTokenDAO restaurantVerificationTokenRepository;
+    private final RUserVerificationTokenDAO restaurantVerificationTokenRepository;
     
-    @Autowired
-    RUserPasswordResetTokenDAO restaurantPasswordTokenRepository;
+    private final RUserPasswordResetTokenDAO restaurantPasswordTokenRepository;
 
     @Scheduled(cron = "${purge.cron.expression}")
     public void purgeExpired() {
+        log.info("Starting token purge task");
         LocalDate nowDate = LocalDate.from(Instant.now());
         LocalDateTime nowDateTime = LocalDateTime.now();
         
@@ -57,5 +56,7 @@ public class TokensPurgeTask {
         // Purge restaurant tokens (LocalDateTime)
         restaurantPasswordTokenRepository.deleteAllExpiredSince(nowDateTime);
         restaurantVerificationTokenRepository.deleteAllExpiredSince(nowDateTime);
+        
+        log.info("Token purge task completed successfully");
     }
 }

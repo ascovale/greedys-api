@@ -4,9 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,23 +15,22 @@ import com.application.admin.model.AdminPrivilege;
 import com.application.admin.model.AdminRole;
 import com.application.admin.service.AdminService;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 @Component
+@RequiredArgsConstructor
+@Slf4j
 public class AdminSetup {
 
-    @Autowired
-    private AdminPrivilegeDAO adminPrivilegeDAO;
-    @Autowired
-    private AdminRoleDAO adminRoleDAO;
-    @Autowired
-    private AdminDAO adminDAO;
-    @Autowired
-    private AdminService adminService;
-
-    private static final Logger logger = LoggerFactory.getLogger(AdminSetup.class);
+    private final AdminPrivilegeDAO adminPrivilegeDAO;
+    private final AdminRoleDAO adminRoleDAO;
+    private final AdminDAO adminDAO;
+    private final AdminService adminService;
 
     @Transactional
     public void setupAdminRolesAndPrivileges() {
-        logger.info(">>> --- Admin Setup --- <<<");
+        log.info(">>> --- Admin Setup --- <<<");
         final AdminPrivilege adminReservationCustomerWrite = createAdminPrivilegeIfNotFound("PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_WRITE");
         final AdminPrivilege adminReservationCustomerRead = createAdminPrivilegeIfNotFound("PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_READ");
         final AdminPrivilege adminReservationRestaurantWrite = createAdminPrivilegeIfNotFound("PRIVILEGE_ADMIN_RESERVATION_RESTAURANT_WRITE");
@@ -63,20 +59,20 @@ public class AdminSetup {
             adminReservationCustomerWrite, adminReservationRestaurantWrite,
             adminRUserWrite, adminRestaurantWrite,
             adminCustomerWrite)));
-        logger.info(">>> --- Admin Setup finished --- <<<");
+        log.info(">>> --- Admin Setup finished --- <<<");
     }
 
     @Transactional
     public void createSomeAdmin() {
-        logger.info(">>> --- Creating Admin --- <<<");
+        log.info(">>> --- Creating Admin --- <<<");
 
         Admin existingAdmin = adminDAO.findByEmail("ascolesevalentino@gmail.com");
         if (existingAdmin != null) {
-            logger.info("Admin with email ascolesevalentino@gmail.com already exists.");
+            log.info("Admin with email ascolesevalentino@gmail.com already exists.");
             return;
         }
 
-        logger.info("Creating admin Valentino Ascolese");
+        log.info("Creating admin Valentino Ascolese");
         Admin admin = Admin.builder()
             .email("ascolesevalentino@gmail.com")
             .name("Valentino")
@@ -86,7 +82,7 @@ public class AdminSetup {
             .build();
         admin = adminDAO.save(admin);
 
-        logger.info("Creating admin Matteo Rossi");
+        log.info("Creating admin Matteo Rossi");
         Admin admin2 = Admin.builder()
             .email("matteo.rossi1902@gmail.com")
             .name("Matteo")
@@ -121,7 +117,7 @@ public class AdminSetup {
     
     @Transactional
     public void adminSetup() {
-        logger.info(">>> --- Admin Setup --- <<<");
+        log.info(">>> --- Admin Setup --- <<<");
         final AdminPrivilege adminReservationCustomerWrite = createAdminPrivilegeIfNotFound("PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_WRITE");
         final AdminPrivilege adminReservationCustomerRead = createAdminPrivilegeIfNotFound("PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_READ");
         final AdminPrivilege adminReservationRestaurantWrite = createAdminPrivilegeIfNotFound("PRIVILEGE_ADMIN_RESERVATION_RESTAURANT_WRITE");
@@ -150,6 +146,6 @@ public class AdminSetup {
             adminReservationCustomerWrite, adminReservationRestaurantWrite,
             adminRUserWrite, adminRestaurantWrite,
             adminCustomerWrite)));
-        logger.info(">>> --- Admin Setup finished --- <<<");
+        log.info(">>> --- Admin Setup finished --- <<<");
     }
 }

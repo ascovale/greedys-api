@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.application.common.controller.utils.ControllerUtils;
 import com.application.common.web.dto.get.DishDTO;
 import com.application.common.web.dto.get.MenuDTO;
+import com.application.restaurant.controller.utils.RestaurantControllerUtils;
 import com.application.restaurant.service.RestaurantMenuService;
 import com.application.restaurant.web.post.NewDishDTO;
 import com.application.restaurant.web.post.NewMenuDTO;
@@ -44,7 +44,7 @@ public class RestaurantMenuController {
     })
     @GetMapping("/all")
     public Collection<MenuDTO> getRestaurantMenus() {
-        return restaurantMenuService.getMenusByRestaurant(ControllerUtils.getCurrentRestaurant().getId());
+        return restaurantMenuService.getMenusByRestaurant(RestaurantControllerUtils.getCurrentRestaurant().getId());
     }
 
     @Operation(summary = "Get dishes of a menu", description = "Retrieve all dishes of a specific menu")
@@ -81,7 +81,7 @@ public class RestaurantMenuController {
     })
     @GetMapping("/dishes/all")
     public Collection<DishDTO> getDishes() {
-        return restaurantMenuService.getDishesByRestaurant(ControllerUtils.getCurrentRestaurant().getId());
+        return restaurantMenuService.getDishesByRestaurant(RestaurantControllerUtils.getCurrentRestaurant().getId());
     }
 
     @Operation(summary = "Create a menu", description = "Create a new menu for the current restaurant")

@@ -4,7 +4,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,12 +14,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.application.admin.service.AdminCustomerService;
 import com.application.common.service.AllergyService;
 import com.application.common.web.dto.get.CustomerDTO;
 import com.application.common.web.dto.post.NewAllergyDTO;
 import com.application.common.web.util.GenericResponse;
 import com.application.customer.model.Customer;
-import com.application.customer.service.CustomerService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -39,7 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class AdminCustomerController {
-    private final CustomerService customerService;
+    private final AdminCustomerService customerService;
     private final AllergyService allergyService;
 
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_WRITE')")
@@ -90,13 +89,6 @@ public class AdminCustomerController {
     public GenericResponse enableCustomer(@PathVariable Long customerId) {
         customerService.updateCustomerStatus(customerId,Customer.Status.ENABLED);
         return new GenericResponse("User enabled successfully");
-    }
-
-    @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_READ')")
-    @GetMapping("/customers")
-    public String listUsers(Model model) {
-        model.addAttribute("users", customerService.findAll());
-        return "users";
     }
 
     //TODO: Da verificare inserendo tanti utenti

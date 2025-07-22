@@ -11,35 +11,37 @@ import org.springframework.stereotype.Component;
 import com.application.restaurant.dao.RUserDAO;
 import com.application.restaurant.model.user.RUser;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Component
+@Slf4j
 public class RUserAuthenticationProvider extends DaoAuthenticationProvider {
     @Autowired
-    private RUserDAO userRepository;
+    private RUserDAO rUserDAO;
 
     @Override
     public Authentication authenticate(Authentication auth) throws AuthenticationException {
         if (auth.getDetails() instanceof RUserAuthenticationDetails) {
             RUserAuthenticationDetails details = (RUserAuthenticationDetails) auth.getDetails();
             if (details.isBypassPasswordCheck()) {
-                System.out.println("\n\n\n\n>>>>>>>>>>>> Entering RUserAuthenticationProvider.authenticate method");
-                System.out.println("Authenticating user with email:restaurantId : " + auth.getName());
-                System.out.println("Details: " + details);
-                System.out.println("Credentials: " + auth.getCredentials());
+                log.debug("Entering RUserAuthenticationProvider.authenticate method");
+                log.debug("Authenticating user with email:restaurantId: {}", auth.getName());
+                log.debug("Details: {}", details);
 
-                RUser user = userRepository.findByEmailAndRestaurantId(details.getEmail(), details.getRestaurantId());
+                RUser user = rUserDAO.findByEmailAndRestaurantId(details.getEmail(), details.getRestaurantId());
                 if (user == null) {
                     throw new BadCredentialsException("Invalid username or restaurant ID");
                 }
                 final Authentication result = super.authenticate(auth);
                 UsernamePasswordAuthenticationToken u = new UsernamePasswordAuthenticationToken(user, result.getCredentials(), result.getAuthorities());
 
-                System.out.println("Andato!\n\n\n");
+                log.debug("Authentication successful");
                 return u;
             }
         }
 
-        System.out.println("\n\n\n\n>>>>>>>>>>>> Entering RUserAuthenticationProvider.authenticate method");
-        System.out.println("Authenticating user with email:restaurantId : " + auth.getName());
+        log.debug("Entering RUserAuthenticationProvider.authenticate method");
+        log.debug("Authenticating user with email:restaurantId: {}", auth.getName());
 
         // Split the username into email and restaurantId
         String[] parts = auth.getName().split(":");
@@ -55,14 +57,14 @@ public class RUserAuthenticationProvider extends DaoAuthenticationProvider {
             throw new BadCredentialsException("Invalid restaurantId format.");
         }
 
-        final RUser user = userRepository.findByEmailAndRestaurantId(email, restaurantId);
+        final RUser user = rUserDAO.findByEmailAndRestaurantId(email, restaurantId);
 
         if (user == null) {
-            System.out.println("User not found for email: " + email + " and restaurantId: " + restaurantId);
+            log.debug("User not found for email: {} and restaurantId: {}", email, restaurantId);
             throw new BadCredentialsException("Invalid username or password");
         }
 
-        System.out.println("User found: " + user.getEmail());
+        log.debug("User found: {}", user.getEmail());
 
         // Verifica esplicita della password
         if (!getPasswordEncoder().matches(auth.getCredentials().toString(), user.getPassword())) {
@@ -71,7 +73,7 @@ public class RUserAuthenticationProvider extends DaoAuthenticationProvider {
 
         // Procedi con l'autenticazione standard
         final Authentication result = super.authenticate(auth);
-        System.out.println("\n\n\nAuthentication result: " + result);
+        log.debug("Authentication successful for user: {}", user.getEmail());
         return new UsernamePasswordAuthenticationToken(user, result.getCredentials(), result.getAuthorities());
     }
 

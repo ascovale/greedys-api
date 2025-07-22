@@ -18,10 +18,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.application.common.controller.utils.ControllerUtils;
 import com.application.common.web.dto.get.RUserDTO;
 import com.application.common.web.error.InvalidOldPasswordException;
 import com.application.common.web.util.GenericResponse;
+import com.application.restaurant.controller.utils.RestaurantControllerUtils;
 import com.application.restaurant.dao.RestaurantRoleDAO;
 import com.application.restaurant.model.user.RUser;
 import com.application.restaurant.service.RUserService;
@@ -122,7 +122,7 @@ public class RUserController {
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_MANAGER_WRITE')")
     @DeleteMapping(value = "/disable_user/{RUserId}")
     public ResponseEntity<Void> disableRUser(@PathVariable Long RUserId) {
-        RUserService.disableRUser(ControllerUtils.getCurrentRUser().getId(), RUserId);
+        RUserService.disableRUser(RestaurantControllerUtils.getCurrentRUser().getId(), RUserId);
         return ResponseEntity.ok().build();
     }
 

@@ -4,8 +4,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.UUID;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,14 +33,13 @@ import com.application.customer.web.post.NewCustomerDTO;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Transactional
+@Slf4j
 public class CustomerAuthenticationService {
 	//TODO perchè non c'è l'admin AuthenticationService?
-
-
-	private final Logger logger = LoggerFactory.getLogger(getClass());
 
 
 	public static final String TOKEN_INVALID = "invalidToken";
@@ -62,15 +59,13 @@ public class CustomerAuthenticationService {
 	private final AuthenticationManager authenticationManager;
 	private final JwtUtil jwtUtil; 
 
-	
 	public CustomerAuthenticationService(CustomerDAO customerDAO, VerificationTokenDAO tokenDAO,
 			PasswordResetTokenDAO passwordTokenRepository,
 			PasswordEncoder passwordEncoder,
 			RoleDAO roleRepository,
-            @Qualifier("customerAuthenticationManager") AuthenticationManager authenticationManager,
+			@Qualifier("customerAuthenticationManager") AuthenticationManager authenticationManager,
 			JwtUtil jwtUtil,
-			GoogleAuthService googleAuthService
-	) {
+			GoogleAuthService googleAuthService) {
 		this.customerDAO = customerDAO;
 		this.tokenDAO = tokenDAO;
 		this.passwordTokenRepository = passwordTokenRepository;
@@ -83,29 +78,29 @@ public class CustomerAuthenticationService {
 
 	public ResponseEntity<?> login(AuthRequestDTO authenticationRequest) {
         
-        logger.debug("Authentication request received for username: {}", authenticationRequest.getUsername());
+        log.debug("Authentication request received for username: {}", authenticationRequest.getUsername());
 
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(),
                             authenticationRequest.getPassword()));
 
-            logger.debug("Authentication successful for username: {}", authenticationRequest.getUsername());
+            log.debug("Authentication successful for username: {}", authenticationRequest.getUsername());
 
             final Customer customerDetails = customerDAO.findByEmail(authenticationRequest.getUsername());
             if (customerDetails == null) {
-                logger.warn("No customer found with email: {}", authenticationRequest.getUsername());
+                log.warn("No customer found with email: {}", authenticationRequest.getUsername());
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
             }
 
             final String jwt = jwtUtil.generateToken(customerDetails);
-            logger.debug("JWT generated for username: {}", authenticationRequest.getUsername());
+            log.debug("JWT generated for username: {}", authenticationRequest.getUsername());
 
             final AuthResponseDTO responseDTO = new AuthResponseDTO(jwt, new CustomerDTO(customerDetails));
             return ResponseEntity.ok(responseDTO);
 
         } catch (Exception e) {
-            logger.error("Authentication failed for username: {}. Error: {}", authenticationRequest.getUsername(), e.getMessage(), e);
+            log.error("Authentication failed for username: {}. Error: {}", authenticationRequest.getUsername(), e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed");
         }
     }
@@ -127,7 +122,7 @@ public class CustomerAuthenticationService {
 					jwtUtil::generateToken
 					);
 		} catch (Exception e) {
-			logger.error("Google authentication failed: {}", e.getMessage(), e);
+			log.error("Google authentication failed: {}", e.getMessage(), e);
 			throw new RuntimeException("Google authentication failed: " + e.getMessage());
 		}
 	}

@@ -11,21 +11,16 @@ import com.application.restaurant.dao.RUserDAO;
 import com.application.restaurant.model.user.RUser;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 
 @Service("RUserDetailsService")
 @Transactional
+@RequiredArgsConstructor
 public class RUserDetailsService implements UserDetailsService {
 
     private final RUserDAO RUserDAO;
     private final LoginAttemptService loginAttemptService;
     private final HttpServletRequest request;
-
-    public RUserDetailsService(RUserDAO RUserDAO, LoginAttemptService loginAttemptService,
-            HttpServletRequest request) {
-        this.RUserDAO = RUserDAO;
-        this.loginAttemptService = loginAttemptService;
-        this.request = request;
-    }
 
     @Override
     public UserDetails loadUserByUsername(final String username) {

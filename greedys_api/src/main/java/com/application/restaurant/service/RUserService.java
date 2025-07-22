@@ -5,13 +5,10 @@ import java.util.List;
 import java.util.UUID;
 
 import org.hibernate.Hibernate;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.application.common.jwt.JwtUtil;
 import com.application.common.service.EmailService;
 import com.application.common.web.dto.get.RUserDTO;
 import com.application.restaurant.dao.RUserDAO;
@@ -19,7 +16,6 @@ import com.application.restaurant.dao.RUserHubDAO;
 import com.application.restaurant.dao.RUserPasswordResetTokenDAO;
 import com.application.restaurant.dao.RUserVerificationTokenDAO;
 import com.application.restaurant.dao.RestaurantDAO;
-import com.application.restaurant.dao.RestaurantPrivilegeDAO;
 import com.application.restaurant.dao.RestaurantRoleDAO;
 import com.application.restaurant.model.Restaurant;
 import com.application.restaurant.model.user.RUser;
@@ -27,51 +23,30 @@ import com.application.restaurant.model.user.RUserHub;
 import com.application.restaurant.model.user.RUserPasswordResetToken;
 import com.application.restaurant.model.user.RUserVerificationToken;
 import com.application.restaurant.model.user.RestaurantRole;
-import com.application.restaurant.service.security.RUserDetailsService;
 import com.application.restaurant.web.post.NewRUserDTO;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class RUserService {
 
     public static final String TOKEN_INVALID = "invalidToken";
     public static final String TOKEN_EXPIRED = "expired";
     public static final String TOKEN_VALID = "valid";
 
-    public static String QR_PREFIX = "https://chart.googleapis.com/chart?chs=200x200&chld=M%%7C0&cht=qr&chl=";
-    public static String APP_NAME = "SpringRegistration";
+    public static final String QR_PREFIX = "https://chart.googleapis.com/chart?chs=200x200&chld=M%%7C0&cht=qr&chl=";
+    public static final String APP_NAME = "SpringRegistration";
 
-    private RUserVerificationTokenDAO tokenDAO;
-    private EmailService emailService;
-    private RUserDAO ruDAO;
-    private RestaurantDAO restaurantDAO;
-    private RestaurantRoleDAO rrDAO;
-    private RUserHubDAO ruhDAO;
-    private PasswordEncoder passwordEncoder;
+    private final RUserVerificationTokenDAO tokenDAO;
+    private final EmailService emailService;
+    private final RUserDAO ruDAO;
+    private final RestaurantDAO restaurantDAO;
+    private final RestaurantRoleDAO rrDAO;
+    private final RUserHubDAO ruhDAO;
+    private final PasswordEncoder passwordEncoder;
     private final RUserPasswordResetTokenDAO passwordTokenRepository;
-
-    public RUserService(
-            RUserVerificationTokenDAO tokenDAO,
-            RUserDetailsService userDetailsService,
-            EmailService emailService,
-            RUserDAO ruDAO,
-            RestaurantDAO restaurantDAO,
-            RestaurantRoleDAO rrDAO,
-            RestaurantPrivilegeDAO rpDAO,
-            PasswordEncoder passwordEncoder,
-            RUserHubDAO ruhDAO,
-            RUserPasswordResetTokenDAO passwordTokenRepository,
-            @Qualifier("restaurantAuthenticationManager") AuthenticationManager authenticationManager,
-            JwtUtil jwtUtil) {
-        this.tokenDAO = tokenDAO;
-        this.emailService = emailService;
-        this.ruDAO = ruDAO;
-        this.restaurantDAO = restaurantDAO;
-        this.rrDAO = rrDAO;
-        this.passwordEncoder = passwordEncoder;
-        this.passwordTokenRepository = passwordTokenRepository;
-        this.ruhDAO = ruhDAO;
-    }
 
     // TODO QUANDO CREO UN UTENTE DEVO SPECIFICARE IL RUOLO CHE HA NEL RISTORANTE
     // TODO Io farei che l'user può essere creato nello stesso tempo
@@ -139,7 +114,8 @@ public class RUserService {
 
 
         System.out.println("Registering restaurant user with information:" + RUserDTO.getRestaurantId() + " ");
-        RestaurantRole role = rrDAO.findById(RUserDTO.getRoleId()).get();
+        RestaurantRole role = rrDAO.findById(RUserDTO.getRoleId())
+            .orElseThrow(() -> new IllegalArgumentException("Role not found with id: " + RUserDTO.getRoleId()));
 
         // Check if a user with the same email already exists
         RUserHub existingUserHub = ruhDAO.findByEmail(RUserDTO.getEmail());
@@ -239,11 +215,14 @@ public class RUserService {
     }
 
     public boolean checkIfValidOldPassword(final Long id, final String oldPassword) {
-        return passwordEncoder.matches(oldPassword, ruDAO.findById(id).get().getPassword());
+        RUser user = ruDAO.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + id));
+        return passwordEncoder.matches(oldPassword, user.getPassword());
     }
 
     public void changeRUserPassword(final Long id, final String password) {
-        final RUser ru = ruDAO.findById(id).get();
+        final RUser ru = ruDAO.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + id));
         ru.getRUserHub().setPassword(passwordEncoder.encode(password));
         ruDAO.save(ru);
     }

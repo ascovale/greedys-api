@@ -11,6 +11,7 @@ import com.application.common.persistence.model.reservation.Reservation;
 import com.application.common.persistence.model.reservation.Reservation.Status;
 import com.application.common.persistence.model.reservation.ReservationRequest;
 import com.application.common.persistence.model.reservation.Slot;
+import com.application.common.service.reservation.ReservationService;
 import com.application.common.web.dto.get.ReservationDTO;
 import com.application.customer.dao.ReservationDAO;
 import com.application.customer.dao.ReservationRequestDAO;
@@ -19,21 +20,19 @@ import com.application.customer.web.post.CustomerNewReservationDTO;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class CustomerReservationService {
 
     private final ReservationDAO reservationDAO;
     private final ReservationRequestDAO reservationRequestDAO;
+    private final ReservationService reservationService;
 
     @PersistenceContext
     private EntityManager entityManager;
-
-    public CustomerReservationService(ReservationDAO reservationDAO, ReservationRequestDAO reservationRequestDAO) {
-        this.reservationDAO = reservationDAO;
-        this.reservationRequestDAO = reservationRequestDAO;
-    }
 
 
 
@@ -54,7 +53,8 @@ public class CustomerReservationService {
                 .status(Reservation.Status.ACCEPTED)
                 .build();
         
-        reservationDAO.save(reservation);
+        // 🎯 USA IL SERVICE COMUNE CHE PUBBLICA L'EVENTO
+        reservationService.createNewReservation(reservation);
     }
 
     @Transactional

@@ -3,7 +3,6 @@ package com.application.restaurant.service.security;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -17,13 +16,15 @@ import com.application.restaurant.dao.RUserPasswordResetTokenDAO;
 import com.application.restaurant.model.user.RUser;
 import com.application.restaurant.model.user.RUserPasswordResetToken;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
 @Transactional
 @Qualifier("RUserSecurityService")
+@RequiredArgsConstructor
 public class RUserSecurityService implements ISecurityUserService {
 
-    @Autowired
-    private RUserPasswordResetTokenDAO passwordTokenRepository;
+    private final RUserPasswordResetTokenDAO passwordTokenRepository;
 
     // API
     @Override

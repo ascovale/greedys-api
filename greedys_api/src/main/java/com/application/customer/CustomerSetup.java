@@ -5,9 +5,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.hibernate.Hibernate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,23 +17,22 @@ import com.application.customer.model.Role;
 import com.application.customer.service.authentication.CustomerAuthenticationService;
 import com.application.customer.web.post.NewCustomerDTO;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 @Component
+@RequiredArgsConstructor
+@Slf4j
 public class CustomerSetup {
 
-    @Autowired
-    private PrivilegeDAO privilegeDAO;
-    @Autowired
-    private RoleDAO roleDAO;
-    @Autowired
-    private CustomerDAO userDAO;
-    @Autowired
-    private CustomerAuthenticationService userService;
-
-    private static final Logger logger = LoggerFactory.getLogger(CustomerSetup.class);
+    private final PrivilegeDAO privilegeDAO;
+    private final RoleDAO roleDAO;
+    private final CustomerDAO userDAO;
+    private final CustomerAuthenticationService userService;
 
     @Transactional
     public void setupCustomerRolesAndPrivileges() {
-        logger.info(">>> --- Customer Setup --- <<<");
+        log.info(">>> --- Customer Setup --- <<<");
         final Privilege ureadPrivilege = createPrivilegeIfNotFound("READ_PRIVILEGE");
         final Privilege uwritePrivilege = createPrivilegeIfNotFound("WRITE_PRIVILEGE");
         final Privilege upasswordPrivilege = createPrivilegeIfNotFound("CHANGE_PASSWORD_PRIVILEGE");
@@ -45,20 +41,20 @@ public class CustomerSetup {
         final List<Privilege> userPrivileges = new ArrayList<>(Arrays.asList(ureadPrivilege, upasswordPrivilege));
         createRoleIfNotFound("ROLE_PREMIUM_USER", new ArrayList<>(uadminPrivileges));
         createRoleIfNotFound("ROLE_USER", new ArrayList<>(userPrivileges));
-        logger.info(">>> --- Customer Setup finished --- <<<");
+        log.info(">>> --- Customer Setup finished --- <<<");
     }
 
     @Transactional
     public void createSomeCustomer() {
-        logger.info(">>> --- Creating customer --- <<<");
+        log.info(">>> --- Creating customer --- <<<");
         Customer existingCustomer = userDAO.findByEmail("info@lasoffittarenovatio.it");
         if (existingCustomer != null) {
-            logger.info("Customer with email info@lasoffittarenovatio.it already exists.");
+            log.info("Customer with email info@lasoffittarenovatio.it already exists.");
             return;
         }
 
         try {
-            logger.info("Creating customer Stefano Di Michele");
+            log.info("Creating customer Stefano Di Michele");
             NewCustomerDTO newUser = NewCustomerDTO.builder()
                 .firstName("Stefano")
                 .lastName("Di Michele")
@@ -78,7 +74,7 @@ public class CustomerSetup {
                 userDAO.save(user);
             }
         } catch (Exception e) {
-            logger.error("Error creating customer account or assigning roles", e);
+            log.error("Error creating customer account or assigning roles", e);
         }
     }
 
@@ -105,7 +101,7 @@ public class CustomerSetup {
 
     
     public void customerSetup() {
-        logger.info(">>> --- Customer Setup --- <<<");
+        log.info(">>> --- Customer Setup --- <<<");
         final Privilege ureadPrivilege = createPrivilegeIfNotFound("READ_PRIVILEGE");
         final Privilege uwritePrivilege = createPrivilegeIfNotFound("WRITE_PRIVILEGE");
         final Privilege upasswordPrivilege = createPrivilegeIfNotFound("CHANGE_PASSWORD_PRIVILEGE");
@@ -114,7 +110,7 @@ public class CustomerSetup {
         final List<Privilege> userPrivileges = new ArrayList<>(Arrays.asList(ureadPrivilege, upasswordPrivilege));
         createRoleIfNotFound("ROLE_PREMIUM_USER", new ArrayList<>(uadminPrivileges));
         createRoleIfNotFound("ROLE_USER", new ArrayList<>(userPrivileges));
-        logger.info(">>> --- Customer Setup finished --- <<<");
+        log.info(">>> --- Customer Setup finished --- <<<");
     }
 
 

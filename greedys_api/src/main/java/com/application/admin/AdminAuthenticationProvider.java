@@ -1,4 +1,4 @@
-package com.application.admin.service.security;
+package com.application.admin;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -10,23 +10,31 @@ import org.springframework.stereotype.Component;
 
 import com.application.admin.dao.AdminDAO;
 import com.application.admin.model.Admin;
+import com.application.admin.service.security.AdminUserDetailsService;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Component
+@Slf4j
 public class AdminAuthenticationProvider extends DaoAuthenticationProvider {
 
     @Autowired
-    private AdminDAO userRepository;
+    private AdminDAO adminDAO;
+
+    public AdminAuthenticationProvider(AdminUserDetailsService userDetailsService) {
+        setUserDetailsService(userDetailsService);
+    }
 
     @Override
     public Authentication authenticate(Authentication auth) throws AuthenticationException {
-        final Admin user = userRepository.findByEmail(auth.getName());
+        final Admin user = adminDAO.findByEmail(auth.getName());
         if (user == null) {
             throw new BadCredentialsException("Invalid username or password");
         }
 
         // Verifica esplicita della password
         if (!getPasswordEncoder().matches(auth.getCredentials().toString(), user.getPassword())) {
-            System.out.println("\n\n\\n\n\nPassword non corrisponde: " + auth.getCredentials().toString() + " != " + user.getPassword());
+            log.debug("Password non corrisponde per l'utente: {}", auth.getName());
             throw new BadCredentialsException("Invalid username or password");
         }
 
@@ -36,7 +44,7 @@ public class AdminAuthenticationProvider extends DaoAuthenticationProvider {
             return new UsernamePasswordAuthenticationToken(user, result.getCredentials(), result.getAuthorities());
         } catch (AuthenticationException e) {
             // Cattura e stampa il motivo dell'errore
-            System.err.println("Errore durante l'autenticazione: " + e.getMessage());
+            log.error("Errore durante l'autenticazione per l'utente {}: {}", auth.getName(), e.getMessage());
             throw e;
         }
     }

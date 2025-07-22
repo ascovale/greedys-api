@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.application.common.controller.utils.ControllerUtils;
+import com.application.restaurant.controller.utils.RestaurantControllerUtils;
 import com.application.restaurant.service.SlotService;
 import com.application.restaurant.web.post.NewSlotDTO;
 import com.application.restaurant.web.post.RestaurantNewSlotDTO;
@@ -39,7 +39,7 @@ public class RestaurantSlotController {
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SLOT_WRITE')")
     @PostMapping("/new")
     public ResponseEntity<String> newSlot( @RequestBody RestaurantNewSlotDTO slotDto) {
-        slotService.addSlot(ControllerUtils.getCurrentRUser().getId(),slotDto);
+        slotService.addSlot(RestaurantControllerUtils.getCurrentRUser().getId(),slotDto);
         return ResponseEntity.ok().body("success");
     }
 
@@ -50,7 +50,7 @@ public class RestaurantSlotController {
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SLOT_WRITE')")
     @DeleteMapping("/cancel/{slotId}")
     public ResponseEntity<String> cancelSlot(@PathVariable Long slotId) {
-        boolean isCanceled = slotService.cancelSlot(ControllerUtils.getCurrentRUser().getId(), slotId);
+        boolean isCanceled = slotService.cancelSlot(RestaurantControllerUtils.getCurrentRUser().getId(), slotId);
         if (isCanceled) {
             return ResponseEntity.ok().body("Slot canceled successfully");
         } else {

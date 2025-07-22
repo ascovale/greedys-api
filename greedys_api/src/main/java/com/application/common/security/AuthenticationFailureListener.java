@@ -1,19 +1,18 @@
 package com.application.common.security;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.security.authentication.event.AuthenticationFailureBadCredentialsEvent;
 import org.springframework.stereotype.Component;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 
 @Component
+@RequiredArgsConstructor
 public class AuthenticationFailureListener implements ApplicationListener<AuthenticationFailureBadCredentialsEvent> {
-    @Autowired
-    private HttpServletRequest request;
+    private final HttpServletRequest request;
 
-    @Autowired
-    private LoginAttemptService loginAttemptService;
+    private final LoginAttemptService loginAttemptService;
 
     @Override
     public void onApplicationEvent(final AuthenticationFailureBadCredentialsEvent e) {

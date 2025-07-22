@@ -1,11 +1,8 @@
-package com.application.common.dataloader;
+package com.application.spring.dataloader;
 
 import java.util.Arrays;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
@@ -19,28 +16,26 @@ import com.application.common.web.dto.post.NewAllergyDTO;
 import com.application.customer.CustomerSetup;
 import com.application.restaurant.RestaurantDataLoader;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 @Component
+@RequiredArgsConstructor
+@Slf4j
 public class SetupDataLoader implements ApplicationListener<ContextRefreshedEvent> {
 
-    @Autowired
-    private SetupConfigDAO setupConfigDAO;
-    @Autowired
-    private AdminSetup adminSetup;
-    @Autowired
-    private CustomerSetup customerSetup;
-    @Autowired
-    private RestaurantDataLoader restaurantDataLoader;
-    @Autowired
-    private AllergyService allergyService;
-
-    static final Logger logger = LoggerFactory.getLogger(SetupDataLoader.class);
+    private final SetupConfigDAO setupConfigDAO;
+    private final AdminSetup adminSetup;
+    private final CustomerSetup customerSetup;
+    private final RestaurantDataLoader restaurantDataLoader;
+    private final AllergyService allergyService;
 
     @Override
     @Transactional
     public void onApplicationEvent(final ContextRefreshedEvent event) {
         SetupConfig setupConfig = setupConfigDAO.findById(1L).orElse(new SetupConfig());
         if (!setupConfig.isAlreadySetup()) {
-            logger.info(">>> --- Setup started --- <<<");
+            log.info(">>> --- Setup started --- <<<");
             setupConfig.setId(1L);
             setupConfig.setAlreadySetup(true);
             setupConfigDAO.save(setupConfig);
@@ -48,10 +43,10 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
             adminSetup.setupAdminRolesAndPrivileges();
             customerSetup.setupCustomerRolesAndPrivileges();
             restaurantDataLoader.createRestaurantPrivilegesAndRoles();
-            logger.info(">>> --- Setup finished --- <<<");
+            log.info(">>> --- Setup finished --- <<<");
         }
         if (!setupConfig.isDataUploaded()) {
-            logger.info(">>> --- Creating Test data --- <<<");
+            log.info(">>> --- Creating Test data --- <<<");
             setupConfig.setAlreadySetup(true);
             setupConfig.setDataUploaded(true);
             adminSetup.createSomeAdmin();
@@ -60,7 +55,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
             restaurantDataLoader.createRestaurantCategories();
             restaurantDataLoader.createRestaurantLaSoffittaRenovatio();
             restaurantDataLoader.assignCategoriesToLaSoffittaRenovatio();
-            logger.info("    >>>  ---   Test data Created   ---  <<< ");
+            log.info("    >>>  ---   Test data Created   ---  <<< ");
         }
     }
 
@@ -68,11 +63,11 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
     private void createAllergies() {
         SetupConfig setupConfig = setupConfigDAO.findById(1L).orElse(new SetupConfig());
         if (setupConfig.isDataUploaded()) {
-            logger.info(">>> --- Allergies already created, skipping --- <<<");
+            log.info(">>> --- Allergies already created, skipping --- <<<");
             return;
         }
 
-        logger.info(">>> --- Creating Allergies --- <<<");
+        log.info(">>> --- Creating Allergies --- <<<");
         List<NewAllergyDTO> allergies = Arrays.asList(
             new NewAllergyDTO("Cereals", "Includes wheat, rye, barley, oats, and foods like bread, pasta, and cereals."),
             new NewAllergyDTO("Shellfish", "Includes shrimp, crab, lobster, and other crustaceans."),
@@ -105,7 +100,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 
         setupConfig.setDataUploaded(true);
         setupConfigDAO.save(setupConfig);
-        logger.info(">>> --- Allergies Created --- <<<");
+        log.info(">>> --- Allergies Created --- <<<");
     }
 
 }

@@ -13,16 +13,14 @@ import com.application.restaurant.model.user.RUserFcmToken;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
 
-import jakarta.persistence.EntityManager;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class RUserFcmTokenService {
+    
     private final RUserFcmTokenDAO userFcmTokenRepository;
-
-    public RUserFcmTokenService(RUserFcmTokenDAO userFcmTokenRepository, EntityManager entityManager) {
-        this.userFcmTokenRepository = userFcmTokenRepository;
-    }
 
     public void saveUserFcmToken(FcmTokenDTO userFcmTokenDTO) {
         RUser RUser = (RUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();

@@ -16,17 +16,14 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 
 @Component
+@RequiredArgsConstructor
 public class RUserRequestFilter extends OncePerRequestFilter {
 
     private final RUserDetailsService userDetailsService;
     private final JwtUtil jwtUtil;
-
-    public RUserRequestFilter(RUserDetailsService userDetailsService, JwtUtil jwtUtil) {
-        this.userDetailsService = userDetailsService;
-        this.jwtUtil = jwtUtil;
-    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)

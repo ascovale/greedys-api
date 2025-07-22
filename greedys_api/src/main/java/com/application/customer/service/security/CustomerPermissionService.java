@@ -2,7 +2,6 @@ package com.application.customer.service.security;
 
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -12,12 +11,14 @@ import com.application.common.persistence.model.reservation.Reservation;
 import com.application.customer.dao.ReservationDAO;
 import com.application.customer.model.Customer;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class CustomerPermissionService {
 
-    @Autowired 
-    private ReservationDAO reservationRepository;
+    private final ReservationDAO reservationRepository;
 
     public boolean hasPermissionOnReservation(Long idReservation) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

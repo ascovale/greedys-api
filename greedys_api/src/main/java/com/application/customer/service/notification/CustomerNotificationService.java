@@ -18,20 +18,16 @@ import com.application.customer.model.Customer;
 import com.application.customer.model.CustomerNotification;
 import com.application.customer.service.CustomerFcmTokenService;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class CustomerNotificationService {
     private final NotificationDAO notificationDAO;
     private final CustomerDAO userDAO;
     private final CustomerFcmTokenService customerFcmTokenService;
     private final FirebaseService firebaseService;
-
-    public CustomerNotificationService(NotificationDAO notificationDAO, CustomerDAO userDAO, FirebaseService firebaseService) {
-        this.notificationDAO = notificationDAO;
-        this.userDAO = userDAO;
-        this.customerFcmTokenService = null;
-        this.firebaseService = firebaseService;
-    }
 
     public List<NotificationDto> findByUser(Customer user) {
         List<CustomerNotification> notifications = notificationDAO.findByCustomer(user);

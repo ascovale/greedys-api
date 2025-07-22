@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.application.admin.service.AdminReservationService;
 import com.application.common.web.dto.RestaurantCategoryDTO;
 import com.application.common.web.dto.get.ReservationDTO;
 import com.application.common.web.dto.get.RestaurantDTO;
@@ -32,7 +33,6 @@ import com.application.restaurant.service.RUserService;
 import com.application.restaurant.service.RestaurantService;
 import com.application.restaurant.service.RoomService;
 import com.application.restaurant.service.TableService;
-import com.application.restaurant.service.reservation.RestaurantReservationService;
 import com.application.restaurant.web.post.NewRoomDTO;
 import com.application.restaurant.web.post.NewTableDTO;
 
@@ -61,11 +61,13 @@ public class AdminRestaurantController {
 	//TODO: Aggiungere createRestaurant
 
 	private final RestaurantService restaurantService;
-	private final RestaurantReservationService reservationService;
+	private final AdminReservationService adminReservationService;
 	private final RoomService roomService;
 	private final TableService tableService;
 	private final RUserService rUserService;
 
+
+	//TODO Questo dovrebbe ritornare anche un pageable
 	@Operation(summary = "Get all reservations of a restaurant", description = "Retrieve all reservations of a restaurant")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ReservationDTO.class)))),
@@ -77,7 +79,7 @@ public class AdminRestaurantController {
 			@PathVariable Long restaurantId,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end) {
-		Collection<ReservationDTO> reservations = reservationService.getReservations(restaurantId, start, end);
+		Collection<ReservationDTO> reservations = adminReservationService.getReservations(restaurantId, start, end);
 		return reservations;
 	}
 
@@ -92,7 +94,7 @@ public class AdminRestaurantController {
 			@PathVariable Long restaurantId,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end) {
-		Collection<ReservationDTO> reservations = reservationService.getAcceptedReservations(restaurantId, start, end);
+		Collection<ReservationDTO> reservations = adminReservationService.getAcceptedReservations(restaurantId, start, end);
 		return reservations;
 	}
 
@@ -110,7 +112,7 @@ public class AdminRestaurantController {
 			@RequestParam int page,
 			@RequestParam int size) {
 		Pageable pageable = PageRequest.of(page, size);
-		Page<ReservationDTO> reservations = reservationService.getReservationsPageable(restaurantId, start, end,
+		Page<ReservationDTO> reservations = adminReservationService.getReservationsPageable(restaurantId, start, end,
 				pageable);
 		return new ResponseEntity<>(reservations, HttpStatus.OK);
 	}
@@ -129,16 +131,7 @@ public class AdminRestaurantController {
 
 		Collection<ReservationDTO> reservations;
 
-		/// FIX: questo IF ELSE andrebbe dento il metodo invece di avere più metodi overloaded
-		if (end != null && start != null) {
-			reservations = reservationService.getPendingReservations(restaurantId, start, end);
-		} else if (start != null) {
-			reservations = reservationService.getPendingReservations(restaurantId, start);
-		} else if (end != null) {
-			throw new IllegalArgumentException("end cannot be null if start is not null");
-		} else {
-			reservations = reservationService.getPendingReservations(restaurantId);
-		}
+		reservations = adminReservationService.getPendingReservations(restaurantId, start, end);
 		return reservations;
 	}
 
@@ -159,7 +152,7 @@ public class AdminRestaurantController {
 		Pageable pageable = PageRequest.of(page, size);
 		Page<ReservationDTO> reservations;
 
-		reservations = reservationService.getPendingReservationsPageable(restaurantId, start, end, pageable);
+		reservations = adminReservationService.getPendingReservationsPageable(restaurantId, start, end, pageable);
 
 		return new ResponseEntity<>(reservations, HttpStatus.OK);
 	}

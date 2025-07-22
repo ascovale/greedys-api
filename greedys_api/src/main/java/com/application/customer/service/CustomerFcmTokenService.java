@@ -14,17 +14,14 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
 
 import jakarta.persistence.EntityManager;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class CustomerFcmTokenService {
     private final CustomerFcmTokenDAO customerFcmTokenRepository;
     private final EntityManager entityManager;
-
-    public CustomerFcmTokenService(CustomerFcmTokenDAO customerFcmTokenRepository, EntityManager entityManager) {
-        this.customerFcmTokenRepository = customerFcmTokenRepository;
-        this.entityManager = entityManager;
-    }
 
     public void saveUserFcmToken(FcmTokenDTO userFcmTokenDTO) {
         Customer customer = (Customer) SecurityContextHolder.getContext().getAuthentication().getPrincipal();

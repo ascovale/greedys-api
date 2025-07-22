@@ -3,7 +3,6 @@ package com.application.restaurant.service.security;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -15,14 +14,15 @@ import com.application.restaurant.dao.RUserHubDAO;
 import com.application.restaurant.model.Restaurant;
 import com.application.restaurant.model.user.RUser;
 
+import lombok.RequiredArgsConstructor;
+
 @Service("securityRUserService")
 @Transactional
+@RequiredArgsConstructor
 public class RUserPermissionService {
 
-    @Autowired
-    private ReservationDAO reservationRepository;
-    @Autowired
-    private RUserHubDAO RUserHubDAO;
+    private final ReservationDAO reservationRepository;
+    private final RUserHubDAO RUserHubDAO;
 
     public boolean hasPermissionOnReservation(Long idReservation) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
