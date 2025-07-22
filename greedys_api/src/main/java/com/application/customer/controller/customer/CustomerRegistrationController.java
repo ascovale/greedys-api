@@ -1,4 +1,4 @@
-package com.application.customer.controller;
+package com.application.customer.controller.customer;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;

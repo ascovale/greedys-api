@@ -28,8 +28,6 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class AdminTestEmailController {
-    //TODO: Dividere le mail per la prenotazione e per la registrazione
-    //TODO: Bisognerà usare Twilio per inviare anche le mail per grossi volumi valutare aws
     private final EmailService emailService;
     private final CustomerNotificationService notificationService;
     private final RestaurantNotificationService restaurantNotificationService;

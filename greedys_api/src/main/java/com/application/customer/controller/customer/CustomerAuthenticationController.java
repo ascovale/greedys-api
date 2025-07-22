@@ -1,4 +1,4 @@
-package com.application.customer.controller;
+package com.application.customer.controller.customer;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

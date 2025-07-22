@@ -9,6 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.application.common.constants.TokenValidationConstants;
 import com.application.common.service.EmailService;
 import com.application.common.web.dto.get.RUserDTO;
 import com.application.restaurant.dao.RUserDAO;
@@ -31,10 +32,6 @@ import lombok.RequiredArgsConstructor;
 @Transactional
 @RequiredArgsConstructor
 public class RUserService {
-
-    public static final String TOKEN_INVALID = "invalidToken";
-    public static final String TOKEN_EXPIRED = "expired";
-    public static final String TOKEN_VALID = "valid";
 
     public static final String QR_PREFIX = "https://chart.googleapis.com/chart?chs=200x200&chld=M%%7C0&cht=qr&chl=";
     public static final String APP_NAME = "SpringRegistration";
@@ -240,22 +237,22 @@ public class RUserService {
        public String validateVerificationToken(String token) {
         final RUserVerificationToken verificationToken = tokenDAO.findByToken(token);
         if (verificationToken == null) {
-            return TOKEN_INVALID;
+            return TokenValidationConstants.TOKEN_INVALID;
         }
 
         final RUser user = verificationToken.getRUser();
         final LocalDateTime now = LocalDateTime.now();
         if (verificationToken.getExpiryDate().isBefore(now)) {
             tokenDAO.delete(verificationToken);
-            return TOKEN_EXPIRED;
+            return TokenValidationConstants.TOKEN_EXPIRED;
         }
         if (user.getStatus() != RUser.Status.VERIFY_TOKEN) {
-            return TOKEN_INVALID;
+            return TokenValidationConstants.TOKEN_INVALID;
         }
         user.setStatus(RUser.Status.ENABLED);
         tokenDAO.delete(verificationToken);
         ruDAO.save(user);
-        return TOKEN_VALID;
+        return TokenValidationConstants.TOKEN_VALID;
     }
 
     public RUser getRUser(final String verificationToken) {

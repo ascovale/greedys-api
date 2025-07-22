@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.application.common.constants.TokenValidationConstants;
 import com.application.common.jwt.JwtUtil;
 import com.application.common.service.authentication.GoogleAuthService;
 import com.application.common.web.dto.AuthRequestGoogleDTO;
@@ -40,11 +41,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class CustomerAuthenticationService {
 	//TODO perchè non c'è l'admin AuthenticationService?
-
-
-	public static final String TOKEN_INVALID = "invalidToken";
-	public static final String TOKEN_EXPIRED = "expired";
-	public static final String TOKEN_VALID = "valid";
 
 	public static String QR_PREFIX = "https://chart.googleapis.com/chart?chs=200x200&chld=M%%7C0&cht=qr&chl=";
 	public static String APP_NAME = "SpringRegistration";
@@ -219,22 +215,22 @@ public class CustomerAuthenticationService {
 	public String validateVerificationToken(String token) {
 		final VerificationToken verificationToken = tokenDAO.findByToken(token);
 		if (verificationToken == null) {
-			return TOKEN_INVALID;
+			return TokenValidationConstants.TOKEN_INVALID;
 		}
 
 		final Customer customer = verificationToken.getCustomer();
 		final LocalDateTime now = LocalDateTime.now();
 		if (verificationToken.getExpiryDate().isBefore(now)) {
 			tokenDAO.delete(verificationToken);
-			return TOKEN_EXPIRED;
+			return TokenValidationConstants.TOKEN_EXPIRED;
 		}
 		if (customer.getStatus() != Customer.Status.VERIFY_TOKEN) {
-			return TOKEN_INVALID;
+			return TokenValidationConstants.TOKEN_INVALID;
 		}
 		customer.setStatus(Customer.Status.ENABLED);
 		tokenDAO.delete(verificationToken);
 		customerDAO.save(customer);
-		return TOKEN_VALID;
+		return TokenValidationConstants.TOKEN_VALID;
 	}
 
 	/*
