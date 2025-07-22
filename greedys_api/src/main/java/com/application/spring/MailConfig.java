@@ -1,7 +1,5 @@
 package com.application.spring;
 
-import javax.annotation.PostConstruct;
-
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -10,7 +8,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 
+import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
+
 @Configuration
+@Slf4j
 public class MailConfig {
 
     @Value("${mail.reservation.host}")
@@ -27,13 +29,12 @@ public class MailConfig {
 
     @PostConstruct
     public void logReservationMailSenderProperties() {
-        System.out.println("Reservation Mail Sender Properties:");
-        System.out.println("Host: " + reservationHost);
-        System.out.println("Port: " + reservationPort);
-        System.out.println("Username: " + reservationUsername);
-        System.out.println("Password: [PROTECTED]");
-        // Optionally print TLS/SSL info for debugging
-        System.out.println("Using STARTTLS on port 587: " + (reservationPort == 587));
+        log.info("Reservation Mail Sender Properties:");
+        log.info("Host: {}", reservationHost);
+        log.info("Port: {}", reservationPort);
+        log.info("Username: {}", reservationUsername);
+        log.info("Password: [PROTECTED]");
+        log.info("Using STARTTLS on port 587: {}", (reservationPort == 587));
     }
 
     @Bean

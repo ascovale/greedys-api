@@ -2,7 +2,6 @@ package com.application.customer;
 
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.MessageSource;
@@ -14,17 +13,17 @@ import org.springframework.stereotype.Component;
 import com.application.customer.model.Customer;
 import com.application.customer.service.authentication.CustomerAuthenticationService;
 
+import lombok.RequiredArgsConstructor;
+
 @Component
+@RequiredArgsConstructor
 public class CustomerRegistrationListener implements ApplicationListener<CustomerOnRegistrationCompleteEvent> {
-	@Autowired
-	private CustomerAuthenticationService service;
+	private final CustomerAuthenticationService service;
 
-	@Autowired
-	private MessageSource messages;
+	private final MessageSource messages;
 
-	@Autowired
 	@Qualifier("reservationMailSender")
-	private JavaMailSender mailSender;
+	private final JavaMailSender mailSender;
 
 	@Override
 	public void onApplicationEvent(final CustomerOnRegistrationCompleteEvent event) {

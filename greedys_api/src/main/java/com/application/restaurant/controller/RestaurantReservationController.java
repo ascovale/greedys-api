@@ -192,24 +192,18 @@ public class RestaurantReservationController {
 		return new ResponseEntity<>(reservations, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Get all pending reservations of a restaurant", description = "Retrieve all pending reservations of a restaurant")
+	@Operation(summary = "Get all pending reservations of a restaurant", description = "Retrieve all pending reservations of a restaurant with optional date filtering")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ReservationDTO.class)))),
 			@ApiResponse(responseCode = "404", description = "Restaurant not found")
 	})
 	@GetMapping(value = "/pending/get")
 	public Collection<ReservationDTO> getPendingReservations(
-			@RequestParam(required = false) LocalDate start,
-			@RequestParam(required = false) LocalDate end,
+			@RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
+			@RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end,
 			@AuthenticationPrincipal RUser rUser) {
 		Long restaurantId = rUser.getRestaurant().getId();
-		if (start != null && end != null) {
-			return restaurantReservationService.getPendingReservations(restaurantId, start, end);
-		} else if (start != null) {
-			return restaurantReservationService.getPendingReservations(restaurantId, start);
-		} else {
-			return restaurantReservationService.getPendingReservations(restaurantId);
-		}
+		return restaurantReservationService.getPendingReservations(restaurantId, start, end);
 	}
 
 }

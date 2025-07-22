@@ -3,7 +3,6 @@ package com.application.customer.service.security;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -17,13 +16,15 @@ import com.application.customer.dao.PasswordResetTokenDAO;
 import com.application.customer.model.Customer;
 import com.application.customer.model.PasswordResetToken;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
 @Transactional
 @Qualifier("customerSecurityService")
+@RequiredArgsConstructor
 public class CustomerUserSecurityService implements ISecurityUserService {
 
-    @Autowired
-    private PasswordResetTokenDAO passwordTokenRepository;
+    private final PasswordResetTokenDAO passwordTokenRepository;
 
     // API
 

@@ -15,10 +15,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.application.common.controller.utils.ControllerUtils;
 import com.application.common.web.dto.get.RoomDTO;
 import com.application.common.web.dto.get.TableDTO;
 import com.application.common.web.util.GenericResponse;
+import com.application.restaurant.controller.utils.RestaurantControllerUtils;
 import com.application.restaurant.service.RestaurantService;
 import com.application.restaurant.service.RoomService;
 import com.application.restaurant.service.TableService;
@@ -63,7 +63,7 @@ public class RestaurantController {
 			@ApiResponse(responseCode = "400", description = "Invalid request")
 	})
 	public ResponseEntity<Collection<RoomDTO>> getRooms() {
-		Collection<RoomDTO> rooms = roomService.findByRestaurant(ControllerUtils.getCurrentRestaurant().getId());
+		Collection<RoomDTO> rooms = roomService.findByRestaurant(RestaurantControllerUtils.getCurrentRestaurant().getId());
 		return new ResponseEntity<>(rooms, HttpStatus.OK);
 	}
 
@@ -115,7 +115,7 @@ public class RestaurantController {
 	})
 	@PostMapping(value = "/no_show_time_limit")
 	public GenericResponse setNoShowTimeLimit(@RequestParam int minutes) {
-		restaurantService.setNoShowTimeLimit(ControllerUtils.getCurrentRestaurant().getId(), minutes);
+		restaurantService.setNoShowTimeLimit(RestaurantControllerUtils.getCurrentRestaurant().getId(), minutes);
 		return new GenericResponse("success");
 	}
 
@@ -167,7 +167,7 @@ public class RestaurantController {
     public ResponseEntity<Collection<String>> getOpenDays(
             @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate start,
             @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate end) {
-        Long restaurantId = ControllerUtils.getCurrentRestaurant().getId();
+        Long restaurantId = RestaurantControllerUtils.getCurrentRestaurant().getId();
         Collection<String> openDays = restaurantService.getOpenDays(restaurantId, start, end);
         return new ResponseEntity<>(openDays, HttpStatus.OK);
     }
@@ -182,7 +182,7 @@ public class RestaurantController {
     public ResponseEntity<Collection<java.time.LocalDate>> getClosedDays(
             @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate start,
             @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate end) {
-        Long restaurantId = ControllerUtils.getCurrentRestaurant().getId();
+        Long restaurantId = RestaurantControllerUtils.getCurrentRestaurant().getId();
         Collection<java.time.LocalDate> closedDays = restaurantService.getClosedDays(restaurantId, start, end);
         return new ResponseEntity<>(closedDays, HttpStatus.OK);
     }
@@ -196,7 +196,7 @@ public class RestaurantController {
     })
     public ResponseEntity<Collection<com.application.common.web.dto.get.SlotDTO>> getDaySlots(
             @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate date) {
-        Long restaurantId = ControllerUtils.getCurrentRestaurant().getId();
+        Long restaurantId = RestaurantControllerUtils.getCurrentRestaurant().getId();
         Collection<com.application.common.web.dto.get.SlotDTO> slots = restaurantService.getDaySlots(restaurantId, date);
         return new ResponseEntity<>(slots, HttpStatus.OK);
     }
@@ -209,7 +209,7 @@ public class RestaurantController {
         @ApiResponse(responseCode = "400", description = "Invalid request")
     })
     public ResponseEntity<?> getAllSlots() {
-        Long restaurantId = ControllerUtils.getCurrentRestaurant().getId();
+        Long restaurantId = RestaurantControllerUtils.getCurrentRestaurant().getId();
         List<com.application.common.web.dto.get.SlotDTO> slots = slotService.findSlotsByRestaurantId(restaurantId);
         return new ResponseEntity<>(slots, HttpStatus.OK);
     }
@@ -235,7 +235,7 @@ public class RestaurantController {
     public ResponseEntity<Collection<com.application.common.web.dto.get.ServiceDTO>> getActiveEnabledServicesInPeriod(
             @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate start,
             @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate end) {
-        Long restaurantId = ControllerUtils.getCurrentRestaurant().getId();
+        Long restaurantId = RestaurantControllerUtils.getCurrentRestaurant().getId();
         Collection<com.application.common.web.dto.get.ServiceDTO> services = restaurantService.findActiveEnabledServicesInPeriod(restaurantId, start, end);
         return new ResponseEntity<>(services, HttpStatus.OK);
     }
@@ -249,7 +249,7 @@ public class RestaurantController {
     })
     public ResponseEntity<Collection<com.application.common.web.dto.get.ServiceDTO>> getActiveEnabledServicesInDate(
             @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate date) {
-        Long restaurantId = ControllerUtils.getCurrentRestaurant().getId();
+        Long restaurantId = RestaurantControllerUtils.getCurrentRestaurant().getId();
         Collection<com.application.common.web.dto.get.ServiceDTO> services = restaurantService.getActiveEnabledServices(restaurantId, date);
         return new ResponseEntity<>(services, HttpStatus.OK);
     }

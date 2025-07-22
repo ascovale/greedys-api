@@ -6,6 +6,9 @@ import org.springframework.context.ApplicationEvent;
 
 import com.application.customer.model.Customer;
 
+import lombok.Getter;
+
+@Getter
 public class CustomerOnRegistrationCompleteEvent extends ApplicationEvent {
 
     private final String appUrl;
@@ -17,18 +20,6 @@ public class CustomerOnRegistrationCompleteEvent extends ApplicationEvent {
         this.user = registered;
         this.locale = locale;
         this.appUrl = appUrl;
-    }
-
-    public String getAppUrl() {
-        return appUrl;
-    }
-
-    public Locale getLocale() {
-        return locale;
-    }
-
-    public Customer getUser() {
-        return user;
     }
 
 }

@@ -20,9 +20,11 @@ import com.application.restaurant.model.RestaurantNotification;
 import com.application.restaurant.model.user.RUser;
 
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class RestaurantNotificationService {
     private final RUserDAO RUserDAO;
     private final RestaurantDAO restaurantDAO;
@@ -30,16 +32,6 @@ public class RestaurantNotificationService {
     private final FirebaseService firebaseService;
     private final RUserFcmTokenService tokenService;
     private final EmailService emailService;
-
-    public RestaurantNotificationService(RUserDAO RUserDAO, RestaurantNotificationDAO restaurantNotificationDAO,
-            FirebaseService firebaseService, RUserFcmTokenService tokenService, EmailService emailService, RestaurantDAO restaurantDAO) {
-        this.RUserDAO = RUserDAO;
-        this.restaurantNotificationDAO = restaurantNotificationDAO;
-        this.firebaseService = firebaseService;
-        this.tokenService = tokenService;
-        this.emailService = emailService;
-        this.restaurantDAO = restaurantDAO;
-    }
 
     private void createAndSendNotifications(Collection<RUser> RUsers, RNotificationType type) {
         for (RUser RUser : RUsers) {

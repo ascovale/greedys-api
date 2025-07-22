@@ -19,8 +19,11 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.Notification;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
 @Transactional
+@Slf4j
 public class FirebaseService {
 
     public static final String SECURED_CHAT_SPECIFIC_USER = "/secured/user/queue/specific-user";
@@ -42,6 +45,7 @@ public class FirebaseService {
             return FirebaseAuth.getInstance().verifyIdToken(idToken);
         } catch (Exception e) {
             // Handle token verification error
+            log.warn("Token verification failed: {}", e.getMessage());
             return null;
         }
     }
@@ -58,8 +62,7 @@ public class FirebaseService {
                 FirebaseMessaging.getInstance().send(msg);
             } catch (Exception e) {
                 // Handle exceptions, e.g., log the error
-                System.err.println("Failed to send notification to token: " + token);
-                e.printStackTrace();
+                log.error("Failed to send notification to token: {}", token, e);
             }
         });
     }

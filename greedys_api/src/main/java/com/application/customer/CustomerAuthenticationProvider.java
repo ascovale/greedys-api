@@ -11,23 +11,25 @@ import org.springframework.stereotype.Component;
 import com.application.customer.dao.CustomerDAO;
 import com.application.customer.model.Customer;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Component
+@Slf4j
 public class CustomerAuthenticationProvider extends DaoAuthenticationProvider {
 
     @Autowired
-    private CustomerDAO userRepository;
+    private CustomerDAO customerDAO;
 
     @Override
     public Authentication authenticate(Authentication auth) throws AuthenticationException {
-        final Customer user = userRepository.findByEmail(auth.getName());
+        final Customer user = customerDAO.findByEmail(auth.getName());
         if (user == null) {
             throw new BadCredentialsException("Invalid username or password");
         }
 
         // Verifica esplicita della password
         if (!getPasswordEncoder().matches(auth.getCredentials().toString(), user.getPassword())) {
-            System.out.println("\n\n\\n\n\nPassword non corrisponde: " + auth.getCredentials().toString() + " != " + user.getPassword());
-            // throw new BadCredentialsException("Invalid username or password");   
+            log.debug("Password non corrisponde per l'utente: {}", auth.getName());
             throw new BadCredentialsException("Invalid username or password");
         }
 

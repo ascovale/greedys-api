@@ -64,15 +64,14 @@ public class AdminRegistrationController {
         return request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + request.getContextPath();
     }
 
-    // Registration
-    @Operation(summary = "Registra un nuovo admin")
+    @Operation(summary = "Register a new admin")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Customer registrato con successo",
+        @ApiResponse(responseCode = "200", description = "Admin registered successfully",
                      content = { @Content(mediaType = "application/json",
                      schema = @Schema(implementation = NewAdminDTO.class)) }),
-        @ApiResponse(responseCode = "400", description = "Richiesta non valida",
+        @ApiResponse(responseCode = "400", description = "Invalid request",
                      content = @Content),
-        @ApiResponse(responseCode = "500", description = "Errore interno del server",
+        @ApiResponse(responseCode = "500", description = "Internal server error",
                      content = @Content) })
     @PostMapping("/")
     public ResponseEntity<String> registerUserAccount(@Valid @RequestBody NewAdminDTO accountDto, HttpServletRequest request) {

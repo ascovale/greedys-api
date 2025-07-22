@@ -1,6 +1,5 @@
 package com.application.common.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,20 +10,24 @@ import com.application.spring.TwilioConfig;
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.type.PhoneNumber;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 @Service
 @Transactional
+@RequiredArgsConstructor
+@Slf4j
 public class WhatsAppService {
 
-    @Autowired
-    private TwilioConfig twilioConfig;
+    private final TwilioConfig twilioConfig;
 
     public void sendWhatsAppMessage(String phoneNumber, String message) {
         Message.creator(
                 new PhoneNumber("whatsapp:" + phoneNumber),
-                new PhoneNumber("whatsapp:" + twilioConfig.getWhatsAppNumber()),
+                new PhoneNumber("whatsapp:" + twilioConfig.getWhatsappNumber()),
                 message)
                 .create();
-        System.out.println("Messaggio inviato a " + phoneNumber);
+        log.info("Messaggio inviato a {}", phoneNumber);
     }
 
     public void sendWhatsAppMessage(CustomerNotification notification) {
@@ -38,7 +41,7 @@ public class WhatsAppService {
         if (principal instanceof Customer) {
             return ((Customer) principal);
         } else {
-            System.out.println("Questo non dovrebbe succedere");
+            log.warn("Questo non dovrebbe succedere");
             return null;
         }
     }

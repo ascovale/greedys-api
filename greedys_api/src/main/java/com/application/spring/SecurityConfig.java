@@ -1,7 +1,5 @@
 package com.application.spring;
 
-import javax.sql.DataSource;
-
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -16,31 +14,29 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.authentication.rememberme.InMemoryTokenRepositoryImpl;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import com.application.admin.AdminAuthenticationProvider;
 import com.application.admin.AdminRequestFilter;
-import com.application.admin.service.security.AdminAuthenticationProvider;
 import com.application.admin.service.security.AdminUserDetailsService;
-import com.application.admin.service.security.AdminUserRememberMeServices;
 import com.application.customer.CustomerAuthenticationProvider;
 import com.application.customer.CustomerRequestFilter;
 import com.application.customer.service.security.CustomerUserDetailsService;
-import com.application.customer.service.security.CustomerUserRememberMeServices;
 import com.application.restaurant.RUserAuthenticationProvider;
 import com.application.restaurant.RUserRequestFilter;
 import com.application.restaurant.service.security.RUserDetailsService;
-import com.application.restaurant.service.security.RUserRememberMeServices;
+
+import lombok.RequiredArgsConstructor;
 
 @Configuration
 @EnableWebSecurity
 @ComponentScan({ "com.application.security" })
 @EnableMethodSecurity(prePostEnabled = true)
+@RequiredArgsConstructor
 public class SecurityConfig {
 
         private final RUserDetailsService RUserDetailsService;
@@ -50,23 +46,8 @@ public class SecurityConfig {
         private final CustomerRequestFilter customerJwtRequestFilter;
         private final AdminRequestFilter adminJwtRequestFilter;
 
-        public SecurityConfig(
-                        RUserDetailsService RUserDetailsService,
-                        CustomerUserDetailsService customerUserDetailsService,
-                        AdminUserDetailsService adminUserDetailsService,
-                        RUserRequestFilter restaurantJwtRequestFilter,
-                        CustomerRequestFilter customerJwtRequestFilter,
-                        AdminRequestFilter adminJwtRequestFilter,
-                        DataSource dataSource) {
-                this.RUserDetailsService = RUserDetailsService;
-                this.customerUserDetailsService = customerUserDetailsService;
-                this.adminUserDetailsService = adminUserDetailsService;
-                this.restaurantJwtRequestFilter = restaurantJwtRequestFilter;
-                this.customerJwtRequestFilter = customerJwtRequestFilter;
-                this.adminJwtRequestFilter = adminJwtRequestFilter;
-        }
-
-        // TODO: make sure the authentication filter is not required for login, registration, and other public operations
+        // TODO: make sure the authentication filter is not required for login,
+        // registration, and other public operations
         @Bean
         SecurityFilterChain RUserFilterChain(HttpSecurity http,
                         @Qualifier("restaurantAuthenticationManager") AuthenticationManager authenticationManager)
@@ -83,11 +64,12 @@ public class SecurityConfig {
                                                                 "/register/**", "/v3/api-docs*/**", "/api/**",
                                                                 "/auth/**",
                                                                 "/reservation/**", "/error*", "/actuator/health",
-                                                                "/public/**","/restaurant/user/auth/login",
+                                                                "/public/**", "/restaurant/user/auth/login",
                                                                 "/restaurant/user/auth/google",
                                                                 "/logo_api.png", // accesso libero al logo
-                                                                "/swagger-groups" // accesso libero alla lista gruppi swagger
-                                                                )
+                                                                "/swagger-groups" // accesso libero alla lista gruppi
+                                                                                  // swagger
+                                                )
                                                 .permitAll()
                                                 .requestMatchers("/restaurant/**").authenticated())
                                 .sessionManagement(management -> management
@@ -110,19 +92,22 @@ public class SecurityConfig {
                                 .authorizeHttpRequests(authz -> authz
                                                 .requestMatchers(
                                                                 /*
-                                                                  * "/customer/public/**", "/customer/swagger-ui/**",
-                                                                  * "/customer/v3/api-docs**",
-                                                                  */
+                                                                 * "/customer/public/**", "/customer/swagger-ui/**",
+                                                                 * "/customer/v3/api-docs**",
+                                                                 */
                                                                 "/doc**", "/swagger-ui/**",
                                                                 "/register/**", "/v3/api-docs*/**", "/api/**",
                                                                 "/auth/**",
                                                                 "/reservation/**", "/error*", "/actuator/health",
-                                                                "/public/**","/customer/auth/**",
+                                                                "/public/**", "/customer/auth/**",
                                                                 "/customer/user/auth/google",
                                                                 "/logo_api.png", // free access to the logo
-                                                                "/swagger-groups", // free access to the swagger groups list
-                                                                "/customer/restaurant/**" // Makes all customer/restaurant endpoints public
-                                                                )
+                                                                "/swagger-groups", // free access to the swagger groups
+                                                                                   // list
+                                                                "/customer/restaurant/**" // Makes all
+                                                                                          // customer/restaurant
+                                                                                          // endpoints public
+                                                )
                                                 .permitAll()
                                                 .requestMatchers("/customer/**").authenticated())
                                 .sessionManagement(management -> management
@@ -149,10 +134,11 @@ public class SecurityConfig {
                                                                 "/register/**", "/v3/api-docs*/**", "/api/**",
                                                                 "/auth/**",
                                                                 "/reservation/**", "/error*", "/actuator/health",
-                                                                "/public/**","/admin/auth/**",
+                                                                "/public/**", "/admin/auth/**",
                                                                 "/logo_api.png", // accesso libero al logo
-                                                                "/swagger-groups" // accesso libero alla lista gruppi swagger
-                                                                )
+                                                                "/swagger-groups" // accesso libero alla lista gruppi
+                                                                                  // swagger
+                                                )
                                                 .permitAll()
                                                 .requestMatchers("/admin/**").authenticated())
                                 .sessionManagement(management -> management
@@ -163,9 +149,9 @@ public class SecurityConfig {
                 return http.build();
         }
 
-    @Bean
-    @Primary
-    AuthenticationManager fallbackAuthenticationManager() {
+        @Bean
+        @Primary
+        AuthenticationManager fallbackAuthenticationManager() {
                 return authentication -> {
                         throw new UnsupportedOperationException(
                                         "No global AuthenticationManager configured. Use specific ones with @Qualifier.");
@@ -194,8 +180,8 @@ public class SecurityConfig {
                 return auth.build();
         }
 
-    @Bean
-    RUserAuthenticationProvider RUserAuthenticationProvider() {
+        @Bean
+        RUserAuthenticationProvider RUserAuthenticationProvider() {
                 RUserAuthenticationProvider provider = new RUserAuthenticationProvider();
                 provider.setUserDetailsService(RUserDetailsService);
                 provider.setPasswordEncoder(passwordEncoder());
@@ -210,8 +196,8 @@ public class SecurityConfig {
                 return auth.build();
         }
 
-    @Bean
-    CustomerAuthenticationProvider customerAuthenticationProvider() {
+        @Bean
+        CustomerAuthenticationProvider customerAuthenticationProvider() {
                 CustomerAuthenticationProvider provider = new CustomerAuthenticationProvider();
                 provider.setUserDetailsService(customerUserDetailsService);
                 provider.setPasswordEncoder(passwordEncoder());
@@ -232,31 +218,15 @@ public class SecurityConfig {
                 return new BCryptPasswordEncoder();
         }
 
-    @Bean
-    AdminAuthenticationProvider adminAuthenticationProvider() {
-                AdminAuthenticationProvider provider = new AdminAuthenticationProvider();
-                provider.setUserDetailsService(adminUserDetailsService);
+        @Bean
+        AdminAuthenticationProvider adminAuthenticationProvider() {
+                AdminAuthenticationProvider provider = new AdminAuthenticationProvider(adminUserDetailsService);
                 provider.setPasswordEncoder(passwordEncoder());
                 return provider;
         }
 
-        @Bean(name = "customerUserRememberMe")
-        RememberMeServices rememberMeServices1() {
-                return new CustomerUserRememberMeServices("theKey", customerUserDetailsService,
-                                new InMemoryTokenRepositoryImpl());
-        }
+        //TODO RIMOVERE TOGLIERE REMEMBER ME FORSE METTERE refreshTOKEN
 
-        @Bean(name = "RUserRememberMe")
-        RememberMeServices rememberMeServices2() {
-                return new RUserRememberMeServices("theKey", RUserDetailsService,
-                                new InMemoryTokenRepositoryImpl());
-        }
-
-        @Bean(name = "adminUserRememberMe")
-        RememberMeServices rememberMeServices() {
-                return new AdminUserRememberMeServices("theKey", adminUserDetailsService,
-                                new InMemoryTokenRepositoryImpl());
-        }
 
         @Bean
         HttpSessionEventPublisher httpSessionEventPublisher() {

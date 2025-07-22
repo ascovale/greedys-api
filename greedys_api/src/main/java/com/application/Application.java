@@ -17,7 +17,7 @@ public class Application {
 	}
 
 	@Bean
-	Path path(){
+	Path path() {
 		return Paths.get(System.getProperty("java.io.tmpdir"));
 	}
 	

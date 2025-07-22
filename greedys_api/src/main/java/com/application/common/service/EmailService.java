@@ -1,6 +1,5 @@
 package com.application.common.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -14,13 +13,17 @@ import com.application.customer.model.CustomerNotification;
 import com.application.restaurant.model.RestaurantNotification;
 import com.application.restaurant.model.user.RUser;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 @Service
 @Transactional
+@RequiredArgsConstructor
+@Slf4j
 public class EmailService {
 
-    @Autowired
     @Qualifier("reservationMailSender")
-    private JavaMailSender mailSender;
+    private final JavaMailSender mailSender;
 
     private SimpleMailMessage constructNotificationMessage(ANotification notification) {
         final String subject = notification.getTitle();
@@ -40,7 +43,7 @@ public class EmailService {
             mailSender.send(message);
         } catch (Exception e) {
             // Log the exception and handle it accordingly
-            System.err.println("Failed to send email: " + e.getMessage());
+            log.error("Failed to send email to {}: {}", email, e.getMessage(), e);
         }
     }
 
@@ -149,5 +152,17 @@ public class EmailService {
 
     public JavaMailSenderImpl getMailSender() {
         return (JavaMailSenderImpl) mailSender;
+    }
+
+    public void sendReservationConfirmation(String customerEmail, Long reservationId) {
+        if (customerEmail == null || customerEmail.isEmpty() || reservationId == null) {
+            throw new IllegalArgumentException("Email and reservationId must not be null or empty");
+        }
+        String subject = "Reservation Confirmation";
+        String message = "Dear customer,\n\n"
+                + "Your reservation (ID: " + reservationId + ") has been confirmed.\n"
+                + "Thank you for choosing our service.\n\n"
+                + "Best regards,\nThe Greedys Team";
+        sendEmail(customerEmail, subject, message);
     }
 }

@@ -6,9 +6,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,7 +13,6 @@ import com.application.common.mapper.Mapper.Weekday;
 import com.application.common.persistence.model.reservation.Service;
 import com.application.common.persistence.model.reservation.ServiceType;
 import com.application.common.persistence.model.reservation.Slot;
-import com.application.restaurant.dao.RUserDAO;
 import com.application.restaurant.dao.RestaurantCategoryDAO;
 import com.application.restaurant.dao.RestaurantDAO;
 import com.application.restaurant.dao.RestaurantPrivilegeDAO;
@@ -31,36 +27,29 @@ import com.application.restaurant.model.user.RestaurantRole;
 import com.application.restaurant.service.RestaurantService;
 import com.application.restaurant.web.post.NewRestaurantDTO;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 @Component
+@RequiredArgsConstructor
+@Slf4j
 public class RestaurantDataLoader {
 
-    @Autowired
-    private RestaurantDAO restaurantDAO;
-    @Autowired
-    private ServiceTypeDAO serviceTypeDAO;
-    @Autowired
-    private ServiceDAO serviceDAO;
-    @Autowired
-    private SlotDAO slotDAO;
-    @Autowired
-    private RestaurantService restaurantService;
-    @Autowired
-    private RestaurantPrivilegeDAO restaurantPrivilegeDAO;
-    @Autowired
-    private RestaurantRoleDAO restaurantRoleDAO;
-    @Autowired
-    private RestaurantCategoryDAO restaurantCategoryDAO;
-    @Autowired
-    private RUserDAO RUserDAO;
-
-    private static final Logger logger = LoggerFactory.getLogger(RestaurantDataLoader.class);
+    private final RestaurantDAO restaurantDAO;
+    private final ServiceTypeDAO serviceTypeDAO;
+    private final ServiceDAO serviceDAO;
+    private final SlotDAO slotDAO;
+    private final RestaurantService restaurantService;
+    private final RestaurantPrivilegeDAO restaurantPrivilegeDAO;
+    private final RestaurantRoleDAO restaurantRoleDAO;
+    private final RestaurantCategoryDAO restaurantCategoryDAO;
 
     @Transactional
     public void createRestaurantLaSoffittaRenovatio() {
-        logger.info(">>> --- Creating Restaurant La Soffitta Renovatio --- <<<");
+        log.info(">>> --- Creating Restaurant La Soffitta Renovatio --- <<<");
         Restaurant restaurant = restaurantDAO.findByName("La Soffitta Renovatio");
         if (restaurant != null) {
-            logger.info("Restaurant with name La Soffitta Renovatio already exists.");
+            log.info("Restaurant with name La Soffitta Renovatio already exists.");
             return;
         }
 
@@ -101,10 +90,10 @@ public class RestaurantDataLoader {
 
     @Transactional
     public void createRestaurantTrattoriaDaMario() {
-        logger.info(">>> --- Creating Restaurant Trattoria Da Mario --- <<<");
+        log.info(">>> --- Creating Restaurant Trattoria Da Mario --- <<<");
         Restaurant restaurant = restaurantDAO.findByName("Trattoria Da Mario");
         if (restaurant != null) {
-            logger.info("Restaurant with name Trattoria Da Mario already exists.");
+            log.info("Restaurant with name Trattoria Da Mario already exists.");
             return;
         }
 
@@ -192,7 +181,7 @@ public class RestaurantDataLoader {
 
     @Transactional
     public void createRestaurantPrivilegesAndRoles() {
-        logger.info(">>> --- Creating Restaurant Privileges and Roles --- <<<");
+        log.info(">>> --- Creating Restaurant Privileges and Roles --- <<<");
         final RestaurantPrivilege managerWritePrivilege = createRestaurantPrivilegeIfNotFound("PRIVILEGE_RESTAURANT_USER_MANAGER_WRITE");
         final RestaurantPrivilege chefWritePrivilege = createRestaurantPrivilegeIfNotFound("PRIVILEGE_RESTAURANT_USER_CHEF_WRITE");
         final RestaurantPrivilege waiterWritePrivilege = createRestaurantPrivilegeIfNotFound("PRIVILEGE_RESTAURANT_USER_WAITER_WRITE");
@@ -226,18 +215,18 @@ public class RestaurantDataLoader {
         createRestaurantRoleIfNotFound("ROLE_VIEWER", viewerPrivileges);
         createRestaurantRoleIfNotFound("ROLE_CHEF", chefPrivileges);
         createRestaurantRoleIfNotFound("ROLE_WAITER", waiterPrivileges);
-        logger.info(">>> --- Restaurant Privileges and Roles Created --- <<<");
+        log.info(">>> --- Restaurant Privileges and Roles Created --- <<<");
     }
 
     @Transactional
     public void createDefaultServiceTypes() {
-        logger.info(">>> --- Creating Default Service Types --- <<<");
+        log.info(">>> --- Creating Default Service Types --- <<<");
         createServiceIfNotFound("Lunch");
         createServiceIfNotFound("Dinner");
         createServiceIfNotFound("Aperitif");
         createServiceIfNotFound("Breakfast");
         createServiceIfNotFound("After Dinner");
-        logger.info(">>> --- Default Service Types Created --- <<<");
+        log.info(">>> --- Default Service Types Created --- <<<");
     }
 
     @Transactional
@@ -255,7 +244,7 @@ public class RestaurantDataLoader {
     
     @Transactional
     public void createRestaurantCategories() {
-        logger.info(">>> --- Creating Restaurant Categories --- <<<");
+        log.info(">>> --- Creating Restaurant Categories --- <<<");
         List<String> categories = Arrays.asList(
             "Pizzeria", "Cucina Italiana", "Cucina Romana", "Cinese", "Giapponese",
             "Sushi", "Senza Glutine", "Vegano", "Carne", "Pesce", "Fast Food",
@@ -278,15 +267,15 @@ public class RestaurantDataLoader {
                 restaurantCategoryDAO.save(category);
             }
         }
-        logger.info(">>> --- Restaurant Categories Created --- <<<");
+        log.info(">>> --- Restaurant Categories Created --- <<<");
     }
 
     @Transactional
     public void assignCategoriesToLaSoffittaRenovatio() {
-        logger.info(">>> --- Assigning Categories to La Soffitta Renovatio --- <<<");
+        log.info(">>> --- Assigning Categories to La Soffitta Renovatio --- <<<");
         Restaurant restaurant = restaurantDAO.findByName("La Soffitta Renovatio");
         if (restaurant == null) {
-            logger.warn("Restaurant La Soffitta Renovatio not found.");
+            log.warn("Restaurant La Soffitta Renovatio not found.");
             return;
         }
 
@@ -302,7 +291,7 @@ public class RestaurantDataLoader {
         }
 
         restaurantDAO.save(restaurant);
-        logger.info("    >>>  ---   Categories Assigned to La Soffitta Renovatio   ---  <<< ");
+        log.info("    >>>  ---   Categories Assigned to La Soffitta Renovatio   ---  <<< ");
     }
     
    

@@ -5,8 +5,6 @@ import java.util.Locale;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.MessageSource;
 import org.springframework.http.ResponseEntity;
@@ -47,13 +45,13 @@ import com.application.restaurant.service.RUserService;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Transactional
+@Slf4j
 public class RestaurantAuthenticationService {
     //TODO perchè non c'è l'admin AuthenticationService?
-
-    private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
     private final AuthenticationManager authenticationManager;
     private final GoogleAuthService googleAuthService;
@@ -293,7 +291,7 @@ public class RestaurantAuthenticationService {
         try {
             request.login(username, password);
         } catch (ServletException e) {
-            LOGGER.error("Error while login ", e);
+            log.error("Error while login ", e);
         }
     }
 
@@ -385,7 +383,7 @@ public class RestaurantAuthenticationService {
                     jwtUtil::generateHubToken
 					);
 		} catch (Exception e) {
-			LOGGER.error("Google authentication failed: {}", e.getMessage(), e);
+			log.error("Google authentication failed: {}", e.getMessage(), e);
 			throw new RuntimeException("Google authentication failed: " + e.getMessage(), e);
 		}
 	}

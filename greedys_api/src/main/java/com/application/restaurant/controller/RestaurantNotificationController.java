@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.application.common.controller.utils.ControllerUtils;
+import com.application.restaurant.controller.utils.RestaurantControllerUtils;
 import com.application.restaurant.model.RestaurantNotification;
 import com.application.restaurant.service.RestaurantNotificationService;
 
@@ -69,14 +69,14 @@ public class RestaurantNotificationController {
     @Operation(summary = "Set all notifications as read", description = "Sets all notifications for the given user as read")
     @PutMapping("/all-read")
     public ResponseEntity<Void> setAllNotificationsAsRead() {
-        restaurantNotificationService.markAllNotificationsAsRead(ControllerUtils.getCurrentRUser().getId());
+        restaurantNotificationService.markAllNotificationsAsRead(RestaurantControllerUtils.getCurrentRUser().getId());
         return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "Get unread notifications count", description = "Returns the count of unread notifications")
     @GetMapping("/unread/count")
     public ResponseEntity<Long> getUnreadNotificationsCount() {
-        Long count = restaurantNotificationService.countUnreadNotifications(ControllerUtils.getCurrentRUser()).longValue();
+        Long count = restaurantNotificationService.countUnreadNotifications(RestaurantControllerUtils.getCurrentRUser()).longValue();
         return ResponseEntity.ok().body(count);
     }
 }

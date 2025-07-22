@@ -11,21 +11,16 @@ import com.application.customer.dao.CustomerDAO;
 import com.application.customer.model.Customer;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 
 @Service("customerUserDetailsService")
 @Transactional
+@RequiredArgsConstructor
 public class CustomerUserDetailsService implements UserDetailsService {
 
     private final CustomerDAO custumerDAO;
     private final LoginAttemptService loginAttemptService;
     private final HttpServletRequest request;
-
-    public CustomerUserDetailsService(CustomerDAO custumerDAO, LoginAttemptService loginAttemptService,
-            HttpServletRequest request) {
-        this.custumerDAO = custumerDAO;
-        this.loginAttemptService = loginAttemptService;
-        this.request = request;
-    }
 
     @Override
     public UserDetails loadUserByUsername(final String email) throws UsernameNotFoundException {

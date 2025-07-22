@@ -2,7 +2,6 @@ package com.application.admin;
 
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.MessageSource;
@@ -14,17 +13,17 @@ import org.springframework.stereotype.Component;
 import com.application.admin.model.Admin;
 import com.application.admin.service.AdminService;
 
+import lombok.RequiredArgsConstructor;
+
 @Component
+@RequiredArgsConstructor
 public class AdminRegistrationListener implements ApplicationListener<AdminOnRegistrationCompleteEvent> {
-	@Autowired
-	private AdminService service;
+	private final AdminService service;
 
-	@Autowired
-	private MessageSource messages;
+	private final MessageSource messages;
 
-	@Autowired
 	@Qualifier("reservationMailSender")
-	private JavaMailSender mailSender;
+	private final JavaMailSender mailSender;
 	
 	// API
 

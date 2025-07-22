@@ -15,16 +15,14 @@ import com.application.customer.dao.AllergyDAO;
 import com.application.customer.model.Allergy;
 
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class AllergyService {
 
     private final AllergyDAO allergyDAO;
-
-    public AllergyService(AllergyDAO allergyDAO) {
-        this.allergyDAO = allergyDAO;
-    }
 
     public List<AllergyDTO> getAllAllergies() {
         return allergyDAO.findAll().stream()

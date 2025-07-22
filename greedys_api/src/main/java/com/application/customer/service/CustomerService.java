@@ -31,10 +31,11 @@ import com.application.customer.web.post.NewCustomerDTO;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class CustomerService {
 
 	private final CustomerDAO customerDAO;
@@ -43,20 +44,6 @@ public class CustomerService {
 	private final AllergyDAO allergyDAO;
 	private final PrivilegeDAO privilegeDAO;
 	private final ReservationDAO reservationDAO;
-
-	public CustomerService(CustomerDAO customerDAO,
-			RoleDAO roleRepository,
-			EntityManager entityManager,
-			AllergyDAO allergyDAO,
-			PrivilegeDAO privilegeDAO,
-			ReservationDAO reservationDAO) {
-		this.customerDAO = customerDAO;
-		this.roleRepository = roleRepository;
-		this.entityManager = entityManager;
-		this.privilegeDAO = privilegeDAO;
-		this.allergyDAO = allergyDAO;
-		this.reservationDAO = reservationDAO;
-	}
 
 	public CustomerDTO findById(long id) {
 		Customer customer = customerDAO.findById(id)
@@ -74,10 +61,6 @@ public class CustomerService {
 
 	private boolean emailExists(final String email) {
 		return customerDAO.findByEmail(email) != null;
-	}
-
-	public List<Customer> findAll() {
-		return customerDAO.findAll();
 	}
 
 	public void addImage(String email, Image image) {
@@ -115,7 +98,7 @@ public class CustomerService {
 	}
 
 	@Transactional
-	public void addAllergy(Long idAllergy) {
+	public void addAllergyToCustomer(Long idAllergy) {
 		Customer customer = customerDAO.findById(getCurrentCustomer().getId())
 				.orElseThrow(() -> new EntityNotFoundException("Customer not found"));
 		Allergy allergy = allergyDAO.findById(idAllergy)
@@ -126,7 +109,7 @@ public class CustomerService {
 	}
 
 	@Transactional
-	public void removeAllergy(Long idAllergy) {
+	public void removeAllergyToCustomer(Long idAllergy) {
 		Customer customer = customerDAO.findById(getCurrentCustomer().getId())
 				.orElseThrow(() -> new EntityNotFoundException("Customer not found"));
 		Allergy allergy = allergyDAO.findById(idAllergy)
@@ -221,13 +204,7 @@ public class CustomerService {
         roleRepository.save(role);
     }
 
-	public void updateCustomerStatus(Long customerId, Customer.Status newStatus) {
-		Customer customer = customerDAO.findById(customerId)
-				.orElseThrow(() -> new IllegalArgumentException("Customer not found"));
 
-		customer.setStatus(newStatus);
-		customerDAO.save(customer);
-	}
 
 	public void save(Customer customer) {
 		customerDAO.save(customer);
@@ -286,10 +263,6 @@ public class CustomerService {
 				.orElseThrow(() -> new EntityNotFoundException("Customer not found"));
 		customer.setStatus(Customer.Status.AUTO_DELETE);
 		customerDAO.save(customer);
-	}
-
-	public Object adminLoginToCustomer(Long customerId, HttpServletRequest request) {
-		throw new UnsupportedOperationException("Unimplemented method 'adminLoginToCustomer'");
 	}
 
     public CustomerStatisticsDTO getCustomerStatistics(Long customerId) {

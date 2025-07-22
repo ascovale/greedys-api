@@ -46,7 +46,7 @@ public class CustomerAllergyController {
     @ApiResponse(responseCode = "401", description = "Unauthorized")
     @PostMapping("/add/{allergyId}")
     public GenericResponse addAllergyToCustomer(@PathVariable Long allergyId) {
-        customerService.addAllergy(allergyId);
+        customerService.addAllergyToCustomer(allergyId);
         return new GenericResponse("Allergy added successfully");
     }
 
@@ -56,7 +56,7 @@ public class CustomerAllergyController {
     @ApiResponse(responseCode = "401", description = "Unauthorized")
     @DeleteMapping("/remove/{allergyId}")
     public GenericResponse removeAllergyFromUser(@PathVariable Long allergyId) {
-        customerService.removeAllergy(allergyId);
+        customerService.removeAllergyToCustomer(allergyId);
         return new GenericResponse("Allergy removed successfully");
     }
 

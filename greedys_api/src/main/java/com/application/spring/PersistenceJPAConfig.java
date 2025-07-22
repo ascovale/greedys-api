@@ -23,18 +23,16 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import jakarta.persistence.EntityManagerFactory;
+import lombok.RequiredArgsConstructor;
 
 @Configuration
 @EnableJpaRepositories(basePackages = "com.application.persistence.dao")
 @EnableTransactionManagement
 @EnableJpaAuditing(auditorAwareRef = "auditorProvider")
+@RequiredArgsConstructor
 public class PersistenceJPAConfig {
 
     private final Environment env;
-
-    public PersistenceJPAConfig(Environment env) {
-        this.env = env;
-    }
 
     @Bean
     DataSource dataSource() {
