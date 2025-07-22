@@ -24,18 +24,18 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import com.application.security.google2fa.AdminAuthenticationProvider;
-import com.application.security.google2fa.CustomerAuthenticationProvider;
-import com.application.security.google2fa.RUserAuthenticationProvider;
-import com.application.security.user.admin.AdminUserDetailsService;
-import com.application.security.user.admin.AdminUserRememberMeServices;
-import com.application.security.user.customer.CustomerUserDetailsService;
-import com.application.security.user.customer.CustomerUserRememberMeServices;
-import com.application.security.user.restaurant.RUserDetailsService;
-import com.application.security.user.restaurant.RUserRememberMeServices;
-import com.application.spring.requestfilter.AdminRequestFilter;
-import com.application.spring.requestfilter.CustomerRequestFilter;
-import com.application.spring.requestfilter.RUserRequestFilter;
+import com.application.admin.AdminRequestFilter;
+import com.application.admin.service.security.AdminAuthenticationProvider;
+import com.application.admin.service.security.AdminUserDetailsService;
+import com.application.admin.service.security.AdminUserRememberMeServices;
+import com.application.customer.CustomerAuthenticationProvider;
+import com.application.customer.CustomerRequestFilter;
+import com.application.customer.service.security.CustomerUserDetailsService;
+import com.application.customer.service.security.CustomerUserRememberMeServices;
+import com.application.restaurant.RUserAuthenticationProvider;
+import com.application.restaurant.RUserRequestFilter;
+import com.application.restaurant.service.security.RUserDetailsService;
+import com.application.restaurant.service.security.RUserRememberMeServices;
 
 @Configuration
 @EnableWebSecurity

@@ -1,0 +1,17 @@
+package com.application.restaurant.dao;
+
+import java.util.Collection;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+
+import com.application.restaurant.model.Room;
+
+@Repository
+public interface RoomDAO extends JpaRepository<Room, Long> {
+    
+    @Query("SELECT r FROM Room r WHERE r.restaurant.id = ?1")
+    public Collection<Room> findByRestaurant_Id(Long idRestaurant);
+
+}
