@@ -4,20 +4,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.admin.service.AdminCustomerService;
-import com.application.common.service.AllergyService;
 import com.application.common.web.dto.get.CustomerDTO;
-import com.application.common.web.dto.post.NewAllergyDTO;
 import com.application.common.web.util.GenericResponse;
 import com.application.customer.model.Customer;
 
@@ -38,38 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class AdminCustomerController {
-    private final AdminCustomerService customerService;
-    private final AllergyService allergyService;
-
-    @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_WRITE')")
-    @Operation(summary = "Create allergy", description = "Creates a new allergy for the specified user by their ID")
-    @ApiResponse(responseCode = "200", description = "Allergy created successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
-    @ApiResponse(responseCode = "400", description = "Invalid request")
-    @PostMapping("/allergy/new")
-    public GenericResponse createAllergy(@RequestBody NewAllergyDTO allergyDto) {
-        allergyService.createAllergy(allergyDto);
-        return new GenericResponse("Allergy created successfully");
-    }
-
-    @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_WRITE')")
-    @Operation(summary = "Delete allergy", description = "Deletes an allergy by its ID")
-    @ApiResponse(responseCode = "200", description = "Allergy deleted successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
-    @ApiResponse(responseCode = "400", description = "Invalid request")
-    @DeleteMapping("/allergy/{allergyId}/delete")
-    public GenericResponse deleteAllergy(@PathVariable Long allergyId) {
-        allergyService.deleteAllergy(allergyId);
-        return new GenericResponse("Allergy deleted successfully");
-    }
-
-    @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_WRITE')")
-    @Operation(summary = "Modify allergy", description = "Modifies an existing allergy")
-    @ApiResponse(responseCode = "200", description = "Allergy modified successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
-    @ApiResponse(responseCode = "400", description = "Invalid request")
-    @PutMapping("/allergy/{idAllergy}/modify")
-    public GenericResponse modifyAllergy(@PathVariable Long idAllergy, @RequestBody NewAllergyDTO allergyDto) {
-        allergyService.modifyAllergy(idAllergy, allergyDto);
-        return new GenericResponse("Allergy modified successfully");
-    }
+    private final AdminCustomerService adminCustomerService;
 
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_WRITE')")
     @Operation(summary = "Block customer", description = "Blocks a customer by their ID")
@@ -77,7 +41,7 @@ public class AdminCustomerController {
     @ApiResponse(responseCode = "400", description = "Invalid request")
     @PutMapping("/{customerId}/block")
     public GenericResponse blockUser(@PathVariable Long customerId) {
-        customerService.updateCustomerStatus(customerId,Customer.Status.BLOCKED);
+        adminCustomerService.updateCustomerStatus(customerId,Customer.Status.BLOCKED);
         return new GenericResponse("User blocked successfully");
     }
 
@@ -87,28 +51,26 @@ public class AdminCustomerController {
     @ApiResponse(responseCode = "400", description = "Invalid request")
     @PutMapping("/{customerId}/enable")
     public GenericResponse enableCustomer(@PathVariable Long customerId) {
-        customerService.updateCustomerStatus(customerId,Customer.Status.ENABLED);
+        adminCustomerService.updateCustomerStatus(customerId,Customer.Status.ENABLED);
         return new GenericResponse("User enabled successfully");
     }
 
-    //TODO: Da verificare inserendo tanti utenti
-
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_READ')")
-    @Operation(summary = "List users with pagination", description = "Returns a paginated list of users")
-    @ApiResponse(responseCode = "200", description = "Users retrieved successfully", content = @Content(mediaType = "application/json"))
+    @Operation(summary = "List customers with pagination", description = "Returns a paginated list of customers")
+    @ApiResponse(responseCode = "200", description = "Customers retrieved successfully", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "400", description = "Invalid request")
     @GetMapping("/customers/page")
-    public Page<CustomerDTO> listUsersWithPagination(@RequestParam int page, @RequestParam int size) {
+    public Page<CustomerDTO> listCustomersWithPagination(@RequestParam int page, @RequestParam int size) {
         PageRequest pageable = PageRequest.of(page, size);
-        return customerService.findAll(pageable);
+        return adminCustomerService.findAll(pageable);
     }
 
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_SWITCH_TO_CUSTOMER')")
     @Operation(summary = "Get JWT Token of a customer", description = "Get JWT Token of a customer")
     @ApiResponse(responseCode = "200", description = "Token retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
     @GetMapping("/login/{customerId}")
-    public ResponseEntity<?> loginTokenHasRUser(@PathVariable Long customerId, HttpServletRequest request) {
-        return ResponseEntity.ok(customerService.adminLoginToCustomer(customerId,request));
+    public ResponseEntity<?> loginTokenHasCustomer(@PathVariable Long customerId, HttpServletRequest request) {
+        return ResponseEntity.ok(adminCustomerService.adminLoginToCustomer(customerId,request));
     }
 
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_WRITE')")
@@ -117,7 +79,7 @@ public class AdminCustomerController {
     @ApiResponse(responseCode = "400", description = "Invalid request")
     @PutMapping("/{customerId}/add_role")
     public GenericResponse addRoleToCustomer(@PathVariable Long customerId, @RequestParam String role) {
-        customerService.addRoleToCustomer(customerId, role);
+        adminCustomerService.addRoleToCustomer(customerId, role);
         return new GenericResponse("Role added successfully");
     }
 
@@ -127,7 +89,7 @@ public class AdminCustomerController {
     @ApiResponse(responseCode = "400", description = "Invalid request")
     @PutMapping("/{customerId}/remove_role")
     public GenericResponse removeRoleFromCustomer(@PathVariable Long customerId, @RequestParam String role) {
-        customerService.removeRoleFromCustomer(customerId, role);
+        adminCustomerService.removeRoleFromCustomer(customerId, role);
         return new GenericResponse("Role removed successfully");
     }
 
@@ -137,7 +99,7 @@ public class AdminCustomerController {
     @ApiResponse(responseCode = "400", description = "Richiesta non valida")
     @PutMapping("/role/{roleName}/add_permission")
     public ResponseEntity<GenericResponse> addPermissionToRole(@PathVariable String roleName, @RequestParam String permission) {
-        customerService.addPrivilegeToRole(roleName, permission);
+        adminCustomerService.addPrivilegeToRole(roleName, permission);
         return ResponseEntity.ok(new GenericResponse("Permission added successfully"));
     }
 
@@ -147,118 +109,8 @@ public class AdminCustomerController {
     @ApiResponse(responseCode = "400", description = "Richiesta non valida")
     @PutMapping("/role/{roleName}/remove_permission")
     public ResponseEntity<GenericResponse> removePermissionFromRole(@PathVariable String roleName, @RequestParam String permission) {
-        customerService.removePrivilegeFromRole(roleName, permission);
+        adminCustomerService.removePrivilegeFromRole(roleName, permission);
         return ResponseEntity.ok(new GenericResponse("Permission removed successfully"));
     }
-    //TODO: Verificare la parte di sotto, se serve o meno
-/* 
-    private Customer getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.getPrincipal() instanceof Customer) {
-            return (Customer) authentication.getPrincipal();
-        }
-        return null;
-    }
-     
-    @Operation(summary = "Get user by id", description = "Recupera un utente specifico tramite il suo ID")
-    @ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserDTO.class)))
-    @ApiResponse(responseCode = "404", description = "Utente non trovato")
-    @GetMapping("/{id}")
-    public UserDTO getUser(@PathVariable Long id) {
-        return customerService.findById(id);
-    }
-    //TODO: Fare metodo per Admin per ripristinare propria password
-    // ------------------- Password Management ----------------------------- //
-    @Operation(summary = "Reset user password by email", description = "Invia un'email per il reset della password all'utente specificato tramite email")
-    @ApiResponse(responseCode = "200", description = "Email per il reset della password inviata con successo", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
-    @ApiResponse(responseCode = "400", description = "Richiesta non valida")
-    @PostMapping(value = "/password/reset")
-    public GenericResponse resetPassword(final HttpServletRequest request,
-            @Parameter(description = "Email dell'utente per cui resettare la password") @RequestParam("email") final String userEmail) {
-        final Customer user = customerService.findUserByEmail(userEmail);
-        if (user != null) {
-            final String token = UUID.randomUUID().toString();
-            customerService.createPasswordResetTokenForUser(user, token);
-            // mailSender.send(constructResetTokenEmail(getAppUrl(request),
-            // request.getLocale(), token, user));
-        }
-        return new GenericResponse(messages.getMessage("message.resetPasswordEmail", null, request.getLocale()));
-    }
 
-    // change user password
-    @Operation(summary = "Generate new token for password change", description = "Cambia la password dell'utente dopo aver verificato la vecchia password")
-    @ApiResponse(responseCode = "200", description = "Password cambiata con successo", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
-    @ApiResponse(responseCode = "400", description = "Password vecchia non valida o dati non validi")
-    @PostMapping(value = "{id}/password")
-    public GenericResponse changeUserPassword(
-            @Parameter(description = "Locale per i messaggi di risposta") final Locale locale,
-            @Parameter(description = "ID dell'utente") @PathVariable Long id,
-            @Parameter(description = "DTO con la vecchia e la nuova password", required = true) @Valid UpdatePasswordDTO passwordDto) {
-        if (!customerService.checkIfValidOldPassword(id, passwordDto.getOldPassword())) {
-            throw new InvalidOldPasswordException();
-        }
-        customerService.changeUserPassword(id, passwordDto.getNewPassword());
-        return new GenericResponse(messages.getMessage("message.updatePasswordSuc", null, locale));
-    }
-
-    @Operation(summary = "Confirm password change with token", description = "Conferma il cambio della password utilizzando un token")
-    @ApiResponse(responseCode = "200", description = "Password cambiata con successo o token non valido", content = @Content(mediaType = "text/plain", schema = @Schema(type = "string")))
-    @PutMapping(value = "/{id}/password")
-    public String confirmPasswordChange(
-            @Parameter(description = "ID dell'utente") @PathVariable final long id,
-            @Parameter(description = "Token di reset della password") @RequestParam final String token) {
-        final String result = securitycustomerService.validatePasswordResetToken(id, token);
-        if (result != null) {
-            return "invalidToken";
-        }
-        return "success";
-    }
-
-    @Operation(summary = "Get user's reservations", description = "Recupera l'elenco delle prenotazioni dell'utente")
-    @ApiResponse(responseCode = "200", description = "Operazione riuscita", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ReservationDTO.class))))
-    @ApiResponse(responseCode = "404", description = "Utente non trovato")
-    @GetMapping("{id}/reservations")
-    public Collection<ReservationDTO> getUserReservations(@PathVariable Long id) {
-        return reservationService.findAllUserReservations(id);
-    }
-
-    @Operation(summary = "Delete user", description = "Cancella un utente specifico tramite il suo ID")
-    @ApiResponse(responseCode = "200", description = "Utente cancellato con successo", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
-    @ApiResponse(responseCode = "404", description = "Utente non trovato")
-    @DeleteMapping("/{id}")
-    public GenericResponse deleteUser(@PathVariable Long id) {
-        customerService.deleteUserById(id);
-        return new GenericResponse("User deleted successfully");
-    }
-
-    @Operation(summary = "Update user", description = "Modifica i dettagli di un utente specifico tramite il suo ID")
-    @ApiResponse(responseCode = "200", description = "Utente aggiornato con successo", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserDTO.class)))
-    @ApiResponse(responseCode = "404", description = "Utente non trovato")
-    @PutMapping("/{id}")
-    public GenericResponse updateUser(@PathVariable Long id, @Valid @RequestBody UserDTO userDto) {
-        customerService.updateUser(id, userDto);
-        return new GenericResponse("User modified successfully");
-    }
-
-    @Operation(summary = "Report restaurant abuse", description = "Segnala un abuso da parte di un ristorante")
-    @ApiResponse(responseCode = "200", description = "Abuso segnalato con successo", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
-    @ApiResponse(responseCode = "404", description = "Utente o ristorante non trovato")
-    @PostMapping("/report/{restaurantId}")
-    public GenericResponse reportRestaurantAbuse(@PathVariable Long userId, @PathVariable Long restaurantId) {
-        customerService.reportRestaurantAbuse(restaurantId);
-        return new GenericResponse("Abuse reported successfully");
-    }
-
-    // Correzione: usa @RequestBody invece di @RequestParam per DTO complessi
-    @PutMapping("/reservations/request-modify")
-    @Operation(summary = "Request reservation modification", description = "Richiede una modifica alla prenotazione specificata")
-    @ApiResponse(responseCode = "200", description = "Richiesta di modifica inviata con successo", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
-    @ApiResponse(responseCode = "404", description = "Prenotazione non trovata")
-    public GenericResponse requestModifyReservation(
-            @PathVariable Long reservationId,
-            @RequestBody CustomerNewReservationDTO reservationDto) {
-        reservationService.requestModifyReservation(reservationId, reservationDto);
-        return new GenericResponse("Reservation modification requested successfully");
-    }*/
 }
-

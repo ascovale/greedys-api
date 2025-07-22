@@ -1,11 +1,9 @@
-package com.application.admin.controller;
+package com.application.admin.controller.admin;
 
 import java.util.Locale;
 
 import org.springframework.context.MessageSource;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,6 +11,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.application.admin.controller.utils.AdminControllerUtils;
 import com.application.admin.model.Admin;
 import com.application.admin.service.AdminService;
 import com.application.common.web.dto.put.UpdatePasswordDTO;
@@ -36,13 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 @Tag(name = "Users", description = "Admin Users Management")
 @RequiredArgsConstructor
 @Slf4j
-public class AdminUsersController {
-    // TODO: aggiungere ruoli e permessi ai ruoli come metodi
-    // Riscrivere tutta la classe per implementare i metodi per dare togliere i
-    // permessi agli utenti admin
-    // e per bloccare e sbloccare gli utenti admin o forse meglio chiamarlo supporto
-    // aggiungere e rimuovere
-    // aggiungere e rimuovere permessi
+public class AdminController {
     private final AdminService adminService;
     private final MessageSource messages;
 
@@ -99,14 +92,8 @@ public class AdminUsersController {
     })
     @GetMapping("/id")
     public Long getAdminId() {
-        return getCurrentAdmin().getId();
+        return AdminControllerUtils.getCurrentAdmin().getId();
     }
 
-    private Admin getCurrentAdmin() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.getPrincipal() instanceof Admin) {
-            return (Admin) authentication.getPrincipal();
-        }
-        return null;
-    }
+
 }

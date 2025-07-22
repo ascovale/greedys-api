@@ -30,10 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class AdminRUserController {
-    // TODO: aggiungere ruoli e permessi ai ruoli come metodi
-
-    // TODO Forse manca il delete restaurant user e quindi anche altri utenti
-
+    
     private final RUserService RUserService;
     private final RestaurantAuthenticationService restaurantAuthenticationService;
 
@@ -56,10 +53,6 @@ public class AdminRUserController {
         RUserService.updateRUserStatus(RUserId, RUser.Status.ENABLED);
         return new GenericResponse("Restaurant user enabled successfully");
     }
-
-    // TODO: perchè voglio dire idOldOwner
-    // scrivere newOwnerId
-    // non basta passare forse bisogna cambiare solo mail?
 
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_USER_WRITE')")
     @Operation(summary = "Change restaurant owner", description = "Changes the owner of a restaurant")

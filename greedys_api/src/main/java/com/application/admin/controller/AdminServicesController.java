@@ -13,13 +13,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.application.admin.web.post.AdminNewServiceDTO;
 import com.application.common.web.dto.ServiceTypeDto;
-import com.application.common.web.dto.get.ServiceDTO;
-import com.application.common.web.dto.get.SlotDTO;
 import com.application.common.web.util.GenericResponse;
 import com.application.restaurant.service.ServiceService;
-import com.application.restaurant.service.SlotService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -38,62 +34,6 @@ import lombok.extern.slf4j.Slf4j;
 public class AdminServicesController {
 
     private final ServiceService serviceService;
-    private final SlotService slotService;
-
-	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
-    @Operation(summary = "Create a new service", description = "This method creates a new service in the system.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Service created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid input data"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
-    @PostMapping("/new")
-    public ResponseEntity<GenericResponse> newService(@RequestBody AdminNewServiceDTO servicesDto) {
-        System.out.println("<<<   Controller Service   >>>");
-        System.out.println("<<<   name: " + servicesDto.getName());
-        serviceService.newService(servicesDto);
-        return ResponseEntity.ok(new GenericResponse("success"));
-    }
-
-	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
-    @Operation(summary = "Delete a service", description = "This method deletes a service by its ID.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Service deleted successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid service ID"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
-    @DeleteMapping("/{serviceId}/delete")
-    public GenericResponse deleteService(@PathVariable Long serviceId) {
-        System.out.println("<<<   Controller Service   >>>");
-        System.out.println("<<<   serviceId: " + serviceId);
-        serviceService.deleteService(serviceId);
-        return new GenericResponse("success");
-    }
-
-	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_READ')")
-    @Operation(summary = "Get service by ID", description = "Retrieve a service by its ID.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Service retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "Service not found"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
-    @GetMapping("/{serviceId}")
-    public ResponseEntity<ServiceDTO> getServiceById(@PathVariable Long serviceId) {
-        ServiceDTO service = serviceService.findById(serviceId);
-        return ResponseEntity.ok(service);
-    }
-
-	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_READ')")
-    @Operation(summary = "Get all slots of a service", description = "Retrieve all slots associated with a specific service by its ID.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Slots retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "Service not found"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
-    @GetMapping("/{serviceId}/slot")
-    public Collection<SlotDTO> getSlots(@PathVariable long serviceId) {
-        return slotService.findByService_Id(serviceId);
-    }
 
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_READ')")
     @GetMapping("/types")

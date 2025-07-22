@@ -21,6 +21,7 @@ import com.application.common.web.util.GenericResponse;
 import com.application.restaurant.controller.utils.RestaurantControllerUtils;
 import com.application.restaurant.service.RestaurantService;
 import com.application.restaurant.service.RoomService;
+import com.application.restaurant.service.SlotService;
 import com.application.restaurant.service.TableService;
 import com.application.restaurant.web.post.NewRoomDTO;
 import com.application.restaurant.web.post.NewTableDTO;
@@ -44,14 +45,10 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class RestaurantController {
-
-	// Creare un tester che fa le richieste all'api e ne verifica la correttezza dei
-	// risultati.
-
 	private final RestaurantService restaurantService;
 	private final RoomService roomService;
 	private final TableService tableService;
-	private final com.application.restaurant.service.SlotService slotService;
+	private final SlotService slotService;
 
 	/* -- === *** ROOMS AND TABLES *** === --- */
 

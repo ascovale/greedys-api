@@ -1,4 +1,4 @@
-package com.application.customer.controller;
+package com.application.customer.controller.customer;
 
 import java.util.List;
 
@@ -33,10 +33,6 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class CustomerAllergyController {
-    // TODO: togliere ovunque isEnabled() che è ridondante che errore lancia spring
-    // in caso di isEnabled false?
-    // Rivedere il token che abilita il customer
-    // Vedere se inserire il token di verifica mail ai vari utenti
     private final CustomerService customerService;
     private final AllergyService allergyService;
 
@@ -68,7 +64,6 @@ public class CustomerAllergyController {
     public List<AllergyDTO> getAllergiesOfCustomer() {
         return customerService.getAllergies(getCurrentCustomer().getId());
     }
-    //TODO: Da verificare tutti i metodi con pagine
 
     @Operation(summary = "Get paginated allergies of customer", description = "Returns paginated allergies of the currently authenticated customer")
     @ApiResponse(responseCode = "200", description = "Allergies successfully retrieved", content = @Content(mediaType = "application/json", schema = @Schema(implementation = List.class)))

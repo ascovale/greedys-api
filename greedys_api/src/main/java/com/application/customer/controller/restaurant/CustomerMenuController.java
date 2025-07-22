@@ -1,4 +1,4 @@
-package com.application.customer.controller;
+package com.application.customer.controller.restaurant;
 
 /**
  * TODO: CLEANUP - Actions to do for the customer MenuController
