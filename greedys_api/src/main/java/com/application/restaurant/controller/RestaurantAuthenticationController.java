@@ -1,7 +1,5 @@
 package com.application.restaurant.controller;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -28,22 +26,18 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 @RestController
 @Tag(name = "Restaurant Authentication", description = "Controller for restaurant authentication")
 @RequestMapping("/restaurant/user/auth")
 @SecurityRequirement(name = "bearerAuth")
+@RequiredArgsConstructor
+@Slf4j
 public class RestaurantAuthenticationController {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(getClass());
     private final JwtUtil jwtUtil;
-
     private final RestaurantAuthenticationService restaurantAuthenticationService;
-
-    public RestaurantAuthenticationController(
-            RestaurantAuthenticationService restaurantAuthenticationService, JwtUtil jwtUtil) {
-        this.jwtUtil = jwtUtil;
-        this.restaurantAuthenticationService = restaurantAuthenticationService;
-    }
 
     @Operation(summary = "Get list of restaurants for hub user", description = "Given a hub JWT, returns the list of restaurants associated with the hub user")
     @ApiResponses(value = {
@@ -63,51 +57,51 @@ public class RestaurantAuthenticationController {
     @GetMapping(value = "/restaurants", produces = "application/json")
     public ResponseEntity<?> restaurants(@Parameter(hidden = true) @RequestHeader("Authorization") String authHeader) {
         try {
-            LOGGER.info("[DEBUG] Entered /restaurants endpoint");
+            log.info("[DEBUG] Entered /restaurants endpoint");
             Authentication authentication =
                 SecurityContextHolder.getContext().getAuthentication();
-            LOGGER.info("[DEBUG] Authentication object: {}", authentication);
+            log.info("[DEBUG] Authentication object: {}", authentication);
             if (authentication == null || !authentication.isAuthenticated()) {
-                LOGGER.warn("[DEBUG] No authenticated principal found");
+                log.warn("[DEBUG] No authenticated principal found");
                 return ResponseEntity.status(401).body("Unauthorized: No authenticated principal found");
             }
             String hubEmail = null;
             Object principal = authentication.getPrincipal();
-            LOGGER.info("[DEBUG] Principal class: {}", principal != null ? principal.getClass().getName() : "null");
+            log.info("[DEBUG] Principal class: {}", principal != null ? principal.getClass().getName() : "null");
             if (principal instanceof RUser) {
                 RUser rUser = (RUser) principal;
                 hubEmail = rUser.getEmail();
-                LOGGER.info("[DEBUG] Extracted hubEmail from RUser: {}", hubEmail);
+                log.info("[DEBUG] Extracted hubEmail from RUser: {}", hubEmail);
             } else {
-                LOGGER.info("[DEBUG] Principal is not RUser, checking Authorization header");
+                log.info("[DEBUG] Principal is not RUser, checking Authorization header");
                 if (authHeader == null || !authHeader.toLowerCase().startsWith("bearer ")) {
-                    LOGGER.warn("[DEBUG] Missing or invalid Authorization header");
+                    log.warn("[DEBUG] Missing or invalid Authorization header");
                     return ResponseEntity.status(400).body("Bad Request: Missing or invalid Authorization header");
                 }
                 String hubJwt = authHeader.substring(7); // Remove 'Bearer '
-                LOGGER.info("[DEBUG] Extracted JWT from header");
+                log.info("[DEBUG] Extracted JWT from header");
                 Claims claims;
                 try {
                     claims = jwtUtil.extractAllClaims(hubJwt);
                 } catch (Exception ex) {
-                    LOGGER.warn("[DEBUG] Invalid JWT: {}", ex.getMessage());
+                    log.warn("[DEBUG] Invalid JWT: {}", ex.getMessage());
                     return ResponseEntity.status(401).body("Unauthorized: Invalid JWT");
                 }
                 String type = claims.get("type", String.class);
-                LOGGER.info("[DEBUG] JWT type claim: {}", type);
+                log.info("[DEBUG] JWT type claim: {}", type);
                 if (!"hub".equals(type)) {
-                    LOGGER.warn("[DEBUG] JWT does not belong to a hub user");
+                    log.warn("[DEBUG] JWT does not belong to a hub user");
                     return ResponseEntity.status(403).body("Forbidden: JWT does not belong to a hub user");
                 }
                 hubEmail = claims.get("email", String.class);
             }
             if (hubEmail == null) {
-                LOGGER.error("[DEBUG] Hub ID not found in JWT or authentication principal");
+                log.error("[DEBUG] Hub ID not found in JWT or authentication principal");
                 return ResponseEntity.status(400).body("Bad Request: Hub ID not found in JWT or authentication principal");
             }
             return ResponseEntity.ok(restaurantAuthenticationService.getRestaurantsForUserHub(hubEmail));
         } catch (Exception e) {
-            LOGGER.error("Failed to retrieve restaurants: {}", e.getMessage(), e);
+            log.error("Failed to retrieve restaurants: {}", e.getMessage(), e);
             return ResponseEntity.status(500).body("Internal Server Error: " + e.getMessage());
         }
     }
@@ -125,19 +119,19 @@ public class RestaurantAuthenticationController {
     public ResponseEntity<?> selectRestaurant(@RequestParam Long restaurantId) {
         try {
             if (restaurantId == null || restaurantId <= 0) {
-                LOGGER.warn("Invalid restaurantId: {}", restaurantId);
+                log.warn("Invalid restaurantId: {}", restaurantId);
                 return ResponseEntity.status(400).body("Bad Request: Invalid restaurantId");
             }
             AuthResponseDTO responseDTO = restaurantAuthenticationService.selectRestaurant(restaurantId);
             return ResponseEntity.ok(responseDTO);
         } catch (UnsupportedOperationException e) {
-            LOGGER.error("Restaurant selection failed: {}", e.getMessage());
+            log.error("Restaurant selection failed: {}", e.getMessage());
             return ResponseEntity.status(403).body("Forbidden: " + e.getMessage());
         } catch (IllegalArgumentException e) {
-            LOGGER.error("Bad request: {}", e.getMessage());
+            log.error("Bad request: {}", e.getMessage());
             return ResponseEntity.status(400).body("Bad Request: " + e.getMessage());
         } catch (Exception e) {
-            LOGGER.error("Internal error: {}", e.getMessage(), e);
+            log.error("Internal error: {}", e.getMessage(), e);
             return ResponseEntity.status(500).body("Internal Server Error: " + e.getMessage());
         }
     }

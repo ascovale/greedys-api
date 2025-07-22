@@ -35,22 +35,20 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Tag(name = "Restaurant User Management", description = "Controller for managing restaurant users")
 @RestController
 @RequestMapping("/restaurant/user")
 @SecurityRequirement(name = "bearerAuth")
+@RequiredArgsConstructor
+@Slf4j
 public class RUserController {
 
     private final RUserService RUserService;
     private final MessageSource messages;
     private final RestaurantRoleDAO roleDAO;
-
-    public RUserController(RUserService RUserService, MessageSource messages, RestaurantRoleDAO roleDAO) {
-        this.messages = messages;
-        this.RUserService = RUserService;
-        this.roleDAO = roleDAO;
-    }
 
     /**
      * Assigns a specific role to a restaurant user.

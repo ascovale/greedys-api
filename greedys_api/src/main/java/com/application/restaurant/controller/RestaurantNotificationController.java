@@ -18,17 +18,17 @@ import com.application.restaurant.service.RestaurantNotificationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/restaurant/notification")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Notification Management", description = "Restaurant Notification management APIs")
+@RequiredArgsConstructor
+@Slf4j
 public class RestaurantNotificationController {
     private final RestaurantNotificationService restaurantNotificationService;
-
-    public RestaurantNotificationController(RestaurantNotificationService restaurantNotificationService) {
-        this.restaurantNotificationService = restaurantNotificationService;
-    }
 
     @Operation(summary = "Get unread notifications", description = "Returns a pageable list of unread notifications")
     @GetMapping("/unread/{page}/{size}")

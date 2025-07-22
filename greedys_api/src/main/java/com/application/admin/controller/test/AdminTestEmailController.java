@@ -18,23 +18,21 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RequestMapping("/admin/restaurant")
 @RestController
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Admin Tester", description = "Admin management APIs for testing purposes")
+@RequiredArgsConstructor
+@Slf4j
 public class AdminTestEmailController {
     //TODO: Dividere le mail per la prenotazione e per la registrazione
     //TODO: Bisognerà usare Twilio per inviare anche le mail per grossi volumi valutare aws
-    private EmailService emailService;
-    private CustomerNotificationService notificationService;
-    private RestaurantNotificationService restaurantNotificationService;
-
-    public AdminTestEmailController(EmailService emailService, CustomerNotificationService notificationService, RestaurantNotificationService restaurantNotificationService) {
-        this.emailService = emailService;
-        this.notificationService = notificationService;
-        this.restaurantNotificationService = restaurantNotificationService;
-    }
+    private final EmailService emailService;
+    private final CustomerNotificationService notificationService;
+    private final RestaurantNotificationService restaurantNotificationService;
     
     @Operation(
         summary = "Send test email", 

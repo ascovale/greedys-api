@@ -3,7 +3,6 @@ package com.application.admin.service.security;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -17,15 +16,17 @@ import com.application.admin.model.Admin;
 import com.application.admin.model.AdminPasswordResetToken;
 import com.application.common.security.user.ISecurityUserService;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 @Service
 @Transactional
 @Qualifier("adminSecurityService")
+@RequiredArgsConstructor
+@Slf4j
 public class AdminUserSecurityService implements ISecurityUserService {
 
-    @Autowired
-    private AdminPasswordResetTokenDAO passwordTokenRepository;
-
-    // API
+    private final AdminPasswordResetTokenDAO passwordTokenRepository;
 
     @Override
     public String validatePasswordResetToken(String token) {

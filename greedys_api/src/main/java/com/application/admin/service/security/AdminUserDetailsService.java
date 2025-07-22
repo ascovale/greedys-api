@@ -11,21 +11,18 @@ import com.application.admin.model.Admin;
 import com.application.common.security.LoginAttemptService;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service("adminUserDetailsService")
 @Transactional
+@RequiredArgsConstructor
+@Slf4j
 public class AdminUserDetailsService implements UserDetailsService {
 
     private final AdminDAO adminDAO;
     private final LoginAttemptService loginAttemptService;
     private final HttpServletRequest request;
-
-    public AdminUserDetailsService(AdminDAO adminDAO, LoginAttemptService loginAttemptService,
-            HttpServletRequest request) {
-        this.adminDAO = adminDAO;
-        this.loginAttemptService = loginAttemptService;
-        this.request = request;
-    }
 
     @Override
     public UserDetails loadUserByUsername(final String email) throws UsernameNotFoundException {

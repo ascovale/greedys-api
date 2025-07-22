@@ -23,12 +23,15 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RequestMapping("/customer/allergy")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Allergy", description = "Controller for managing customer allergies")
-
 @RestController
+@RequiredArgsConstructor
+@Slf4j
 public class CustomerAllergyController {
     // TODO: togliere ovunque isEnabled() che è ridondante che errore lancia spring
     // in caso di isEnabled false?
@@ -36,11 +39,6 @@ public class CustomerAllergyController {
     // Vedere se inserire il token di verifica mail ai vari utenti
     private final CustomerService customerService;
     private final AllergyService allergyService;
-
-    public CustomerAllergyController(CustomerService customerService, AllergyService allergyService) {
-        this.allergyService = allergyService;
-        this.customerService = customerService;
-    }
 
     @Operation(summary = "Add allergy to customer", description = "Adds an allergy to the currently authenticated customer using the allergy ID")
     @ApiResponse(responseCode = "200", description = "Allergy successfully added", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
@@ -95,7 +93,7 @@ public class CustomerAllergyController {
         if (principal instanceof Customer) {
             return ((Customer) principal);
         } else {
-            System.out.println("This should not happen");
+            log.warn("This should not happen");
             return null;
         }
     }

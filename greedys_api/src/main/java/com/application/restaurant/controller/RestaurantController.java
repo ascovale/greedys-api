@@ -33,12 +33,16 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Tag(name = "Restaurant Management", description = "Controller for managing restaurant operations")
 @RestController
 @RequestMapping("/restaurant")
 // @PreAuthorize("@securityService.isRUserPermission(#idRUser)")
 @SecurityRequirement(name = "bearerAuth")
+@RequiredArgsConstructor
+@Slf4j
 public class RestaurantController {
 
 	// Creare un tester che fa le richieste all'api e ne verifica la correttezza dei
@@ -48,16 +52,6 @@ public class RestaurantController {
 	private final RoomService roomService;
 	private final TableService tableService;
 	private final com.application.restaurant.service.SlotService slotService;
-
-	public RestaurantController(RestaurantService restaurantService,
-			RoomService roomService,
-			TableService tableService,
-			com.application.restaurant.service.SlotService slotService) {
-		this.restaurantService = restaurantService;
-		this.roomService = roomService;
-		this.tableService = tableService;
-		this.slotService = slotService;
-	}
 
 	/* -- === *** ROOMS AND TABLES *** === --- */
 

@@ -24,17 +24,17 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Tag(name = "Menu Management", description = "Restaurant Menu Controller APIs")
 @SecurityRequirement(name = "bearerAuth")
 @RequestMapping("/restaurant/menu")
 @RestController
+@RequiredArgsConstructor
+@Slf4j
 public class RestaurantMenuController {
     private final RestaurantMenuService restaurantMenuService;
-
-    public RestaurantMenuController(RestaurantMenuService restaurantMenuService) {
-        this.restaurantMenuService = restaurantMenuService;
-    }
 
     @Operation(summary = "Retrieve all menus", description = "Retrieve all menus for the current restaurant")
     @ApiResponses({

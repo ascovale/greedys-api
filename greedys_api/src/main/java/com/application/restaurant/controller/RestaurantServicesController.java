@@ -2,7 +2,6 @@ package com.application.restaurant.controller;
 
 import java.util.Collection;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.utils.ControllerUtils;
-import com.application.common.service.reservation.ReservationService;
 import com.application.common.web.dto.ServiceTypeDto;
 import com.application.common.web.dto.get.ServiceDTO;
 import com.application.common.web.dto.get.SlotDTO;
@@ -33,21 +31,20 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Tag(name = "Service Management", description = "Controller for managing services offered by restaurants")
 @RestController
 @RequestMapping("/restaurant/service")
 @SecurityRequirement(name = "bearerAuth")
+@RequiredArgsConstructor
+@Slf4j
 public class RestaurantServicesController {
 
-    @Autowired
-    private ServiceService serviceService;
-    @Autowired
-    private SlotService slotService;
-    @Autowired
-    RestaurantService restaurantService;
-    @Autowired
-    ReservationService reservationService;
+    private final ServiceService serviceService;
+    private final SlotService slotService;
+    private final RestaurantService restaurantService;
 
     @Operation(summary = "Create a new service", description = "This method creates a new service in the system.")
     @ApiResponses(value = {

@@ -35,6 +35,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * The ReservationRestaurantController class is responsible for handling HTTP
@@ -46,15 +48,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "bearerAuth")
 @RequestMapping("/restaurant/reservation")
 @Tag(name = "Restaurant Reservation", description = "APIs for managing reservations from the restaurant")
+@RequiredArgsConstructor
+@Slf4j
 public class RestaurantReservationController {
 	//
 	private final RestaurantReservationService restaurantReservationService;
 	private final RestaurantNotificationService restaurantNotificationService;
-
-	public RestaurantReservationController(RestaurantReservationService restaurantReservationService, RestaurantNotificationService restaurantNotificationService) {
-		this.restaurantReservationService = restaurantReservationService;
-		this.restaurantNotificationService = restaurantNotificationService;
-	}
 
 	@Operation(summary = "Create a new reservation", description = "Endpoint to create a new reservation")
 	@ApiResponses(value = {

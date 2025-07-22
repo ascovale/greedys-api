@@ -2,7 +2,6 @@ package com.application.customer.controller;
 
 import java.util.Collection;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -28,14 +27,17 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/customer/reservation")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Reservation", description = "APIs for managing reservations of the customer")
+@RequiredArgsConstructor
+@Slf4j
 public class CustomerReservationController {
-	@Autowired
-	private CustomerReservationService customerReservationService;
+	private final CustomerReservationService customerReservationService;
 
 	@Operation(summary = "The customer user asks for a reservation", description = "Endpoint for the customer to request a reservation")
 	@ApiResponses(value = {

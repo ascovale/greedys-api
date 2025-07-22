@@ -24,9 +24,13 @@ import com.application.common.web.error.UserAlreadyExistException;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
+@Slf4j
 public class AdminService {
 
 	public static final String TOKEN_INVALID = "invalidToken";
@@ -42,19 +46,6 @@ public class AdminService {
 	private final PasswordEncoder passwordEncoder;
 	private final EntityManager entityManager;
 	private final AdminRoleDAO adminRoleDAO;
-
-	public AdminService(AdminDAO adminDAO, AdminVerificationTokenDAO tokenDAO,
-	AdminPasswordResetTokenDAO passwordTokenRepository,
-			PasswordEncoder passwordEncoder,
-			EntityManager entityManager,
-			AdminRoleDAO adminRoleDAO) {
-		this.adminDAO = adminDAO;
-		this.tokenDAO = tokenDAO;
-		this.passwordTokenRepository = passwordTokenRepository;
-		this.passwordEncoder = passwordEncoder;
-		this.entityManager = entityManager;
-		this.adminRoleDAO = adminRoleDAO;
-	}
 
 	public AdminDTO findById(long id) {
 		Admin user = adminDAO.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
@@ -238,7 +229,7 @@ public class AdminService {
 	}
 */
 /* 
-    public void removePermissions(Long idUser) {
+	public void removePermissions(Long idUser) {
 		User user = adminDAO.findById(idUser).orElseThrow(() -> new EntityNotFoundException("User not found"));
 		user.setRoles(Arrays.asList(roleRepository.findByName("ROLE_USER")));
 		adminDAO.save(user);
@@ -260,8 +251,8 @@ public class AdminService {
 	}
 
 	public AdminDTO loginAndGetDTO(String username) {
-        Admin user = findAdminByEmail(username);
-        return new AdminDTO(user);
-    }
+		Admin user = findAdminByEmail(username);
+		return new AdminDTO(user);
+	}
 
 }
