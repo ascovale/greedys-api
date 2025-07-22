@@ -6,7 +6,6 @@ import java.nio.file.Path;
 import java.security.Principal;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.ResponseEntity;
@@ -24,21 +23,18 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.application.customer.dao.CustomerDAO;
 import com.application.customer.model.Customer;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 @Controller
+@RequiredArgsConstructor
+@Slf4j
 public class ImageController {
-	@Autowired
-	private CustomerDAO userRepository;
+	private final CustomerDAO userRepository;
 	//@Autowired
 	//private ImageRepository imageRepository;
 	
-	@Autowired
-	private Path rootLocation;    
-
-	public ImageController(CustomerDAO userRepository, Path rootLocation) { //, ImageRepository imageRepository) {
-		this.userRepository = userRepository;
-		this.rootLocation = rootLocation;
-		//this.imageRepository = imageRepository;
-	}
+	private final Path rootLocation;
 	
 
 	@GetMapping("/listImages")

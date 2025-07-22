@@ -43,26 +43,20 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Tag(name = "Restaurant", description = "Controller for handling requests related to restaurants")
 @RequestMapping("/customer/restaurant")
 @RestController
+@RequiredArgsConstructor
+@Slf4j
 public class CustomerRestaurantController {
 
 	private final RestaurantService restaurantService;
 	private final RoomService roomService;
 	private final TableService tableService;
-	private SlotService slotService;
-
-	public CustomerRestaurantController(RestaurantService restaurantService,
-			RoomService roomService,
-			TableService tableService,
-			SlotService slotService) {
-		this.restaurantService = restaurantService;
-		this.roomService = roomService;
-		this.tableService = tableService;
-		this.slotService = slotService;
-	}
+	private final SlotService slotService;
 
 	@Operation(summary = "Get all restaurants", description = "Retrieve all restaurants")
 	@ApiResponses(value = {

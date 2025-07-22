@@ -32,24 +32,20 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Tag(name = "Customer", description = "Controller for managing customers")
 @RestController
 @RequestMapping("/customer")
 @SecurityRequirement(name = "bearerAuth")
+@RequiredArgsConstructor
+@Slf4j
 public class CustomerController {
     private final CustomerService customerService;
     private final MessageSource messages;
     private final CustomerAuthenticationService customerAuthenticationService; // aggiunto
     //TODO: Implementare tutti i metodi per la configurazione delle notifiche del customer
-
-    public CustomerController(CustomerService customerService,
-            MessageSource messages,
-            CustomerAuthenticationService customerAuthenticationService) { // aggiunto parametro
-        this.customerService = customerService;
-        this.messages = messages;
-        this.customerAuthenticationService = customerAuthenticationService; // aggiunto
-    }
 
     @Operation(summary = "Get Customer ID", description = "Retrieves the ID of the current customer", responses = {
             @ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Long.class))),

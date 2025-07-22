@@ -30,17 +30,17 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Tag(name = "Menu", description = "Restaurant Menu Controller APIs")
 @RequestMapping("/customer/restaurant")
 @SecurityRequirement(name = "bearerAuth")
 @RestController
+@RequiredArgsConstructor
+@Slf4j
 public class CustomerMenuController {
     private final RestaurantMenuService restaurantMenuService;
-
-    public CustomerMenuController(RestaurantMenuService restaurantMenuService) {
-        this.restaurantMenuService = restaurantMenuService;
-    }
 
     //TODO add pagination to the menus list ??? non so se ha senso
 

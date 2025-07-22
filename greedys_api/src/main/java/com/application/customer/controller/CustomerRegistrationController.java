@@ -9,16 +9,11 @@ import java.util.Locale;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.MessageSource;
-import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -62,38 +57,23 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @Tag(name = "Customer Registration", description = "Controller for managing customer registration")
 @RequestMapping("/customer/auth")
+@RequiredArgsConstructor
+@Slf4j
 public class CustomerRegistrationController {
-    private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
-    private CustomerService customerService;
-    private MessageSource messages;
-    private ApplicationEventPublisher eventPublisher;
-    private EmailService mailService;
+    private final CustomerService customerService;
+    private final MessageSource messages;
+    private final ApplicationEventPublisher eventPublisher;
+    private final EmailService mailService;
     private final ISecurityUserService securityCustomerService;
-    private CustomerAuthenticationService customerAuthenticationService;
-    private JwtUtil jwtUtil;
-
-    private static final Logger logger = LoggerFactory.getLogger(CustomerAuthenticationController.class);
-
-    public CustomerRegistrationController(CustomerService customerService, MessageSource messages,
-            ApplicationEventPublisher eventPublisher, Environment env, EmailService mailService,
-            @Qualifier("customerAuthenticationManager") AuthenticationManager authenticationManager,
-            JwtUtil jwtUtil,
-            @Qualifier("customerSecurityService") ISecurityUserService securityCustomerService,
-            CustomerAuthenticationService customerAuthenticationService // aggiunto parametro
-    ) {
-        this.customerService = customerService;
-        this.messages = messages;
-        this.eventPublisher = eventPublisher;
-        this.mailService = mailService;
-        this.jwtUtil = jwtUtil;
-        this.securityCustomerService = securityCustomerService;
-        this.customerAuthenticationService = customerAuthenticationService; // correzione assegnamento
-    }
+    private final CustomerAuthenticationService customerAuthenticationService;
+    private final JwtUtil jwtUtil;
 
     // ------------------- API Methods ----------------------------- //
 
@@ -205,13 +185,13 @@ public class CustomerRegistrationController {
     @PostMapping("/google")
     public ResponseEntity<AuthResponseDTO> authenticateWithGoogle(@RequestBody AuthRequestGoogleDTO authRequest)
             throws Exception {
-        logger.warn("Received Google authentication request: {}", authRequest.getToken());
+        log.warn("Received Google authentication request: {}", authRequest.getToken());
         GoogleIdToken idToken = verifyGoogleToken(authRequest.getToken());
 
         if (idToken != null) {
             String email = idToken.getPayload().getEmail();
             String name = (String) idToken.getPayload().get("name");
-            logger.warn("Google token verified. Email: {}, Name: {}", email, name);
+            log.warn("Google token verified. Email: {}, Name: {}", email, name);
             // quali dati vogliamo prendere da google?
             Customer customer = customerService.findCustomerByEmail(email);
             if (customer == null) {
@@ -227,7 +207,7 @@ public class CustomerRegistrationController {
             String jwt = jwtUtil.generateToken(customer);
             return ResponseEntity.ok(new AuthResponseDTO(jwt, new CustomerDTO(customer)));
         } else {
-            logger.warn("Google token verification failed.");
+            log.warn("Google token verification failed.");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
@@ -266,7 +246,7 @@ public class CustomerRegistrationController {
         try {
             request.login(username, password);
         } catch (ServletException e) {
-            LOGGER.error("Error while login ", e);
+            log.error("Error while login ", e);
         }
     }
 
@@ -283,7 +263,7 @@ public class CustomerRegistrationController {
 
     private GoogleIdToken verifyGoogleToken(String token) throws Exception {
         try {
-            logger.debug("Verifying Google token... {}", token);
+            log.debug("Verifying Google token... {}", token);
             GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
                     GoogleNetHttpTransport.newTrustedTransport(),
                     GsonFactory.getDefaultInstance())
@@ -298,17 +278,17 @@ public class CustomerRegistrationController {
 
             GoogleIdToken idToken = verifier.verify(token);
             if (idToken != null) {
-                logger.debug("Google token verified successfully.");
+                log.debug("Google token verified successfully.");
             } else {
-                logger.warn("Google token verification failed: Invalid token.");
+                log.warn("Google token verification failed: Invalid token.");
             }
             return idToken;
         } catch (GeneralSecurityException e) {
-            logger.error("Google token verification failed: GeneralSecurityException - {}", e.getMessage(), e);
+            log.error("Google token verification failed: GeneralSecurityException - {}", e.getMessage(), e);
         } catch (IOException e) {
-            logger.error("Google token verification failed: IOException - {}", e.getMessage(), e);
+            log.error("Google token verification failed: IOException - {}", e.getMessage(), e);
         } catch (Exception e) {
-            logger.error("Google token verification failed: Exception - {}", e.getMessage(), e);
+            log.error("Google token verification failed: Exception - {}", e.getMessage(), e);
         }
         return null;
     }

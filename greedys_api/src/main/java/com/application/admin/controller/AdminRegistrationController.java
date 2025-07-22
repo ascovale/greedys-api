@@ -6,9 +6,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.MessageSource;
 import org.springframework.http.ResponseEntity;
@@ -45,6 +42,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 
 //TODO: bisogna implementare che qualche utente può modificare le password degli admin
@@ -52,24 +51,14 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/admin/register")
 @Tag(name = "Admin Registration", description = "Admin Registration Management")
+@RequiredArgsConstructor
+@Slf4j
 public class AdminRegistrationController {
-    private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
-    @Autowired
-    private AdminService adminService;
-
-    @Autowired
-    private MessageSource messages;
-
-    @Autowired
-    private ApplicationEventPublisher eventPublisher;
-
-    @Autowired
-    private EmailService mailService;
-
-    public AdminRegistrationController() {
-        super();
-    }
+    private final AdminService adminService;
+    private final MessageSource messages;
+    private final ApplicationEventPublisher eventPublisher;
+    private final EmailService mailService;
 
     private String getAppUrl(HttpServletRequest request) {
         return request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + request.getContextPath();
@@ -168,7 +157,7 @@ public class AdminRegistrationController {
         try {
             request.login(username, password);
         } catch (ServletException e) {
-            LOGGER.error("Error while login ", e);
+            log.error("Error while login ", e);
         }
     }
 

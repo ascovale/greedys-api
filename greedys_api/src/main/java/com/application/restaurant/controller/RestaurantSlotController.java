@@ -1,6 +1,5 @@
 package com.application.restaurant.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -21,15 +20,18 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Tag(name = "Slot Management", description = "Controller for managing slots")
 @RestController
 @RequestMapping("/restaurant/slot")
 @SecurityRequirement(name = "bearerAuth")
+@RequiredArgsConstructor
+@Slf4j
 public class RestaurantSlotController {
     //TODO: Cancella slot
-    @Autowired
-    private SlotService slotService;
+    private final SlotService slotService;
     @Operation(summary = "Create a new slot", description = "This method creates a new slot.", responses = {
             @ApiResponse(responseCode = "200", description = "Slot created", content = @Content(mediaType = "application/json", schema = @Schema(implementation = NewSlotDTO.class))),
 

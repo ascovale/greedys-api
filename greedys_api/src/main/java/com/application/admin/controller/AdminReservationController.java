@@ -19,18 +19,18 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 
 @RestController
 @RequestMapping({"/admin/reservation"})
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Admin Reservation", description = "Admin Reservation Management")
+@RequiredArgsConstructor
+@Slf4j
 public class AdminReservationController {
 	private final AdminReservationService adminReservationService;
-
-	public AdminReservationController(AdminReservationService adminReservationService) {
-		this.adminReservationService = adminReservationService;
-	}
 
 	@Operation(summary = "Create a new reservation", description = "Endpoint to create a new reservation")
 	@ApiResponses(value = {

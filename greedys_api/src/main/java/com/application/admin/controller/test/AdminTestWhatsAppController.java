@@ -1,6 +1,5 @@
 package com.application.admin.controller.test;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -14,6 +13,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Controller for handling WhatsApp message sending requests.
@@ -21,9 +22,10 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 @RestController
 @SecurityRequirement(name = "bearerAuth")
+@RequiredArgsConstructor
+@Slf4j
 public class AdminTestWhatsAppController {
-    @Autowired
-    private WhatsAppService whatsappService;
+    private final WhatsAppService whatsappService;
 
     @Operation(summary = "Send WhatsApp message", description = "Sends a WhatsApp message to the specified phone number")
     @ApiResponses({

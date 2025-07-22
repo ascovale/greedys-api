@@ -2,8 +2,6 @@ package com.application.restaurant.controller;
 
 import java.io.UnsupportedEncodingException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -33,23 +31,19 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @Tag(name = "Resttaurant Registration", description = "Controller for restaurant registration")
 @RequestMapping("/restaurant/register")
 @SecurityRequirement(name = "bearerAuth")
+@RequiredArgsConstructor
+@Slf4j
 public class RestaurantRegistrationController {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(getClass());
-
-    private RestaurantService restaurantService;
+    private final RestaurantService restaurantService;
     private final RestaurantAuthenticationService restaurantAuthenticationService;
-
-    public RestaurantRegistrationController(RestaurantService restaurantService,
-            RestaurantAuthenticationService restaurantAuthenticationService) {
-        this.restaurantService = restaurantService;
-        this.restaurantAuthenticationService = restaurantAuthenticationService;
-    }
 
     @Bean
     AuthenticationManager noOpAuthenticationManager() {
@@ -66,7 +60,7 @@ public class RestaurantRegistrationController {
     })
     @PostMapping(value = "/new")
     public GenericResponse registerRestaurant(@RequestBody NewRestaurantDTO restaurantDto) {
-        LOGGER.debug("Registering restaurant with information:", restaurantDto);
+        log.debug("Registering restaurant with information:", restaurantDto);
         System.out.println("Registering restaurant with information:" + restaurantDto.getName());
         restaurantService.registerRestaurant(restaurantDto);
         return new GenericResponse("success");

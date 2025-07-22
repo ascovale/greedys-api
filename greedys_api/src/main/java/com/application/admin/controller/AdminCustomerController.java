@@ -29,19 +29,18 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RequestMapping("/admin/customer")
 @RestController
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Admin Customer", description = "Admin Customer Management")
+@RequiredArgsConstructor
+@Slf4j
 public class AdminCustomerController {
     private final CustomerService customerService;
     private final AllergyService allergyService;
-
-    public AdminCustomerController(CustomerService customerService, AllergyService allergyService) {
-        this.customerService = customerService;
-        this.allergyService = allergyService;
-    }
 
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_WRITE')")
     @Operation(summary = "Create allergy", description = "Creates a new allergy for the specified user by their ID")

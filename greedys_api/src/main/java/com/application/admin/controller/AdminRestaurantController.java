@@ -44,11 +44,15 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RequestMapping("/admin/restaurant")
 @RestController
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Restaurant", description = "Admin Restaurant Management")
+@RequiredArgsConstructor
+@Slf4j
 public class AdminRestaurantController {
 
 	//TODO: cambiare convenzione invece di restaurantId usare id_restaurant
@@ -61,16 +65,6 @@ public class AdminRestaurantController {
 	private final RoomService roomService;
 	private final TableService tableService;
 	private final RUserService rUserService;
-
-	public AdminRestaurantController(RestaurantService restaurantService, RestaurantReservationService reservationService,
-			RoomService roomService,
-			TableService tableService, RUserService rUserService) {
-		this.restaurantService = restaurantService;
-		this.reservationService = reservationService;
-		this.roomService = roomService;
-		this.tableService = tableService;
-		this.rUserService = rUserService;
-	}
 
 	@Operation(summary = "Get all reservations of a restaurant", description = "Retrieve all reservations of a restaurant")
 	@ApiResponses(value = {

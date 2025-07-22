@@ -1,5 +1,5 @@
-package com.application.restaurant.controller.rUser;
 
+package com.application.restaurant.controller.rUser;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,19 +15,19 @@ import com.application.restaurant.service.RUserFcmTokenService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 
 @RestController
 @RequestMapping("/restaurant/user/fcm")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "FCM", description = "Restaurant User FCM token management API")
+@RequiredArgsConstructor
+@Slf4j
 public class RUserFcmController {
 
     private final RUserFcmTokenService tokenService;
-
-    public RUserFcmController(RUserFcmTokenService tokenService) {
-        this.tokenService = tokenService;
-    }
 
     @PostMapping("/{deviceId}")
     @Operation(summary = "Register FCM token", description = "Registers a new FCM token for a device of the restaurant user")

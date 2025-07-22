@@ -27,11 +27,15 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RequestMapping("/admin")
 @RestController
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Users", description = "Admin Users Management")
+@RequiredArgsConstructor
+@Slf4j
 public class AdminUsersController {
     // TODO: aggiungere ruoli e permessi ai ruoli come metodi
     // Riscrivere tutta la classe per implementare i metodi per dare togliere i
@@ -41,11 +45,6 @@ public class AdminUsersController {
     // aggiungere e rimuovere permessi
     private final AdminService adminService;
     private final MessageSource messages;
-
-    public AdminUsersController(AdminService adminService, MessageSource messages) {
-        this.messages = messages;
-        this.adminService = adminService;
-    }
 
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_ADMIN_WRITE')")
     @Operation(summary = "Block user", description = "Blocks a user by their ID")

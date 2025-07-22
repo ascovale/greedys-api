@@ -1,7 +1,5 @@
 package com.application.admin.controller;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,24 +20,22 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RequestMapping("/admin/restaurant/user")
 @RestController
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Restaurant User", description = "Admin management APIs for the RUser")
+@RequiredArgsConstructor
+@Slf4j
 public class AdminRUserController {
     // TODO: aggiungere ruoli e permessi ai ruoli come metodi
 
     // TODO Forse manca il delete restaurant user e quindi anche altri utenti
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AdminRUserController.class);
     private final RUserService RUserService;
     private final RestaurantAuthenticationService restaurantAuthenticationService;
-
-    public AdminRUserController(RUserService RUserService, RestaurantAuthenticationService restaurantAuthenticationService) {
-        this.RUserService = RUserService;
-        this.restaurantAuthenticationService = restaurantAuthenticationService;
-    }
 
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_USER_WRITE')")
     @Operation(summary = "Block restaurant user", description = "Blocks a restaurant user by their ID")
@@ -84,7 +80,7 @@ public class AdminRUserController {
         try {
             return ResponseEntity.ok(restaurantAuthenticationService.adminLoginToRUser(RUserId, request));
         } catch (UnsupportedOperationException e) {
-            LOGGER.error("Authentication failed: {}", e.getMessage());
+            log.error("Authentication failed: {}", e.getMessage());
             return ResponseEntity.status(401).body("Authentication failed: Invalid username or password.");
         }
     }

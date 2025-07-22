@@ -22,7 +22,10 @@ import com.application.customer.model.Customer;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 @Qualifier("adminUserRememberMeServices")
+@Slf4j
 public class AdminUserRememberMeServices extends PersistentTokenBasedRememberMeServices {
 
     @Autowired
@@ -30,7 +33,7 @@ public class AdminUserRememberMeServices extends PersistentTokenBasedRememberMeS
 
     private GrantedAuthoritiesMapper authoritiesMapper = new NullAuthoritiesMapper();
     private AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource = new WebAuthenticationDetailsSource();
-    private PersistentTokenRepository tokenRepository = new InMemoryTokenRepositoryImpl();
+    private PersistentTokenRepository tokenRepository;
     private String key;
 
     public AdminUserRememberMeServices(String key, AdminUserDetailsService userDetailsService, PersistentTokenRepository tokenRepository) {
@@ -39,7 +42,7 @@ public class AdminUserRememberMeServices extends PersistentTokenBasedRememberMeS
         this.key = key;
     }
 
-	@Override
+    @Override
     protected void onLoginSuccess(HttpServletRequest request, HttpServletResponse response, Authentication successfulAuthentication) {
         String username = ((Customer) successfulAuthentication.getPrincipal()).getEmail();
         logger.debug("Creating new persistent login for user " + username);

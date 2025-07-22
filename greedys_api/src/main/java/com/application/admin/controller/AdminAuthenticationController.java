@@ -1,6 +1,5 @@
 package com.application.admin.controller;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -21,24 +20,19 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Tag(name = "Admin Authentication", description = "Controller for managing Admin user authentication")
 @RestController
 @RequestMapping(value = "/admin/auth", produces = "application/json")
+@RequiredArgsConstructor
+@Slf4j
 public class AdminAuthenticationController {
         
-    private AuthenticationManager authenticationManager;
-    private JwtUtil jwtUtil;
-    private AdminService adminService;
-
-    public AdminAuthenticationController(
-            @Qualifier("adminAuthenticationManager") AuthenticationManager authenticationManager,
-            JwtUtil jwtUtil,
-            AdminService adminService) {
-        this.authenticationManager = authenticationManager;
-        this.jwtUtil = jwtUtil;
-        this.adminService = adminService;
-    }
+    private final AuthenticationManager authenticationManager;
+    private final JwtUtil jwtUtil;
+    private final AdminService adminService;
 
     @Operation(summary = "Generate an authentication token", description = "Authenticates a user and returns a JWT token", responses = {
             @ApiResponse(responseCode = "200", description = "Authentication successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthResponseDTO.class))),

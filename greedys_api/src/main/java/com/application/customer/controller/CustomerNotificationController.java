@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.application.common.service.FirebaseService;
 import com.application.common.web.dto.post.FcmTokenDTO;
 import com.application.customer.model.CustomerNotification;
 import com.application.customer.service.CustomerFcmTokenService;
@@ -25,21 +24,19 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/customer/notification")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Notification", description = "Notification management APIs for customers")
+@RequiredArgsConstructor
+@Slf4j
 public class CustomerNotificationController {
 
     private final CustomerFcmTokenService customerFcmTokenRepository;
     private final CustomerNotificationService notificationService;
-
-    public CustomerNotificationController(CustomerFcmTokenService customerFcmTokenRepository, FirebaseService firebaseService,
-            CustomerNotificationService notificationService) {
-        this.customerFcmTokenRepository = customerFcmTokenRepository;
-        this.notificationService = notificationService;
-    }
 
     /*
      * @Operation(summary = "Get notifications for index page", description =
