@@ -8,8 +8,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
 
-import com.application.restaurant.dao.RUserDAO;
-import com.application.restaurant.model.user.RUser;
+import com.application.restaurant.persistence.dao.RUserDAO;
+import com.application.restaurant.persistence.model.user.RUser;
 
 import lombok.extern.slf4j.Slf4j;
 

@@ -2,7 +2,6 @@ package com.application.restaurant.controller;
 
 import java.util.Collection;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,22 +12,18 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.application.common.controller.BaseController;
+import com.application.common.service.RestaurantService;
+import com.application.common.web.dto.ApiResponse;
 import com.application.common.web.dto.ServiceTypeDto;
 import com.application.common.web.dto.get.ServiceDTO;
 import com.application.common.web.dto.get.SlotDTO;
-import com.application.common.web.util.GenericResponse;
 import com.application.restaurant.controller.utils.RestaurantControllerUtils;
-import com.application.restaurant.service.RestaurantService;
 import com.application.restaurant.service.ServiceService;
 import com.application.restaurant.service.SlotService;
-import com.application.restaurant.web.post.RestaurantNewServiceDTO;
+import com.application.restaurant.web.dto.post.RestaurantNewServiceDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -40,88 +35,60 @@ import lombok.extern.slf4j.Slf4j;
 @SecurityRequirement(name = "bearerAuth")
 @RequiredArgsConstructor
 @Slf4j
-public class RestaurantServicesController {
+public class RestaurantServicesController extends BaseController {
 
     private final ServiceService serviceService;
     private final SlotService slotService;
     private final RestaurantService restaurantService;
 
     @Operation(summary = "Create a new service", description = "This method creates a new service in the system.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Service created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid input data"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
     @PreAuthorize("authentication.principal.isEnabled() & hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_WRITE')")
     @PostMapping("/new")
-    public ResponseEntity<GenericResponse> newService(@RequestBody RestaurantNewServiceDTO servicesDto) {
-        System.out.println("<<<   Controller Service   >>>");
-        System.out.println("<<<   name: " + servicesDto.getName());
-        serviceService.newService(servicesDto);
-        return ResponseEntity.ok(new GenericResponse("success"));
+    public ResponseEntity<ApiResponse<String>> newService(@RequestBody RestaurantNewServiceDTO servicesDto) {
+        return executeCreate("create new service", "Service created successfully", () -> {
+            System.out.println("<<<   Controller Service   >>>");
+            System.out.println("<<<   name: " + servicesDto.getName());
+            serviceService.newService(servicesDto);
+            return "success";
+        });
     }
 
     @Operation(summary = "Delete a service", description = "This method deletes a service by its ID.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Service deleted successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid service ID"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
     @PreAuthorize("authentication.principal.isEnabled() & hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_WRITE')")
     @DeleteMapping("/{serviceId}/delete")
-    public GenericResponse deleteService(@PathVariable Long serviceId) {
-        System.out.println("<<<   Controller Service   >>>");
-        System.out.println("<<<   serviceId: " + serviceId);
-        serviceService.deleteService(serviceId);
-        return new GenericResponse("success");
+    public ResponseEntity<ApiResponse<String>> deleteService(@PathVariable Long serviceId) {
+        return executeVoid("delete service", "Service deleted successfully", () -> {
+            System.out.println("<<<   Controller Service   >>>");
+            System.out.println("<<<   serviceId: " + serviceId);
+            serviceService.deleteService(serviceId);
+        });
     }
 
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_READ')")
     @Operation(summary = "Get service by ID", description = "Retrieve a service by its ID.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Service retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "Service not found"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
     @GetMapping("/{serviceId}")
-    public ResponseEntity<ServiceDTO> getServiceById(@PathVariable Long serviceId) {
-        ServiceDTO service = serviceService.findById(serviceId);
-        return ResponseEntity.ok(service);
+    public ResponseEntity<ApiResponse<ServiceDTO>> getServiceById(@PathVariable Long serviceId) {
+        return execute("get service by id", () -> serviceService.findById(serviceId));
     }
 
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_READ')")
     @Operation(summary = "Get all slots of a service", description = "Retrieve all slots associated with a specific service by its ID.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Slots retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "Service not found"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
     @GetMapping("/{serviceId}/slots")
-    public Collection<SlotDTO> getSlots(@PathVariable long serviceId) {
-        return slotService.findByService_Id(serviceId);
+    public ResponseEntity<ApiResponse<Collection<SlotDTO>>> getSlots(@PathVariable long serviceId) {
+        return execute("get service slots", () -> slotService.findByService_Id(serviceId));
     }
 
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_READ')")
     @GetMapping("/types")
     @Operation(summary = "Get all service types", description = "Retrieve all service types.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Service types retrieved successfully"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
-    public Collection<ServiceTypeDto> getServiceTypes() {
-        return serviceService.getServiceTypesFromRUser();
+    public ResponseEntity<ApiResponse<Collection<ServiceTypeDto>>> getServiceTypes() {
+        return execute("get service types", () -> serviceService.getServiceTypesFromRUser());
     }
 
     @GetMapping(value = "/services")
     @Operation(summary = "Get services of a restaurant", description = "Retrieve the services of a restaurant")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ServiceDTO.class)))),
-            @ApiResponse(responseCode = "404", description = "Restaurant not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid request")
-    })
-    public ResponseEntity<Collection<ServiceDTO>> getServices() {
-        Collection<ServiceDTO> services = restaurantService.getServices(RestaurantControllerUtils.getCurrentRestaurant().getId());
-        return new ResponseEntity<>(services, HttpStatus.OK);
+    public ResponseEntity<ApiResponse<Collection<ServiceDTO>>> getServices() {
+        return execute("get restaurant services", () -> 
+            restaurantService.getServices(RestaurantControllerUtils.getCurrentRestaurant().getId()));
     }
-
 }

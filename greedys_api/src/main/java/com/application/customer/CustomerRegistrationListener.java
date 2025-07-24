@@ -10,12 +10,12 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
 
-import com.application.customer.model.Customer;
+import com.application.customer.persistence.model.Customer;
 import com.application.customer.service.authentication.CustomerAuthenticationService;
 
 import lombok.RequiredArgsConstructor;
 
-@Component
+@Component  // Temporarily disabled - mail sender dependency conflict
 @RequiredArgsConstructor
 public class CustomerRegistrationListener implements ApplicationListener<CustomerOnRegistrationCompleteEvent> {
 	private final CustomerAuthenticationService service;

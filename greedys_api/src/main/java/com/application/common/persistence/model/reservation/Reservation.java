@@ -10,8 +10,8 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.application.common.persistence.model.user.AbstractUser;
-import com.application.customer.model.Customer;
-import com.application.restaurant.model.Restaurant;
+import com.application.customer.persistence.model.Customer;
+import com.application.restaurant.persistence.model.Restaurant;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -82,7 +82,7 @@ public class Reservation {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "table_id")
-    private com.application.restaurant.model.Table table;
+    private com.application.restaurant.persistence.model.Table table;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id")

@@ -8,9 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import com.application.common.dto.GeocodingResult;
-import com.application.spring.AddressValidationConfig;
-import com.application.spring.GeocodingConfig;
+import com.application.common.spring.AddressValidationConfig;
+import com.application.common.spring.GeocodingConfig;
+import com.application.common.web.dto.get.GeocodingResult;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 

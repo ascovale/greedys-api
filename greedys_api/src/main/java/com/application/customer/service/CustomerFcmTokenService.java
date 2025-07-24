@@ -7,9 +7,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.application.common.web.dto.post.FcmTokenDTO;
-import com.application.customer.CustomerFcmToken;
-import com.application.customer.dao.CustomerFcmTokenDAO;
-import com.application.customer.model.Customer;
+import com.application.customer.persistence.dao.CustomerFcmTokenDAO;
+import com.application.customer.persistence.model.Customer;
+import com.application.customer.persistence.model.CustomerFcmToken;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
 

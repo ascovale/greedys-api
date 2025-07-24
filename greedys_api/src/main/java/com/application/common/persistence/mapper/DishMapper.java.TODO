@@ -1,0 +1,76 @@
+package com.application.common.mapper;
+
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.ReportingPolicy;
+import org.mapstruct.factory.Mappers;
+
+import com.application.common.web.dto.get.DishDTO;
+import com.application.restaurant.model.menu.Dish;
+import com.application.restaurant.web.post.NewDishDTO;
+
+/**
+ * MapStruct mapper per la conversione tra Dish e DishDTO
+ * 
+ * Esempio di mapper più complesso che gestisce le relazioni con altre entità
+ */
+@Mapper(
+    componentModel = "spring",
+    nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
+    unmappedTargetPolicy = ReportingPolicy.WARN
+)
+public interface DishMapper {
+
+    DishMapper INSTANCE = Mappers.getMapper(DishMapper.class);
+
+    /**
+     * Converte un'entità Dish in DishDTO
+     * MapStruct mappa automaticamente i campi con lo stesso nome
+     * e gestisce le conversioni base
+     */
+    DishDTO toDTO(Dish dish);
+
+    /**
+     * Converte un NewDishDTO in entità Dish
+     * Utile per la creazione di nuovi piatti
+     */
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "photos", ignore = true)
+    @Mapping(target = "photoLinks", ignore = true)
+    @Mapping(target = "categories", ignore = true)
+    @Mapping(target = "ingredients", ignore = true)
+    @Mapping(target = "menuDishes", ignore = true)
+    @Mapping(target = "menus", ignore = true)
+    @Mapping(target = "restaurant", ignore = true) // Verrà impostato dal service
+    @Mapping(target = "allergens", ignore = true)
+    Dish toEntity(NewDishDTO newDishDTO);
+
+    /**
+     * Converte un DishDTO base in entità Dish
+     */
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "photos", ignore = true)
+    @Mapping(target = "photoLinks", ignore = true)
+    @Mapping(target = "categories", ignore = true)
+    @Mapping(target = "ingredients", ignore = true)
+    @Mapping(target = "menuDishes", ignore = true)
+    @Mapping(target = "menus", ignore = true)
+    @Mapping(target = "restaurant", ignore = true)
+    Dish toEntity(DishDTO dishDTO);
+
+    /**
+     * Aggiorna un'entità Dish esistente con i dati dal DTO
+     */
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "photos", ignore = true)
+    @Mapping(target = "photoLinks", ignore = true)
+    @Mapping(target = "categories", ignore = true)
+    @Mapping(target = "ingredients", ignore = true)
+    @Mapping(target = "menuDishes", ignore = true)
+    @Mapping(target = "menus", ignore = true)
+    @Mapping(target = "restaurant", ignore = true)
+    @Mapping(target = "allergens", ignore = true)
+    void updateEntityFromDTO(DishDTO dto, @MappingTarget Dish entity);
+}

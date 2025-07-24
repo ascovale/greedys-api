@@ -3,7 +3,6 @@ package com.application.customer.service.security;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -11,24 +10,19 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.application.common.security.user.ISecurityUserService;
-import com.application.customer.dao.PasswordResetTokenDAO;
-import com.application.customer.model.Customer;
-import com.application.customer.model.PasswordResetToken;
+import com.application.customer.persistence.dao.PasswordResetTokenDAO;
+import com.application.customer.persistence.model.Customer;
+import com.application.customer.persistence.model.PasswordResetToken;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
 @Transactional
-@Qualifier("customerSecurityService")
 @RequiredArgsConstructor
-public class CustomerUserSecurityService implements ISecurityUserService {
+public class CustomerUserSecurityService {
 
     private final PasswordResetTokenDAO passwordTokenRepository;
 
-    // API
-
-    @Override
     public String validatePasswordResetToken(String token) {
         final PasswordResetToken passToken = passwordTokenRepository.findByToken(token);
         if ((passToken == null) ) {

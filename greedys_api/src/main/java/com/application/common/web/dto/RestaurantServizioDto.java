@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import com.application.common.persistence.model.reservation.Reservation;
-import com.application.restaurant.model.Restaurant;
+import com.application.restaurant.persistence.model.Restaurant;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

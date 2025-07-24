@@ -14,17 +14,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.CreateApiResponses;
+import com.application.common.controller.annotation.ReadApiResponses;
+import com.application.common.web.dto.ApiResponse;
 import com.application.common.web.dto.get.ReservationDTO;
-import com.application.customer.model.Customer;
+import com.application.customer.persistence.model.Customer;
 import com.application.customer.service.reservation.CustomerReservationService;
 import com.application.customer.web.post.CustomerNewReservationDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -36,86 +35,55 @@ import lombok.extern.slf4j.Slf4j;
 @Tag(name = "Reservation", description = "APIs for managing reservations of the customer")
 @RequiredArgsConstructor
 @Slf4j
-public class CustomerReservationController {
+public class CustomerReservationController extends BaseController {
 	private final CustomerReservationService customerReservationService;
 
 	@Operation(summary = "The customer user asks for a reservation", description = "Endpoint for the customer to request a reservation")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Reservation requested successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ReservationDTO.class))),
-			@ApiResponse(responseCode = "400", description = "Invalid input", content = @Content),
-			@ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
-	})
+	@CreateApiResponses
 	@PostMapping("/ask")
-	public ResponseEntity<?> askReservation(@RequestBody CustomerNewReservationDTO DTO, @AuthenticationPrincipal Customer customer) {
-		customerReservationService.createReservation(DTO, customer);
-		return ResponseEntity.ok().build();
+	public ResponseEntity<ApiResponse<String>> askReservation(@RequestBody CustomerNewReservationDTO DTO, @AuthenticationPrincipal Customer customer) {
+		return executeVoid("askReservation", "Reservation requested successfully", () -> 
+			customerReservationService.createReservation(DTO, customer));
 	}
 
 	@PreAuthorize("@securityCustomerService.hasPermissionOnReservation(#reservationId)")
 	@Operation(summary = "The customer user deletes a reservation", description = "Endpoint for the customer to delete a reservation")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Reservation deleted successfully"),
-			@ApiResponse(responseCode = "400", description = "Invalid input", content = @Content),
-			@ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
-	})
 	@DeleteMapping("/{reservationId}/delete")
-	public ResponseEntity<?> deleteReservation(@PathVariable Long reservationId) {
-		customerReservationService.deleteReservation(reservationId);
-		return ResponseEntity.ok().build();
+	public ResponseEntity<ApiResponse<String>> deleteReservation(@PathVariable Long reservationId) {
+		return executeVoid("deleteReservation", "Reservation deleted successfully", () -> 
+			customerReservationService.deleteReservation(reservationId));
 	}
 
 	@PreAuthorize("@securityCustomerService.hasPermissionOnReservation(#reservationId)")
 	@Operation(summary = "The customer user requests a reservation modification", description = "Endpoint for the customer to request a reservation modification")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Reservation modification requested successfully"),
-			@ApiResponse(responseCode = "400", description = "Invalid input", content = @Content),
-			@ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
-	})
+	@CreateApiResponses
 	@PostMapping("/{reservationId}/request_modify")
-	public ResponseEntity<?> requestModifyReservation(@PathVariable Long reservationId,
+	public ResponseEntity<ApiResponse<String>> requestModifyReservation(@PathVariable Long reservationId,
 			@RequestBody CustomerNewReservationDTO DTO,
 			@AuthenticationPrincipal Customer customer) {
-		customerReservationService.requestModifyReservation(reservationId, DTO, customer);
-		return ResponseEntity.ok().build();
+		return executeVoid("requestModifyReservation", "Reservation modification requested successfully", () -> 
+			customerReservationService.requestModifyReservation(reservationId, DTO, customer));
 	}
 
 	@PreAuthorize("@securityCustomerService.hasPermissionOnReservation(#reservationId)")
 	@Operation(summary = "The customer user rejects a reservation", description = "Endpoint for the customer to reject a reservation created by the restaurant or admin")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Reservation rejected successfully"),
-			@ApiResponse(responseCode = "400", description = "Invalid input", content = @Content),
-			@ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
-	})
 	@PutMapping("/{reservationId}/reject")
-	public ResponseEntity<?> rejectReservationCreatedByAdminOrRestaurant(@PathVariable Long reservationId) {
-		customerReservationService.rejectReservation(reservationId);
-		return ResponseEntity.ok().build();
+	public ResponseEntity<ApiResponse<String>> rejectReservationCreatedByAdminOrRestaurant(@PathVariable Long reservationId) {
+		return executeVoid("rejectReservation", "Reservation rejected successfully", () -> 
+			customerReservationService.rejectReservation(reservationId));
 	}
 
 	@Operation(summary = "Get user's reservations", description = "Retrieve the list of reservations for the user")
-	@ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ReservationDTO.class))))
-	@ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
-	@ApiResponse(responseCode = "404", description = "User not found")
 	@GetMapping("/reservations")
-	public Collection<ReservationDTO> getCustomerReservations(@AuthenticationPrincipal Customer customer) {
-		return customerReservationService.findAllCustomerReservations(customer.getId());
+	public ResponseEntity<ApiResponse<Collection<ReservationDTO>>> getCustomerReservations(@AuthenticationPrincipal Customer customer) {
+		return execute("getCustomerReservations", () -> customerReservationService.findAllCustomerReservations(customer.getId()));
 	}
 
 	@PreAuthorize("@securityCustomerService.hasPermissionOnReservation(#reservationId)")
 	@Operation(summary = "Get a single reservation by ID", description = "Retrieve a specific reservation for the user by its ID")
-	@ApiResponses(value = {
-		@ApiResponse(responseCode = "200", description = "Reservation retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ReservationDTO.class))),
-		@ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-		@ApiResponse(responseCode = "404", description = "Reservation not found", content = @Content),
-		@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
-	})
+	@ReadApiResponses
 	@GetMapping("/{reservationId}")
-	public ResponseEntity<ReservationDTO> getReservationById(@PathVariable Long reservationId) {
-		ReservationDTO reservationDTO = customerReservationService.findReservationById(reservationId);
-		return ResponseEntity.ok(reservationDTO);
+	public ResponseEntity<ApiResponse<ReservationDTO>> getReservationById(@PathVariable Long reservationId) {
+		return execute("getReservationById", () -> customerReservationService.findReservationById(reservationId));
 	}
 }

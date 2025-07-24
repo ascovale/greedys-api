@@ -2,27 +2,26 @@ package com.application.admin.controller.admin;
 
 import java.util.Locale;
 
-import org.springframework.context.MessageSource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.admin.controller.utils.AdminControllerUtils;
-import com.application.admin.model.Admin;
+import com.application.admin.persistence.model.Admin;
 import com.application.admin.service.AdminService;
+import com.application.common.controller.BaseController;
+import com.application.common.web.dto.ApiResponse;
 import com.application.common.web.dto.put.UpdatePasswordDTO;
 import com.application.common.web.error.InvalidOldPasswordException;
-import com.application.common.web.util.GenericResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -35,65 +34,56 @@ import lombok.extern.slf4j.Slf4j;
 @Tag(name = "Users", description = "Admin Users Management")
 @RequiredArgsConstructor
 @Slf4j
-public class AdminController {
+public class AdminController extends BaseController {
     private final AdminService adminService;
-    private final MessageSource messages;
 
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_ADMIN_WRITE')")
     @Operation(summary = "Block user", description = "Blocks a user by their ID")
-    @ApiResponse(responseCode = "200", description = "User blocked successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
-    @ApiResponse(responseCode = "400", description = "Invalid request")
     @PutMapping("/{adminId}/block")
-    public GenericResponse blockUser(@PathVariable Long adminId) {
-        adminService.updateAdminStatus(adminId, Admin.Status.BLOCKED);
-        return new GenericResponse("Admin blocked successfully");
+    public ResponseEntity<ApiResponse<String>> blockUser(@PathVariable Long adminId) {
+        return executeVoid("block admin", "User blocked successfully", () -> {
+            adminService.updateAdminStatus(adminId, Admin.Status.BLOCKED);
+        });
     }
 
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_ADMIN_WRITE')")
     @Operation(summary = "Enable user", description = "Enables a user by their ID")
-    @ApiResponse(responseCode = "200", description = "User enabled successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
-    @ApiResponse(responseCode = "400", description = "Invalid request")
     @PutMapping("/{adminId}/enable")
-    public GenericResponse enableUser(@PathVariable Long adminId) {
-        adminService.updateAdminStatus(adminId, Admin.Status.ENABLED);
-        return new GenericResponse("User enabled successfully");
+    public ResponseEntity<ApiResponse<String>> enableUser(@PathVariable Long adminId) {
+        return executeVoid("enable admin", "User enabled successfully", () -> {
+            adminService.updateAdminStatus(adminId, Admin.Status.ENABLED);
+        });
     }
 
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_ADMIN_WRITE')")
     @Operation(summary = "Delete admin user", description = "Deletes an admin user by their ID")
-    @ApiResponse(responseCode = "200", description = "Admin user deleted successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
-    @ApiResponse(responseCode = "400", description = "Invalid request")
     @PutMapping("/{adminId}/delete")
-    public GenericResponse deleteAdminUser(@PathVariable Long adminId) {
-        adminService.updateAdminStatus(adminId, Admin.Status.DELETED);
-        return new GenericResponse("Admin user deleted successfully");
+    public ResponseEntity<ApiResponse<String>> deleteAdminUser(@PathVariable Long adminId) {
+        return executeVoid("delete admin", "User deleted successfully", () -> {
+            adminService.updateAdminStatus(adminId, Admin.Status.DELETED);
+        });
     }
 
     @Operation(summary = "Generate new token for password change", description = "Changes the user's password after verifying the old password")
-    @ApiResponse(responseCode = "200", description = "Password changed successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
-    @ApiResponse(responseCode = "400", description = "Invalid old password or invalid data")
-    @ApiResponse(responseCode = "401", description = "Unauthorized")
     @PostMapping(value = "/password/new_token")
-    public GenericResponse changeUserPassword(
+    public ResponseEntity<ApiResponse<String>> changeUserPassword(
             @Parameter(description = "Locale for response messages") final Locale locale,
-            @Parameter(description = "DTO containing the old and new password", required = true) @Valid UpdatePasswordDTO passwordDto) {
-        if (!adminService.checkIfValidOldPassword(getAdminId(), passwordDto.getOldPassword())) {
-            throw new InvalidOldPasswordException();
-        }
-        adminService.changeAdminPassword(getAdminId(), passwordDto.getNewPassword());
-        return new GenericResponse(messages.getMessage("message.updatePasswordSuc", null, locale));
+            @Parameter(description = "DTO containing the old and new password", required = true) @RequestBody @Valid UpdatePasswordDTO passwordDto) {
+        return executeVoid("change admin password", "Password changed successfully", () -> {
+            if (!adminService.checkIfValidOldPassword(getAdminId(), passwordDto.getOldPassword())) {
+                throw new InvalidOldPasswordException();
+            }
+            adminService.changeAdminPassword(getAdminId(), passwordDto.getNewPassword());
+        });
     }
 
-    @Operation(summary = "Get Admin ID", description = "Retrieves the ID of the current admin", responses = {
-            @ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Long.class))),
-            @ApiResponse(responseCode = "401", description = "Unauthorized"),
-            @ApiResponse(responseCode = "403", description = "Access denied"),
-            @ApiResponse(responseCode = "404", description = "User not found")
-    })
+    @Operation(summary = "Get Admin ID", description = "Retrieves the ID of the current admin")
     @GetMapping("/id")
-    public Long getAdminId() {
+    public ResponseEntity<ApiResponse<Long>> getAdminIdEndpoint() {
+        return execute("get admin id", () -> AdminControllerUtils.getCurrentAdmin().getId());
+    }
+    
+    private Long getAdminId() {
         return AdminControllerUtils.getCurrentAdmin().getId();
     }
-
-
 }

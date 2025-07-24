@@ -1,7 +1,7 @@
 package com.application.common.web.dto.get;
 
-import com.application.restaurant.model.menu.Dish;
-import com.application.restaurant.model.menu.MenuDish;
+import com.application.restaurant.persistence.model.menu.Dish;
+import com.application.restaurant.persistence.model.menu.MenuDish;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

@@ -1,6 +1,6 @@
 package com.application.common.web.dto.get;
 
-import com.application.admin.model.Admin;
+import com.application.admin.persistence.model.Admin;
 import com.application.common.controller.validators.PasswordMatches;
 import com.application.common.controller.validators.ValidEmail;
 

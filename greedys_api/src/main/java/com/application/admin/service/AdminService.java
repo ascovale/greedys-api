@@ -7,12 +7,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.application.admin.dao.AdminDAO;
-import com.application.admin.dao.AdminPasswordResetTokenDAO;
-import com.application.admin.dao.AdminVerificationTokenDAO;
-import com.application.admin.model.Admin;
-import com.application.admin.model.AdminPasswordResetToken;
-import com.application.admin.model.AdminVerificationToken;
+import com.application.admin.persistence.dao.AdminDAO;
+import com.application.admin.persistence.dao.AdminPasswordResetTokenDAO;
+import com.application.admin.persistence.dao.AdminVerificationTokenDAO;
+import com.application.admin.persistence.model.Admin;
+import com.application.admin.persistence.model.AdminPasswordResetToken;
+import com.application.admin.persistence.model.AdminVerificationToken;
 import com.application.common.persistence.model.Image;
 import com.application.common.web.dto.get.AdminDTO;
 

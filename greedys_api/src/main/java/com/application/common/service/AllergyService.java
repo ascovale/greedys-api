@@ -11,8 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.application.common.web.dto.get.AllergyDTO;
 import com.application.common.web.dto.post.NewAllergyDTO;
-import com.application.customer.dao.AllergyDAO;
-import com.application.customer.model.Allergy;
+import com.application.customer.persistence.dao.AllergyDAO;
+import com.application.customer.persistence.model.Allergy;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;

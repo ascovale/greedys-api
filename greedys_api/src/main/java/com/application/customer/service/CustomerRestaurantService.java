@@ -6,6 +6,7 @@ import java.util.Collection;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.application.common.service.RestaurantService;
 import com.application.common.web.dto.get.MenuDTO;
 import com.application.common.web.dto.get.RestaurantDTO;
 import com.application.common.web.dto.get.RoomDTO;
@@ -13,7 +14,6 @@ import com.application.common.web.dto.get.ServiceDTO;
 import com.application.common.web.dto.get.SlotDTO;
 import com.application.common.web.dto.get.TableDTO;
 import com.application.restaurant.service.RestaurantMenuService;
-import com.application.restaurant.service.RestaurantService;
 import com.application.restaurant.service.RoomService;
 import com.application.restaurant.service.SlotService;
 import com.application.restaurant.service.TableService;

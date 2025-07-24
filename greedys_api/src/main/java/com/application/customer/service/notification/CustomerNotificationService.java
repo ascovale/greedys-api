@@ -11,11 +11,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.application.common.service.FirebaseService;
-import com.application.common.web.dto.NotificationDto;
-import com.application.customer.dao.CustomerDAO;
-import com.application.customer.dao.NotificationDAO;
-import com.application.customer.model.Customer;
-import com.application.customer.model.CustomerNotification;
+import com.application.common.web.dto.get.NotificationDto;
+import com.application.customer.persistence.dao.CustomerDAO;
+import com.application.customer.persistence.dao.NotificationDAO;
+import com.application.customer.persistence.model.Customer;
+import com.application.customer.persistence.model.CustomerNotification;
 import com.application.customer.service.CustomerFcmTokenService;
 
 import lombok.RequiredArgsConstructor;

@@ -8,8 +8,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
 
-import com.application.customer.dao.CustomerDAO;
-import com.application.customer.model.Customer;
+import com.application.customer.persistence.dao.CustomerDAO;
+import com.application.customer.persistence.model.Customer;
 
 import lombok.extern.slf4j.Slf4j;
 

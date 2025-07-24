@@ -8,7 +8,7 @@ import java.util.function.Function;
 
 import org.springframework.stereotype.Service;
 
-import com.application.common.jwt.JwtUtil;
+import com.application.common.security.jwt.JwtUtil;
 import com.application.common.web.dto.AuthRequestGoogleDTO;
 import com.application.common.web.dto.post.AuthResponseDTO;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;

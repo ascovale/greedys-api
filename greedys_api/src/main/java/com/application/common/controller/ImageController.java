@@ -20,8 +20,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.application.customer.dao.CustomerDAO;
-import com.application.customer.model.Customer;
+import com.application.customer.persistence.dao.CustomerDAO;
+import com.application.customer.persistence.model.Customer;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

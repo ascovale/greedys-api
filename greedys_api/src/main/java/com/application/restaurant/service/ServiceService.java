@@ -10,8 +10,8 @@ import java.util.Set;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.application.admin.web.post.AdminNewServiceDTO;
-import com.application.common.mapper.Mapper.Weekday;
+import com.application.admin.web.dto.post.AdminNewServiceDTO;
+import com.application.common.persistence.mapper.Mapper.Weekday;
 import com.application.common.persistence.model.reservation.Reservation;
 import com.application.common.persistence.model.reservation.Service;
 import com.application.common.persistence.model.reservation.ServiceType;
@@ -20,16 +20,16 @@ import com.application.common.web.dto.ServiceDto;
 import com.application.common.web.dto.ServiceSlotsDto;
 import com.application.common.web.dto.ServiceTypeDto;
 import com.application.common.web.dto.get.ServiceDTO;
-import com.application.customer.dao.ReservationDAO;
-import com.application.restaurant.dao.RUserDAO;
-import com.application.restaurant.dao.RestaurantDAO;
-import com.application.restaurant.dao.ServiceDAO;
-import com.application.restaurant.dao.ServiceTypeDAO;
-import com.application.restaurant.dao.SlotDAO;
-import com.application.restaurant.model.Restaurant;
-import com.application.restaurant.model.user.RUser;
-import com.application.restaurant.web.post.NewServiceDTO;
-import com.application.restaurant.web.post.RestaurantNewServiceDTO;
+import com.application.customer.persistence.dao.ReservationDAO;
+import com.application.restaurant.persistence.dao.RUserDAO;
+import com.application.restaurant.persistence.dao.RestaurantDAO;
+import com.application.restaurant.persistence.dao.ServiceDAO;
+import com.application.restaurant.persistence.dao.ServiceTypeDAO;
+import com.application.restaurant.persistence.dao.SlotDAO;
+import com.application.restaurant.persistence.model.Restaurant;
+import com.application.restaurant.persistence.model.user.RUser;
+import com.application.restaurant.web.dto.post.NewServiceDTO;
+import com.application.restaurant.web.dto.post.RestaurantNewServiceDTO;
 
 import lombok.RequiredArgsConstructor;
 
@@ -44,7 +44,6 @@ public class ServiceService {
 	private final RestaurantDAO rDAO;
 	private final RUserDAO RUserDAO;
 	
-	private final RestaurantService rService;
 
 	public List<ServiceDto> getServices(Long idRestaurant, LocalDate selectedDate) {
 		List<Service> services = serviceDAO.findServicesByRestaurant(idRestaurant);
@@ -56,7 +55,8 @@ public class ServiceService {
 	}
 
 	public Set<Weekday> getAllAvailableDays(Long idRestaurant) {
-		List<Service> services = rService.findById(idRestaurant).getServices();
+		Restaurant restaurant = rDAO.findById(idRestaurant).orElseThrow(() -> new IllegalArgumentException("Restaurant not found with ID: " + idRestaurant));
+		List<Service> services = restaurant.getServices();
 		Set<Weekday> days = new HashSet<Weekday>();
 
 		for (Service service : services) {
@@ -97,7 +97,7 @@ public class ServiceService {
 	public void newService(NewServiceDTO newServiceDTO) {
 		Service service = Service.builder()
 				.name(newServiceDTO.getName())
-				.restaurant(rService.findById(newServiceDTO.getRestaurant()))
+				.restaurant(rDAO.findById(newServiceDTO.getRestaurant()).orElseThrow(() -> new IllegalArgumentException("Restaurant not found")))
 				.validFrom(newServiceDTO.getValidFrom())
 				.validTo(newServiceDTO.getValidTo())
 				.active(false)
@@ -157,10 +157,8 @@ public class ServiceService {
 	}
 
 	public void newService(AdminNewServiceDTO newServiceDTO) {
-		Restaurant restaurant = rService.findById(newServiceDTO.getRestaurant());
-		if (restaurant == null) {
-			throw new IllegalArgumentException("Restaurant not found");
-		}
+		Restaurant restaurant = rDAO.findById(newServiceDTO.getRestaurant())
+				.orElseThrow(() -> new IllegalArgumentException("Restaurant not found"));
 		Service service = Service.builder()
 				.name(newServiceDTO.getName())
 				.restaurant(restaurant)
@@ -183,13 +181,13 @@ public class ServiceService {
 	}
 
 	public void newService(Long idRestaurant, RestaurantNewServiceDTO newServiceDTO) {
-		Restaurant restaurant = rService.findById(idRestaurant);
+		Restaurant restaurant = rDAO.findById(idRestaurant).orElseThrow(() -> new IllegalArgumentException("Restaurant not found"));
 		if (restaurant == null) {
 			throw new IllegalArgumentException("Restaurant not found");
 		}
 		Service service = Service.builder()
 				.name(newServiceDTO.getName())
-				.restaurant(rService.findById(restaurant.getId()))
+				.restaurant(rDAO.findById(restaurant.getId()).orElseThrow(() -> new IllegalArgumentException("Restaurant not found")))
 				.validFrom(newServiceDTO.getValidFrom())
 				.validTo(newServiceDTO.getValidTo())
 				.active(false)

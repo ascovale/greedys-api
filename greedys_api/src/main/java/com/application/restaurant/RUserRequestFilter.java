@@ -9,7 +9,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.application.common.jwt.JwtUtil;
+import com.application.common.security.jwt.JwtUtil;
 import com.application.restaurant.service.security.RUserDetailsService;
 
 import jakarta.servlet.FilterChain;

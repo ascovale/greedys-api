@@ -20,18 +20,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.application.admin.AdminOnRegistrationCompleteEvent;
-import com.application.admin.dao.AdminDAO;
-import com.application.admin.dao.AdminRoleDAO;
-import com.application.admin.dao.AdminVerificationTokenDAO;
-import com.application.admin.model.Admin;
-import com.application.admin.model.AdminPrivilege;
-import com.application.admin.model.AdminRole;
-import com.application.admin.model.AdminVerificationToken;
-import com.application.admin.web.post.NewAdminDTO;
-import com.application.common.constants.TokenValidationConstants;
+import com.application.admin.persistence.dao.AdminDAO;
+import com.application.admin.persistence.dao.AdminRoleDAO;
+import com.application.admin.persistence.dao.AdminVerificationTokenDAO;
+import com.application.admin.persistence.model.Admin;
+import com.application.admin.persistence.model.AdminPrivilege;
+import com.application.admin.persistence.model.AdminRole;
+import com.application.admin.persistence.model.AdminVerificationToken;
+import com.application.admin.web.dto.post.NewAdminDTO;
+import com.application.common.security.jwt.constants.TokenValidationConstants;
 import com.application.common.service.EmailService;
 import com.application.common.web.error.UserAlreadyExistException;
-import com.application.common.web.util.GenericResponse;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -139,9 +138,9 @@ public class AdminRegistrationService {
      * 
      * @param token The verification token
      * @param locale The user's locale for messages
-     * @return GenericResponse with result message
+     * @return String with result message
      */
-    public GenericResponse confirmRegistrationAndAuthenticate(String token, Locale locale) {
+    public String confirmRegistrationAndAuthenticate(String token, Locale locale) {
         log.info("Confirming registration and authenticating with token: {}", token);
         
         String result = validateVerificationToken(token);
@@ -153,16 +152,16 @@ public class AdminRegistrationService {
             }
             String message = getValidationMessage(result, locale);
             log.info("Registration confirmed and admin authenticated successfully");
-            return new GenericResponse(message + " - Authentication successful");
+            return message + " - Authentication successful";
         }
 
         String message = getValidationMessage(result, locale);
         boolean expired = isTokenExpired(result);
         
         if (expired) {
-            return new GenericResponse(message + " - Token expired");
+            return message + " - Token expired";
         } else {
-            return new GenericResponse(message + " - Invalid token");
+            return message + " - Invalid token";
         }
     }
 
@@ -214,9 +213,9 @@ public class AdminRegistrationService {
      * @param existingToken The existing verification token
      * @param request The HTTP servlet request to extract app URL
      * @param locale The user's locale for messages
-     * @return GenericResponse with success message
+     * @return String with success message
      */
-    public GenericResponse resendVerificationToken(String existingToken, HttpServletRequest request, Locale locale) {
+    public String resendVerificationToken(String existingToken, HttpServletRequest request, Locale locale) {
         log.info("Resending verification token for existing token: {}", existingToken);
         
         try {
@@ -230,7 +229,7 @@ public class AdminRegistrationService {
             String message = messageSource.getMessage("message.resendToken", null, locale);
             log.info("Verification token resent successfully for admin: {}", admin.getEmail());
             
-            return new GenericResponse(message);
+            return message;
         } catch (Exception e) {
             log.error("Failed to resend verification token for token: {}", existingToken, e);
             throw e;

@@ -1,6 +1,6 @@
 package com.application.common.web.dto.get;
 
-import com.application.customer.model.Allergy;
+import com.application.customer.persistence.model.Allergy;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

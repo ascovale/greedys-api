@@ -4,8 +4,8 @@ import java.time.LocalDate;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
-import com.application.customer.model.Customer;
-import com.application.restaurant.model.user.RUser;
+import com.application.customer.persistence.model.Customer;
+import com.application.restaurant.persistence.model.user.RUser;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -67,7 +67,7 @@ public class ReservationRequest {
  	private Reservation reservation;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	private com.application.restaurant.model.Table table;
+	private com.application.restaurant.persistence.model.Table table;
 
 
 

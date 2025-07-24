@@ -8,12 +8,12 @@ import org.hibernate.Hibernate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.application.customer.dao.CustomerDAO;
-import com.application.customer.dao.PrivilegeDAO;
-import com.application.customer.dao.RoleDAO;
-import com.application.customer.model.Customer;
-import com.application.customer.model.Privilege;
-import com.application.customer.model.Role;
+import com.application.customer.persistence.dao.CustomerDAO;
+import com.application.customer.persistence.dao.PrivilegeDAO;
+import com.application.customer.persistence.dao.RoleDAO;
+import com.application.customer.persistence.model.Customer;
+import com.application.customer.persistence.model.Privilege;
+import com.application.customer.persistence.model.Role;
 import com.application.customer.service.authentication.CustomerAuthenticationService;
 import com.application.customer.web.post.NewCustomerDTO;
 

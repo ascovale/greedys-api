@@ -4,7 +4,7 @@ import java.util.regex.Pattern;
 
 import org.springframework.stereotype.Component;
 
-import com.application.common.model.ItalianCity;
+import com.application.common.persistence.model.ItalianCity;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;

@@ -7,7 +7,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -20,19 +19,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.application.common.controller.BaseController;
 import com.application.common.persistence.model.reservation.Reservation;
+import com.application.common.service.reservation.ReservationService;
+import com.application.common.web.dto.ApiResponse;
 import com.application.common.web.dto.get.ReservationDTO;
-import com.application.restaurant.model.user.RUser;
+import com.application.restaurant.persistence.model.user.RUser;
 import com.application.restaurant.service.RestaurantNotificationService;
-import com.application.restaurant.service.reservation.RestaurantReservationService;
-import com.application.restaurant.web.post.RestaurantNewReservationDTO;
+import com.application.restaurant.web.dto.post.RestaurantNewReservationDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -47,163 +43,113 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @SecurityRequirement(name = "bearerAuth")
 @RequestMapping("/restaurant/reservation")
-@Tag(name = "Restaurant Reservation", description = "APIs for managing reservations from the restaurant")
+@Tag(name = "Restaurant Reservation Management", description = "Controller for managing restaurant reservations")
 @RequiredArgsConstructor
 @Slf4j
-public class RestaurantReservationController {
-	//
-	private final RestaurantReservationService restaurantReservationService;
+public class RestaurantReservationController extends BaseController {
+	private final ReservationService reservationService;
 	private final RestaurantNotificationService restaurantNotificationService;
 
 	@Operation(summary = "Create a new reservation", description = "Endpoint to create a new reservation")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Reservation created successfully"),
-			@ApiResponse(responseCode = "400", description = "Invalid input", content = @Content),
-			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
-	})
 	@PostMapping("/new")
 	@PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_RESERVATION_WRITE')")
-	public ResponseEntity<?> createReservation(@RequestBody RestaurantNewReservationDTO dto, @AuthenticationPrincipal RUser rUser) {
-		
-		restaurantReservationService.createReservation(dto, rUser.getRestaurant());
-
-		restaurantNotificationService.sendNotificationToAllUsers(
-				"New reservation created",
-				"Reservation for " + dto.getPax() + " pax on " + dto.getReservationDay() + " at " + dto.getIdSlot(),
-				null,
-				rUser.getRestaurant().getId()
-		);
-		return ResponseEntity.ok().build();
+	public ResponseEntity<ApiResponse<String>> createReservation(@RequestBody RestaurantNewReservationDTO dto, @AuthenticationPrincipal RUser rUser) {
+		return executeCreate("create reservation", "Reservation created successfully", () -> {
+			reservationService.createReservation(dto, rUser.getRestaurant());
+			restaurantNotificationService.sendNotificationToAllUsers(
+					"New reservation created",
+					"Reservation for " + dto.getPax() + " pax on " + dto.getReservationDay() + " at " + dto.getIdSlot(),
+					null,
+					rUser.getRestaurant().getId()
+			);
+			return "success";
+		});
 	}
 
 	@PutMapping("/{reservationId}/accept")
 	@Operation(summary = "Accept a reservation", description = "Endpoint to accept a reservation by its ID")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Reservation accepted successfully"),
-			@ApiResponse(responseCode = "400", description = "Invalid reservation ID", content = @Content),
-			@ApiResponse(responseCode = "404", description = "Reservation not found", content = @Content),
-			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
-	})
 	@PreAuthorize("@securityRUserService.hasPermissionOnReservation(#reservationId)")
-	public ResponseEntity<?> acceptReservation(@PathVariable Long reservationId) {
-		restaurantReservationService.setStatus(reservationId, Reservation.Status.ACCEPTED);
-		return ResponseEntity.ok().build();
+	public ResponseEntity<ApiResponse<String>> acceptReservation(@PathVariable Long reservationId) {
+		return executeVoid("accept reservation", "Reservation accepted successfully", () -> 
+			reservationService.setStatus(reservationId, Reservation.Status.ACCEPTED));
 	}
 
 	@PutMapping("/{reservationId}/reject")
 	@Operation(summary = "Reject a reservation", description = "Endpoint to reject a reservation by its ID")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Reservation rejected successfully"),
-			@ApiResponse(responseCode = "400", description = "Invalid reservation ID", content = @Content),
-			@ApiResponse(responseCode = "404", description = "Reservation not found", content = @Content),
-			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
-	})
-	public ResponseEntity<?> rejectReservation(@PathVariable Long reservationId) {
-		restaurantReservationService.setStatus(reservationId, Reservation.Status.REJECTED);
-		return ResponseEntity.ok().build();
+	public ResponseEntity<ApiResponse<String>> rejectReservation(@PathVariable Long reservationId) {
+		return executeVoid("reject reservation", "Reservation rejected successfully", () -> 
+			reservationService.setStatus(reservationId, Reservation.Status.REJECTED));
 	}
 
 	@PutMapping("/{reservationId}/no_show")
 	@Operation(summary = "Mark a reservation as no show", description = "Endpoint to mark a reservation as no show by its ID")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Reservation marked as no show successfully"),
-			@ApiResponse(responseCode = "400", description = "Invalid reservation ID", content = @Content),
-			@ApiResponse(responseCode = "404", description = "Reservation not found", content = @Content),
-			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
-	})
-	public ResponseEntity<?> markReservationNoShow(@PathVariable Long reservationId) {
-		restaurantReservationService.setStatus(reservationId, Reservation.Status.NO_SHOW);
-		return ResponseEntity.ok().build();
+	public ResponseEntity<ApiResponse<String>> markReservationNoShow(@PathVariable Long reservationId) {
+		return executeVoid("mark reservation no show", "Reservation marked as no show successfully", () -> 
+			reservationService.setStatus(reservationId, Reservation.Status.NO_SHOW));
 	}
 
 	@PutMapping("/{reservationId}/seated")
 	@Operation(summary = "Mark a reservation as seated", description = "Endpoint to mark a reservation as seated by its ID")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Reservation marked as seated successfully"),
-			@ApiResponse(responseCode = "400", description = "Invalid reservation ID", content = @Content),
-			@ApiResponse(responseCode = "404", description = "Reservation not found", content = @Content),
-			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
-	})
-	public ResponseEntity<?> markReservationSeated(@PathVariable Long reservationId) {
-		restaurantReservationService.setStatus(reservationId, Reservation.Status.SEATED);
-		return ResponseEntity.ok().build();
+	public ResponseEntity<ApiResponse<String>> markReservationSeated(@PathVariable Long reservationId) {
+		return executeVoid("mark reservation seated", "Reservation marked as seated successfully", () -> 
+			reservationService.setStatus(reservationId, Reservation.Status.SEATED));
 	}
 
 	@Operation(summary = "Accept a reservation modification request", description = "Endpoint to accept a reservation modification request by its ID")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Reservation modification request accepted successfully"),
-			@ApiResponse(responseCode = "400", description = "Invalid reservation ID", content = @Content),
-			@ApiResponse(responseCode = "404", description = "Reservation not found", content = @Content),
-			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
-	})
 	@PutMapping("/accept_modification/{modId}")
-	public ResponseEntity<?> acceptReservationModificationRequest(@PathVariable Long modId) {
-		restaurantReservationService.AcceptReservatioModifyRequest(modId);
-		return ResponseEntity.ok().build();
+	public ResponseEntity<ApiResponse<String>> acceptReservationModificationRequest(@PathVariable Long modId) {
+		return executeVoid("accept reservation modification", "Reservation modification accepted successfully", () -> 
+			reservationService.AcceptReservatioModifyRequest(modId));
 	}
 
 	@Operation(summary = "Get all reservations of a restaurant", description = "Retrieve all reservations of a restaurant")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ReservationDTO.class)))),
-			@ApiResponse(responseCode = "404", description = "Restaurant not found")
-
-	})
 	@GetMapping(value = "/reservations")
-	public Collection<ReservationDTO> getReservations(
+	public ResponseEntity<ApiResponse<Collection<ReservationDTO>>> getReservations(
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end,
 			@AuthenticationPrincipal RUser rUser) {
-		Long restaurantId = rUser.getRestaurant().getId();
-		Collection<ReservationDTO> reservations = restaurantReservationService.getReservations(restaurantId, start, end);
-		return reservations;
+		return execute("get reservations", () -> {
+			Long restaurantId = rUser.getRestaurant().getId();
+			return reservationService.getReservations(restaurantId, start, end);
+		});
 	}
 
 	@Operation(summary = "Get all accepted reservations of a restaurant", description = "Retrieve all accepted reservations of a restaurant")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ReservationDTO.class)))),
-			@ApiResponse(responseCode = "404", description = "Restaurant not found")
-	})
 	@GetMapping(value = "/accepted/get")
-	public Collection<ReservationDTO> getAcceptedReservations(
+	public ResponseEntity<ApiResponse<Collection<ReservationDTO>>> getAcceptedReservations(
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end,
 			@AuthenticationPrincipal RUser rUser) {
-		Long restaurantId = rUser.getRestaurant().getId();
-		return restaurantReservationService.getAcceptedReservations(restaurantId, start, end);
+		return execute("get accepted reservations", () -> {
+			Long restaurantId = rUser.getRestaurant().getId();
+			return reservationService.getAcceptedReservations(restaurantId, start, end);
+		});
 	}
 
 	@Operation(summary = "Get all reservations of a restaurant with pagination", description = "Retrieve all reservations of a restaurant with pagination")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ReservationDTO.class)))),
-			@ApiResponse(responseCode = "404", description = "Restaurant not found")
-	})
 	@GetMapping(value = "/pageable")
-	public ResponseEntity<Page<ReservationDTO>> getReservationsPageable(
+	public ResponseEntity<ApiResponse<Page<ReservationDTO>>> getReservationsPageable(
 			@AuthenticationPrincipal RUser rUser,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end,
 			@RequestParam int page,
 			@RequestParam int size) {
-
-		Long restaurantId = rUser.getRestaurant().getId();
-		Pageable pageable = PageRequest.of(page, size);
-		Page<ReservationDTO> reservations = restaurantReservationService
-				.getReservationsPageable(restaurantId, start, end, pageable);
-		return new ResponseEntity<>(reservations, HttpStatus.OK);
+		return executePaginated("get reservations pageable", () -> {
+			Long restaurantId = rUser.getRestaurant().getId();
+			Pageable pageable = PageRequest.of(page, size);
+			return reservationService.getReservationsPageable(restaurantId, start, end, pageable);
+		});
 	}
 
 	@Operation(summary = "Get all pending reservations of a restaurant", description = "Retrieve all pending reservations of a restaurant with optional date filtering")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ReservationDTO.class)))),
-			@ApiResponse(responseCode = "404", description = "Restaurant not found")
-	})
 	@GetMapping(value = "/pending/get")
-	public Collection<ReservationDTO> getPendingReservations(
+	public ResponseEntity<ApiResponse<Collection<ReservationDTO>>> getPendingReservations(
 			@RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end,
 			@AuthenticationPrincipal RUser rUser) {
-		Long restaurantId = rUser.getRestaurant().getId();
-		return restaurantReservationService.getPendingReservations(restaurantId, start, end);
+		return execute("get pending reservations", () -> {
+			Long restaurantId = rUser.getRestaurant().getId();
+			return reservationService.getPendingReservations(restaurantId, start, end);
+		});
 	}
-
 }

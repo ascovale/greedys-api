@@ -4,7 +4,7 @@ import java.util.Locale;
 
 import org.springframework.context.ApplicationEvent;
 
-import com.application.admin.model.Admin;
+import com.application.admin.persistence.model.Admin;
 
 import lombok.Getter;
 

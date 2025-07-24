@@ -1,15 +1,15 @@
 package com.application.admin.service.authentication;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
-import com.application.admin.model.Admin;
+import com.application.admin.persistence.model.Admin;
 import com.application.admin.service.AdminService;
-import com.application.common.jwt.JwtUtil;
+import com.application.common.security.jwt.JwtUtil;
 import com.application.common.web.dto.get.AdminDTO;
 import com.application.common.web.dto.post.AuthRequestDTO;
 import com.application.common.web.dto.post.AuthResponseDTO;
@@ -33,11 +33,11 @@ public class AdminAuthenticationService {
      * @param authenticationRequest The authentication request containing username and password
      * @return ResponseEntity with AuthResponseDTO containing JWT token and admin details, or error response
      */
-    public ResponseEntity<?> login(AuthRequestDTO authenticationRequest) {
+    public AuthResponseDTO login(AuthRequestDTO authenticationRequest) {
         
         log.debug("Admin authentication request received for username: {}", authenticationRequest.getUsername());
 
-        try {
+        
             // Authenticate the user using Spring Security's AuthenticationManager
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -49,8 +49,8 @@ public class AdminAuthenticationService {
             // Find the admin user by email
             final Admin adminDetails = adminService.findAdminByEmail(authenticationRequest.getUsername());
             if (adminDetails == null) {
-                log.warn("No admin found with email: {}", authenticationRequest.getUsername());
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+                log.error("Admin not found for username: {}", authenticationRequest.getUsername());
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
             }
 
             // Generate JWT token
@@ -59,11 +59,8 @@ public class AdminAuthenticationService {
 
             // Create response DTO
             final AuthResponseDTO responseDTO = new AuthResponseDTO(jwt, new AdminDTO(adminDetails));
-            return ResponseEntity.ok(responseDTO);
+            return responseDTO;
 
-        } catch (Exception e) {
-            log.error("Authentication failed for admin username: {}", authenticationRequest.getUsername(), e);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
-        }
+        
     }
 }

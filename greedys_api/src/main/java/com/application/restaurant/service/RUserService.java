@@ -9,22 +9,22 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.application.common.constants.TokenValidationConstants;
+import com.application.common.security.jwt.constants.TokenValidationConstants;
 import com.application.common.service.EmailService;
 import com.application.common.web.dto.get.RUserDTO;
-import com.application.restaurant.dao.RUserDAO;
-import com.application.restaurant.dao.RUserHubDAO;
-import com.application.restaurant.dao.RUserPasswordResetTokenDAO;
-import com.application.restaurant.dao.RUserVerificationTokenDAO;
-import com.application.restaurant.dao.RestaurantDAO;
-import com.application.restaurant.dao.RestaurantRoleDAO;
-import com.application.restaurant.model.Restaurant;
-import com.application.restaurant.model.user.RUser;
-import com.application.restaurant.model.user.RUserHub;
-import com.application.restaurant.model.user.RUserPasswordResetToken;
-import com.application.restaurant.model.user.RUserVerificationToken;
-import com.application.restaurant.model.user.RestaurantRole;
-import com.application.restaurant.web.post.NewRUserDTO;
+import com.application.restaurant.persistence.dao.RUserDAO;
+import com.application.restaurant.persistence.dao.RUserHubDAO;
+import com.application.restaurant.persistence.dao.RUserPasswordResetTokenDAO;
+import com.application.restaurant.persistence.dao.RUserVerificationTokenDAO;
+import com.application.restaurant.persistence.dao.RestaurantDAO;
+import com.application.restaurant.persistence.dao.RestaurantRoleDAO;
+import com.application.restaurant.persistence.model.Restaurant;
+import com.application.restaurant.persistence.model.user.RUser;
+import com.application.restaurant.persistence.model.user.RUserHub;
+import com.application.restaurant.persistence.model.user.RUserPasswordResetToken;
+import com.application.restaurant.persistence.model.user.RUserVerificationToken;
+import com.application.restaurant.persistence.model.user.RestaurantRole;
+import com.application.restaurant.web.dto.post.NewRUserDTO;
 
 import lombok.RequiredArgsConstructor;
 

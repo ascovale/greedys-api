@@ -10,7 +10,7 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 
 import com.application.common.web.dto.get.CustomerDTO;
-import com.application.customer.model.Customer;
+import com.application.customer.persistence.model.Customer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.http.HttpServletRequest;

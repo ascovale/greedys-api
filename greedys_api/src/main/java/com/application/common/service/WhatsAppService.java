@@ -4,9 +4,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.application.customer.model.Customer;
-import com.application.customer.model.CustomerNotification;
-import com.application.spring.TwilioConfig;
+import com.application.common.spring.TwilioConfig;
+import com.application.customer.persistence.model.Customer;
+import com.application.customer.persistence.model.CustomerNotification;
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.type.PhoneNumber;
 

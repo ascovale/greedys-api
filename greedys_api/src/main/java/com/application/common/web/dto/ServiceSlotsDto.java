@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.application.common.mapper.Mapper.Weekday;
+import com.application.common.persistence.mapper.Mapper.Weekday;
 import com.application.common.persistence.model.reservation.Service;
 import com.application.common.persistence.model.reservation.ServiceType;
 import com.application.common.persistence.model.reservation.Slot;

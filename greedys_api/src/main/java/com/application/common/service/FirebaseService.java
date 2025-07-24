@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.application.customer.service.CustomerFcmTokenService;
-import com.application.restaurant.dao.RUserDAO;
+import com.application.restaurant.persistence.dao.RUserDAO;
 import com.application.restaurant.service.RUserFcmTokenService;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.auth.FirebaseAuth;

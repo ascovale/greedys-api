@@ -1,21 +1,22 @@
 package com.application.admin.controller.test;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.application.admin.web.post.EmailRequestDTO;
+import com.application.admin.web.dto.post.EmailRequestDTO;
+import com.application.common.controller.BaseController;
 import com.application.common.service.EmailService;
-import com.application.common.web.util.GenericResponse;
+import com.application.common.web.dto.ApiResponse;
 import com.application.customer.service.notification.CustomerNotificationService;
 import com.application.restaurant.service.RestaurantNotificationService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 @Tag(name = "Admin Tester", description = "Admin management APIs for testing purposes")
 @RequiredArgsConstructor
 @Slf4j
-public class AdminTestEmailController {
+public class AdminTestEmailController extends BaseController {
     private final EmailService emailService;
     private final CustomerNotificationService notificationService;
     private final RestaurantNotificationService restaurantNotificationService;
@@ -40,86 +41,61 @@ public class AdminTestEmailController {
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = EmailRequestDTO.class))
         )
     )
-    @ApiResponse(responseCode = "200", description = "Email sent successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
-    @ApiResponse(responseCode = "400", description = "Invalid request")
     @PostMapping("/send_test_email")
-    public GenericResponse sendTestEmail(@RequestBody EmailRequestDTO emailRequest) {
-        try {
-            System.out.println("\n\n\nTrying to send Test email to: " + emailRequest.getEmail());
-            System.out.println("Subject: " + emailRequest.getSubject());
-            System.out.println("Message: " + emailRequest.getMessage() + "\n\n\n");
+    public ResponseEntity<ApiResponse<String>> sendTestEmail(@RequestBody EmailRequestDTO emailRequest) {
+        return executeCreate("send test email", "Email sent successfully", () -> {
+            log.info("Trying to send Test email to: {}", emailRequest.getEmail());
+            log.info("Subject: {}", emailRequest.getSubject());
+            log.info("Message: {}", emailRequest.getMessage());
             emailService.sendTestEmail(emailRequest.getEmail(), emailRequest.getSubject(), emailRequest.getMessage());
-            return new GenericResponse("Email sent successfully");
-        } catch (Exception e) {
-            e.printStackTrace(); // Log dettagliato per catturare eventuali errori
-            return new GenericResponse("Failed to send email: " + e.getMessage());
-        }
+            return "Email sent successfully";
+        });
     }
 
     @Operation(summary = "Send test notification to restaurant User", description = "Sends a test notification with the specified title and body to the specified restaurant user")
-    @ApiResponse(responseCode = "200", description = "Notification sent successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
-    @ApiResponse(responseCode = "400", description = "Invalid request")
     @PostMapping("/send_RUser_test_notification")
-    public GenericResponse sendTestNotification(@RequestBody NotificationRequest notificationRequest) {
-        
-        //restaurantNotificationService.sendRestaurantNotification(notificationRequest.getTitle(), notificationRequest.getBody(), notificationRequest.getIdRUser());
-        return new GenericResponse("Notification sent successfully");
+    public ResponseEntity<ApiResponse<String>> sendTestNotification(@RequestBody NotificationRequest notificationRequest) {
+        return executeVoid("send test notification", "Notification sent successfully", () -> {
+            //restaurantNotificationService.sendRestaurantNotification(notificationRequest.getTitle(), notificationRequest.getBody(), notificationRequest.getIdRUser());
+        });
     }
 
     @Operation(summary = "Send test user notification", description = "Sends a test notification with the specified title and body to the specified user")
-    @ApiResponse(responseCode = "200", description = "Notification sent successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
-    @ApiResponse(responseCode = "400", description = "Invalid request")
     @PostMapping("/send_user_test_notification")
-    public GenericResponse sendUserTestNotification(@RequestBody NotificationRequest notificationRequest) {
-        notificationService.sendNotification(notificationRequest.getTitle(), notificationRequest.getBody(), null, notificationRequest.getIdRUser());
-        return new GenericResponse("Notification sent successfully");
+    public ResponseEntity<ApiResponse<String>> sendUserTestNotification(@RequestBody NotificationRequest notificationRequest) {
+        return executeVoid("send user test notification", "Notification sent successfully", () -> {
+            notificationService.sendNotification(notificationRequest.getTitle(), notificationRequest.getBody(), null, notificationRequest.getIdRUser());
+        });
     }
 
     @Operation(summary = "Send test restaurant notification", description = "Sends a test notification with the specified title and body to the restaurant")
-    @ApiResponse(responseCode = "200", description = "Notification sent successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
-    @ApiResponse(responseCode = "400", description = "Invalid request")
     @PostMapping("/send_test_restaurant_notification")
-    public GenericResponse sendTestRestaurantNotification(@RequestBody NotificationRequest notificationRequest) {
-        //restaurantNotificationService.sendRestaurantNotification(notificationRequest.getTitle(), notificationRequest.getBody(), null);
-        return new GenericResponse("Notification sent successfully");
+    public ResponseEntity<ApiResponse<String>> sendTestRestaurantNotification(@RequestBody NotificationRequest notificationRequest) {
+        return executeVoid("send test restaurant notification", "Notification sent successfully", () -> {
+            //restaurantNotificationService.sendRestaurantNotification(notificationRequest.getTitle(), notificationRequest.getBody(), null);
+        });
     }
+
     /**
      * Public method to manually test the SMTP connection.
      * Can be invoked from a test endpoint or startup command.
      */
     @Operation(summary = "Test SMTP connection", description = "Tests the SMTP connection for sending emails")
-    @ApiResponse(responseCode = "200", description = "Connection successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class)))
-    @ApiResponse(responseCode = "500", description = "Connection failed")
     @PostMapping("/test_smtp_connection")
-    public GenericResponse testSmtpConnection() {
-        try {
-            System.out.println("Testing connection to SMTP server...");
-            // Controllo di tipo prima del cast
+    public ResponseEntity<ApiResponse<String>> testSmtpConnection() {
+        return executeCreate("test smtp connection", () -> {
+            log.info("Testing connection to SMTP server...");
             Object sender = emailService.getMailSender();
             if (!(sender instanceof JavaMailSenderImpl)) {
-                return new GenericResponse("MailSender is not an instance of JavaMailSenderImpl: " + sender.getClass().getName());
+                return "MailSender is not an instance of JavaMailSenderImpl: " + sender.getClass().getName();
             }
             JavaMailSenderImpl mailSender = (JavaMailSenderImpl) sender;
-            // Imposta timeout di connessione e lettura (es. 15 secondi)
             mailSender.getJavaMailProperties().put("mail.smtp.connectiontimeout", "100000");
             mailSender.getJavaMailProperties().put("mail.smtp.timeout", "100000");
             mailSender.testConnection();
-            System.out.println("Connection successful.");
-            return new GenericResponse("SMTP connection successful");
-        } catch (jakarta.mail.MessagingException e) {
-            System.err.println("MessagingException: " + e.getMessage());
-            Throwable cause = e.getCause();
-            while (cause != null) {
-                System.err.println("Caused by: " + cause.getMessage());
-                cause = cause.getCause();
-            }
-            e.printStackTrace();
-            return new GenericResponse("SMTP connection failed: " + e.getMessage());
-        } catch (Exception e) {
-            System.err.println("Unexpected error: " + e.getMessage());
-            e.printStackTrace();
-            return new GenericResponse("Unexpected error during SMTP connection test: " + e.getMessage());
-        }
+            log.info("Connection successful.");
+            return "SMTP connection successful";
+        });
     }
     public static class NotificationRequest {
         private String title;
@@ -151,5 +127,4 @@ public class AdminTestEmailController {
             this.idRUser = idRUser;
         }
     }
-
 }

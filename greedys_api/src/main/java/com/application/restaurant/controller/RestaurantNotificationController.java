@@ -11,8 +11,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.application.common.controller.BaseController;
+import com.application.common.web.dto.ApiResponse;
 import com.application.restaurant.controller.utils.RestaurantControllerUtils;
-import com.application.restaurant.model.RestaurantNotification;
+import com.application.restaurant.persistence.model.RestaurantNotification;
 import com.application.restaurant.service.RestaurantNotificationService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,56 +29,57 @@ import lombok.extern.slf4j.Slf4j;
 @Tag(name = "Notification Management", description = "Restaurant Notification management APIs")
 @RequiredArgsConstructor
 @Slf4j
-public class RestaurantNotificationController {
+public class RestaurantNotificationController extends BaseController {
     private final RestaurantNotificationService restaurantNotificationService;
 
     @Operation(summary = "Get unread notifications", description = "Returns a pageable list of unread notifications")
     @GetMapping("/unread/{page}/{size}")
-    public ResponseEntity<Page<RestaurantNotification>> getUnreadNotifications(
+    public ResponseEntity<ApiResponse<Page<RestaurantNotification>>> getUnreadNotifications(
             @PathVariable int page,
             @PathVariable int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<RestaurantNotification> unreadNotifications = restaurantNotificationService.getNotifications(pageable, true);
-        return ResponseEntity.ok().body(unreadNotifications);
+        return executePaginated("get unread notifications", () -> {
+            Pageable pageable = PageRequest.of(page, size);
+            return restaurantNotificationService.getNotifications(pageable, true);
+        });
     }
 
     @Operation(summary = "Set notification as read", description = "Sets the notification with the given ID as the given read boolean")
     @PutMapping("/read")
-    public ResponseEntity<Void> setNotificationAsRead(
+    public ResponseEntity<ApiResponse<String>> setNotificationAsRead(
             @RequestParam Long notificationId, @RequestParam Boolean read) {
-        restaurantNotificationService.updateNotificationReadStatus(notificationId, read);
-        return ResponseEntity.ok().build();
+        return executeVoid("set notification as read", "Notification status updated successfully", () -> 
+            restaurantNotificationService.updateNotificationReadStatus(notificationId, read));
     }
 
     @Operation(summary = "Get all notifications", description = "Returns a pageable list of all notifications")
     @GetMapping("/all/{page}/{size}")
-    public ResponseEntity<Page<RestaurantNotification>> getAllNotifications(
+    public ResponseEntity<ApiResponse<Page<RestaurantNotification>>> getAllNotifications(
             @PathVariable int page,
             @PathVariable int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<RestaurantNotification> allNotifications = restaurantNotificationService.getNotifications(pageable, false);
-        return ResponseEntity.ok().body(allNotifications);
+        return executePaginated("get all notifications", () -> {
+            Pageable pageable = PageRequest.of(page, size);
+            return restaurantNotificationService.getNotifications(pageable, false);
+        });
     }
 
     @Operation(summary = "Get a specific notification", description = "Returns the notification with the given ID")
     @GetMapping("/{notificationId}")
-    public ResponseEntity<RestaurantNotification> getRestaurantNotification(
+    public ResponseEntity<ApiResponse<RestaurantNotification>> getRestaurantNotification(
             @PathVariable Long notificationId) {
-        RestaurantNotification notification = restaurantNotificationService.getNotificationById(notificationId);
-        return ResponseEntity.ok().body(notification);
+        return execute("get notification", () -> restaurantNotificationService.getNotificationById(notificationId));
     }
 
     @Operation(summary = "Set all notifications as read", description = "Sets all notifications for the given user as read")
     @PutMapping("/all-read")
-    public ResponseEntity<Void> setAllNotificationsAsRead() {
-        restaurantNotificationService.markAllNotificationsAsRead(RestaurantControllerUtils.getCurrentRUser().getId());
-        return ResponseEntity.ok().build();
+    public ResponseEntity<ApiResponse<String>> setAllNotificationsAsRead() {
+        return executeVoid("mark all notifications as read", "All notifications marked as read", () -> 
+            restaurantNotificationService.markAllNotificationsAsRead(RestaurantControllerUtils.getCurrentRUser().getId()));
     }
 
     @Operation(summary = "Get unread notifications count", description = "Returns the count of unread notifications")
     @GetMapping("/unread/count")
-    public ResponseEntity<Long> getUnreadNotificationsCount() {
-        Long count = restaurantNotificationService.countUnreadNotifications(RestaurantControllerUtils.getCurrentRUser()).longValue();
-        return ResponseEntity.ok().body(count);
+    public ResponseEntity<ApiResponse<Long>> getUnreadNotificationsCount() {
+        return execute("get unread notifications count", () -> 
+            restaurantNotificationService.countUnreadNotifications(RestaurantControllerUtils.getCurrentRUser()).longValue());
     }
 }
