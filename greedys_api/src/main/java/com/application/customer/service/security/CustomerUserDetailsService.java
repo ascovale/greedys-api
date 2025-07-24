@@ -7,13 +7,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.application.common.security.LoginAttemptService;
-import com.application.customer.dao.CustomerDAO;
-import com.application.customer.model.Customer;
+import com.application.customer.persistence.dao.CustomerDAO;
+import com.application.customer.persistence.model.Customer;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
-@Service("customerUserDetailsService")
+@Service
 @Transactional
 @RequiredArgsConstructor
 public class CustomerUserDetailsService implements UserDetailsService {

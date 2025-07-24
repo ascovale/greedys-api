@@ -2,6 +2,7 @@ package com.application.admin.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -10,115 +11,101 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.admin.service.AdminReservationService;
-import com.application.admin.web.post.AdminNewReservationDTO;
+import com.application.admin.web.dto.post.AdminNewReservationDTO;
+import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.CreateApiResponses;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.persistence.model.reservation.Reservation;
+import com.application.common.service.reservation.ReservationService;
+import com.application.common.web.dto.ApiResponse;
+import com.application.common.web.dto.get.ReservationDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
 
 @RestController
 @RequestMapping({"/admin/reservation"})
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Admin Reservation", description = "Admin Reservation Management")
 @RequiredArgsConstructor
-@Slf4j
-public class AdminReservationController {
+public class AdminReservationController extends BaseController {
+	private final ReservationService reservationService;
 	private final AdminReservationService adminReservationService;
 
 	@Operation(summary = "Create a new reservation", description = "Endpoint to create a new reservation")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Reservation created successfully"),
-			@ApiResponse(responseCode = "400", description = "Invalid input", content = @Content),
-			@ApiResponse(responseCode = "401", description = "Unauthorized access", content = @Content),
-			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
-	})
+	@CreateApiResponses
 	@PostMapping("/new")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_WRITE')")
-	public ResponseEntity<?> createReservation(@RequestBody AdminNewReservationDTO DTO) {
-		adminReservationService.createReservation(DTO);
-		return ResponseEntity.ok().build();
+	public ResponseEntity<ApiResponse<String>> createReservation(@RequestBody AdminNewReservationDTO DTO) {
+		return executeCreate("create reservation", () -> {
+			adminReservationService.createReservation(DTO);
+			return "Reservation created successfully";
+		});
 	}
 
 	@PutMapping("/{reservationId}/accept")
 	@Operation(summary = "Accept a reservation", description = "Endpoint to accept a reservation by its ID")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Reservation accepted successfully"),
-			@ApiResponse(responseCode = "400", description = "Invalid reservation ID", content = @Content),
-			@ApiResponse(responseCode = "401", description = "Unauthorized access", content = @Content),
-			@ApiResponse(responseCode = "404", description = "Reservation not found", content = @Content),
-			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
-	})
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_WRITE')")
-	public ResponseEntity<?> acceptReservation(@PathVariable Long reservationId) {
-		adminReservationService.setStatus(reservationId, Reservation.Status.ACCEPTED);
-		return ResponseEntity.ok().build();
+	public ResponseEntity<ApiResponse<String>> acceptReservation(@PathVariable Long reservationId) {
+		return executeVoid("accept reservation", "Reservation accepted successfully", () -> {
+			reservationService.setStatus(reservationId, Reservation.Status.ACCEPTED);
+		});
 	}
 
 	@Operation(summary = "Reject a reservation", description = "Endpoint to reject a reservation by its ID")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Reservation rejected successfully"),
-			@ApiResponse(responseCode = "400", description = "Invalid reservation ID", content = @Content),
-			@ApiResponse(responseCode = "401", description = "Unauthorized access", content = @Content),
-			@ApiResponse(responseCode = "404", description = "Reservation not found", content = @Content),
-			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
-	})
 	@PutMapping("/{reservationId}/reject")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_WRITE')")
-	public ResponseEntity<?> rejectReservation(@PathVariable Long reservationId) {
-		adminReservationService.setStatus(reservationId, Reservation.Status.REJECTED);
-		return ResponseEntity.ok().build();
+	public ResponseEntity<ApiResponse<String>> rejectReservation(@PathVariable Long reservationId) {
+		return executeVoid("reject reservation", "Reservation rejected successfully", () -> {
+			reservationService.setStatus(reservationId, Reservation.Status.REJECTED);
+		});
 	}
 
 	@Operation(summary = "Mark a reservation as no show", description = "Endpoint to mark a reservation as no show by its ID")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Reservation marked as no show successfully"),
-			@ApiResponse(responseCode = "400", description = "Invalid reservation ID", content = @Content),
-			@ApiResponse(responseCode = "401", description = "Unauthorized access", content = @Content),
-			@ApiResponse(responseCode = "404", description = "Reservation not found", content = @Content),
-			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
-	})
 	@PutMapping("/{reservationId}/no_show")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_WRITE')")
-	public ResponseEntity<?> markReservationNoShow(@PathVariable Long reservationId) {
-		adminReservationService.setStatus(reservationId, Reservation.Status.NO_SHOW);
-		return ResponseEntity.ok().build();
+	public ResponseEntity<ApiResponse<String>> markReservationNoShow(@PathVariable Long reservationId) {
+		return executeVoid("mark reservation no show", "Reservation marked as no show", () -> {
+			reservationService.setStatus(reservationId, Reservation.Status.NO_SHOW);
+		});
 	}
 
 	@Operation(summary = "Mark a reservation as seated", description = "Endpoint to mark a reservation as seated by its ID")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Reservation marked as seated successfully"),
-			@ApiResponse(responseCode = "400", description = "Invalid reservation ID", content = @Content),
-			@ApiResponse(responseCode = "401", description = "Unauthorized access", content = @Content),
-			@ApiResponse(responseCode = "404", description = "Reservation not found", content = @Content),
-			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
-	})
 	@PutMapping("/{reservationId}/seated")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_WRITE')")
-	public ResponseEntity<?> markReservationSeated(@PathVariable Long reservationId) {
-		adminReservationService.setStatus(reservationId, Reservation.Status.SEATED);
-		return ResponseEntity.ok().build();
+	public ResponseEntity<ApiResponse<String>> markReservationSeated(@PathVariable Long reservationId) {
+		return executeVoid("mark reservation seated", "Reservation marked as seated", () -> {
+			reservationService.setStatus(reservationId, Reservation.Status.SEATED);
+		});
 	}
 
 	@Operation(summary = "Delete a reservation", description = "Endpoint to delete a reservation by its ID")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Reservation deleted successfully"),
-			@ApiResponse(responseCode = "400", description = "Invalid reservation ID", content = @Content),
-			@ApiResponse(responseCode = "401", description = "Unauthorized access", content = @Content),
-			@ApiResponse(responseCode = "404", description = "Reservation not found", content = @Content),
-			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
-	})
 	@PutMapping("/{reservationId}/delete")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_WRITE')")
-	public ResponseEntity<?> deleteReservation(@PathVariable Long reservationId) {
-		adminReservationService.setStatus(reservationId, Reservation.Status.DELETED);
-		return ResponseEntity.ok().build();
+	public ResponseEntity<ApiResponse<String>> deleteReservation(@PathVariable Long reservationId) {
+		return executeVoid("delete reservation", "Reservation deleted successfully", () -> {
+			reservationService.setStatus(reservationId, Reservation.Status.DELETED);
+		});
 	}
 
+	@Operation(summary = "Get reservation by ID", description = "Endpoint to get a reservation by its ID")
+	@ReadApiResponses
+	@GetMapping("/{reservationId}")
+	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_READ')")
+	public ResponseEntity<ApiResponse<ReservationDTO>> getReservation(@PathVariable Long reservationId) {
+		return execute("get reservation", () -> {
+			return adminReservationService.findReservationById(reservationId);
+		});
+	}
+
+	@Operation(summary = "Modify a reservation", description = "Endpoint to modify an existing reservation")
+	@PutMapping("/{reservationId}/modify")
+	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_WRITE')")
+	public ResponseEntity<ApiResponse<ReservationDTO>> modifyReservation(@PathVariable Long reservationId, @RequestBody AdminNewReservationDTO reservationDto) {
+		return execute("modify reservation", () -> {
+			return adminReservationService.modifyReservation(reservationId, reservationDto);
+		});
+	}
 }

@@ -5,8 +5,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.application.restaurant.model.Restaurant;
-import com.application.restaurant.model.menu.Menu;
+import com.application.restaurant.persistence.model.Restaurant;
+import com.application.restaurant.persistence.model.menu.Menu;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

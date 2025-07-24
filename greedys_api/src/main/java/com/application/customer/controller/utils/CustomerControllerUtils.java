@@ -2,7 +2,7 @@ package com.application.customer.controller.utils;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import com.application.customer.model.Customer;
+import com.application.customer.persistence.model.Customer;
 
 public class CustomerControllerUtils {
     public static Customer getCurrentCustomer() {

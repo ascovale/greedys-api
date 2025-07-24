@@ -11,17 +11,19 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.CreateApiResponses;
+import com.application.common.controller.annotation.ReadApiResponses;
+import com.application.common.web.dto.ApiResponse;
 import com.application.common.web.dto.get.DishDTO;
 import com.application.common.web.dto.get.MenuDTO;
 import com.application.restaurant.controller.utils.RestaurantControllerUtils;
 import com.application.restaurant.service.RestaurantMenuService;
-import com.application.restaurant.web.post.NewDishDTO;
-import com.application.restaurant.web.post.NewMenuDTO;
-import com.application.restaurant.web.post.NewMenuDishDTO;
+import com.application.restaurant.web.dto.post.NewDishDTO;
+import com.application.restaurant.web.dto.post.NewMenuDTO;
+import com.application.restaurant.web.dto.post.NewMenuDishDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -33,93 +35,67 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-public class RestaurantMenuController {
+public class RestaurantMenuController extends BaseController {
     private final RestaurantMenuService restaurantMenuService;
 
     @Operation(summary = "Retrieve all menus", description = "Retrieve all menus for the current restaurant")
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Menus retrieved successfully"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized access"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
     @GetMapping("/all")
-    public Collection<MenuDTO> getRestaurantMenus() {
-        return restaurantMenuService.getMenusByRestaurant(RestaurantControllerUtils.getCurrentRestaurant().getId());
+    public ResponseEntity<ApiResponse<Collection<MenuDTO>>> getRestaurantMenus() {
+        return execute("get restaurant menus", () -> 
+            restaurantMenuService.getMenusByRestaurant(RestaurantControllerUtils.getCurrentRestaurant().getId()));
     }
 
     @Operation(summary = "Get dishes of a menu", description = "Retrieve all dishes of a specific menu")
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Dishes retrieved successfully"),
-        @ApiResponse(responseCode = "400", description = "Invalid menu ID"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized access"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
+    @ReadApiResponses
     @PreAuthorize("@securityRUserService.isMenuOwnedByRestaurant(#menuId, authentication.principal.restaurantId)")
     @GetMapping("/{menuId}/dishes")
-    public ResponseEntity<?> getMenuDishes(@PathVariable Long menuId) {
-        return ResponseEntity.ok(restaurantMenuService.getMenuDishesByMenuId(menuId));
+    public ResponseEntity<ApiResponse<Object>> getMenuDishes(@PathVariable Long menuId) {
+        return execute("get menu dishes", () -> restaurantMenuService.getMenuDishesByMenuId(menuId));
     }
 
     @Operation(summary = "Get menu details", description = "Retrieve details of a specific menu")
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Menu retrieved successfully"),
-        @ApiResponse(responseCode = "400", description = "Invalid menu ID"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized access"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
+    @ReadApiResponses
     @PreAuthorize("@securityRUserService.isMenuOwnedByRestaurant(#menuId, authentication.principal.restaurantId)")
     @GetMapping("/{menuId}")
-    public ResponseEntity<?> getMenuDetails(@PathVariable Long menuId) {
-        return ResponseEntity.ok(restaurantMenuService.getMenuById(menuId));
+    public ResponseEntity<ApiResponse<Object>> getMenuDetails(@PathVariable Long menuId) {
+        return execute("get menu details", () -> restaurantMenuService.getMenuById(menuId));
     }
 
     @Operation(summary = "Retrieve all dishes", description = "Retrieve all dishes for the current restaurant")
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Dishes retrieved successfully"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized access"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
     @GetMapping("/dishes/all")
-    public Collection<DishDTO> getDishes() {
-        return restaurantMenuService.getDishesByRestaurant(RestaurantControllerUtils.getCurrentRestaurant().getId());
+    public ResponseEntity<ApiResponse<Collection<DishDTO>>> getDishes() {
+        return execute("get restaurant dishes", () -> 
+            restaurantMenuService.getDishesByRestaurant(RestaurantControllerUtils.getCurrentRestaurant().getId()));
     }
 
     @Operation(summary = "Create a menu", description = "Create a new menu for the current restaurant")
-    @ApiResponses({
-        @ApiResponse(responseCode = "201", description = "Menu created successfully"),
-        @ApiResponse(responseCode = "400", description = "Invalid input data"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized access"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
+    @CreateApiResponses
     @PostMapping("/create")
-    public void createMenu(@RequestBody NewMenuDTO newMenu) {
-        restaurantMenuService.addMenu(newMenu);
+    public ResponseEntity<ApiResponse<String>> createMenu(@RequestBody NewMenuDTO newMenu) {
+        return executeCreate("create menu", "Menu created successfully", () -> {
+            restaurantMenuService.addMenu(newMenu);
+            return "success";
+        });
     }
 
     @Operation(summary = "Add a dish to a menu", description = "Add a priced dish to an existing menu")
-    @ApiResponses({
-        @ApiResponse(responseCode = "201", description = "Dish added to menu successfully"),
-        @ApiResponse(responseCode = "400", description = "Invalid input data"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized access"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
+    @CreateApiResponses
     @PreAuthorize("@securityRUserService.isMenuOwnedByRestaurant(#newMenuItem.menuId, authentication.principal.restaurantId)")
     @PostMapping("/dishes/add")
-    public void addDishToMenu(@RequestBody NewMenuDishDTO newMenuItem) {
-        restaurantMenuService.addMenuDish(newMenuItem);
+    public ResponseEntity<ApiResponse<String>> addDishToMenu(@RequestBody NewMenuDishDTO newMenuItem) {
+        return executeCreate("add dish to menu", "Dish added to menu successfully", () -> {
+            restaurantMenuService.addMenuDish(newMenuItem);
+            return "success";
+        });
     }
 
     @Operation(summary = "Create a dish", description = "Create a new dish for the current restaurant")
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Dish created successfully"),
-        @ApiResponse(responseCode = "400", description = "Invalid input data"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized access"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
+    @CreateApiResponses
     @PostMapping("/dishes/create")
-    public ResponseEntity<Void> createDish(@RequestBody NewDishDTO newItem) {
-        restaurantMenuService.createDish(newItem);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<ApiResponse<String>> createDish(@RequestBody NewDishDTO newItem) {
+        return executeCreate("create dish", "Dish created successfully", () -> {
+            restaurantMenuService.createDish(newItem);
+            return "success";
+        });
     }
-
 }

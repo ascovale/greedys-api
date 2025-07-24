@@ -3,7 +3,6 @@ package com.application.customer.controller;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,14 +13,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.application.common.controller.BaseController;
+import com.application.common.web.dto.ApiResponse;
 import com.application.common.web.dto.post.FcmTokenDTO;
-import com.application.customer.model.CustomerNotification;
+import com.application.customer.persistence.model.CustomerNotification;
 import com.application.customer.service.CustomerFcmTokenService;
 import com.application.customer.service.notification.CustomerNotificationService;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 @Tag(name = "Notification", description = "Notification management APIs for customers")
 @RequiredArgsConstructor
 @Slf4j
-public class CustomerNotificationController {
+public class CustomerNotificationController extends BaseController {
 
     private final CustomerFcmTokenService customerFcmTokenRepository;
     private final CustomerNotificationService notificationService;
@@ -66,66 +65,49 @@ public class CustomerNotificationController {
 
     @Operation(summary = "Get unread notifications", description = "Returns a pageable list of unread notifications")
     @GetMapping("/unread/{page}/{size}")
-    public ResponseEntity<Page<CustomerNotification>> getUnreadNotifications(@PathVariable int page,
+    public ResponseEntity<ApiResponse<Page<CustomerNotification>>> getUnreadNotifications(@PathVariable int page,
             @PathVariable int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<CustomerNotification> unreadNotifications = notificationService.getUnreadNotifications(pageable);
-        return ResponseEntity.ok().body(unreadNotifications);
+        return executePaginated("getUnreadNotifications", () -> notificationService.getUnreadNotifications(pageable));
     }
 
     @Operation(summary = "Get all notifications", description = "Returns a pageable list of all notifications")
     @GetMapping("/all/{page}/{size}")
-    public ResponseEntity<Page<CustomerNotification>> getAllNotifications(@PathVariable int page,
+    public ResponseEntity<ApiResponse<Page<CustomerNotification>>> getAllNotifications(@PathVariable int page,
             @PathVariable int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<CustomerNotification> allNotifications = notificationService.getAllNotifications(pageable);
-        return ResponseEntity.ok().body(allNotifications);
+        return executePaginated("getAllNotifications", () -> notificationService.getAllNotifications(pageable));
     }
 
     @Operation(summary = "Set notification as read", description = "Sets the notification with the given ID as the given read boolean")
     @PutMapping("/read")
-    public ResponseEntity<Void> setNotificationAsRead(@RequestParam Long notificationId, @RequestParam Boolean read) {
-        notificationService.read(notificationId);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<ApiResponse<String>> setNotificationAsRead(@RequestParam Long notificationId, @RequestParam Boolean read) {
+        return executeVoid("setNotificationAsRead", "Notification marked as read", () -> 
+            notificationService.read(notificationId));
     }
 
     @Operation(summary = "Register a user's FCM token", description = "Registers a user's FCM token")
     @PostMapping("/token")
-    public ResponseEntity<Void> registerUserFcmToken(
-            @RequestBody FcmTokenDTO userFcmToken) {
-        customerFcmTokenRepository.saveUserFcmToken(userFcmToken);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<ApiResponse<String>> registerUserFcmToken(@RequestBody FcmTokenDTO userFcmToken) {
+        return executeVoid("registerUserFcmToken", "FCM token registered successfully", () -> 
+            customerFcmTokenRepository.saveUserFcmToken(userFcmToken));
     }
 
     @Operation(summary = "Check if a device's token is present", description = "Checks if a device's token is present")
     @GetMapping("/token/present")
-    public ResponseEntity<String> isDeviceTokenPresent(
-            @RequestParam String deviceId) {
-        boolean isPresent = customerFcmTokenRepository.isDeviceTokenPresent(deviceId);
-        if (isPresent) {
-            return ResponseEntity.ok().body(customerFcmTokenRepository.getTokenByDeviceId(deviceId).getFcmToken());
-        }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Token not present");
+    public ResponseEntity<ApiResponse<String>> isDeviceTokenPresent(@RequestParam String deviceId) {
+        return execute("isDeviceTokenPresent", () -> {
+            boolean isPresent = customerFcmTokenRepository.isDeviceTokenPresent(deviceId);
+            if (isPresent) {
+                return customerFcmTokenRepository.getTokenByDeviceId(deviceId).getFcmToken();
+            }
+            return "Token not present";
+        });
     }
 
     @Operation(summary = "Verify a device's token", description = "Verifies a device's token and returns the status")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "406", description = "Token expired")
-    })
     @GetMapping("/token/verify")
-    public ResponseEntity<String> verifyToken(
-            @RequestParam String deviceId) {
-        String status = customerFcmTokenRepository.verifyTokenByDeviceId(deviceId);
-        switch (status) {
-            case "OK":
-                return ResponseEntity.ok().body("OK");
-            case "EXPIRED":
-                return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("EXPIRED");
-            case "NOT FOUND":
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("NOT FOUND");
-            default:
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error occurred");
-        }
+    public ResponseEntity<ApiResponse<String>> verifyToken(@RequestParam String deviceId) {
+        return execute("verifyToken", () -> customerFcmTokenRepository.verifyTokenByDeviceId(deviceId));
     }
-
 }

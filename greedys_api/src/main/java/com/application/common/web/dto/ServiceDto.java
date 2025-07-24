@@ -4,7 +4,7 @@ import java.time.LocalTime;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.application.common.mapper.Mapper.Weekday;
+import com.application.common.persistence.mapper.Mapper.Weekday;
 import com.application.common.persistence.model.reservation.Service;
 
 import io.swagger.v3.oas.annotations.media.Schema;

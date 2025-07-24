@@ -8,8 +8,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
 
-import com.application.admin.dao.AdminDAO;
-import com.application.admin.model.Admin;
+import com.application.admin.persistence.dao.AdminDAO;
+import com.application.admin.persistence.model.Admin;
 import com.application.admin.service.security.AdminUserDetailsService;
 
 import lombok.extern.slf4j.Slf4j;

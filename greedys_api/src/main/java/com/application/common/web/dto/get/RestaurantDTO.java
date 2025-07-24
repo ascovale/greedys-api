@@ -3,7 +3,7 @@ package com.application.common.web.dto.get;
 import com.application.common.controller.validators.ValidEmail;
 import com.application.common.controller.validators.ValidVatNumber;
 import com.application.common.web.dto.RestaurantImageDto;
-import com.application.restaurant.model.Restaurant;
+import com.application.restaurant.persistence.model.Restaurant;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;

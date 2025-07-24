@@ -16,18 +16,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.application.common.controller.BaseController;
+import com.application.common.service.RestaurantService;
+import com.application.common.web.dto.ApiResponse;
+import com.application.common.web.dto.get.RestaurantDTO;
 import com.application.common.web.dto.post.AuthResponseDTO;
-import com.application.common.web.util.GenericResponse;
-import com.application.restaurant.service.RestaurantService;
 import com.application.restaurant.service.authentication.RestaurantAuthenticationService;
-import com.application.restaurant.web.post.NewRestaurantDTO;
+import com.application.restaurant.web.dto.post.NewRestaurantDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -40,7 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 @SecurityRequirement(name = "bearerAuth")
 @RequiredArgsConstructor
 @Slf4j
-public class RestaurantRegistrationController {
+public class RestaurantRegistrationController extends BaseController {
 
     private final RestaurantService restaurantService;
     private final RestaurantAuthenticationService restaurantAuthenticationService;
@@ -52,49 +50,40 @@ public class RestaurantRegistrationController {
         };
     }
 
-    // Public API methods
     @Operation(summary = "Request to register a new restaurant", description = "Request to register a new restaurant")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Restaurant registered successfully", content = {
-                    @Content(mediaType = "application/json", schema = @Schema(implementation = NewRestaurantDTO.class)) }),
-    })
     @PostMapping(value = "/new")
-    public GenericResponse registerRestaurant(@RequestBody NewRestaurantDTO restaurantDto) {
-        log.debug("Registering restaurant with information:", restaurantDto);
-        System.out.println("Registering restaurant with information:" + restaurantDto.getName());
-        restaurantService.registerRestaurant(restaurantDto);
-        return new GenericResponse("success");
+    public ResponseEntity<ApiResponse<RestaurantDTO>> registerRestaurant(@RequestBody NewRestaurantDTO restaurantDto) {
+        return executeCreate("register restaurant", "Restaurant registered successfully", () -> {
+            log.debug("Registering restaurant with information:", restaurantDto);
+            return restaurantService.registerRestaurant(restaurantDto);
+            
+        });
     }
     //TODO richiesta verifica email
     
     @GetMapping(value = "/resend_token")
     @ResponseBody
-    public GenericResponse resendRegistrationToken(final HttpServletRequest request,
+    public ResponseEntity<ApiResponse<String>> resendRegistrationToken(final HttpServletRequest request,
             @RequestParam("token") final String existingToken) {
-        return restaurantAuthenticationService.resendRegistrationToken(request, existingToken);
+        return executeVoid("resend registration token", () -> 
+            restaurantAuthenticationService.resendRegistrationToken(request, existingToken));
     }
 
     @Operation(summary = "Request password reset", description = "Sends a password reset token to the restaurant user's email")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Password reset token sent successfully", content = @Content(mediaType = "application/json")),
-            @ApiResponse(responseCode = "404", description = "User not found", content = @Content(mediaType = "application/json"))
-    })
     @PostMapping(value = "/password/forgot")
-    public ResponseEntity<String> forgotPassword(@RequestParam("email") final String userEmail,
+    public ResponseEntity<ApiResponse<String>> forgotPassword(@RequestParam("email") final String userEmail,
             final HttpServletRequest request) {
-        return restaurantAuthenticationService.forgotPassword(userEmail, request);
+        return execute("forgot password", () -> {
+            ResponseEntity<String> response = restaurantAuthenticationService.forgotPassword(userEmail, request);
+            return response.getBody();
+        });
     }
 
     @Operation(summary = "Change restaurant and get a new JWT", description = "Switches the restaurant and returns a new JWT for the specified restaurant ID")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "JWT generated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthResponseDTO.class))),
-            @ApiResponse(responseCode = "403", description = "Access denied", content = @Content(mediaType = "application/json")),
-            @ApiResponse(responseCode = "404", description = "Restaurant not found", content = @Content(mediaType = "application/json"))
-    })
     @PreAuthorize("@securityRUserService.hasPermissionForRestaurant(#restaurantId)")
     @PostMapping(value = "/change-restaurant", produces = "application/json")
-    public AuthResponseDTO changeRestaurant(@RequestParam Long restaurantId) {
-        return restaurantAuthenticationService.changeRestaurant(restaurantId);
+    public ResponseEntity<ApiResponse<AuthResponseDTO>> changeRestaurant(@RequestParam Long restaurantId) {
+        return execute("change restaurant", () -> restaurantAuthenticationService.changeRestaurant(restaurantId));
     }
 
     @Operation(summary = "Confirm restaurant user registration", description = "Conferma la registrazione")
@@ -105,8 +94,6 @@ public class RestaurantRegistrationController {
     }
 
     @Operation(summary = "Confirm password change with token", description = "Confirms the password change using a token")
-    @ApiResponse(responseCode = "200", description = "Password changed successfully or invalid token", content = @Content(mediaType = "text/plain", schema = @Schema(type = "string")))
-    @ApiResponse(responseCode = "401", description = "Unauthorized")
     @PutMapping(value = "/password/confirm")
     public String confirmPasswordChange(
             @Parameter(description = "Password reset token") @RequestParam final String token) {

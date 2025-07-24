@@ -8,8 +8,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.application.common.persistence.model.reservation.Reservation;
-import com.application.customer.dao.ReservationDAO;
-import com.application.customer.model.Customer;
+import com.application.customer.persistence.dao.ReservationDAO;
+import com.application.customer.persistence.model.Customer;
 
 import lombok.RequiredArgsConstructor;
 

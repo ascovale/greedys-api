@@ -2,8 +2,8 @@ package com.application.common.web.dto.get;
 
 import java.util.Collection;
 
-import com.application.restaurant.model.menu.Allergen;
-import com.application.restaurant.model.menu.Dish;
+import com.application.restaurant.persistence.model.menu.Allergen;
+import com.application.restaurant.persistence.model.menu.Dish;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

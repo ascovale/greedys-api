@@ -8,14 +8,13 @@ import org.springframework.context.MessageSource;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.stereotype.Component;
 
-import com.application.admin.model.Admin;
+import com.application.admin.persistence.model.Admin;
 import com.application.admin.service.AdminService;
 
 import lombok.RequiredArgsConstructor;
 
-@Component
+// @Component  // Temporarily disabled - mail sender dependency conflict
 @RequiredArgsConstructor
 public class AdminRegistrationListener implements ApplicationListener<AdminOnRegistrationCompleteEvent> {
 	private final AdminService service;

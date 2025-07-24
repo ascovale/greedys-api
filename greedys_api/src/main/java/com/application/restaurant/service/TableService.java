@@ -6,10 +6,10 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import com.application.common.web.dto.get.TableDTO;
-import com.application.restaurant.dao.TableDAO;
-import com.application.restaurant.model.Room;
-import com.application.restaurant.model.Table;
-import com.application.restaurant.web.post.NewTableDTO;
+import com.application.restaurant.persistence.dao.TableDAO;
+import com.application.restaurant.persistence.model.Room;
+import com.application.restaurant.persistence.model.Table;
+import com.application.restaurant.web.dto.post.NewTableDTO;
 
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
@@ -31,14 +31,14 @@ public class TableService {
         tableDAO.deleteAll();
     }
 
-    public void createTable(NewTableDTO tableDto) {
+    public Table createTable(NewTableDTO tableDto) {
         Table table = new Table();
         table.setName(tableDto.getName());
         table.setCapacity(tableDto.getCapacity());
         table.setPositionX(tableDto.getPositionX());
         table.setPositionY(tableDto.getPositionY());
         table.setRoom(entityManager.getReference(Room.class, tableDto.getRoomId()));
-        tableDAO.save(table);
+        return tableDAO.save(table);
     }
 
     public Table findById(Long id) {

@@ -13,13 +13,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.CreateApiResponses;
+import com.application.common.web.dto.ApiResponse;
 import com.application.common.web.dto.ServiceTypeDto;
-import com.application.common.web.util.GenericResponse;
 import com.application.restaurant.service.ServiceService;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -31,59 +31,43 @@ import lombok.extern.slf4j.Slf4j;
 @SecurityRequirement(name = "bearerAuth")
 @RequiredArgsConstructor
 @Slf4j
-public class AdminServicesController {
+public class AdminServicesController extends BaseController {
 
     private final ServiceService serviceService;
 
-	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_READ')")
+    @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_READ')")
     @GetMapping("/types")
     @Operation(summary = "Get all service types", description = "Retrieve all service types.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Service types retrieved successfully"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
-    public Collection<ServiceTypeDto> getServiceTypes() {
-        return serviceService.getServiceTypes();
+    public ResponseEntity<ApiResponse<Collection<ServiceTypeDto>>> getServiceTypes() {
+        return execute("get service types", () -> serviceService.getServiceTypes());
     }
 
-	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
+    @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
     @Operation(summary = "Create a new service type", description = "This method creates a new service type in the system.")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Service type created successfully"),
-        @ApiResponse(responseCode = "400", description = "Invalid input data"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
+    @CreateApiResponses
     @PostMapping("/type/new")
-    public ResponseEntity<GenericResponse> newServiceType(@RequestBody String serviceTypeString) {
-        serviceService.newServiceType(serviceTypeString);
-        return ResponseEntity.ok(new GenericResponse("success"));
+    public ResponseEntity<ApiResponse<String>> newServiceType(@RequestBody String serviceTypeString) {
+        return executeCreate("create service type", () -> {
+            serviceService.newServiceType(serviceTypeString);
+            return "Service type created successfully";
+        });
     }
 
-	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
+    @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
     @Operation(summary = "Update a service type", description = "This method updates an existing service type.")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Service type updated successfully"),
-        @ApiResponse(responseCode = "400", description = "Invalid input data"),
-        @ApiResponse(responseCode = "404", description = "Service type not found"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
     @PutMapping("/type/{typeId}/update")
-    public ResponseEntity<GenericResponse> updateServiceType(@PathVariable Long typeId, @RequestBody String serviceTypeString) {
-        serviceService.updateServiceType(typeId, serviceTypeString);
-        return ResponseEntity.ok(new GenericResponse("success"));
+    public ResponseEntity<ApiResponse<String>> updateServiceType(@PathVariable Long typeId, @RequestBody String serviceTypeString) {
+        return executeVoid("update service type", "Service type updated successfully", () -> {
+            serviceService.updateServiceType(typeId, serviceTypeString);
+        });
     }
 
-	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
+    @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
     @Operation(summary = "Delete a service type", description = "This method deletes a service type by its ID.")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Service type deleted successfully"),
-        @ApiResponse(responseCode = "400", description = "Invalid service type ID"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
     @DeleteMapping("/type/{typeId}/delete")
-    public ResponseEntity<GenericResponse> deleteServiceType(@PathVariable Long typeId) {
-        serviceService.deleteServiceType(typeId);
-        return ResponseEntity.ok(new GenericResponse("success"));
+    public ResponseEntity<ApiResponse<String>> deleteServiceType(@PathVariable Long typeId) {
+        return executeVoid("delete service type", "Service type deleted successfully", () -> {
+            serviceService.deleteServiceType(typeId);
+        });
     }
-
 }

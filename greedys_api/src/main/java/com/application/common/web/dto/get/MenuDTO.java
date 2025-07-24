@@ -3,7 +3,7 @@ package com.application.common.web.dto.get;
 import java.util.Collection;
 import java.util.List;
 
-import com.application.restaurant.model.menu.Menu;
+import com.application.restaurant.persistence.model.menu.Menu;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

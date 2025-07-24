@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Locale;
 
 import org.springframework.context.MessageSource;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -18,21 +17,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.application.common.controller.BaseController;
+import com.application.common.web.dto.ApiResponse;
 import com.application.common.web.dto.get.RUserDTO;
 import com.application.common.web.error.InvalidOldPasswordException;
-import com.application.common.web.util.GenericResponse;
 import com.application.restaurant.controller.utils.RestaurantControllerUtils;
-import com.application.restaurant.dao.RestaurantRoleDAO;
-import com.application.restaurant.model.user.RUser;
+import com.application.restaurant.persistence.dao.RestaurantRoleDAO;
+import com.application.restaurant.persistence.model.user.RUser;
 import com.application.restaurant.service.RUserService;
-import com.application.restaurant.web.post.NewRUserDTO;
+import com.application.restaurant.web.dto.post.NewRUserDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -44,7 +40,7 @@ import lombok.extern.slf4j.Slf4j;
 @SecurityRequirement(name = "bearerAuth")
 @RequiredArgsConstructor
 @Slf4j
-public class RUserController {
+public class RUserController extends BaseController {
 
     private final RUserService RUserService;
     private final MessageSource messages;
@@ -58,19 +54,15 @@ public class RUserController {
      * @return ResponseEntity containing the updated user details.
      */
     @Operation(summary = "Add a role to a restaurant user", description = "Assign a specific role to an existing restaurant user")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Role assigned successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = RUserDTO.class))),
-            @ApiResponse(responseCode = "404", description = "User or role not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid role")
-    })
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_' + #role.toUpperCase() + '_WRITE')")
     @PostMapping(value = "/add_role")
-    public ResponseEntity<RUserDTO> addRoleToRUser(
+    public ResponseEntity<ApiResponse<RUserDTO>> addRoleToRUser(
             @RequestParam String role,
             @RequestParam Long RUserId) {
-        validateRole(role);
-        RUserDTO updatedUser = RUserService.addRUserRole(RUserId, "ROLE_" + role.toUpperCase());
-        return ResponseEntity.ok(updatedUser);
+        return execute("add role to user", () -> {
+            validateRole(role);
+            return RUserService.addRUserRole(RUserId, "ROLE_" + role.toUpperCase());
+        });
     }
 
     /**
@@ -81,19 +73,15 @@ public class RUserController {
      * @return ResponseEntity containing the updated user details.
      */
     @Operation(summary = "Remove a role from a restaurant user", description = "Remove a specific role from an existing restaurant user")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Role removed successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = RUserDTO.class))),
-            @ApiResponse(responseCode = "404", description = "User or role not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid role")
-    })
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_' + #role.toUpperCase() + '_WRITE')")
     @PostMapping(value = "/remove_role")
-    public ResponseEntity<RUserDTO> removeRoleFromRUser(
+    public ResponseEntity<ApiResponse<RUserDTO>> removeRoleFromRUser(
             @RequestParam String role,
             @RequestParam Long RUserId) {
-        validateRole(role);
-        RUserDTO updatedUser = RUserService.removeRUserRole(RUserId, "ROLE_" + role.toUpperCase());
-        return ResponseEntity.ok(updatedUser);
+        return execute("remove role from user", () -> {
+            validateRole(role);
+            return RUserService.removeRUserRole(RUserId, "ROLE_" + role.toUpperCase());
+        });
     }
 
     /**
@@ -115,15 +103,11 @@ public class RUserController {
      * @return ResponseEntity with HTTP status.
      */
     @Operation(summary = "Disable a restaurant user", description = "Disable a restaurant user")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "User disabled successfully"),
-            @ApiResponse(responseCode = "404", description = "User or restaurant not found")
-    })
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_MANAGER_WRITE')")
     @DeleteMapping(value = "/disable_user/{RUserId}")
-    public ResponseEntity<Void> disableRUser(@PathVariable Long RUserId) {
-        RUserService.disableRUser(RestaurantControllerUtils.getCurrentRUser().getId(), RUserId);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<ApiResponse<String>> disableRUser(@PathVariable Long RUserId) {
+        return executeVoid("disable user", "User disabled successfully", () -> 
+            RUserService.disableRUser(RestaurantControllerUtils.getCurrentRUser().getId(), RUserId));
     }
 
     /**
@@ -136,22 +120,18 @@ public class RUserController {
      * @return GenericResponse indicating the result of the operation.
      */
     @Operation(summary = "Generate new token for password change", description = "Changes the user's password after verifying the old password")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Password changed successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid old password or invalid data", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class))),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")
-    })
     @PostMapping(value = "/password/new_token")
-    public GenericResponse changeUserPassword(
+    public ResponseEntity<ApiResponse<String>> changeUserPassword(
             @Parameter(description = "Locale for response messages") final Locale locale,
             @Parameter(description = "The old password", required = true) @RequestParam String oldPassword,
             @Parameter(description = "The new password", required = true) @RequestParam String newPassword,
             @Parameter(description = "The user's email (optional)") @RequestParam(required = false) String email) {
-        if (!RUserService.checkIfValidOldPassword(getRUserId(), oldPassword)) {
-            throw new InvalidOldPasswordException();
-        }
-        RUserService.changeRUserPassword(getRUserId(), newPassword);
-        return new GenericResponse(messages.getMessage("message.updatePasswordSuc", null, locale));
+        return executeVoid("change user password", () -> {
+            if (!RUserService.checkIfValidOldPassword(getRUserId(), oldPassword)) {
+                throw new InvalidOldPasswordException();
+            }
+            RUserService.changeRUserPassword(getRUserId(), newPassword);
+        });
     }
 
     /**
@@ -159,15 +139,7 @@ public class RUserController {
      *
      * @return The ID of the current restaurant user.
      */
-    @Operation(summary = "Get restaurant user ID", description = "Retrieves the ID of the current restaurant user")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Long.class))),
-            @ApiResponse(responseCode = "401", description = "Unauthorized"),
-            @ApiResponse(responseCode = "403", description = "Access denied"),
-            @ApiResponse(responseCode = "404", description = "User not found")
-    })
-    @GetMapping("/id")
-    public Long getRUserId() {
+    private Long getRUserId() {
         return getCurrentRUser().getId();
     }
 
@@ -193,35 +165,26 @@ public class RUserController {
      */
     @PostMapping(value = "/new")
     @Operation(summary = "Add a user to a restaurant", description = "Add a new user to a restaurant")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = RUserDTO.class))),
-            @ApiResponse(responseCode = "404", description = "Restaurant not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid request")
-    })
-    public ResponseEntity<RUserDTO> addRUserToRestaurant(
+    public ResponseEntity<ApiResponse<RUserDTO>> addRUserToRestaurant(
             @RequestBody NewRUserDTO RUserDTO,
             @RequestParam Long restaurantId) {
-        RUserDTO createdUser = RUserService.addRUserToRestaurant(RUserDTO, restaurantId);
-        return new ResponseEntity<>(createdUser, HttpStatus.OK);
+        return executeCreate("add user to restaurant", "User added to restaurant successfully", () -> 
+            RUserService.addRUserToRestaurant(RUserDTO, restaurantId));
     }
 
     /**
      * Retrieves details of the current restaurant user.
      */
     @Operation(summary = "Get restaurant user details", description = "Retrieve details of the current restaurant user")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = RUserDTO.class))),
-            @ApiResponse(responseCode = "401", description = "Unauthorized"),
-            @ApiResponse(responseCode = "404", description = "User not found")
-    })
     @GetMapping("/get")
-    public ResponseEntity<RUserDTO> getRUserDetails() {
-        RUser currentUser = getCurrentRUser();
-        if (currentUser == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        RUserDTO userDTO = new RUserDTO(currentUser);
-        return new ResponseEntity<>(userDTO, HttpStatus.OK);
+    public ResponseEntity<ApiResponse<RUserDTO>> getRUserDetails() {
+        return execute("get user details", () -> {
+            RUser currentUser = getCurrentRUser();
+            if (currentUser == null) {
+                throw new IllegalStateException("User not found");
+            }
+            return new RUserDTO(currentUser);
+        });
     }
 
     /**
@@ -230,18 +193,16 @@ public class RUserController {
      * @return Lista dei permessi dell'utente corrente.
      */
     @Operation(summary = "Get user authorities", description = "Restituisce i permessi dell'utente autenticato")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operation successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))
-    })
     @GetMapping("/authorities")
-    public ResponseEntity<List<String>> getRUserAuthorities() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || authentication.getAuthorities() == null) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }
-        List<String> authorities = authentication.getAuthorities().stream()
-                .map(a -> a.getAuthority())
-                .toList();
-        return new ResponseEntity<>(authorities, HttpStatus.OK);
+    public ResponseEntity<ApiResponse<List<String>>> getRUserAuthorities() {
+        return execute("get user authorities", () -> {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || authentication.getAuthorities() == null) {
+                throw new SecurityException("No authentication found");
+            }
+            return authentication.getAuthorities().stream()
+                    .map(a -> a.getAuthority())
+                    .toList();
+        });
     }
 }

@@ -4,7 +4,7 @@ import java.time.LocalTime;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
-import com.application.common.mapper.Mapper.Weekday;
+import com.application.common.persistence.mapper.Mapper.Weekday;
 import com.application.common.persistence.model.reservation.Slot;
 
 import io.swagger.v3.oas.annotations.media.Schema;

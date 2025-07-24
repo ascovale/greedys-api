@@ -3,7 +3,6 @@ package com.application.restaurant.service.security;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -11,23 +10,20 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.application.common.security.user.ISecurityUserService;
-import com.application.restaurant.dao.RUserPasswordResetTokenDAO;
-import com.application.restaurant.model.user.RUser;
-import com.application.restaurant.model.user.RUserPasswordResetToken;
+import com.application.restaurant.persistence.dao.RUserPasswordResetTokenDAO;
+import com.application.restaurant.persistence.model.user.RUser;
+import com.application.restaurant.persistence.model.user.RUserPasswordResetToken;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
 @Transactional
-@Qualifier("RUserSecurityService")
 @RequiredArgsConstructor
-public class RUserSecurityService implements ISecurityUserService {
+public class RUserSecurityService {
 
     private final RUserPasswordResetTokenDAO passwordTokenRepository;
 
     // API
-    @Override
     public String validatePasswordResetToken(String token) {
         final RUserPasswordResetToken passToken = passwordTokenRepository.findByToken(token);
         if ((passToken == null)) {

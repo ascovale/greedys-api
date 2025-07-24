@@ -18,15 +18,15 @@ import com.application.common.web.dto.get.AllergyDTO;
 import com.application.common.web.dto.get.CustomerDTO;
 import com.application.common.web.dto.get.CustomerStatisticsDTO;
 import com.application.common.web.error.UserAlreadyExistException;
-import com.application.customer.dao.AllergyDAO;
-import com.application.customer.dao.CustomerDAO;
-import com.application.customer.dao.PrivilegeDAO;
-import com.application.customer.dao.ReservationDAO;
-import com.application.customer.dao.RoleDAO;
-import com.application.customer.model.Allergy;
-import com.application.customer.model.Customer;
-import com.application.customer.model.Privilege;
-import com.application.customer.model.Role;
+import com.application.customer.persistence.dao.AllergyDAO;
+import com.application.customer.persistence.dao.CustomerDAO;
+import com.application.customer.persistence.dao.PrivilegeDAO;
+import com.application.customer.persistence.dao.ReservationDAO;
+import com.application.customer.persistence.dao.RoleDAO;
+import com.application.customer.persistence.model.Allergy;
+import com.application.customer.persistence.model.Customer;
+import com.application.customer.persistence.model.Privilege;
+import com.application.customer.persistence.model.Role;
 import com.application.customer.web.post.NewCustomerDTO;
 
 import jakarta.persistence.EntityManager;
@@ -291,14 +291,14 @@ public class CustomerService {
         );
     }
 
-    public List<AllergyDTO> getPaginatedAllergies(int page, int size) {
+	public Page<AllergyDTO> getPaginatedAllergies(int page, int size) {
 		PageRequest pageRequest = PageRequest.of(page, size);
 		Customer customer = customerDAO.findById(getCurrentCustomer().getId())
 			.orElseThrow(() -> new EntityNotFoundException("Customer not found"));
 		Page<Allergy> allergiesPage = customerDAO.findCustomerAllergies(customer, pageRequest);
-		return allergiesPage.stream()
-			.map(AllergyDTO::new)
-			.collect(Collectors.toList());
-    }
+		return allergiesPage.map(AllergyDTO::new);
+	}
+
+
 
 }

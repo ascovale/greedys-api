@@ -7,14 +7,14 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import com.application.common.mapper.Mapper.Weekday;
+import com.application.common.persistence.mapper.Mapper.Weekday;
 import com.application.common.persistence.model.reservation.Slot;
 import com.application.common.web.dto.get.SlotDTO;
-import com.application.restaurant.dao.RUserDAO;
-import com.application.restaurant.dao.ServiceDAO;
-import com.application.restaurant.dao.SlotDAO;
-import com.application.restaurant.web.post.NewSlotDTO;
-import com.application.restaurant.web.post.RestaurantNewSlotDTO;
+import com.application.restaurant.persistence.dao.RUserDAO;
+import com.application.restaurant.persistence.dao.ServiceDAO;
+import com.application.restaurant.persistence.dao.SlotDAO;
+import com.application.restaurant.web.dto.post.NewSlotDTO;
+import com.application.restaurant.web.dto.post.RestaurantNewSlotDTO;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;

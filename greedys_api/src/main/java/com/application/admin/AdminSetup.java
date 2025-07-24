@@ -7,12 +7,12 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.application.admin.dao.AdminDAO;
-import com.application.admin.dao.AdminPrivilegeDAO;
-import com.application.admin.dao.AdminRoleDAO;
-import com.application.admin.model.Admin;
-import com.application.admin.model.AdminPrivilege;
-import com.application.admin.model.AdminRole;
+import com.application.admin.persistence.dao.AdminDAO;
+import com.application.admin.persistence.dao.AdminPrivilegeDAO;
+import com.application.admin.persistence.dao.AdminRoleDAO;
+import com.application.admin.persistence.model.Admin;
+import com.application.admin.persistence.model.AdminPrivilege;
+import com.application.admin.persistence.model.AdminRole;
 import com.application.admin.service.AdminService;
 
 import lombok.RequiredArgsConstructor;

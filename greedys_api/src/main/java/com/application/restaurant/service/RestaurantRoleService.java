@@ -3,8 +3,8 @@ package com.application.restaurant.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.application.restaurant.dao.RestaurantRoleDAO;
-import com.application.restaurant.model.user.RestaurantRole;
+import com.application.restaurant.persistence.dao.RestaurantRoleDAO;
+import com.application.restaurant.persistence.model.user.RestaurantRole;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;

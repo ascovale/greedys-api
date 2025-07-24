@@ -2,8 +2,8 @@ package com.application.restaurant.controller.utils;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import com.application.restaurant.model.Restaurant;
-import com.application.restaurant.model.user.RUser;
+import com.application.restaurant.persistence.model.Restaurant;
+import com.application.restaurant.persistence.model.user.RUser;
 
 public class RestaurantControllerUtils {
     public static RUser getCurrentRUser() {

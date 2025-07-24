@@ -3,26 +3,29 @@ package com.application.admin.service;
 import org.hibernate.Hibernate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
 
+import com.application.admin.service.authentication.AdminCustomerAuthenticationService;
 import com.application.common.web.dto.get.CustomerDTO;
-import com.application.customer.dao.CustomerDAO;
-import com.application.customer.dao.PrivilegeDAO;
-import com.application.customer.dao.RoleDAO;
-import com.application.customer.model.Customer;
-import com.application.customer.model.Privilege;
-import com.application.customer.model.Role;
+import com.application.customer.persistence.dao.CustomerDAO;
+import com.application.customer.persistence.dao.PrivilegeDAO;
+import com.application.customer.persistence.dao.RoleDAO;
+import com.application.customer.persistence.model.Customer;
+import com.application.customer.persistence.model.Privilege;
+import com.application.customer.persistence.model.Role;
 
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+@Service
 @Slf4j
 @RequiredArgsConstructor
 public class AdminCustomerService {
     private final CustomerDAO customerDAO;
     private final RoleDAO roleDAO;
     private final PrivilegeDAO privilegeDAO;
+    private final AdminCustomerAuthenticationService adminCustomerAuthenticationService;
 
     public void updateCustomerStatus(Long customerId, Customer.Status newStatus) {
         Customer customer = customerDAO.findById(customerId)
@@ -34,10 +37,6 @@ public class AdminCustomerService {
 
     public Page<CustomerDTO> findAll(PageRequest pageable) {
         return customerDAO.findAll(pageable).map(CustomerDTO::new);
-    }
-
-    public Object adminLoginToCustomer(Long customerId, HttpServletRequest request) {
-        throw new UnsupportedOperationException("Unimplemented method 'adminLoginToCustomer'");
     }
 
     public void addRoleToCustomer(Long customerId, String role) {

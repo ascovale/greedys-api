@@ -9,10 +9,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.application.common.persistence.model.reservation.Reservation;
-import com.application.customer.dao.ReservationDAO;
-import com.application.restaurant.dao.RUserHubDAO;
-import com.application.restaurant.model.Restaurant;
-import com.application.restaurant.model.user.RUser;
+import com.application.customer.persistence.dao.ReservationDAO;
+import com.application.restaurant.persistence.dao.RUserHubDAO;
+import com.application.restaurant.persistence.model.Restaurant;
+import com.application.restaurant.persistence.model.user.RUser;
 
 import lombok.RequiredArgsConstructor;
 

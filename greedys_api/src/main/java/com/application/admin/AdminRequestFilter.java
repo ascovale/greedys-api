@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.application.admin.service.security.AdminUserDetailsService;
-import com.application.common.jwt.JwtUtil;
+import com.application.common.security.jwt.JwtUtil;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

@@ -2,7 +2,7 @@ package com.application.admin.controller.utils;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import com.application.admin.model.Admin;
+import com.application.admin.persistence.model.Admin;
 
 public class AdminControllerUtils {
         public static Admin getCurrentAdmin() {

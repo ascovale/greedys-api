@@ -6,15 +6,15 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.application.admin.dao.AdminDAO;
-import com.application.admin.model.Admin;
+import com.application.admin.persistence.dao.AdminDAO;
+import com.application.admin.persistence.model.Admin;
 import com.application.common.security.LoginAttemptService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Service("adminUserDetailsService")
+@Service
 @Transactional
 @RequiredArgsConstructor
 @Slf4j

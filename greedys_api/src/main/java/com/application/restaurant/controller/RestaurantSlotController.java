@@ -9,15 +9,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.application.common.controller.BaseController;
+import com.application.common.web.dto.ApiResponse;
 import com.application.restaurant.controller.utils.RestaurantControllerUtils;
 import com.application.restaurant.service.SlotService;
-import com.application.restaurant.web.post.NewSlotDTO;
-import com.application.restaurant.web.post.RestaurantNewSlotDTO;
+import com.application.restaurant.web.dto.post.RestaurantNewSlotDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -29,33 +27,30 @@ import lombok.extern.slf4j.Slf4j;
 @SecurityRequirement(name = "bearerAuth")
 @RequiredArgsConstructor
 @Slf4j
-public class RestaurantSlotController {
-    //TODO: Cancella slot
+public class RestaurantSlotController extends BaseController {
     private final SlotService slotService;
-    @Operation(summary = "Create a new slot", description = "This method creates a new slot.", responses = {
-            @ApiResponse(responseCode = "200", description = "Slot created", content = @Content(mediaType = "application/json", schema = @Schema(implementation = NewSlotDTO.class))),
 
-    })
+    @Operation(summary = "Create a new slot", description = "This method creates a new slot.")
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SLOT_WRITE')")
     @PostMapping("/new")
-    public ResponseEntity<String> newSlot( @RequestBody RestaurantNewSlotDTO slotDto) {
-        slotService.addSlot(RestaurantControllerUtils.getCurrentRUser().getId(),slotDto);
-        return ResponseEntity.ok().body("success");
+    public ResponseEntity<ApiResponse<String>> newSlot(@RequestBody RestaurantNewSlotDTO slotDto) {
+        return executeCreate("create new slot", "Slot created successfully", () -> {
+            slotService.addSlot(RestaurantControllerUtils.getCurrentRUser().getId(), slotDto);
+            return "success";
+        });
     }
 
-    @Operation(summary = "Cancel a slot", description = "This method cancels an existing slot.", responses = {
-        @ApiResponse(responseCode = "200", description = "Slot canceled", content = @Content(mediaType = "application/json")),
-        @ApiResponse(responseCode = "404", description = "Slot not found", content = @Content(mediaType = "application/json"))
-    })
+    @Operation(summary = "Cancel a slot", description = "This method cancels an existing slot.")
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SLOT_WRITE')")
     @DeleteMapping("/cancel/{slotId}")
-    public ResponseEntity<String> cancelSlot(@PathVariable Long slotId) {
-        boolean isCanceled = slotService.cancelSlot(RestaurantControllerUtils.getCurrentRUser().getId(), slotId);
-        if (isCanceled) {
-            return ResponseEntity.ok().body("Slot canceled successfully");
-        } else {
-            return ResponseEntity.status(404).body("Slot not found");
-        }
+    public ResponseEntity<ApiResponse<String>> cancelSlot(@PathVariable Long slotId) {
+        return execute("cancel slot", () -> {
+            boolean isCanceled = slotService.cancelSlot(RestaurantControllerUtils.getCurrentRUser().getId(), slotId);
+            if (isCanceled) {
+                return "Slot canceled successfully";
+            } else {
+                throw new IllegalArgumentException("Slot not found");
+            }
+        });
     }
-
 }

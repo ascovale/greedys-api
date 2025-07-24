@@ -2,8 +2,8 @@ package com.application.common.web.dto.get;
 
 import com.application.common.controller.validators.PasswordMatches;
 import com.application.common.controller.validators.ValidEmail;
-import com.application.customer.model.Customer;
-import com.application.customer.model.Customer.Status;
+import com.application.customer.persistence.model.Customer;
+import com.application.customer.persistence.model.Customer.Status;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;

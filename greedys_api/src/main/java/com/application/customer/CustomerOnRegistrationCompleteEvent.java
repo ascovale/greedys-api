@@ -4,7 +4,7 @@ import java.util.Locale;
 
 import org.springframework.context.ApplicationEvent;
 
-import com.application.customer.model.Customer;
+import com.application.customer.persistence.model.Customer;
 
 import lombok.Getter;
 

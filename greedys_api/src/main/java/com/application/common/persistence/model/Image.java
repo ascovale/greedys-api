@@ -1,6 +1,6 @@
 package com.application.common.persistence.model;
 
-import com.application.restaurant.model.Restaurant;
+import com.application.restaurant.persistence.model.Restaurant;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.Entity;

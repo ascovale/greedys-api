@@ -2,7 +2,7 @@ package com.application.common.persistence.model.reservation;
 
 import java.time.LocalTime;
 
-import com.application.common.mapper.Mapper.Weekday;
+import com.application.common.persistence.mapper.Mapper.Weekday;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;

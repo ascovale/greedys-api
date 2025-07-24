@@ -9,9 +9,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.application.common.persistence.model.notification.ANotification;
-import com.application.customer.model.CustomerNotification;
-import com.application.restaurant.model.RestaurantNotification;
-import com.application.restaurant.model.user.RUser;
+import com.application.customer.persistence.model.CustomerNotification;
+import com.application.restaurant.persistence.model.RestaurantNotification;
+import com.application.restaurant.persistence.model.user.RUser;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

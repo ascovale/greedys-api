@@ -1,6 +1,6 @@
 package com.application.common.web.dto.get;
 
-import com.application.restaurant.model.Table;
+import com.application.restaurant.persistence.model.Table;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

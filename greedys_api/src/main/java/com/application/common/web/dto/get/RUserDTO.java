@@ -1,6 +1,6 @@
 package com.application.common.web.dto.get;
 
-import com.application.restaurant.model.user.RUser;
+import com.application.restaurant.persistence.model.user.RUser;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

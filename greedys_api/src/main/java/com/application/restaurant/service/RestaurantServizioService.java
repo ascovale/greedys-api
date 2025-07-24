@@ -6,7 +6,8 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.application.restaurant.dao.RestaurantServiceDAO;
+import com.application.restaurant.persistence.dao.RestaurantServiceDAO;
+
 import lombok.RequiredArgsConstructor;
 
 @Service("restaurantServizioService")

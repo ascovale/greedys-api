@@ -7,13 +7,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.admin.service.authentication.AdminAuthenticationService;
+import com.application.common.controller.BaseController;
+import com.application.common.web.dto.ApiResponse;
 import com.application.common.web.dto.post.AuthRequestDTO;
 import com.application.common.web.dto.post.AuthResponseDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,22 +22,14 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping(value = "/admin/auth", produces = "application/json")
 @RequiredArgsConstructor
 @Slf4j
-public class AdminAuthenticationController {
-        
+public class AdminAuthenticationController extends BaseController {
+
     private final AdminAuthenticationService adminAuthenticationService;
 
-    @Operation(summary = "Generate an authentication token", description = "Authenticates a user and returns a JWT token", responses = {
-            @ApiResponse(responseCode = "200", description = "Authentication successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthResponseDTO.class))),
-            @ApiResponse(responseCode = "401", description = "Authentication failed", content = @Content(mediaType = "application/json"))
-    })
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(
-        description = "Authentication request",
-        required = true,
-        content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthRequestDTO.class))
-    )
+    @Operation(summary = "Generate an authentication token", description = "Authenticates a user and returns a JWT token")
     @PostMapping(value = "/login", produces = "application/json")
-    public ResponseEntity<?> createAuthenticationToken(
+    public ResponseEntity<ApiResponse<AuthResponseDTO>> createAuthenticationToken(
             @RequestBody AuthRequestDTO authenticationRequest) {
-        return adminAuthenticationService.login(authenticationRequest);
+        return execute("admin login", () -> adminAuthenticationService.login(authenticationRequest));
     }
 }

@@ -1,17 +1,16 @@
 package com.application.admin.controller.test;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.CreateApiResponses;
 import com.application.common.service.WhatsAppService;
-import com.application.common.web.util.GenericResponse;
+import com.application.common.web.dto.ApiResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,17 +23,16 @@ import lombok.extern.slf4j.Slf4j;
 @SecurityRequirement(name = "bearerAuth")
 @RequiredArgsConstructor
 @Slf4j
-public class AdminTestWhatsAppController {
+public class AdminTestWhatsAppController extends BaseController {
     private final WhatsAppService whatsappService;
 
     @Operation(summary = "Send WhatsApp message", description = "Sends a WhatsApp message to the specified phone number")
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Message sent successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericResponse.class))),
-        @ApiResponse(responseCode = "400", description = "Invalid request")
-    })
+    @CreateApiResponses
     @PostMapping("/send-message")
-    public void sendMessage(@RequestBody MessageRequest request) {
-        whatsappService.sendWhatsAppMessage(request.getPhoneNumber(), request.getMessage());
+    public ResponseEntity<ApiResponse<String>> sendMessage(@RequestBody MessageRequest request) {
+        return executeVoid("send whatsapp message", "Message sent successfully", () -> {
+            whatsappService.sendWhatsAppMessage(request.getPhoneNumber(), request.getMessage());
+        });
     }
 
     /**
