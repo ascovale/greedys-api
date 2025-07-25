@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
-import com.application.common.web.dto.ApiResponse;
+import com.application.common.web.ApiResponse;
 import com.application.restaurant.service.RUserService;
 
 import io.swagger.v3.oas.annotations.Operation;

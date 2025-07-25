@@ -1,0 +1,43 @@
+package com.application.common.persistence.mapper;
+
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.ReportingPolicy;
+import org.mapstruct.factory.Mappers;
+
+import com.application.common.web.dto.RestaurantCategoryDTO;
+import com.application.restaurant.persistence.model.RestaurantCategory;
+
+/**
+ * MapStruct mapper per la conversione tra RestaurantCategory e RestaurantCategoryDTO
+ */
+@Mapper(
+    componentModel = "spring",
+    nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
+    unmappedTargetPolicy = ReportingPolicy.WARN
+)
+public interface RestaurantCategoryMapper {
+
+    RestaurantCategoryMapper INSTANCE = Mappers.getMapper(RestaurantCategoryMapper.class);
+
+    /**
+     * Converte un'entità RestaurantCategory in RestaurantCategoryDTO
+     */
+    RestaurantCategoryDTO toDTO(RestaurantCategory restaurantCategory);
+
+    /**
+     * Converte un RestaurantCategoryDTO in entità RestaurantCategory
+     */
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "restaurants", ignore = true) // Gestito dalle relazioni
+    RestaurantCategory toEntity(RestaurantCategoryDTO restaurantCategoryDTO);
+
+    /**
+     * Aggiorna un'entità RestaurantCategory esistente con i dati dal RestaurantCategoryDTO
+     */
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "restaurants", ignore = true)
+    void updateEntityFromDTO(RestaurantCategoryDTO dto, @MappingTarget RestaurantCategory entity);
+}

@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.application.common.spring.GeocodingConfig;
-import com.application.common.web.dto.get.GeocodingResult;
+import com.application.common.web.dto.get.GeocodingDTO;
 import com.application.restaurant.persistence.model.Restaurant;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,14 +25,14 @@ public class GeocodingService {
     /**
      * Geocodes an address and returns detailed information
      */
-    public GeocodingResult geocodeAddress(String address) {
+    public GeocodingDTO geocodeAddress(String address) {
         return geocodeAddress(address, null);
     }
     
     /**
      * Geocodes an address with city context for better accuracy
      */
-    public GeocodingResult geocodeAddress(String address, String city) {
+    public GeocodingDTO geocodeAddress(String address, String city) {
         // Build more specific query if city is provided
         String searchQuery = address;
         if (city != null && !city.trim().isEmpty()) {
@@ -57,7 +57,7 @@ public class GeocodingService {
         }
         
         // Use city context if available for better accuracy
-        GeocodingResult result = geocodeAddress(restaurant.getAddress(), restaurant.getCity());
+        GeocodingDTO result = geocodeAddress(restaurant.getAddress(), restaurant.getCity());
         
         if (result != null && result.isComplete()) {
             // Verify the city matches (case-insensitive)
@@ -103,7 +103,7 @@ public class GeocodingService {
     /**
      * Geocodes using Google Maps API
      */
-    private GeocodingResult geocodeWithGoogle(String address) {
+    private GeocodingDTO geocodeWithGoogle(String address) {
         try {
             String url = String.format(
                 "%s?address=%s&key=%s",
@@ -131,7 +131,7 @@ public class GeocodingService {
     /**
      * Geocodes using OpenStreetMap Nominatim
      */
-    private GeocodingResult geocodeWithNominatim(String address) {
+    private GeocodingDTO geocodeWithNominatim(String address) {
         try {
             String url = String.format(
                 "%s?q=%s&format=json&limit=1&addressdetails=1",
@@ -166,8 +166,8 @@ public class GeocodingService {
     /**
      * Extracts details from Google Geocoding API response
      */
-    private GeocodingResult extractGoogleGeocodingDetails(JsonNode result) {
-        GeocodingResult.GeocodingResultBuilder builder = GeocodingResult.builder();
+    private GeocodingDTO extractGoogleGeocodingDetails(JsonNode result) {
+        GeocodingDTO.GeocodingDTOBuilder builder = GeocodingDTO.builder();
         
         // Formatted address
         if (result.has("formatted_address")) {
@@ -232,8 +232,8 @@ public class GeocodingService {
     /**
      * Extracts details from Nominatim response
      */
-    private GeocodingResult extractNominatimGeocodingDetails(JsonNode result) {
-        GeocodingResult.GeocodingResultBuilder builder = GeocodingResult.builder();
+    private GeocodingDTO extractNominatimGeocodingDetails(JsonNode result) {
+        GeocodingDTO.GeocodingDTOBuilder builder = GeocodingDTO.builder();
         
         // Formatted address
         if (result.has("display_name")) {

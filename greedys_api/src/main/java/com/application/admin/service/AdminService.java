@@ -13,8 +13,8 @@ import com.application.admin.persistence.dao.AdminVerificationTokenDAO;
 import com.application.admin.persistence.model.Admin;
 import com.application.admin.persistence.model.AdminPasswordResetToken;
 import com.application.admin.persistence.model.AdminVerificationToken;
+import com.application.admin.web.dto.get.AdminDTO;
 import com.application.common.persistence.model.Image;
-import com.application.common.web.dto.get.AdminDTO;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;

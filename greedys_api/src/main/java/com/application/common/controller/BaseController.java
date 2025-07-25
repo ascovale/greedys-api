@@ -5,7 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import com.application.common.controller.annotation.StandardApiResponses;
-import com.application.common.web.dto.ApiResponse;
+import com.application.common.web.ApiResponse;
 
 import lombok.extern.slf4j.Slf4j;
 

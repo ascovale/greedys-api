@@ -15,7 +15,7 @@ import com.application.admin.service.AdminRegistrationService;
 import com.application.admin.web.dto.post.NewAdminDTO;
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.CreateApiResponses;
-import com.application.common.web.dto.ApiResponse;
+import com.application.common.web.ApiResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

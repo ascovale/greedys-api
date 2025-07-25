@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
-import com.application.common.web.dto.ApiResponse;
+import com.application.common.web.ApiResponse;
 import com.application.common.web.dto.get.RUserDTO;
 import com.application.common.web.error.InvalidOldPasswordException;
 import com.application.restaurant.controller.utils.RestaurantControllerUtils;
