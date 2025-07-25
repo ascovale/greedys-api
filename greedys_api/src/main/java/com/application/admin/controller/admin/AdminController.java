@@ -17,7 +17,7 @@ import com.application.admin.persistence.model.Admin;
 import com.application.admin.service.AdminService;
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.ReadApiResponses;
-import com.application.common.web.dto.ApiResponse;
+import com.application.common.web.ApiResponse;
 import com.application.common.web.dto.put.UpdatePasswordDTO;
 import com.application.common.web.error.InvalidOldPasswordException;
 

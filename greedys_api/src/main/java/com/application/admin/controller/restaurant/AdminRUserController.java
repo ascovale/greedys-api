@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.application.admin.service.authentication.AdminRUserAuthenticationService;
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.ReadApiResponses;
-import com.application.common.web.dto.ApiResponse;
+import com.application.common.web.ApiResponse;
 import com.application.restaurant.persistence.model.user.RUser;
 import com.application.restaurant.service.RUserService;
 
@@ -54,7 +54,7 @@ public class AdminRUserController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_USER_WRITE')")
     @Operation(summary = "Change restaurant owner", description = "Changes the owner of a restaurant")
     @PutMapping("/{restaurantId}/changeOwner/{idOldOwner}/{idNewOwner}")
-    public ResponseEntity<com.application.common.web.dto.ApiResponse<String>> changeRestaurantOwner(@PathVariable Long restaurantId, @PathVariable Long idOldOwner,
+    public ResponseEntity<com.application.common.web.ApiResponse<String>> changeRestaurantOwner(@PathVariable Long restaurantId, @PathVariable Long idOldOwner,
             @PathVariable Long idNewOwner) {
         return executeVoid("change restaurant owner", "Restaurant owner changed successfully", () -> {
             RUserService.changeRestaurantOwner(restaurantId, idOldOwner, idNewOwner);
@@ -65,7 +65,7 @@ public class AdminRUserController extends BaseController {
     @GetMapping("/login/{RUserId}")
     @Operation(summary = "Get JWT Token of a restaurant user", description = "Returns the JWT token of a restaurant user")
     @ReadApiResponses
-    public ResponseEntity<com.application.common.web.dto.ApiResponse<Object>> loginHasRUser(@PathVariable Long RUserId, HttpServletRequest request) {
+    public ResponseEntity<com.application.common.web.ApiResponse<Object>> loginHasRUser(@PathVariable Long RUserId, HttpServletRequest request) {
         return execute("get restaurant user token", () -> adminRUserAuthenticationService.adminLoginToRUser(RUserId, request));
     }
 
@@ -73,7 +73,7 @@ public class AdminRUserController extends BaseController {
     @Operation(summary = "Get restaurant users", description = "Retrieves the list of users for a specific restaurant")
     @GetMapping("/{restaurantId}/users")
     @ReadApiResponses
-    public ResponseEntity<com.application.common.web.dto.ApiResponse<Object>> getRUsers(@PathVariable Long restaurantId) {
+    public ResponseEntity<com.application.common.web.ApiResponse<Object>> getRUsers(@PathVariable Long restaurantId) {
         return execute("get restaurant users", () -> RUserService.getRUsersByRestaurantId(restaurantId));
     }
 

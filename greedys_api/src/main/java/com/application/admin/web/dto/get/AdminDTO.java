@@ -1,4 +1,4 @@
-package com.application.common.web.dto.get;
+package com.application.admin.web.dto.get;
 
 import com.application.admin.persistence.model.Admin;
 import com.application.common.controller.validators.PasswordMatches;

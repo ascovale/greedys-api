@@ -1,3 +1,4 @@
+
 package com.application.admin.controller;
 
 import java.util.Collection;
@@ -16,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.CreateApiResponses;
 import com.application.common.controller.annotation.ReadApiResponses;
-import com.application.common.web.dto.ApiResponse;
+import com.application.common.web.ApiResponse;
 import com.application.common.web.dto.ServiceTypeDto;
 import com.application.restaurant.service.ServiceService;
 

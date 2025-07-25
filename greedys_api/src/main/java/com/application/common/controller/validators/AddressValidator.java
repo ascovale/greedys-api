@@ -10,7 +10,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.application.common.spring.AddressValidationConfig;
 import com.application.common.spring.GeocodingConfig;
-import com.application.common.web.dto.get.GeocodingResult;
+import com.application.common.web.dto.get.GeocodingDTO;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -229,7 +229,7 @@ public class AddressValidator implements ConstraintValidator<ValidAddress, Strin
                 JsonNode results = jsonNode.get("results");
                 if (results.isArray() && results.size() > 0) {
                     // Extract detailed information
-                    GeocodingResult geocodingResult = extractGoogleGeocodingDetails(results.get(0));
+                    GeocodingDTO geocodingResult = extractGoogleGeocodingDetails(results.get(0));
                     
                     // Store the result in the context for later use
                     context.getDefaultConstraintMessageTemplate(); // This will store it
@@ -252,8 +252,8 @@ public class AddressValidator implements ConstraintValidator<ValidAddress, Strin
     /**
      * Extracts detailed address information from Google Geocoding API response
      */
-    private GeocodingResult extractGoogleGeocodingDetails(JsonNode result) {
-        GeocodingResult.GeocodingResultBuilder builder = GeocodingResult.builder();
+    private GeocodingDTO extractGoogleGeocodingDetails(JsonNode result) {
+        GeocodingDTO.GeocodingDTOBuilder builder = GeocodingDTO.builder();
         
         // Formatted address
         if (result.has("formatted_address")) {

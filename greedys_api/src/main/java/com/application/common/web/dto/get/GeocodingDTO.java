@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class GeocodingResult {
+public class GeocodingDTO {
     
     private String formattedAddress;
     private String streetNumber;

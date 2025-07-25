@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.service.RestaurantService;
-import com.application.common.web.dto.ApiResponse;
+import com.application.common.web.ApiResponse;
 import com.application.common.web.dto.get.ServiceDTO;
 
 import io.swagger.v3.oas.annotations.Operation;

@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.application.admin.service.authentication.AdminAuthenticationService;
 import com.application.common.controller.BaseController;
-import com.application.common.web.dto.ApiResponse;
+import com.application.common.web.ApiResponse;
 import com.application.common.web.dto.post.AuthRequestDTO;
 import com.application.common.web.dto.post.AuthResponseDTO;
 

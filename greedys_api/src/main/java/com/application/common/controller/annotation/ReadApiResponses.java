@@ -20,32 +20,32 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
     @ApiResponse(
         responseCode = "200", 
         description = "Resource found and returned successfully",
-        content = @Content(schema = @Schema(implementation = com.application.common.web.dto.ApiResponse.class))
+        content = @Content(schema = @Schema(implementation = com.application.common.web.ApiResponse.class))
     ),
     @ApiResponse(
         responseCode = "400", 
         description = "Bad Request - Invalid input parameters",
-        content = @Content(schema = @Schema(implementation = com.application.common.web.dto.ApiResponse.class))
+        content = @Content(schema = @Schema(implementation = com.application.common.web.ApiResponse.class))
     ),
     @ApiResponse(
         responseCode = "401", 
         description = "Unauthorized - Authentication required",
-        content = @Content(schema = @Schema(implementation = com.application.common.web.dto.ApiResponse.class))
+        content = @Content(schema = @Schema(implementation = com.application.common.web.ApiResponse.class))
     ),
     @ApiResponse(
         responseCode = "403", 
         description = "Forbidden - Access denied",
-        content = @Content(schema = @Schema(implementation = com.application.common.web.dto.ApiResponse.class))
+        content = @Content(schema = @Schema(implementation = com.application.common.web.ApiResponse.class))
     ),
     @ApiResponse(
         responseCode = "404", 
         description = "Not Found - Resource not found",
-        content = @Content(schema = @Schema(implementation = com.application.common.web.dto.ApiResponse.class))
+        content = @Content(schema = @Schema(implementation = com.application.common.web.ApiResponse.class))
     ),
     @ApiResponse(
         responseCode = "500", 
         description = "Internal Server Error",
-        content = @Content(schema = @Schema(implementation = com.application.common.web.dto.ApiResponse.class))
+        content = @Content(schema = @Schema(implementation = com.application.common.web.ApiResponse.class))
     )
 })
 public @interface ReadApiResponses {

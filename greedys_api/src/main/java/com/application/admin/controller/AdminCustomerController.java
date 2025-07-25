@@ -15,7 +15,7 @@ import com.application.admin.service.AdminCustomerService;
 import com.application.admin.service.authentication.AdminCustomerAuthenticationService;
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.ReadApiResponses;
-import com.application.common.web.dto.ApiResponse;
+import com.application.common.web.ApiResponse;
 import com.application.common.web.dto.get.CustomerDTO;
 import com.application.common.web.dto.post.AuthResponseDTO;
 import com.application.customer.persistence.model.Customer;

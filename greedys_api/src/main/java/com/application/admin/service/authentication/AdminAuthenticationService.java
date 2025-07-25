@@ -9,8 +9,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.application.admin.persistence.model.Admin;
 import com.application.admin.service.AdminService;
+import com.application.admin.web.dto.get.AdminDTO;
 import com.application.common.security.jwt.JwtUtil;
-import com.application.common.web.dto.get.AdminDTO;
 import com.application.common.web.dto.post.AuthRequestDTO;
 import com.application.common.web.dto.post.AuthResponseDTO;
 
