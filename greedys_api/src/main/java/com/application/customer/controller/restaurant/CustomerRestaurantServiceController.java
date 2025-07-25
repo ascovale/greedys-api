@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.service.RestaurantService;
 import com.application.common.web.dto.ApiResponse;
 import com.application.common.web.dto.get.ServiceDTO;
@@ -32,6 +33,7 @@ public class CustomerRestaurantServiceController extends BaseController {
 
     @GetMapping("/{restaurantId}/active-services-in-date")
     @Operation(summary = "Get active and enabled services of a restaurant for a specific date", description = "Retrieve the services of a restaurant that are active and enabled on a given date")
+    @ReadApiResponses
     public ResponseEntity<ApiResponse<Collection<ServiceDTO>>> getActiveEnabledServicesInDate(
             @PathVariable Long restaurantId,
             @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate date) {
@@ -42,6 +44,7 @@ public class CustomerRestaurantServiceController extends BaseController {
 
     @GetMapping("/{restaurantId}/active-services-in-period")
     @Operation(summary = "Get active and enabled services of a restaurant for a specific period", description = "Retrieve the services of a restaurant that are active and enabled in a given date range")
+    @ReadApiResponses
     public ResponseEntity<ApiResponse<Collection<ServiceDTO>>> getActiveEnabledServicesInPeriod(
             @PathVariable Long restaurantId,
             @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
@@ -53,6 +56,7 @@ public class CustomerRestaurantServiceController extends BaseController {
 
     @GetMapping("/{restaurantId}/services")
     @Operation(summary = "Get services of a restaurant", description = "Retrieve all services of a restaurant")
+    @ReadApiResponses
     public ResponseEntity<ApiResponse<Collection<ServiceDTO>>> getServices(@PathVariable Long restaurantId) {
         return execute("get restaurant services", () -> {
             return restaurantService.getServices(restaurantId);

@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.CreateApiResponses;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.service.RestaurantService;
 import com.application.common.web.dto.ApiResponse;
 import com.application.common.web.dto.ServiceTypeDto;
@@ -44,6 +46,7 @@ public class RestaurantServicesController extends BaseController {
     @Operation(summary = "Create a new service", description = "This method creates a new service in the system.")
     @PreAuthorize("authentication.principal.isEnabled() & hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_WRITE')")
     @PostMapping("/new")
+    @CreateApiResponses
     public ResponseEntity<ApiResponse<String>> newService(@RequestBody RestaurantNewServiceDTO servicesDto) {
         return executeCreate("create new service", "Service created successfully", () -> {
             System.out.println("<<<   Controller Service   >>>");
@@ -67,6 +70,7 @@ public class RestaurantServicesController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_READ')")
     @Operation(summary = "Get service by ID", description = "Retrieve a service by its ID.")
     @GetMapping("/{serviceId}")
+    @ReadApiResponses
     public ResponseEntity<ApiResponse<ServiceDTO>> getServiceById(@PathVariable Long serviceId) {
         return execute("get service by id", () -> serviceService.findById(serviceId));
     }
@@ -74,12 +78,14 @@ public class RestaurantServicesController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_READ')")
     @Operation(summary = "Get all slots of a service", description = "Retrieve all slots associated with a specific service by its ID.")
     @GetMapping("/{serviceId}/slots")
+    @ReadApiResponses
     public ResponseEntity<ApiResponse<Collection<SlotDTO>>> getSlots(@PathVariable long serviceId) {
         return execute("get service slots", () -> slotService.findByService_Id(serviceId));
     }
 
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_READ')")
     @GetMapping("/types")
+    @ReadApiResponses
     @Operation(summary = "Get all service types", description = "Retrieve all service types.")
     public ResponseEntity<ApiResponse<Collection<ServiceTypeDto>>> getServiceTypes() {
         return execute("get service types", () -> serviceService.getServiceTypesFromRUser());
@@ -87,6 +93,7 @@ public class RestaurantServicesController extends BaseController {
 
     @GetMapping(value = "/services")
     @Operation(summary = "Get services of a restaurant", description = "Retrieve the services of a restaurant")
+    @ReadApiResponses
     public ResponseEntity<ApiResponse<Collection<ServiceDTO>>> getServices() {
         return execute("get restaurant services", () -> 
             restaurantService.getServices(RestaurantControllerUtils.getCurrentRestaurant().getId()));

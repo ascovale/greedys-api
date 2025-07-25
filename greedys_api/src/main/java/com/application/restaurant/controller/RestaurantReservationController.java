@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.CreateApiResponses;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.persistence.model.reservation.Reservation;
 import com.application.common.service.reservation.ReservationService;
 import com.application.common.web.dto.ApiResponse;
@@ -53,6 +55,7 @@ public class RestaurantReservationController extends BaseController {
 	@Operation(summary = "Create a new reservation", description = "Endpoint to create a new reservation")
 	@PostMapping("/new")
 	@PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_RESERVATION_WRITE')")
+	@CreateApiResponses
 	public ResponseEntity<ApiResponse<String>> createReservation(@RequestBody RestaurantNewReservationDTO dto, @AuthenticationPrincipal RUser rUser) {
 		return executeCreate("create reservation", "Reservation created successfully", () -> {
 			reservationService.createReservation(dto, rUser.getRestaurant());
@@ -104,6 +107,7 @@ public class RestaurantReservationController extends BaseController {
 
 	@Operation(summary = "Get all reservations of a restaurant", description = "Retrieve all reservations of a restaurant")
 	@GetMapping(value = "/reservations")
+	@ReadApiResponses
 	public ResponseEntity<ApiResponse<Collection<ReservationDTO>>> getReservations(
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end,
@@ -116,6 +120,7 @@ public class RestaurantReservationController extends BaseController {
 
 	@Operation(summary = "Get all accepted reservations of a restaurant", description = "Retrieve all accepted reservations of a restaurant")
 	@GetMapping(value = "/accepted/get")
+	@ReadApiResponses
 	public ResponseEntity<ApiResponse<Collection<ReservationDTO>>> getAcceptedReservations(
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end,
@@ -128,6 +133,7 @@ public class RestaurantReservationController extends BaseController {
 
 	@Operation(summary = "Get all reservations of a restaurant with pagination", description = "Retrieve all reservations of a restaurant with pagination")
 	@GetMapping(value = "/pageable")
+	@ReadApiResponses
 	public ResponseEntity<ApiResponse<Page<ReservationDTO>>> getReservationsPageable(
 			@AuthenticationPrincipal RUser rUser,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
@@ -143,6 +149,7 @@ public class RestaurantReservationController extends BaseController {
 
 	@Operation(summary = "Get all pending reservations of a restaurant", description = "Retrieve all pending reservations of a restaurant with optional date filtering")
 	@GetMapping(value = "/pending/get")
+	@ReadApiResponses
 	public ResponseEntity<ApiResponse<Collection<ReservationDTO>>> getPendingReservations(
 			@RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end,

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.CreateApiResponses;
 import com.application.common.web.dto.ApiResponse;
 import com.application.restaurant.controller.utils.RestaurantControllerUtils;
 import com.application.restaurant.service.SlotService;
@@ -33,6 +34,7 @@ public class RestaurantSlotController extends BaseController {
     @Operation(summary = "Create a new slot", description = "This method creates a new slot.")
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SLOT_WRITE')")
     @PostMapping("/new")
+    @CreateApiResponses
     public ResponseEntity<ApiResponse<String>> newSlot(@RequestBody RestaurantNewSlotDTO slotDto) {
         return executeCreate("create new slot", "Slot created successfully", () -> {
             slotService.addSlot(RestaurantControllerUtils.getCurrentRUser().getId(), slotDto);

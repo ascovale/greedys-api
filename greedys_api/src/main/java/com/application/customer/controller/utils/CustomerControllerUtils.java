@@ -14,4 +14,9 @@ public class CustomerControllerUtils {
             return null;
         }
     }
+
+    public static Long getCurrentCustomerId() {
+        Customer customer = getCurrentCustomer();
+        return customer != null ? customer.getId() : null;
+    }
 }

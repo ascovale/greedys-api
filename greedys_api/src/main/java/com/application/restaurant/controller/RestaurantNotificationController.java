@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.web.dto.ApiResponse;
 import com.application.restaurant.controller.utils.RestaurantControllerUtils;
 import com.application.restaurant.persistence.model.RestaurantNotification;
@@ -34,6 +35,7 @@ public class RestaurantNotificationController extends BaseController {
 
     @Operation(summary = "Get unread notifications", description = "Returns a pageable list of unread notifications")
     @GetMapping("/unread/{page}/{size}")
+    @ReadApiResponses
     public ResponseEntity<ApiResponse<Page<RestaurantNotification>>> getUnreadNotifications(
             @PathVariable int page,
             @PathVariable int size) {
@@ -53,6 +55,7 @@ public class RestaurantNotificationController extends BaseController {
 
     @Operation(summary = "Get all notifications", description = "Returns a pageable list of all notifications")
     @GetMapping("/all/{page}/{size}")
+    @ReadApiResponses
     public ResponseEntity<ApiResponse<Page<RestaurantNotification>>> getAllNotifications(
             @PathVariable int page,
             @PathVariable int size) {
@@ -64,6 +67,7 @@ public class RestaurantNotificationController extends BaseController {
 
     @Operation(summary = "Get a specific notification", description = "Returns the notification with the given ID")
     @GetMapping("/{notificationId}")
+    @ReadApiResponses
     public ResponseEntity<ApiResponse<RestaurantNotification>> getRestaurantNotification(
             @PathVariable Long notificationId) {
         return execute("get notification", () -> restaurantNotificationService.getNotificationById(notificationId));
@@ -71,6 +75,7 @@ public class RestaurantNotificationController extends BaseController {
 
     @Operation(summary = "Set all notifications as read", description = "Sets all notifications for the given user as read")
     @PutMapping("/all-read")
+    @ReadApiResponses
     public ResponseEntity<ApiResponse<String>> setAllNotificationsAsRead() {
         return executeVoid("mark all notifications as read", "All notifications marked as read", () -> 
             restaurantNotificationService.markAllNotificationsAsRead(RestaurantControllerUtils.getCurrentRUser().getId()));
@@ -78,6 +83,7 @@ public class RestaurantNotificationController extends BaseController {
 
     @Operation(summary = "Get unread notifications count", description = "Returns the count of unread notifications")
     @GetMapping("/unread/count")
+    @ReadApiResponses
     public ResponseEntity<ApiResponse<Long>> getUnreadNotificationsCount() {
         return execute("get unread notifications count", () -> 
             restaurantNotificationService.countUnreadNotifications(RestaurantControllerUtils.getCurrentRUser()).longValue());

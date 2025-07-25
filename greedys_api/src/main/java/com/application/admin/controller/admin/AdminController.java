@@ -16,6 +16,7 @@ import com.application.admin.controller.utils.AdminControllerUtils;
 import com.application.admin.persistence.model.Admin;
 import com.application.admin.service.AdminService;
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.web.dto.ApiResponse;
 import com.application.common.web.dto.put.UpdatePasswordDTO;
 import com.application.common.web.error.InvalidOldPasswordException;
@@ -79,6 +80,7 @@ public class AdminController extends BaseController {
 
     @Operation(summary = "Get Admin ID", description = "Retrieves the ID of the current admin")
     @GetMapping("/id")
+    @ReadApiResponses
     public ResponseEntity<ApiResponse<Long>> getAdminIdEndpoint() {
         return execute("get admin id", () -> AdminControllerUtils.getCurrentAdmin().getId());
     }

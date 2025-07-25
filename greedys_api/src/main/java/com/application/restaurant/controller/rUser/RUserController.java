@@ -127,38 +127,15 @@ public class RUserController extends BaseController {
             @Parameter(description = "The new password", required = true) @RequestParam String newPassword,
             @Parameter(description = "The user's email (optional)") @RequestParam(required = false) String email) {
         return executeVoid("change user password", () -> {
-            if (!RUserService.checkIfValidOldPassword(getRUserId(), oldPassword)) {
+            if (!RUserService.checkIfValidOldPassword(RestaurantControllerUtils.getRUserId(), oldPassword)) {
                 throw new InvalidOldPasswordException();
             }
-            RUserService.changeRUserPassword(getRUserId(), newPassword);
+            RUserService.changeRUserPassword(RestaurantControllerUtils.getRUserId(), newPassword);
         });
     }
 
-    /**
-     * Retrieves the ID of the current restaurant user.
-     *
-     * @return The ID of the current restaurant user.
-     */
-    private Long getRUserId() {
-        return getCurrentRUser().getId();
-    }
+    
 
-    /**
-     * Retrieves the current authenticated restaurant user.
-     *
-     * @return The current authenticated restaurant user, or null if not authenticated.
-     */
-    private RUser getCurrentRUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.getPrincipal() instanceof RUser) {
-            System.out.println("\n\n\n\nAuthenticated restaurant user found.\n\n\n");
-            System.out.println("Authorities: " + authentication.getAuthorities());
-            System.out.println("User: " + authentication.getPrincipal());
-            return (RUser) authentication.getPrincipal();
-        }
-        System.out.println("\n\n\n\nNo authenticated restaurant user found.\n\n\n");
-        return null;
-    }
 
     /**
      * Adds a new user to a restaurant.
@@ -179,7 +156,7 @@ public class RUserController extends BaseController {
     @GetMapping("/get")
     public ResponseEntity<ApiResponse<RUserDTO>> getRUserDetails() {
         return execute("get user details", () -> {
-            RUser currentUser = getCurrentRUser();
+            RUser currentUser = RestaurantControllerUtils.getCurrentRUser();
             if (currentUser == null) {
                 throw new IllegalStateException("User not found");
             }

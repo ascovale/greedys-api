@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.CreateApiResponses;
 import com.application.common.web.dto.ApiResponse;
 import com.application.common.web.dto.AuthRequestGoogleDTO;
 import com.application.common.web.dto.post.AuthResponseDTO;
@@ -53,6 +54,7 @@ public class CustomerRegistrationController extends BaseController {
 
     @Operation(summary = "Register a new customer", description = "Registers a new customer account and sends a verification email.")
     @PostMapping("/new")
+    @CreateApiResponses
     public ResponseEntity<ApiResponse<String>> registerCustomerAccount(@Valid @RequestBody NewCustomerDTO accountDto,
             HttpServletRequest request) {
         return executeCreate("Register new customer", () -> {
@@ -74,12 +76,11 @@ public class CustomerRegistrationController extends BaseController {
     public ResponseEntity<ApiResponse<String>> confirmPasswordChange(
             @Parameter(description = "Password reset token") @RequestParam final String token) {
         return execute("Validate password reset token", () -> {
-            final String result = securityCustomerService.validatePasswordResetToken(token);
-            return result != null ? "invalidToken" : "success";
+            return securityCustomerService.validatePasswordResetToken(token);
+            
         });
     }
 
-    // 3. Token Management methods
     @Operation(summary = "Confirm customer registration", description = "Validates the registration token and activates the customer account.")
     @RequestMapping(value = "/confirm", method = RequestMethod.GET)
     @ResponseBody

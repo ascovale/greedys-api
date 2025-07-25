@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.web.dto.ApiResponse;
 import com.application.common.web.dto.get.TableDTO;
 import com.application.restaurant.persistence.model.Table;
@@ -36,6 +37,7 @@ public class RestaurantTableController extends BaseController {
 
 	@GetMapping(value = "/room/{roomId}")
 	@Operation(summary = "Get tables of a room", description = "Retrieve the tables of a specific room")
+	@ReadApiResponses
 	public ResponseEntity<ApiResponse<Collection<TableDTO>>> getTables(@PathVariable Long roomId) {
 		return execute("get tables for room", () -> {
 			log.info("Getting tables for room ID: {}", roomId);

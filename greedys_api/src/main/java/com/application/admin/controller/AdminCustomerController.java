@@ -55,6 +55,7 @@ public class AdminCustomerController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_READ')")
     @Operation(summary = "List customers with pagination", description = "Returns a paginated list of customers")
     @GetMapping("/customers/page")
+    @ReadApiResponses
     public ResponseEntity<ApiResponse<Page<CustomerDTO>>> listCustomersWithPagination(@RequestParam int page, @RequestParam int size) {
         return executePaginated("list customers", () -> adminCustomerService.findAll(PageRequest.of(page, size)));
         

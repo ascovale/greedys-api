@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.CreateApiResponses;
 import com.application.common.web.dto.ApiResponse;
 import com.application.common.web.dto.post.AuthRequestDTO;
 import com.application.common.web.dto.post.AuthResponseDTO;
@@ -28,6 +29,7 @@ public class CustomerAuthenticationController extends BaseController {
 
     @Operation(summary = "Generate an authentication token", description = "Authenticates a customer and returns a JWT token")
     @PostMapping(value = "/login", produces = "application/json")
+    @CreateApiResponses
     public ResponseEntity<ApiResponse<AuthResponseDTO>> createAuthenticationToken(
             @RequestBody AuthRequestDTO authenticationRequest) {
         return execute("customer login", () -> customerAuthenticationService.login(authenticationRequest));

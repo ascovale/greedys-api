@@ -1,6 +1,5 @@
 package com.application.restaurant.controller;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -12,6 +11,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.web.dto.ApiResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -24,6 +24,7 @@ public class BookingFormController extends BaseController {
     @Operation(summary = "Get the restaurant booking script")
     @GetMapping("/restaurant-form")
     @ResponseBody
+    @ReadApiResponses
     public ResponseEntity<ApiResponse<String>> getRestaurantIFrameForm(@RequestParam Long idRestaurant) {
         return execute("get restaurant booking form", () -> {
             ClassPathResource resource = new ClassPathResource("static/restaurant-booking.html");
