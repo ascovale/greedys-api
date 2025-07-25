@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.service.AllergyService;
 import com.application.common.web.dto.ApiResponse;
 import com.application.common.web.dto.get.AllergyDTO;
@@ -50,18 +51,21 @@ public class CustomerAllergyController extends BaseController {
 
     @Operation(summary = "Get allergies of customer", description = "Returns all allergies of the currently authenticated customer")
     @GetMapping("/allergies")
+    @ReadApiResponses
     public ResponseEntity<ApiResponse<List<AllergyDTO>>> getAllergiesOfCustomer() {
         return execute("getAllergiesOfCustomer", () -> customerService.getAllergies(getCurrentCustomer().getId()));
     }
 
     @Operation(summary = "Get paginated allergies of customer", description = "Returns paginated allergies of the currently authenticated customer")
     @GetMapping("/paginated")
+    @ReadApiResponses
     public ResponseEntity<ApiResponse<Page<AllergyDTO>>> getPaginatedAllergiesOfCustomer(@RequestParam int page, @RequestParam int size) {
         return executePaginated("getPaginatedAllergiesOfCustomer", () -> customerService.getPaginatedAllergies(page, size));
     }
 
     @Operation(summary = "Get allergy by ID", description = "Returns a specific allergy of the currently authenticated customer using the allergy ID")
     @GetMapping("/{allergyId}")
+    @ReadApiResponses
     public ResponseEntity<ApiResponse<AllergyDTO>> getAllergyById(@PathVariable Long allergyId) {
         return execute("getAllergyById", () -> allergyService.getAllergyById(allergyId));
     }

@@ -40,6 +40,7 @@ public class RestaurantMenuController extends BaseController {
 
     @Operation(summary = "Retrieve all menus", description = "Retrieve all menus for the current restaurant")
     @GetMapping("/all")
+    @ReadApiResponses
     public ResponseEntity<ApiResponse<Collection<MenuDTO>>> getRestaurantMenus() {
         return execute("get restaurant menus", () -> 
             restaurantMenuService.getMenusByRestaurant(RestaurantControllerUtils.getCurrentRestaurant().getId()));
@@ -79,7 +80,6 @@ public class RestaurantMenuController extends BaseController {
     }
 
     @Operation(summary = "Add a dish to a menu", description = "Add a priced dish to an existing menu")
-    @CreateApiResponses
     @PreAuthorize("@securityRUserService.isMenuOwnedByRestaurant(#newMenuItem.menuId, authentication.principal.restaurantId)")
     @PostMapping("/dishes/add")
     public ResponseEntity<ApiResponse<String>> addDishToMenu(@RequestBody NewMenuDishDTO newMenuItem) {

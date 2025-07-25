@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.CreateApiResponses;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.service.RestaurantService;
 import com.application.common.web.dto.ApiResponse;
 import com.application.common.web.dto.get.RestaurantDTO;
@@ -39,6 +41,7 @@ public class AdminRestaurantManagementController extends BaseController {
 	@GetMapping(value = "/{restaurantId}/services")
 	@Operation(summary = "Get services of a restaurant", description = "Retrieve the services of a restaurant")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_READ')")
+	@ReadApiResponses
 	public ResponseEntity<ApiResponse<Collection<ServiceDTO>>> getServices(@PathVariable Long restaurantId) {
 		return execute("get services", () -> restaurantService.getServices(restaurantId));
 	}
@@ -62,6 +65,7 @@ public class AdminRestaurantManagementController extends BaseController {
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
 	@Operation(summary = "Create restaurant", description = "Create a new restaurant")
 	@PostMapping("/new")
+	@CreateApiResponses
 	public ResponseEntity<ApiResponse<String>> createRestaurant(@RequestBody RestaurantDTO restaurantDto) {
 		return executeVoid("create restaurant", "Restaurant created successfully", () -> 
 			restaurantService.createRestaurant(restaurantDto));

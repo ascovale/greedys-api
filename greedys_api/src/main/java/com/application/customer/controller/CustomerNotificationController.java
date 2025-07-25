@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.CreateApiResponses;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.web.dto.ApiResponse;
 import com.application.common.web.dto.post.FcmTokenDTO;
 import com.application.customer.persistence.model.CustomerNotification;
@@ -65,6 +67,7 @@ public class CustomerNotificationController extends BaseController {
 
     @Operation(summary = "Get unread notifications", description = "Returns a pageable list of unread notifications")
     @GetMapping("/unread/{page}/{size}")
+    @ReadApiResponses
     public ResponseEntity<ApiResponse<Page<CustomerNotification>>> getUnreadNotifications(@PathVariable int page,
             @PathVariable int size) {
         Pageable pageable = PageRequest.of(page, size);
@@ -73,6 +76,7 @@ public class CustomerNotificationController extends BaseController {
 
     @Operation(summary = "Get all notifications", description = "Returns a pageable list of all notifications")
     @GetMapping("/all/{page}/{size}")
+    @ReadApiResponses
     public ResponseEntity<ApiResponse<Page<CustomerNotification>>> getAllNotifications(@PathVariable int page,
             @PathVariable int size) {
         Pageable pageable = PageRequest.of(page, size);
@@ -81,6 +85,7 @@ public class CustomerNotificationController extends BaseController {
 
     @Operation(summary = "Set notification as read", description = "Sets the notification with the given ID as the given read boolean")
     @PutMapping("/read")
+    @ReadApiResponses
     public ResponseEntity<ApiResponse<String>> setNotificationAsRead(@RequestParam Long notificationId, @RequestParam Boolean read) {
         return executeVoid("setNotificationAsRead", "Notification marked as read", () -> 
             notificationService.read(notificationId));
@@ -88,6 +93,7 @@ public class CustomerNotificationController extends BaseController {
 
     @Operation(summary = "Register a user's FCM token", description = "Registers a user's FCM token")
     @PostMapping("/token")
+    @CreateApiResponses
     public ResponseEntity<ApiResponse<String>> registerUserFcmToken(@RequestBody FcmTokenDTO userFcmToken) {
         return executeVoid("registerUserFcmToken", "FCM token registered successfully", () -> 
             customerFcmTokenRepository.saveUserFcmToken(userFcmToken));

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.security.jwt.JwtUtil;
 import com.application.common.web.dto.ApiResponse;
 import com.application.common.web.dto.get.RestaurantDTO;
@@ -40,6 +41,7 @@ public class RestaurantAuthenticationController extends BaseController {
 
     @Operation(summary = "Get list of restaurants for hub user", description = "Given a hub JWT, returns the list of restaurants associated with the hub user")
     @GetMapping(value = "/restaurants", produces = "application/json")
+    @ReadApiResponses
     public ResponseEntity<ApiResponse<List<RestaurantDTO>>> restaurants(@Parameter(hidden = true) @RequestHeader("Authorization") String authHeader) {
         return execute("get restaurants for hub user", () -> {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

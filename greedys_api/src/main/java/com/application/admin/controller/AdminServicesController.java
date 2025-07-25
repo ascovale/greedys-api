@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.CreateApiResponses;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.web.dto.ApiResponse;
 import com.application.common.web.dto.ServiceTypeDto;
 import com.application.restaurant.service.ServiceService;
@@ -38,6 +39,7 @@ public class AdminServicesController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_READ')")
     @GetMapping("/types")
     @Operation(summary = "Get all service types", description = "Retrieve all service types.")
+    @ReadApiResponses
     public ResponseEntity<ApiResponse<Collection<ServiceTypeDto>>> getServiceTypes() {
         return execute("get service types", () -> serviceService.getServiceTypes());
     }

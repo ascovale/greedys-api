@@ -39,8 +39,8 @@ public class CustomerReservationController extends BaseController {
 	private final CustomerReservationService customerReservationService;
 
 	@Operation(summary = "The customer user asks for a reservation", description = "Endpoint for the customer to request a reservation")
-	@CreateApiResponses
 	@PostMapping("/ask")
+	@CreateApiResponses
 	public ResponseEntity<ApiResponse<String>> askReservation(@RequestBody CustomerNewReservationDTO DTO, @AuthenticationPrincipal Customer customer) {
 		return executeVoid("askReservation", "Reservation requested successfully", () -> 
 			customerReservationService.createReservation(DTO, customer));
@@ -75,6 +75,7 @@ public class CustomerReservationController extends BaseController {
 
 	@Operation(summary = "Get user's reservations", description = "Retrieve the list of reservations for the user")
 	@GetMapping("/reservations")
+	@ReadApiResponses
 	public ResponseEntity<ApiResponse<Collection<ReservationDTO>>> getCustomerReservations(@AuthenticationPrincipal Customer customer) {
 		return execute("getCustomerReservations", () -> customerReservationService.findAllCustomerReservations(customer.getId()));
 	}

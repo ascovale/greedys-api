@@ -25,4 +25,16 @@ public class RestaurantControllerUtils {
             return null;
         }
     }
+
+    public static Long getRUserId() {
+        RUser user = getCurrentRUser();
+        return user != null ? user.getId() : null;
+    }
+
+    public static Long getRestaurantId() {
+        Restaurant restaurant = getCurrentRestaurant();
+        return restaurant != null ? restaurant.getId() : null;
+    }
+
+
 }

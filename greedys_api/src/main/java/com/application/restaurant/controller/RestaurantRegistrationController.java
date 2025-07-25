@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.CreateApiResponses;
 import com.application.common.service.RestaurantService;
 import com.application.common.web.dto.ApiResponse;
 import com.application.common.web.dto.get.RestaurantDTO;
@@ -52,6 +53,7 @@ public class RestaurantRegistrationController extends BaseController {
 
     @Operation(summary = "Request to register a new restaurant", description = "Request to register a new restaurant")
     @PostMapping(value = "/new")
+    @CreateApiResponses
     public ResponseEntity<ApiResponse<RestaurantDTO>> registerRestaurant(@RequestBody NewRestaurantDTO restaurantDto) {
         return executeCreate("register restaurant", "Restaurant registered successfully", () -> {
             log.debug("Registering restaurant with information:", restaurantDto);
