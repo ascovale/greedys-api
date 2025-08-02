@@ -17,4 +17,7 @@ public class AuthRequestDTO {
 
     @Schema(description = "Password dell'utente", example = "password123")
     private String password;
+    
+    @Schema(description = "Remember me option for longer session", example = "true")
+    private boolean rememberMe;
 }

@@ -7,6 +7,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,6 +20,7 @@ import com.application.common.security.jwt.JwtUtil;
 import com.application.common.web.ApiResponse;
 import com.application.common.web.dto.restaurant.RestaurantDTO;
 import com.application.common.web.dto.security.AuthResponseDTO;
+import com.application.common.web.dto.security.RefreshTokenRequestDTO;
 import com.application.restaurant.persistence.model.user.RUser;
 import com.application.restaurant.service.authentication.RestaurantAuthenticationService;
 
@@ -88,5 +91,21 @@ public class RestaurantAuthenticationController extends BaseController {
             
             return claims.get("email", String.class);
         }
+    }
+
+    @Operation(summary = "Refresh hub token", description = "Refresh a hub JWT token using a hub refresh token")
+    @PostMapping(value = "/refresh/hub", produces = "application/json")
+    public ResponseEntity<ApiResponse<AuthResponseDTO>> refreshHubToken(@RequestBody RefreshTokenRequestDTO refreshRequest) {
+        return execute("refresh hub token", () -> 
+            restaurantAuthenticationService.refreshHubToken(refreshRequest.getRefreshToken())
+        );
+    }
+
+    @Operation(summary = "Refresh restaurant user token", description = "Refresh a restaurant user JWT token using a refresh token")
+    @PostMapping(value = "/refresh", produces = "application/json")
+    public ResponseEntity<ApiResponse<AuthResponseDTO>> refreshRUserToken(@RequestBody RefreshTokenRequestDTO refreshRequest) {
+        return execute("refresh restaurant user token", () -> 
+            restaurantAuthenticationService.refreshRUserToken(refreshRequest.getRefreshToken())
+        );
     }
 }

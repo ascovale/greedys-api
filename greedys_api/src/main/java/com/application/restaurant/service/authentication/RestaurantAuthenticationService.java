@@ -40,6 +40,7 @@ import com.application.restaurant.persistence.model.user.RestaurantPrivilege;
 import com.application.restaurant.service.RUserService;
 import com.application.restaurant.service.security.RUserSecurityService;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -259,7 +260,9 @@ public class RestaurantAuthenticationService {
         if (associatedUsers == null || associatedUsers.isEmpty()) {
             throw new UnsupportedOperationException("No restaurants associated with this user.");
         }
-        System.out.println("\n\n\n\n\n>>>>Associated users: " + associatedUsers.size());
+        
+        log.debug("Associated users found: {} for hub: {}", associatedUsers.size(), user.getEmail());
+        
         if (associatedUsers.size() == 1) {
             // Login classico: un solo ristorante
             RUser singleUser = associatedUsers.get(0);
@@ -267,20 +270,123 @@ public class RestaurantAuthenticationService {
                     new UsernamePasswordAuthenticationToken(
                             authenticationRequest.getUsername() + ":" + singleUser.getRestaurant().getId(),
                             authenticationRequest.getPassword()));
-            String jwt = jwtUtil.generateToken(singleUser);
-            return new AuthResponseDTO(jwt, new RUserDTO(singleUser));
+            
+            final String jwt = jwtUtil.generateToken(singleUser);
+            
+            // Gestione remember me per utente singolo
+            if (authenticationRequest.isRememberMe()) {
+                final String refreshToken = jwtUtil.generateRefreshToken(singleUser);
+                return AuthResponseDTO.builder()
+                        .jwt(jwt)
+                        .refreshToken(refreshToken)
+                        .user(new RUserDTO(singleUser))
+                        .build();
+            } else {
+                return new AuthResponseDTO(jwt, new RUserDTO(singleUser));
+            }
         } else {
-            // Login intermedio: più ristoranti
-            // Genera un JWT "hub" (puoi aggiungere un claim "type":"hub" se vuoi)
-            // e restituisci la lista dei ristoranti
-            // NB: qui non serve autenticare con restaurantId, basta email/password
+            // Login intermedio: più ristoranti (HUB)
+            // Genera JWT hub normale (sempre 1 ora) con refresh token se remember me
+            final String hubJwt = jwtUtil.generateHubToken(user);
+            
+            if (authenticationRequest.isRememberMe()) {
+                final String hubRefreshToken = jwtUtil.generateHubRefreshToken(user);
+                return AuthResponseDTO.builder()
+                        .jwt(hubJwt)            // Token hub normale da 1 ora
+                        .refreshToken(hubRefreshToken)  // Refresh token da 7 giorni
+                        .user(user)
+                        .build();
+            } else {
+                return new AuthResponseDTO(hubJwt, user);
+            }
+        }
+    }
 
-            // Genera JWT hub (puoi usare un metodo dedicato, qui esempio semplice)
-            String hubJwt = jwtUtil.generateHubToken(user);
+    public AuthResponseDTO refreshHubToken(String refreshToken) {
+        log.debug("Hub refresh token request received");
+        
+        try {
+            // Verifica che sia un hub refresh token valido
+            if (!jwtUtil.isHubRefreshToken(refreshToken)) {
+                throw new SecurityException("Invalid hub refresh token type");
+            }
+            
+            // Estrae l'email dal refresh token
+            String email = jwtUtil.extractUsername(refreshToken);
+            
+            // Trova l'hub user
+            final RUserHub hubUser = RUserHubDAO.findByEmail(email);
+            if (hubUser == null) {
+                log.warn("No hub user found with email from refresh token: {}", email);
+                throw new EntityNotFoundException("Hub user not found");
+            }
+            
+            // Genera nuovi token hub
+            final String newHubJwt = jwtUtil.generateHubToken(hubUser);
+            final String newHubRefreshToken = jwtUtil.generateHubRefreshToken(hubUser);
+            
+            log.debug("New hub tokens generated for email: {}", email);
+            
+            return AuthResponseDTO.builder()
+                    .jwt(newHubJwt)
+                    .refreshToken(newHubRefreshToken)
+                    .user(hubUser)
+                    .build();
+                    
+        } catch (Exception e) {
+            log.error("Hub refresh token validation failed: {}", e.getMessage());
+            throw new SecurityException("Invalid hub refresh token");
+        }
+    }
 
-            AuthResponseDTO hubResponse = new AuthResponseDTO(hubJwt, user);
-
-            return hubResponse;
+    public AuthResponseDTO refreshRUserToken(String refreshToken) {
+        log.debug("RUser refresh token request received");
+        
+        try {
+            // Verifica che sia un refresh token valido
+            if (!jwtUtil.isRefreshToken(refreshToken)) {
+                throw new SecurityException("Invalid refresh token type");
+            }
+            
+            // Estrae l'username dal refresh token
+            String username = jwtUtil.extractUsername(refreshToken);
+            
+            // Per RUser, il token contiene email:restaurantId
+            String[] parts = username.split(":");
+            if (parts.length != 2) {
+                throw new SecurityException("Invalid RUser token format");
+            }
+            
+            String email = parts[0];
+            Long restaurantId = Long.parseLong(parts[1]);
+            
+            // Trova il RUser
+            final RUser rUser = RUserDAO.findByEmailAndRestaurantId(email, restaurantId);
+            if (rUser == null) {
+                log.warn("No RUser found with email: {} and restaurant: {}", email, restaurantId);
+                throw new EntityNotFoundException("RUser not found");
+            }
+            
+            // Verifica il refresh token
+            if (!jwtUtil.validateToken(refreshToken, rUser)) {
+                throw new SecurityException("Invalid or expired refresh token");
+            }
+            
+            // Genera nuovi token
+            final String newJwt = jwtUtil.generateToken(rUser);
+            final String newRefreshToken = jwtUtil.generateRefreshToken(rUser);
+            
+            log.debug("New RUser tokens generated for: {}:{}", email, restaurantId);
+            
+            return AuthResponseDTO.builder()
+                    .jwt(newJwt)
+                    .refreshToken(newRefreshToken)
+                    .user(new RUserDTO(rUser))
+                    .build();
+                    
+        } catch (Exception e) {
+            log.error("RUser refresh token validation failed: {}", e.getMessage());
+            throw new SecurityException("Invalid refresh token");
         }
     }
 

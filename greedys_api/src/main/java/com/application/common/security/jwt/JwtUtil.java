@@ -33,6 +33,9 @@ public class JwtUtil {
     @Value("${jwt.expiration}")
     private Long expiration;
 
+    @Value("${jwt.refresh.expiration:604800000}") // 7 giorni default per refresh token
+    private Long refreshExpiration;
+
     private SecretKey key;
     private Clock clock = Clock.systemDefaultZone();
 
@@ -79,13 +82,29 @@ public class JwtUtil {
         claims.put("authorities", userDetails.getAuthorities().stream()
                 .map(Object::toString)
                 .collect(Collectors.toList()));
-        return createToken(claims, userDetails.getUsername());
+        claims.put("access_type", "access");
+        return createToken(claims, userDetails.getUsername(), expiration);
     }
 
-    private String createToken(Map<String, Object> claims, String subject) {
+    public String generateRefreshToken(UserDetails userDetails) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("access_type", "refresh");
+        claims.put("email", userDetails.getUsername());
+        return createToken(claims, userDetails.getUsername(), refreshExpiration);
+    }
+
+    public String generateHubRefreshToken(RUserHub user) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("type", "hub");
+        claims.put("access_type", "refresh");
+        claims.put("email", user.getEmail());
+        return createToken(claims, user.getEmail(), refreshExpiration);
+    }
+
+    private String createToken(Map<String, Object> claims, String subject, Long tokenExpiration) {
         long now = clock.millis();
         Date issuedAt = new Date(now);
-        Date expiry = new Date(now + expiration);
+        Date expiry = new Date(now + tokenExpiration);
         return Jwts.builder()
                    .claims(claims)
                    .subject(subject)
@@ -100,21 +119,50 @@ public class JwtUtil {
         return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
     }
 
+    public boolean isRefreshToken(String token) {
+        try {
+            Claims claims = extractAllClaims(token);
+            return "refresh".equals(claims.get("access_type"));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public boolean isAccessToken(String token) {
+        try {
+            Claims claims = extractAllClaims(token);
+            String accessType = (String) claims.get("access_type");
+            return "access".equals(accessType) || "extended".equals(accessType);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public boolean isHubToken(String token) {
+        try {
+            Claims claims = extractAllClaims(token);
+            return "hub".equals(claims.get("type"));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public boolean isHubRefreshToken(String token) {
+        try {
+            Claims claims = extractAllClaims(token);
+            return "hub".equals(claims.get("type")) && "refresh".equals(claims.get("access_type"));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     public String generateHubToken(RUserHub user) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("type", "hub");
+        claims.put("access_type", "access");
         claims.put("authorities", hubPrivileges());
         claims.put("email", user.getEmail());
-        long now = clock.millis();
-        Date issuedAt = new Date(now);
-        Date expiry = new Date(now + expiration);
-        return Jwts.builder()
-                   .claims(claims)
-                   .subject(user.getEmail())
-                   .issuedAt(issuedAt)
-                   .expiration(expiry)
-                   .signWith(key, Jwts.SIG.HS256)
-                   .compact();
+        return createToken(claims, user.getEmail(), expiration);
     }
 
     private List<String> hubPrivileges() {

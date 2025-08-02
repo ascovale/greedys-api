@@ -12,6 +12,7 @@ import com.application.common.controller.annotation.CreateApiResponses;
 import com.application.common.web.ApiResponse;
 import com.application.common.web.dto.security.AuthRequestDTO;
 import com.application.common.web.dto.security.AuthResponseDTO;
+import com.application.common.web.dto.security.RefreshTokenRequestDTO;
 import com.application.customer.service.authentication.CustomerAuthenticationService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,5 +35,14 @@ public class CustomerAuthenticationController extends BaseController {
     public ResponseEntity<ApiResponse<AuthResponseDTO>> createAuthenticationToken(
             @RequestBody AuthRequestDTO authenticationRequest) {
         return execute("customer login", () -> customerAuthenticationService.login(authenticationRequest));
+    }
+
+    @Operation(summary = "Refresh authentication token", description = "Uses refresh token to get new access and refresh tokens")
+    @PostMapping(value = "/refresh", produces = "application/json")
+    @CreateApiResponses
+    public ResponseEntity<ApiResponse<AuthResponseDTO>> refreshAuthenticationToken(
+            @RequestBody RefreshTokenRequestDTO refreshRequest) {
+        return execute("customer refresh token", () -> 
+            customerAuthenticationService.refreshToken(refreshRequest.getRefreshToken()));
     }
 }
