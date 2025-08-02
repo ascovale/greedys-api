@@ -19,13 +19,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
 import com.application.common.web.ApiResponse;
-import com.application.common.web.dto.get.RUserDTO;
+import com.application.common.web.dto.restaurant.RUserDTO;
 import com.application.common.web.error.InvalidOldPasswordException;
 import com.application.restaurant.controller.utils.RestaurantControllerUtils;
 import com.application.restaurant.persistence.dao.RestaurantRoleDAO;
 import com.application.restaurant.persistence.model.user.RUser;
 import com.application.restaurant.service.RUserService;
-import com.application.restaurant.web.dto.post.NewRUserDTO;
+import com.application.restaurant.web.dto.staff.NewRUserDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

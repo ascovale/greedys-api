@@ -7,9 +7,9 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
 import org.mapstruct.factory.Mappers;
 
-import com.application.common.web.dto.get.CustomerDTO;
+import com.application.common.web.dto.customer.CustomerDTO;
 import com.application.customer.persistence.model.Customer;
-import com.application.customer.web.post.NewCustomerDTO;
+import com.application.customer.web.dto.customer.NewCustomerDTO;
 
 /**
  * MapStruct mapper per la conversione tra Customer e CustomerDTO/NewCustomerDTO

@@ -6,7 +6,7 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
 import org.mapstruct.factory.Mappers;
 
-import com.application.common.web.dto.RUserHubAuthResponseDTO;
+import com.application.common.web.dto.security.RUserHubAuthResponseDTO;
 import com.application.restaurant.persistence.model.user.RUser;
 
 /**

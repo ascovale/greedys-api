@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.application.common.web.dto.RestaurantCategoryDTO;
+import com.application.common.web.dto.restaurant.RestaurantCategoryDTO;
 import com.application.restaurant.persistence.dao.RestaurantCategoryDAO;
 import com.application.restaurant.persistence.dao.RestaurantDAO;
 import com.application.restaurant.persistence.model.Restaurant;

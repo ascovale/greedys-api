@@ -8,7 +8,7 @@ import org.mapstruct.ReportingPolicy;
 import org.mapstruct.factory.Mappers;
 
 import com.application.common.persistence.model.reservation.Service;
-import com.application.common.web.dto.RestaurantServizioDto;
+import com.application.common.web.dto.restaurant.RestaurantServizioDto;
 
 /**
  * MapStruct mapper per la conversione tra Service e RestaurantServizioDto

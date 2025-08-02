@@ -7,12 +7,12 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
 import org.mapstruct.factory.Mappers;
 
-import com.application.admin.web.dto.post.AdminNewReservationDTO;
+import com.application.admin.web.dto.reservation.AdminNewReservationDTO;
 import com.application.common.persistence.model.reservation.Reservation;
-import com.application.common.web.dto.get.ReservationDTO;
-import com.application.common.web.dto.post.NewBaseReservationDTO;
-import com.application.customer.web.post.CustomerNewReservationDTO;
-import com.application.restaurant.web.dto.post.RestaurantNewReservationDTO;
+import com.application.common.web.dto.reservations.NewBaseReservationDTO;
+import com.application.common.web.dto.reservations.ReservationDTO;
+import com.application.customer.web.dto.reservations.CustomerNewReservationDTO;
+import com.application.restaurant.web.dto.reservation.RestaurantNewReservationDTO;
 
 /**
  * MapStruct mapper per la conversione tra Reservation e i vari DTO

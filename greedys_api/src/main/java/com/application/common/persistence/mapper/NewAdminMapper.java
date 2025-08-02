@@ -7,8 +7,8 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
 import org.mapstruct.factory.Mappers;
 
-import com.application.admin.web.dto.post.NewAdminDTO;
 import com.application.admin.persistence.model.Admin;
+import com.application.admin.web.dto.admin.NewAdminDTO;
 
 /**
  * MapStruct mapper per la conversione tra NewAdminDTO e Admin

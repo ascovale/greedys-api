@@ -8,9 +8,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
 import com.application.common.web.ApiResponse;
-import com.application.common.web.dto.AuthRequestGoogleDTO;
-import com.application.common.web.dto.post.AuthRequestDTO;
-import com.application.common.web.dto.post.AuthResponseDTO;
+import com.application.common.web.dto.security.AuthRequestDTO;
+import com.application.common.web.dto.security.AuthRequestGoogleDTO;
+import com.application.common.web.dto.security.AuthResponseDTO;
 import com.application.restaurant.service.authentication.RestaurantAuthenticationService;
 
 import io.swagger.v3.oas.annotations.Operation;

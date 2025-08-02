@@ -6,14 +6,13 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.application.common.web.dto.post.FcmTokenDTO;
+import com.application.common.web.dto.shared.FcmTokenDTO;
 import com.application.customer.persistence.dao.CustomerFcmTokenDAO;
 import com.application.customer.persistence.model.Customer;
 import com.application.customer.persistence.model.CustomerFcmToken;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
 
-import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -21,7 +20,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CustomerFcmTokenService {
     private final CustomerFcmTokenDAO customerFcmTokenRepository;
-    private final EntityManager entityManager;
 
     public void saveUserFcmToken(FcmTokenDTO userFcmTokenDTO) {
         Customer customer = (Customer) SecurityContextHolder.getContext().getAuthentication().getPrincipal();

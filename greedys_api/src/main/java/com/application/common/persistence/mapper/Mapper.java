@@ -8,11 +8,11 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 import com.application.common.persistence.model.reservation.Service;
-import com.application.common.web.dto.RestaurantImageDto;
-import com.application.common.web.dto.ServiceDto;
-import com.application.common.web.dto.get.CustomerDTO;
-import com.application.common.web.dto.get.RestaurantDTO;
-import com.application.common.web.dto.get.RestaurantFullDetailsDto;
+import com.application.common.web.dto.customer.CustomerDTO;
+import com.application.common.web.dto.restaurant.RestaurantDTO;
+import com.application.common.web.dto.restaurant.RestaurantFullDetailsDto;
+import com.application.common.web.dto.restaurant.RestaurantImageDto;
+import com.application.common.web.dto.restaurant.ServiceDTO;
 import com.application.customer.persistence.model.Customer;
 import com.application.restaurant.persistence.model.Restaurant;
 import com.application.restaurant.persistence.model.RestaurantImage;
@@ -68,8 +68,8 @@ public class Mapper {
         CustomerDTO dto = new CustomerDTO(r);
         return dto;
     }
-    public static ServiceDto toDTO(Service service) {
-        ServiceDto dto = new ServiceDto(service);
+    public static ServiceDTO toDTO(Service service) {
+        ServiceDTO dto = new ServiceDTO(service);
         return dto;
     }
     
@@ -94,7 +94,7 @@ public class Mapper {
         dto.setName(r.getName());
         //dto.setPI(r.getPI());
         dto.setDescription(r.getDescription());
-        dto.setPost_code(r.getPostCode());
+        dto.setPostCode(r.getPostCode());
        // dto.setRestaurantLogoDto(new RestaurantLogoDto(r.getRestaurantLogo().getPath()));
         return dto;
     }

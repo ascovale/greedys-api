@@ -4,7 +4,7 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
 
-import com.application.common.web.dto.get.CustomerDTO;
+import com.application.common.web.dto.customer.CustomerDTO;
 
 public class UserValidator implements Validator {
 

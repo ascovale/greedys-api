@@ -6,7 +6,7 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
 import org.mapstruct.factory.Mappers;
 
-import com.application.common.web.dto.post.AuthResponseDTO;
+import com.application.common.web.dto.security.AuthResponseDTO;
 
 /**
  * MapStruct mapper per la conversione di AuthResponseDTO

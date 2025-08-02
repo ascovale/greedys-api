@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.application.admin.persistence.model.Admin;
 import com.application.admin.service.AdminRegistrationService;
-import com.application.admin.web.dto.post.NewAdminDTO;
+import com.application.admin.web.dto.admin.NewAdminDTO;
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.CreateApiResponses;
 import com.application.common.web.ApiResponse;

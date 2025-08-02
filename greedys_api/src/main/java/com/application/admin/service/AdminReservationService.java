@@ -7,12 +7,12 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.application.admin.web.dto.post.AdminNewReservationDTO;
+import com.application.admin.web.dto.reservation.AdminNewReservationDTO;
 import com.application.common.persistence.model.reservation.Reservation;
 import com.application.common.persistence.model.reservation.Reservation.Status;
 import com.application.common.persistence.model.reservation.Slot;
 import com.application.common.service.reservation.ReservationService;
-import com.application.common.web.dto.get.ReservationDTO;
+import com.application.common.web.dto.reservations.ReservationDTO;
 import com.application.customer.persistence.dao.ReservationDAO;
 import com.application.customer.persistence.model.Customer;
 import com.application.customer.service.CustomerService;

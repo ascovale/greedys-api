@@ -1,11 +1,10 @@
 package com.application.restaurant.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import com.application.common.spring.GeocodingConfig;
-import com.application.common.web.dto.get.GeocodingDTO;
+import com.application.common.web.dto.shared.GeocodingDTO;
 import com.application.restaurant.persistence.model.Restaurant;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,8 +15,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Service
 public class GeocodingService {
     
-    @Autowired
-    private GeocodingConfig geocodingConfig;
+    @Value("${google.maps.api.key}")
+    private String googleMapsApiKey;
+    
+    @Value("${geocoding.google.baseUrl}")
+    private String googleGecodingBaseUrl;
+    
+    @Value("${geocoding.nominatim.baseUrl}")
+    private String nominatimBaseUrl;
+    
+    @Value("${geocoding.nominatim.userAgent}")
+    private String nominatimUserAgent;
     
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -40,8 +48,7 @@ public class GeocodingService {
         }
         
         // Try Google first if API key is available
-        if (geocodingConfig.getGoogle().getApiKey() != null && 
-            !geocodingConfig.getGoogle().getApiKey().isEmpty()) {
+        if (googleMapsApiKey != null && !googleMapsApiKey.isEmpty()) {
             return geocodeWithGoogle(searchQuery);
         } else {
             return geocodeWithNominatim(searchQuery);
@@ -107,9 +114,9 @@ public class GeocodingService {
         try {
             String url = String.format(
                 "%s?address=%s&key=%s",
-                geocodingConfig.getGoogle().getBaseUrl(),
+                googleGecodingBaseUrl,
                 java.net.URLEncoder.encode(address, "UTF-8"),
-                geocodingConfig.getGoogle().getApiKey()
+                googleMapsApiKey
             );
             
             String response = restTemplate.getForObject(url, String.class);
@@ -135,13 +142,13 @@ public class GeocodingService {
         try {
             String url = String.format(
                 "%s?q=%s&format=json&limit=1&addressdetails=1",
-                geocodingConfig.getNominatim().getBaseUrl(),
+                nominatimBaseUrl,
                 java.net.URLEncoder.encode(address, "UTF-8")
             );
             
             // Add User-Agent header as required by Nominatim
             org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
-            headers.set("User-Agent", geocodingConfig.getNominatim().getUserAgent());
+            headers.set("User-Agent", nominatimUserAgent);
             
             org.springframework.http.HttpEntity<?> entity = new org.springframework.http.HttpEntity<>(headers);
             

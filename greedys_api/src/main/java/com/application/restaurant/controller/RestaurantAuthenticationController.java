@@ -16,8 +16,8 @@ import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.security.jwt.JwtUtil;
 import com.application.common.web.ApiResponse;
-import com.application.common.web.dto.get.RestaurantDTO;
-import com.application.common.web.dto.post.AuthResponseDTO;
+import com.application.common.web.dto.restaurant.RestaurantDTO;
+import com.application.common.web.dto.security.AuthResponseDTO;
 import com.application.restaurant.persistence.model.user.RUser;
 import com.application.restaurant.service.authentication.RestaurantAuthenticationService;
 

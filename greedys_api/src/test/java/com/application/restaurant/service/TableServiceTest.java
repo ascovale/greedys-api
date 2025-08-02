@@ -22,24 +22,14 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.application.common.web.dto.get.TableDTO;
+import com.application.common.web.dto.restaurant.TableDTO;
+import com.application.restaurant.persistence.dao.RoomDAO;
 import com.application.restaurant.persistence.dao.TableDAO;
 import com.application.restaurant.persistence.model.Room;
 import com.application.restaurant.persistence.model.Table;
-import com.application.restaurant.web.dto.post.NewTableDTO;
+import com.application.restaurant.web.dto.restaurant.NewTableDTO;
 
-import jakarta.persistence.EntityManager;
 
-/**
- * Test per TableService
- * 
- * Questo test dimostra come testare i servizi con mock:
- * - Mock dei DAO (repository)
- * - Mock di EntityManager
- * - Test della logica business
- * - Verifica delle chiamate ai DAO
- * - Test di casi edge e errori
- */
 @ExtendWith(MockitoExtension.class)
 class TableServiceTest {
 
@@ -47,7 +37,8 @@ class TableServiceTest {
     private TableDAO tableDAO;
 
     @Mock
-    private EntityManager entityManager;
+    private RoomDAO roomDAO;
+
 
     @InjectMocks
     private TableService tableService;
@@ -119,7 +110,7 @@ class TableServiceTest {
     @Test
     void createTable_ShouldSaveTable_WhenValidData() {
         // ARRANGE
-        when(entityManager.getReference(Room.class, newTableDTO.getRoomId()))
+        when(roomDAO.getReferenceById(newTableDTO.getRoomId()))
                 .thenReturn(mockRoom);
         when(tableDAO.save(any(Table.class))).thenReturn(mockTable);
 
@@ -127,14 +118,14 @@ class TableServiceTest {
         tableService.createTable(newTableDTO);
 
         // ASSERT
-        verify(entityManager).getReference(Room.class, newTableDTO.getRoomId());
+        verify(roomDAO).getReferenceById(newTableDTO.getRoomId());
         verify(tableDAO).save(any(Table.class));
     }
 
     @Test
     void createTable_ShouldThrowException_WhenRoomNotFound() {
         // ARRANGE
-        when(entityManager.getReference(Room.class, newTableDTO.getRoomId()))
+        when(roomDAO.getReferenceById(newTableDTO.getRoomId()))
                 .thenThrow(new RuntimeException("Room not found"));
 
         // ACT & ASSERT
@@ -142,7 +133,7 @@ class TableServiceTest {
             tableService.createTable(newTableDTO);
         });
 
-        verify(entityManager).getReference(Room.class, newTableDTO.getRoomId());
+        verify(roomDAO).getReferenceById(newTableDTO.getRoomId());
         // Verifica che save NON sia stato chiamato
         verify(tableDAO, Mockito.never()).save(any(Table.class));
     }
@@ -213,7 +204,7 @@ class TableServiceTest {
     @Test
     void createTable_ShouldMapDataCorrectly() {
         // ARRANGE
-        when(entityManager.getReference(Room.class, newTableDTO.getRoomId()))
+        when(roomDAO.getReferenceById(newTableDTO.getRoomId()))
                 .thenReturn(mockRoom);
         
         // Capture dell'argomento passato a save

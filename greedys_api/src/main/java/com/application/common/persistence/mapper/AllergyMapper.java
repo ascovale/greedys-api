@@ -7,8 +7,8 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
 import org.mapstruct.factory.Mappers;
 
-import com.application.common.web.dto.get.AllergyDTO;
-import com.application.common.web.dto.post.NewAllergyDTO;
+import com.application.common.web.dto.customer.AllergyDTO;
+import com.application.common.web.dto.customer.NewAllergyDTO;
 import com.application.customer.persistence.model.Allergy;
 
 /**

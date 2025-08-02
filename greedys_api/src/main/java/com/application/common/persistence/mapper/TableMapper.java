@@ -7,9 +7,9 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
 import org.mapstruct.factory.Mappers;
 
-import com.application.common.web.dto.get.TableDTO;
+import com.application.common.web.dto.restaurant.TableDTO;
 import com.application.restaurant.persistence.model.Table;
-import com.application.restaurant.web.dto.post.NewTableDTO;
+import com.application.restaurant.web.dto.restaurant.NewTableDTO;
 
 /**
  * MapStruct mapper per la conversione tra Table e TableDTO/NewTableDTO

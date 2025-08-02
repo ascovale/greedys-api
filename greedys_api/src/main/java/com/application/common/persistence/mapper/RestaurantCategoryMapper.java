@@ -7,7 +7,7 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
 import org.mapstruct.factory.Mappers;
 
-import com.application.common.web.dto.RestaurantCategoryDTO;
+import com.application.common.web.dto.restaurant.RestaurantCategoryDTO;
 import com.application.restaurant.persistence.model.RestaurantCategory;
 
 /**
@@ -31,13 +31,12 @@ public interface RestaurantCategoryMapper {
      * Converte un RestaurantCategoryDTO in entità RestaurantCategory
      */
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "restaurants", ignore = true) // Gestito dalle relazioni
     RestaurantCategory toEntity(RestaurantCategoryDTO restaurantCategoryDTO);
 
     /**
      * Aggiorna un'entità RestaurantCategory esistente con i dati dal RestaurantCategoryDTO
      */
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "restaurants", ignore = true)
+  //  @Mapping(target = "restaurants", ignore = true)
     void updateEntityFromDTO(RestaurantCategoryDTO dto, @MappingTarget RestaurantCategory entity);
 }

@@ -3,12 +3,7 @@ package com.application.common.persistence.model.reservation;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import org.springframework.data.annotation.CreatedBy;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedBy;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
+import com.application.common.config.CustomAuditingEntityListener;
 import com.application.common.persistence.model.user.AbstractUser;
 import com.application.customer.persistence.model.Customer;
 import com.application.restaurant.persistence.model.Restaurant;
@@ -37,7 +32,7 @@ import lombok.Setter;
  */
 @Entity
 @Table(name = "reservation")
-@EntityListeners(AuditingEntityListener.class)
+@EntityListeners(CustomAuditingEntityListener.class)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -90,23 +85,28 @@ public class Reservation {
 
     // -- Auditing fields -- //
 
-    @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @LastModifiedDate
     @Column(name = "modified_at")
     private LocalDateTime modifiedAt;
 
-    @CreatedBy
+    // Rimuoviamo @CreatedBy e @LastModifiedBy perché gestiti dal CustomAuditingEntityListener
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by_user_id", updatable = false)
     private AbstractUser createdBy;
 
-    @LastModifiedBy
+    @Column(name = "created_by_user_type", updatable = false)
+    @Enumerated(EnumType.STRING)
+    private UserType createdByUserType;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "modified_by_user_id")
     private AbstractUser modifiedBy;
+
+    @Column(name = "modified_by_user_type")
+    @Enumerated(EnumType.STRING)
+    private UserType modifiedByUserType;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "accepted_by_user_id")
@@ -114,6 +114,13 @@ public class Reservation {
 
     @Column(name = "accepted_at")
     private LocalDateTime acceptedAt;
+
+    public enum UserType {
+        CUSTOMER,
+        ADMIN,
+        RESTAURANT_USER
+    }
+
     public enum Status {
         NOT_ACCEPTED,
         ACCEPTED,

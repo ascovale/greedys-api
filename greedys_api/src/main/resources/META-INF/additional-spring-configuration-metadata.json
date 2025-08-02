@@ -43,6 +43,23 @@
     "description": "Twilio WhatsApp number for sending messages"
   },
   {
+    "name": "twilio.verify.service.sid",
+    "type": "java.lang.String",
+    "description": "Twilio Verify Service SID for phone verification"
+  },
+  {
+    "name": "twilio.verification.expiry.minutes",
+    "type": "java.lang.Integer",
+    "description": "Minutes before verification code expires",
+    "defaultValue": "10"
+  },
+  {
+    "name": "twilio.verification.max.attempts",
+    "type": "java.lang.Integer",
+    "description": "Maximum verification attempts allowed",
+    "defaultValue": "3"
+  },
+  {
     "name": "mail.reservation.host",
     "type": "java.lang.String",
     "description": "SMTP host for reservation emails"

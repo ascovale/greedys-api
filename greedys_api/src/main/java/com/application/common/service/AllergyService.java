@@ -9,8 +9,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.application.common.web.dto.get.AllergyDTO;
-import com.application.common.web.dto.post.NewAllergyDTO;
+import com.application.common.web.dto.customer.AllergyDTO;
+import com.application.common.web.dto.customer.NewAllergyDTO;
 import com.application.customer.persistence.dao.AllergyDAO;
 import com.application.customer.persistence.model.Allergy;
 

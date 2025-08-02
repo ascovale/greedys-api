@@ -15,7 +15,7 @@ import com.application.customer.persistence.model.Customer;
 import com.application.customer.persistence.model.Privilege;
 import com.application.customer.persistence.model.Role;
 import com.application.customer.service.authentication.CustomerAuthenticationService;
-import com.application.customer.web.post.NewCustomerDTO;
+import com.application.customer.web.dto.customer.NewCustomerDTO;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

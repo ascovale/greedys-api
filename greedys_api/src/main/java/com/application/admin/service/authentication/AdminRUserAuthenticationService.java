@@ -7,8 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.application.common.security.jwt.JwtUtil;
-import com.application.common.web.dto.get.RUserDTO;
-import com.application.common.web.dto.post.AuthResponseDTO;
+import com.application.common.web.dto.restaurant.RUserDTO;
+import com.application.common.web.dto.security.AuthResponseDTO;
 import com.application.restaurant.RUserAuthenticationDetails;
 import com.application.restaurant.persistence.dao.RUserDAO;
 import com.application.restaurant.persistence.model.user.RUser;

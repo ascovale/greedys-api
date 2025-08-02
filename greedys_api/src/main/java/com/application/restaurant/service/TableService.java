@@ -4,15 +4,15 @@ import java.util.Collection;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import com.application.common.web.dto.get.TableDTO;
+import com.application.common.persistence.mapper.TableMapper;
+import com.application.common.web.dto.restaurant.TableDTO;
+import com.application.restaurant.persistence.dao.RoomDAO;
 import com.application.restaurant.persistence.dao.TableDAO;
-import com.application.restaurant.persistence.model.Room;
 import com.application.restaurant.persistence.model.Table;
-import com.application.restaurant.web.dto.post.NewTableDTO;
+import com.application.restaurant.web.dto.restaurant.NewTableDTO;
 
-import jakarta.persistence.EntityManager;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -21,7 +21,8 @@ import lombok.RequiredArgsConstructor;
 public class TableService {
     
     private final TableDAO tableDAO;
-    private final EntityManager entityManager;
+    private final RoomDAO roomDAO;
+    private final TableMapper tableMapper;
 
     public void deleteById(Long id) {
         tableDAO.deleteById(id);
@@ -37,7 +38,7 @@ public class TableService {
         table.setCapacity(tableDto.getCapacity());
         table.setPositionX(tableDto.getPositionX());
         table.setPositionY(tableDto.getPositionY());
-        table.setRoom(entityManager.getReference(Room.class, tableDto.getRoomId()));
+        table.setRoom(roomDAO.findById(tableDto.getRoomId()).orElseThrow(() -> new IllegalArgumentException("Room not found")));
         return tableDAO.save(table);
     }
 
@@ -45,9 +46,16 @@ public class TableService {
         return tableDAO.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Table not found with id: " + id));
     }
+    
+    public TableDTO findByIdAsDTO(Long id) {
+        Table table = findById(id);
+        return tableMapper.toDTO(table);
+    }
 
     public Collection<TableDTO> findByRoom(Long idRoom) {
-        return tableDAO.findByRoom_Id(idRoom).stream().map(table -> new TableDTO(table) ).collect(Collectors.toList());
+        return tableDAO.findByRoom_Id(idRoom).stream()
+                .map(tableMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
     public void deleteTable(Long tableId) {

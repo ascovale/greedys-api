@@ -16,8 +16,8 @@ import com.application.admin.service.authentication.AdminCustomerAuthenticationS
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.web.ApiResponse;
-import com.application.common.web.dto.get.CustomerDTO;
-import com.application.common.web.dto.post.AuthResponseDTO;
+import com.application.common.web.dto.customer.CustomerDTO;
+import com.application.common.web.dto.security.AuthResponseDTO;
 import com.application.customer.persistence.model.Customer;
 
 import io.swagger.v3.oas.annotations.Operation;

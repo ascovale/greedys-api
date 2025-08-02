@@ -21,6 +21,15 @@ public class TwilioConfig {
     @Value("${twilio.whatsapp.number}")
     private String whatsappNumber;
 
+    @Value("${twilio.verify.service.sid}")
+    private String verifyServiceSid;
+
+    @Value("${twilio.verification.expiry.minutes:10}")
+    private int verificationExpiryMinutes;
+
+    @Value("${twilio.verification.max.attempts:3}")
+    private int maxVerificationAttempts;
+
     @PostConstruct
     public void init() {
         Twilio.init(accountSid, authToken);

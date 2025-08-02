@@ -6,7 +6,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.application.common.web.dto.post.FcmTokenDTO;
+import com.application.common.web.dto.shared.FcmTokenDTO;
 import com.application.restaurant.persistence.dao.RUserFcmTokenDAO;
 import com.application.restaurant.persistence.model.user.RUser;
 import com.application.restaurant.persistence.model.user.RUserFcmToken;

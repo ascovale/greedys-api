@@ -12,7 +12,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.application.common.persistence.model.reservation.Reservation;
-import com.application.common.web.dto.get.ReservationDTO;
+import com.application.common.web.dto.reservations.ReservationDTO;
 
 @Repository
 public interface ReservationDAO extends JpaRepository<Reservation, Long> {

@@ -6,8 +6,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.application.common.security.jwt.JwtUtil;
-import com.application.common.web.dto.get.CustomerDTO;
-import com.application.common.web.dto.post.AuthResponseDTO;
+import com.application.common.web.dto.customer.CustomerDTO;
+import com.application.common.web.dto.security.AuthResponseDTO;
 import com.application.customer.persistence.dao.CustomerDAO;
 import com.application.customer.persistence.model.Customer;
 

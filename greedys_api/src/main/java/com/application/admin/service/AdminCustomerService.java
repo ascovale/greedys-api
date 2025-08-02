@@ -5,8 +5,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import com.application.admin.service.authentication.AdminCustomerAuthenticationService;
-import com.application.common.web.dto.get.CustomerDTO;
+import com.application.common.persistence.mapper.CustomerDTOMapper;
+import com.application.common.persistence.mapper.PrivilegeDTOMapper;
+import com.application.common.persistence.mapper.RoleDTOMapper;
+import com.application.common.web.dto.customer.CustomerDTO;
+import com.application.common.web.dto.security.PrivilegeDTO;
+import com.application.common.web.dto.security.RoleDTO;
 import com.application.customer.persistence.dao.CustomerDAO;
 import com.application.customer.persistence.dao.PrivilegeDAO;
 import com.application.customer.persistence.dao.RoleDAO;
@@ -25,7 +29,9 @@ public class AdminCustomerService {
     private final CustomerDAO customerDAO;
     private final RoleDAO roleDAO;
     private final PrivilegeDAO privilegeDAO;
-    private final AdminCustomerAuthenticationService adminCustomerAuthenticationService;
+    private final CustomerDTOMapper customerDTOMapper;
+    private final RoleDTOMapper roleDTOMapper;
+    private final PrivilegeDTOMapper privilegeDTOMapper;
 
     public void updateCustomerStatus(Long customerId, Customer.Status newStatus) {
         Customer customer = customerDAO.findById(customerId)
@@ -36,7 +42,47 @@ public class AdminCustomerService {
     }
 
     public Page<CustomerDTO> findAll(PageRequest pageable) {
-        return customerDAO.findAll(pageable).map(CustomerDTO::new);
+        return customerDAO.findAll(pageable).map(customerDTOMapper::toDTO);
+    }
+
+    public Page<RoleDTO> findAllRoles(PageRequest pageable) {
+        return roleDAO.findAll(pageable).map(roleDTOMapper::toDTO);
+    }
+
+    public Page<PrivilegeDTO> findAllPrivileges(PageRequest pageable) {
+        return privilegeDAO.findAll(pageable).map(privilegeDTOMapper::toDTO);
+    }
+
+    public RoleDTO getRoleById(Long roleId) {
+        Role role = roleDAO.findById(roleId)
+                .orElseThrow(() -> new EntityNotFoundException("Role not found"));
+        return roleDTOMapper.toDTO(role);
+    }
+
+    public PrivilegeDTO getPrivilegeById(Long privilegeId) {
+        Privilege privilege = privilegeDAO.findById(privilegeId)
+                .orElseThrow(() -> new EntityNotFoundException("Privilege not found"));
+        return privilegeDTOMapper.toDTO(privilege);
+    }
+
+    public RoleDTO createRole(RoleDTO roleDTO) {
+        Role role = roleDTOMapper.toEntity(roleDTO);
+        Role savedRole = roleDAO.save(role);
+        return roleDTOMapper.toDTO(savedRole);
+    }
+
+    public PrivilegeDTO createPrivilege(PrivilegeDTO privilegeDTO) {
+        Privilege privilege = privilegeDTOMapper.toEntity(privilegeDTO);
+        Privilege savedPrivilege = privilegeDAO.save(privilege);
+        return privilegeDTOMapper.toDTO(savedPrivilege);
+    }
+
+    public RoleDTO updateRole(Long roleId, RoleDTO roleDTO) {
+        Role role = roleDAO.findById(roleId)
+                .orElseThrow(() -> new EntityNotFoundException("Role not found"));
+        roleDTOMapper.updateEntityFromDTO(roleDTO, role);
+        Role savedRole = roleDAO.save(role);
+        return roleDTOMapper.toDTO(savedRole);
     }
 
     public void addRoleToCustomer(Long customerId, String role) {
