@@ -6,11 +6,11 @@ import java.util.Arrays;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.application.common.security.jwt.JwtUtil;
-import com.application.common.web.dto.AuthRequestGoogleDTO;
-import com.application.common.web.dto.post.AuthResponseDTO;
+import com.application.common.web.dto.security.AuthRequestGoogleDTO;
+import com.application.common.web.dto.security.AuthResponseDTO;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
@@ -23,8 +23,19 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class GoogleAuthService {
-
-    private final JwtUtil jwtUtil;
+    
+    // Client IDs per la verifica ID Token
+    @Value("${google.oauth.web.client.id}")
+    private String webClientId;
+    
+    @Value("${google.oauth.flutter.client.id}")
+    private String flutterClientId;
+    
+    @Value("${google.oauth.android.client.id}")
+    private String androidClientId;
+    
+    @Value("${google.oauth.ios.client.id}")
+    private String iosClientId;
 
     /**
      * Authenticates a user with Google OAuth2 and returns an authentication response.
@@ -69,11 +80,10 @@ public class GoogleAuthService {
                     GoogleNetHttpTransport.newTrustedTransport(),
                     GsonFactory.getDefaultInstance())
                     .setAudience(Arrays.asList(
-                            "982346813437-3s1uepb5ic7ib5r4mfegdsbrkjjvtl7b.apps.googleusercontent.com", // Web client ID
-                                                                                                        // (API)
-                            "982346813437-d0kerhe6h2km0veqs563avsgtv6vb7p5.apps.googleusercontent.com", // Flutter Web
-                            "982346813437-e1vsuujvorosiaamfdc3honrrbur17ri.apps.googleusercontent.com", // Android
-                            "982346813437-iosclientid.apps.googleusercontent.com" // TODO: Inserire il token per Ios
+                            webClientId,     // Web client ID (API)
+                            flutterClientId, // Flutter Web
+                            androidClientId, // Android
+                            iosClientId      // iOS
                     ))
                     .build();
 

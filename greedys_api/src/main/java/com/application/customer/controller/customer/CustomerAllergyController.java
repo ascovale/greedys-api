@@ -17,7 +17,7 @@ import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.service.AllergyService;
 import com.application.common.web.ApiResponse;
-import com.application.common.web.dto.get.AllergyDTO;
+import com.application.common.web.dto.customer.AllergyDTO;
 import com.application.customer.persistence.model.Customer;
 import com.application.customer.service.CustomerService;
 

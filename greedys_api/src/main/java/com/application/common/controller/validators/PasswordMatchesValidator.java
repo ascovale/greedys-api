@@ -1,8 +1,8 @@
 package com.application.common.controller.validators;
 
-import com.application.admin.web.dto.post.NewAdminDTO;
-import com.application.customer.web.post.NewCustomerDTO;
-import com.application.restaurant.web.dto.post.NewRUserDTO;
+import com.application.admin.web.dto.admin.NewAdminDTO;
+import com.application.customer.web.dto.customer.NewCustomerDTO;
+import com.application.restaurant.web.dto.staff.NewRUserDTO;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;

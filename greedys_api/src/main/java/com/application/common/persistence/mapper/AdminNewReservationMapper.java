@@ -7,7 +7,7 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
 import org.mapstruct.factory.Mappers;
 
-import com.application.admin.web.dto.post.AdminNewReservationDTO;
+import com.application.admin.web.dto.reservation.AdminNewReservationDTO;
 import com.application.common.persistence.model.reservation.Reservation;
 
 /**

@@ -7,8 +7,8 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
 import org.mapstruct.factory.Mappers;
 
-import com.application.common.web.dto.post.NewBaseReservationDTO;
 import com.application.common.persistence.model.reservation.Reservation;
+import com.application.common.web.dto.reservations.NewBaseReservationDTO;
 
 /**
  * MapStruct mapper per la conversione tra NewBaseReservationDTO e Reservation

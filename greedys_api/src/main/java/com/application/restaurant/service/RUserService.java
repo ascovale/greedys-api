@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.application.common.security.jwt.constants.TokenValidationConstants;
 import com.application.common.service.EmailService;
-import com.application.common.web.dto.get.RUserDTO;
+import com.application.common.web.dto.restaurant.RUserDTO;
 import com.application.restaurant.persistence.dao.RUserDAO;
 import com.application.restaurant.persistence.dao.RUserHubDAO;
 import com.application.restaurant.persistence.dao.RUserPasswordResetTokenDAO;
@@ -24,7 +24,7 @@ import com.application.restaurant.persistence.model.user.RUserHub;
 import com.application.restaurant.persistence.model.user.RUserPasswordResetToken;
 import com.application.restaurant.persistence.model.user.RUserVerificationToken;
 import com.application.restaurant.persistence.model.user.RestaurantRole;
-import com.application.restaurant.web.dto.post.NewRUserDTO;
+import com.application.restaurant.web.dto.staff.NewRUserDTO;
 
 import lombok.RequiredArgsConstructor;
 
@@ -285,7 +285,6 @@ public class RUserService {
         //TODO:NOn credo ci sia bisogno di rifare jwt in ogni caso fare un test sullo status dopo averlo cambiato
     }
 
-    @Transactional
     public RUserDTO addRUserToRestaurant(NewRUserDTO RUserDTO, Long restaurantId) {
         Restaurant restaurant = restaurantDAO.findById(restaurantId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid restaurant ID: " + restaurantId));

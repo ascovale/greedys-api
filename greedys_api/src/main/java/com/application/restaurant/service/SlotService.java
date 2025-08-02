@@ -6,17 +6,18 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.application.common.persistence.mapper.Mapper.Weekday;
+import com.application.common.persistence.mapper.SlotMapper;
 import com.application.common.persistence.model.reservation.Slot;
-import com.application.common.web.dto.get.SlotDTO;
+import com.application.common.web.dto.restaurant.SlotDTO;
 import com.application.restaurant.persistence.dao.RUserDAO;
 import com.application.restaurant.persistence.dao.ServiceDAO;
 import com.application.restaurant.persistence.dao.SlotDAO;
-import com.application.restaurant.web.dto.post.NewSlotDTO;
-import com.application.restaurant.web.dto.post.RestaurantNewSlotDTO;
+import com.application.restaurant.web.dto.services.NewSlotDTO;
+import com.application.restaurant.web.dto.services.RestaurantNewSlotDTO;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -27,6 +28,7 @@ public class SlotService {
     private final SlotDAO slotDAO;
     private final ServiceDAO serviceDao;
     private final RUserDAO RUserDao;
+    private final SlotMapper slotMapper;
 
     public Set<Weekday> getAvailableDays(Long idService) {
         return slotDAO.findByService_Id(idService).stream()
@@ -34,7 +36,6 @@ public class SlotService {
                 .collect(Collectors.toSet());
     }
 
-    @Transactional
     public void addSlot(NewSlotDTO slotDto) {
         com.application.common.persistence.model.reservation.Service service = serviceDao.findById(slotDto.getServiceId())
             .orElseThrow(() -> new IllegalArgumentException("Service not found with id: " + slotDto.getServiceId()));
@@ -47,7 +48,6 @@ public class SlotService {
         slotDAO.save(slot);
     }
 
-    @Transactional
     public void addSlot(Long idRUser, RestaurantNewSlotDTO slotDto) {
         Long idRestaurant = RUserDao.findById(idRUser)
             .orElseThrow(() -> new IllegalArgumentException("RUser not found with id: " + idRUser))
@@ -70,7 +70,7 @@ public class SlotService {
 
     public Collection<SlotDTO> findByService_Id(Long param) {
         return slotDAO.findByService_Id(param).stream()
-                .map(SlotDTO::new)
+                .map(slotMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
@@ -80,7 +80,7 @@ public class SlotService {
 
     public SlotDTO findById(Long id) {
         return slotDAO.findById(id)
-            .map(SlotDTO::new)
+            .map(slotMapper::toDTO)
             .orElseThrow(() -> new IllegalArgumentException("Slot not found with id: " + id));
     }
 
@@ -92,15 +92,16 @@ public class SlotService {
         slotDAO.delete(slot);
         return true;
     }
+    
     public List<SlotDTO> findAllSlots() {
         return slotDAO.findAll().stream()
-                .map(SlotDTO::new)
+                .map(slotMapper::toDTO)
                 .collect(Collectors.toList());
     }
+    
     public List<SlotDTO> findSlotsByRestaurantId(Long restaurantId) {
         return slotDAO.findSlotsByRestaurantId(restaurantId).stream()
-                .map(SlotDTO::new)
+                .map(slotMapper::toDTO)
                 .collect(Collectors.toList());
     }
-
 }

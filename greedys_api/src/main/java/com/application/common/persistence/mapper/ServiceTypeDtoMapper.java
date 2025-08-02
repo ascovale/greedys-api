@@ -7,8 +7,8 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
 import org.mapstruct.factory.Mappers;
 
-import com.application.common.web.dto.ServiceTypeDto;
 import com.application.common.persistence.model.reservation.ServiceType;
+import com.application.common.web.dto.restaurant.ServiceTypeDto;
 
 /**
  * MapStruct mapper per la conversione tra ServiceType e ServiceTypeDto

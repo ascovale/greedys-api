@@ -4,18 +4,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import com.application.common.spring.AddressValidationConfig;
-import com.application.common.spring.GeocodingConfig;
-import com.application.common.web.dto.get.GeocodingDTO;
+import com.application.common.web.dto.shared.GeocodingDTO;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Validator for physical addresses with multiple validation levels.
@@ -28,11 +27,11 @@ import jakarta.validation.ConstraintValidatorContext;
  * Supports integration with:
  * - Google Maps Geocoding API
  * - OpenStreetMap Nominatim (free alternative)
- * - Here Maps API
  * 
  * @author Generated for Greedys API
  */
 @Component
+@Slf4j
 public class AddressValidator implements ConstraintValidator<ValidAddress, String> {
     
     private boolean allowNull;
@@ -40,11 +39,26 @@ public class AddressValidator implements ConstraintValidator<ValidAddress, Strin
     private int minLength;
     private int maxLength;
     
-    @Autowired
-    private GeocodingConfig geocodingConfig;
+    @Value("${google.maps.api.key}")
+    private String googleMapsApiKey;
     
-    @Autowired
-    private AddressValidationConfig validationConfig;
+    @Value("${geocoding.google.baseUrl}")
+    private String googleGecodingBaseUrl;
+    
+    @Value("${geocoding.nominatim.baseUrl}")
+    private String nominatimBaseUrl;
+    
+    @Value("${geocoding.nominatim.userAgent}")
+    private String nominatimUserAgent;
+    
+    @Value("${address.validation.enabled:true}")
+    private boolean validationEnabled;
+    
+    @Value("${address.validation.timeout:5000}")
+    private int validationTimeout;
+    
+    @Value("${address.validation.max.retries:3}")
+    private int maxRetries;
     
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -142,7 +156,7 @@ public class AddressValidator implements ConstraintValidator<ValidAddress, Strin
         }
         
         // Strict validation with geocoding (if enabled)
-        if (strictValidation && validationConfig.isEnabled()) {
+        if (strictValidation && validationEnabled) {
             return isGeocodingValid(cleanAddress, context);
         }
         
@@ -191,15 +205,14 @@ public class AddressValidator implements ConstraintValidator<ValidAddress, Strin
     private boolean isGeocodingValid(String address, ConstraintValidatorContext context) {
         try {
             // Try Google first if API key is available, otherwise use Nominatim
-            if (geocodingConfig.getGoogle().getApiKey() != null && 
-                !geocodingConfig.getGoogle().getApiKey().isEmpty()) {
+            if (googleMapsApiKey != null && !googleMapsApiKey.isEmpty()) {
                 return validateWithGoogle(address, context);
             } else {
                 return validateWithNominatim(address, context);
             }
         } catch (Exception e) {
             // If geocoding fails, don't block the validation - log and continue
-            System.err.println("Geocoding validation failed: " + e.getMessage());
+            log.error("Geocoding validation failed: {}", e.getMessage());
             return true; // Don't block registration for geocoding issues
         }
     }
@@ -208,17 +221,16 @@ public class AddressValidator implements ConstraintValidator<ValidAddress, Strin
      * Validates address using Google Maps Geocoding API
      */
     private boolean validateWithGoogle(String address, ConstraintValidatorContext context) {
-        String apiKey = geocodingConfig.getGoogle().getApiKey();
-        if (apiKey == null || apiKey.isEmpty()) {
+        if (googleMapsApiKey == null || googleMapsApiKey.isEmpty()) {
             return true; // Skip if no API key
         }
         
         try {
             String url = String.format(
                 "%s?address=%s&key=%s",
-                geocodingConfig.getGoogle().getBaseUrl(),
+                googleGecodingBaseUrl,
                 java.net.URLEncoder.encode(address, "UTF-8"),
-                apiKey
+                googleMapsApiKey
             );
             
             String response = restTemplate.getForObject(url, String.class);
@@ -228,11 +240,8 @@ public class AddressValidator implements ConstraintValidator<ValidAddress, Strin
             if ("OK".equals(status)) {
                 JsonNode results = jsonNode.get("results");
                 if (results.isArray() && results.size() > 0) {
-                    // Extract detailed information
-                    GeocodingDTO geocodingResult = extractGoogleGeocodingDetails(results.get(0));
-                    
-                    // Store the result in the context for later use
-                    context.getDefaultConstraintMessageTemplate(); // This will store it
+                    // Extract detailed information for potential future use
+                    extractGoogleGeocodingDetails(results.get(0));
                     
                     // Address found and geocoded successfully
                     return true;
@@ -282,7 +291,6 @@ public class AddressValidator implements ConstraintValidator<ValidAddress, Strin
             for (JsonNode component : components) {
                 JsonNode types = component.get("types");
                 String longName = component.get("long_name").asText();
-                String shortName = component.get("short_name").asText();
                 
                 for (JsonNode type : types) {
                     String typeStr = type.asText();
@@ -323,13 +331,13 @@ public class AddressValidator implements ConstraintValidator<ValidAddress, Strin
         try {
             String url = String.format(
                 "%s?q=%s&format=json&limit=1",
-                geocodingConfig.getNominatim().getBaseUrl(),
+                nominatimBaseUrl,
                 java.net.URLEncoder.encode(address, "UTF-8")
             );
             
             // Add User-Agent header as required by Nominatim
             org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
-            headers.set("User-Agent", geocodingConfig.getNominatim().getUserAgent());
+            headers.set("User-Agent", nominatimUserAgent);
             
             org.springframework.http.HttpEntity<?> entity = new org.springframework.http.HttpEntity<>(headers);
             

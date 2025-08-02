@@ -22,7 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 
 import com.application.common.persistence.model.reservation.Reservation;
-import com.application.common.web.dto.get.ReservationDTO;
+import com.application.common.web.dto.reservations.ReservationDTO;
 import com.application.customer.persistence.dao.ReservationDAO;
 import com.application.customer.persistence.dao.ReservationRequestDAO;
 import com.application.restaurant.persistence.dao.ClosedDayDAO;

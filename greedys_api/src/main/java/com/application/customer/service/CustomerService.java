@@ -12,11 +12,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.application.common.persistence.mapper.CustomerDTOMapper;
 import com.application.common.persistence.model.Image;
 import com.application.common.persistence.model.reservation.Reservation;
-import com.application.common.web.dto.get.AllergyDTO;
-import com.application.common.web.dto.get.CustomerDTO;
-import com.application.common.web.dto.get.CustomerStatisticsDTO;
+import com.application.common.web.dto.customer.AllergyDTO;
+import com.application.common.web.dto.customer.CustomerDTO;
+import com.application.common.web.dto.customer.CustomerStatisticsDTO;
 import com.application.common.web.error.UserAlreadyExistException;
 import com.application.customer.persistence.dao.AllergyDAO;
 import com.application.customer.persistence.dao.CustomerDAO;
@@ -27,9 +28,8 @@ import com.application.customer.persistence.model.Allergy;
 import com.application.customer.persistence.model.Customer;
 import com.application.customer.persistence.model.Privilege;
 import com.application.customer.persistence.model.Role;
-import com.application.customer.web.post.NewCustomerDTO;
+import com.application.customer.web.dto.customer.NewCustomerDTO;
 
-import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
@@ -40,15 +40,15 @@ public class CustomerService {
 
 	private final CustomerDAO customerDAO;
 	private final RoleDAO roleRepository;
-	private final EntityManager entityManager;
 	private final AllergyDAO allergyDAO;
 	private final PrivilegeDAO privilegeDAO;
 	private final ReservationDAO reservationDAO;
+	private final CustomerDTOMapper customerDTOMapper;
 
 	public CustomerDTO findById(long id) {
 		Customer customer = customerDAO.findById(id)
 				.orElseThrow(() -> new EntityNotFoundException("Customer not found"));
-		return new CustomerDTO(customer);
+		return customerDTOMapper.toDTO(customer);
 	}
 
 	public Customer findCustomerByEmail(final String email) {
@@ -69,7 +69,7 @@ public class CustomerService {
 	}
 
 	public Customer getReference(Long customerId) {
-		return entityManager.getReference(Customer.class, customerId);
+		return customerDAO.getReferenceById(customerId);
 	}
 
 	public void deleteCustomerById(Long id) {
@@ -81,23 +81,34 @@ public class CustomerService {
 	public Customer updateCustomer(Long id, NewCustomerDTO customerDto) {
 		Customer customer = customerDAO.findById(id)
 				.orElseThrow(() -> new EntityNotFoundException("Customer not found"));
-		if (customerDto.getFirstName() != null) {
-			customer.setName(customerDto.getFirstName());
-		}
-		if (customerDto.getLastName() != null) {
-			customer.setSurname(customerDto.getLastName());
-		}
+		
+		customerDTOMapper.updateEntityFromDTO(customerDto, customer);
+		
+		// Controllo email duplicata se è stata cambiata
 		if (customerDto.getEmail() != null && !customerDto.getEmail().equals(customer.getEmail())) {
 			if (emailExists(customerDto.getEmail())) {
 				throw new UserAlreadyExistException(
 						"There is an account with that email address: " + customerDto.getEmail());
 			}
-			customer.setEmail(customerDto.getEmail());
 		}
+		
 		return customerDAO.save(customer);
 	}
 
-	@Transactional
+	public CustomerDTO createCustomer(NewCustomerDTO newCustomerDTO) {
+		// Verifica che l'email non esista già
+		if (emailExists(newCustomerDTO.getEmail())) {
+			throw new UserAlreadyExistException(
+					"There is an account with that email address: " + newCustomerDTO.getEmail());
+		}
+		Customer customer = customerDTOMapper.toEntity(newCustomerDTO);
+		customer.setStatus(Customer.Status.ENABLED);
+		// La password sarà gestita separatamente dal service di autenticazione
+		
+		Customer savedCustomer = customerDAO.save(customer);
+		return customerDTOMapper.toDTO(savedCustomer);
+	}
+
 	public void addAllergyToCustomer(Long idAllergy) {
 		Customer customer = customerDAO.findById(getCurrentCustomer().getId())
 				.orElseThrow(() -> new EntityNotFoundException("Customer not found"));
@@ -108,7 +119,6 @@ public class CustomerService {
 		customerDAO.save(customer);
 	}
 
-	@Transactional
 	public void removeAllergyToCustomer(Long idAllergy) {
 		Customer customer = customerDAO.findById(getCurrentCustomer().getId())
 				.orElseThrow(() -> new EntityNotFoundException("Customer not found"));
@@ -128,7 +138,6 @@ public class CustomerService {
 		}
 	}
 
-	@Transactional
 	public void enableCustomer(Long customerId) {
 		Customer customer = customerDAO.findById(customerId)
 				.orElseThrow(() -> new EntityNotFoundException("Customer not found"));
@@ -148,7 +157,6 @@ public class CustomerService {
 		// L'utente segnala qualche tipo di abuso nella recensione o altro
 	}
 
-	@Transactional
 	public List<AllergyDTO> getAllergies(Long customerId) {
 		Customer customer = customerDAO.findById(customerId)
 				.orElseThrow(() -> new EntityNotFoundException("Customer not found"));
@@ -158,7 +166,7 @@ public class CustomerService {
 	}
 
 	public Page<CustomerDTO> findAll(PageRequest pageable) {
-		return customerDAO.findAll(pageable).map(CustomerDTO::new);
+		return customerDAO.findAll(pageable).map(customerDTOMapper::toDTO);
 	}
 
 	public void addRoleToCustomer(Long customerId, String role) {

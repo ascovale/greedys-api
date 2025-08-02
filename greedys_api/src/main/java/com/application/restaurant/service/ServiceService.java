@@ -1,25 +1,26 @@
 package com.application.restaurant.service;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.application.admin.web.dto.post.AdminNewServiceDTO;
+import com.application.admin.web.dto.service.AdminNewServiceDTO;
 import com.application.common.persistence.mapper.Mapper.Weekday;
+import com.application.common.persistence.mapper.ServiceDtoMapper;
+import com.application.common.persistence.mapper.ServiceMapper;
 import com.application.common.persistence.model.reservation.Reservation;
 import com.application.common.persistence.model.reservation.Service;
 import com.application.common.persistence.model.reservation.ServiceType;
 import com.application.common.persistence.model.reservation.Slot;
-import com.application.common.web.dto.ServiceDto;
-import com.application.common.web.dto.ServiceSlotsDto;
-import com.application.common.web.dto.ServiceTypeDto;
-import com.application.common.web.dto.get.ServiceDTO;
+import com.application.common.web.dto.restaurant.ServiceDTO;
+import com.application.common.web.dto.restaurant.ServiceSlotsDto;
+import com.application.common.web.dto.restaurant.ServiceTypeDto;
 import com.application.customer.persistence.dao.ReservationDAO;
 import com.application.restaurant.persistence.dao.RUserDAO;
 import com.application.restaurant.persistence.dao.RestaurantDAO;
@@ -28,12 +29,13 @@ import com.application.restaurant.persistence.dao.ServiceTypeDAO;
 import com.application.restaurant.persistence.dao.SlotDAO;
 import com.application.restaurant.persistence.model.Restaurant;
 import com.application.restaurant.persistence.model.user.RUser;
-import com.application.restaurant.web.dto.post.NewServiceDTO;
-import com.application.restaurant.web.dto.post.RestaurantNewServiceDTO;
+import com.application.restaurant.web.dto.services.NewServiceDTO;
+import com.application.restaurant.web.dto.services.RestaurantNewServiceDTO;
 
 import lombok.RequiredArgsConstructor;
 
 @org.springframework.stereotype.Service
+@Transactional
 @RequiredArgsConstructor
 public class ServiceService {
 
@@ -43,15 +45,15 @@ public class ServiceService {
 	private final SlotDAO slotDAO;
 	private final RestaurantDAO rDAO;
 	private final RUserDAO RUserDAO;
+	private final ServiceMapper serviceMapper;
+	private final ServiceDtoMapper serviceDtoMapper;
 	
 
-	public List<ServiceDto> getServices(Long idRestaurant, LocalDate selectedDate) {
+	public List<ServiceDTO> getServices(Long idRestaurant, LocalDate selectedDate) {
 		List<Service> services = serviceDAO.findServicesByRestaurant(idRestaurant);
-		List<ServiceDto> servicesDto = new ArrayList<ServiceDto>();
-		for (Service service : services) {
-			servicesDto.add(new ServiceDto(service));
-		}
-		return servicesDto;
+		return services.stream()
+				.map(serviceDtoMapper::toDTO)
+				.collect(Collectors.toList());
 	}
 
 	public Set<Weekday> getAllAvailableDays(Long idRestaurant) {
@@ -73,7 +75,7 @@ public class ServiceService {
 		return days;
 	}
 
-	public List<ServiceDto> getDayServicesFromWeekday(Restaurant restaurant, int weekday) {
+	public List<ServiceDTO> getDayServicesFromWeekday(Restaurant restaurant, int weekday) {
 		// DA CONTROLLARE QUI C'è QUALCHE ERRORE
 		/*
 		 * int adjustedWeekday = (weekday == 0) ? 6 : weekday - 1;
@@ -115,14 +117,6 @@ public class ServiceService {
 		serviceDAO.save(service);
 	}
 
-	// TODO: Don't know why don't just create the slots while creating the service?
-	@Transactional
-	private void save(Service service, Set<Slot> slots) {
-		service.setSlots(slots);
-		slotDAO.saveAll(slots);
-		serviceDAO.save(service);
-	}
-
 	public List<ServiceTypeDto> getServiceTypes() {
 		return serviceTypeDAO.findAll().stream().map(ServiceTypeDto::new).toList();
 	}
@@ -130,26 +124,23 @@ public class ServiceService {
 	public List<ServiceSlotsDto> getServiceSlots(Long idRUser, LocalDate date) {
 		Long idRestaurant = RUserDAO.findById(idRUser).get().getRestaurant().getId();
 		List<Service> services = serviceDAO.findServicesByRestaurant(idRestaurant);
-		List<ServiceSlotsDto> servicesSlotsDto = new ArrayList<ServiceSlotsDto>();
-		for (Service service : services) {
-			servicesSlotsDto.add(new ServiceSlotsDto(service));
-		}
-		return servicesSlotsDto;
+		return services.stream()
+				.map(service -> new ServiceSlotsDto(service))
+				.collect(Collectors.toList());
 	}
 
-	public List<ServiceDto> getDayServices(Restaurant restaurant, LocalDate date) {
+	public List<ServiceDTO> getDayServices(Restaurant restaurant, LocalDate date) {
 		List<Service> services = serviceDAO.findServicesByRestaurant(restaurant.getId());
-		List<ServiceDto> servicesDto = new ArrayList<>();
-		for (Service service : services) {
-			if (service.getValidFrom().isBefore(date) && service.getValidTo().isAfter(date)) {
-				servicesDto.add(new ServiceDto(service));
-			}
-		}
-		return servicesDto;
+		return services.stream()
+				.filter(service -> service.getValidFrom().isBefore(date) && service.getValidTo().isAfter(date))
+				.map(serviceDtoMapper::toDTO)
+				.collect(Collectors.toList());
 	}
 
 	public ServiceDTO findById(Long serviceId) {
-		return new ServiceDTO(serviceDAO.findById(serviceId).get());
+		Service service = serviceDAO.findById(serviceId)
+			.orElseThrow(() -> new IllegalArgumentException("Service not found with id: " + serviceId));
+		return serviceMapper.toDTO(service);
 	}
 
 	public Service getById(Long serviceId) {
@@ -207,7 +198,6 @@ public class ServiceService {
 
 	// TODO: considerare il fatto di annullare le prenotazioni per un servizio e
 	// notificare l'utente
-	@Transactional
 	public void deleteService(Long serviceId) {
 		Service service = serviceDAO.findById(serviceId)
 				.orElseThrow(() -> new IllegalArgumentException("Service not found"));
@@ -227,7 +217,6 @@ public class ServiceService {
 		}
 	}
 
-	@Transactional
 	public Collection<ServiceTypeDto> getServiceTypesFromRUser() {
 		Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		if (!(principal instanceof RUser)) {

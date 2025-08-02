@@ -7,9 +7,9 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
 import org.mapstruct.factory.Mappers;
 
-import com.application.common.web.dto.get.RestaurantDTO;
+import com.application.common.web.dto.restaurant.RestaurantDTO;
 import com.application.restaurant.persistence.model.Restaurant;
-import com.application.restaurant.web.dto.post.NewRestaurantDTO;
+import com.application.restaurant.web.dto.restaurant.NewRestaurantDTO;
 
 /**
  * MapStruct mapper per la conversione tra Restaurant e RestaurantDTO/NewRestaurantDTO

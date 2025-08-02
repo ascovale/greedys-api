@@ -20,10 +20,10 @@ import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.CreateApiResponses;
 import com.application.common.service.RestaurantService;
 import com.application.common.web.ApiResponse;
-import com.application.common.web.dto.get.RestaurantDTO;
-import com.application.common.web.dto.post.AuthResponseDTO;
+import com.application.common.web.dto.restaurant.RestaurantDTO;
+import com.application.common.web.dto.security.AuthResponseDTO;
 import com.application.restaurant.service.authentication.RestaurantAuthenticationService;
-import com.application.restaurant.web.dto.post.NewRestaurantDTO;
+import com.application.restaurant.web.dto.restaurant.NewRestaurantDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

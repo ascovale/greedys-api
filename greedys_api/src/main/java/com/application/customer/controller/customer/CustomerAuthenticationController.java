@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.CreateApiResponses;
 import com.application.common.web.ApiResponse;
-import com.application.common.web.dto.post.AuthRequestDTO;
-import com.application.common.web.dto.post.AuthResponseDTO;
+import com.application.common.web.dto.security.AuthRequestDTO;
+import com.application.common.web.dto.security.AuthResponseDTO;
 import com.application.customer.service.authentication.CustomerAuthenticationService;
 
 import io.swagger.v3.oas.annotations.Operation;

@@ -7,6 +7,7 @@ import java.util.Map;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.application.common.persistence.model.reservation.Reservation;
 import com.application.common.service.EmailService;
@@ -19,7 +20,6 @@ import com.application.restaurant.persistence.model.Restaurant;
 import com.application.restaurant.persistence.model.RestaurantNotification;
 import com.application.restaurant.persistence.model.user.RUser;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service

@@ -46,10 +46,10 @@ public class Restaurant {
 	@Column(name = "date_creation")
 	private LocalDate creationDate;
 	private String email;
-	@Column(name = "telephone")
-	private String tel;
+	@Column(name = "phone_number")
+	private String phoneNumber;
 	private String address;
-	@Column(name = "post_code")
+	@Column(name = "postal_code")
 	private String postCode;
 	@Column(name = "city")
 	private String city;
@@ -65,6 +65,9 @@ public class Restaurant {
 	private String vatNumber; // International VAT number (e.g., IT12345678901)
 	@Column(name = "description")
 	private String description;
+	private String placeId; // Google Place ID
+	private String website; // Website URL
+	private String priceLevel;
 	// TODO cambiare il fetch in LAZY
 	// bisogna fare in modo che la pageable prende anche le foto basta fare il join
 	// fetch ma è solo in jpql
@@ -105,6 +108,14 @@ public class Restaurant {
 	@Column(name = "wa_notification_time_advance", columnDefinition = "integer default 30")
 	@Builder.Default
 	private Integer messageNotificationTimeAdvance = 30;
+
+	// Phone verification fields
+	@Column(name = "phone_verified", columnDefinition = "boolean default false")
+	@Builder.Default
+	private Boolean phoneVerified = false;
+
+	@Column(name = "phone_verified_at")
+	private java.time.LocalDateTime phoneVerifiedAt;
 
 	// Metodi personalizzati con logica di business
 	public List<Dish> getDishes() {

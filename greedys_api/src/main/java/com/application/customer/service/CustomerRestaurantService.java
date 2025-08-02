@@ -4,28 +4,23 @@ import java.time.LocalDate;
 import java.util.Collection;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+import com.application.common.persistence.mapper.RestaurantMapper;
 import com.application.common.service.RestaurantService;
-import com.application.common.web.dto.get.MenuDTO;
-import com.application.common.web.dto.get.RestaurantDTO;
-import com.application.common.web.dto.get.RoomDTO;
-import com.application.common.web.dto.get.ServiceDTO;
-import com.application.common.web.dto.get.SlotDTO;
-import com.application.common.web.dto.get.TableDTO;
+import com.application.common.web.dto.menu.MenuDTO;
+import com.application.common.web.dto.restaurant.RestaurantDTO;
+import com.application.common.web.dto.restaurant.RoomDTO;
+import com.application.common.web.dto.restaurant.ServiceDTO;
+import com.application.common.web.dto.restaurant.SlotDTO;
+import com.application.common.web.dto.restaurant.TableDTO;
 import com.application.restaurant.service.RestaurantMenuService;
 import com.application.restaurant.service.RoomService;
-import com.application.restaurant.service.SlotService;
 import com.application.restaurant.service.TableService;
 
 import lombok.RequiredArgsConstructor;
 
-/**
- * Service dedicato alle operazioni customer sui ristoranti.
- * Astrae e delega le chiamate ai service restaurant.
- */
+
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class CustomerRestaurantService {
     
@@ -33,12 +28,14 @@ public class CustomerRestaurantService {
     private final RestaurantMenuService restaurantMenuService;
     private final RoomService roomService;
     private final TableService tableService;
-    private final SlotService slotService;
+    
+    // Mapper dependencies - solo quelli effettivamente utilizzati
+    private final RestaurantMapper restaurantMapper;
 
     // Metodi read-only per i customer sui ristoranti
     public Collection<RestaurantDTO> getAllRestaurants() {
         return restaurantService.findAll().stream()
-            .map(RestaurantDTO::new)
+            .map(restaurantMapper::toDTO)
             .toList();
     }
 

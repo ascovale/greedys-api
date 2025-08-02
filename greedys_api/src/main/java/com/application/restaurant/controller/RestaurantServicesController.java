@@ -17,13 +17,13 @@ import com.application.common.controller.annotation.CreateApiResponses;
 import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.service.RestaurantService;
 import com.application.common.web.ApiResponse;
-import com.application.common.web.dto.ServiceTypeDto;
-import com.application.common.web.dto.get.ServiceDTO;
-import com.application.common.web.dto.get.SlotDTO;
+import com.application.common.web.dto.restaurant.ServiceDTO;
+import com.application.common.web.dto.restaurant.ServiceTypeDto;
+import com.application.common.web.dto.restaurant.SlotDTO;
 import com.application.restaurant.controller.utils.RestaurantControllerUtils;
 import com.application.restaurant.service.ServiceService;
 import com.application.restaurant.service.SlotService;
-import com.application.restaurant.web.dto.post.RestaurantNewServiceDTO;
+import com.application.restaurant.web.dto.services.RestaurantNewServiceDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;

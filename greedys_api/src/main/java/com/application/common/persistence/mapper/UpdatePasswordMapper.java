@@ -8,7 +8,7 @@ import org.mapstruct.ReportingPolicy;
 import org.mapstruct.factory.Mappers;
 
 import com.application.common.persistence.model.user.AbstractUser;
-import com.application.common.web.dto.put.UpdatePasswordDTO;
+import com.application.common.web.dto.security.UpdatePasswordDTO;
 
 /**
  * MapStruct mapper per la conversione tra AbstractUser e UpdatePasswordDTO

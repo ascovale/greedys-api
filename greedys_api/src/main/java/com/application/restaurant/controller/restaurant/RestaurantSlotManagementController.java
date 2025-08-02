@@ -38,7 +38,7 @@ public class RestaurantSlotManagementController extends BaseController {
 	@GetMapping(value = "/day-slots")
 	@Operation(summary = "Get day slots of the authenticated restaurant", description = "Retrieve the daily slots of the authenticated restaurant")
 	@ReadApiResponses
-	public ResponseEntity<ApiResponse<Collection<com.application.common.web.dto.get.SlotDTO>>> getDaySlots(
+	public ResponseEntity<ApiResponse<Collection<com.application.common.web.dto.restaurant.SlotDTO>>> getDaySlots(
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate date) {
 		return execute("get day slots", () -> {
 			Long restaurantId = RestaurantControllerUtils.getCurrentRestaurant().getId();
@@ -50,7 +50,7 @@ public class RestaurantSlotManagementController extends BaseController {
 	@GetMapping(value = "/all")
 	@Operation(summary = "Get all slots of the authenticated restaurant", description = "Retrieve all available slots for the authenticated restaurant")
 	@ReadApiResponses
-	public ResponseEntity<ApiResponse<List<com.application.common.web.dto.get.SlotDTO>>> getAllSlots() {
+	public ResponseEntity<ApiResponse<List<com.application.common.web.dto.restaurant.SlotDTO>>> getAllSlots() {
 		return execute("get all slots", () -> {
 			Long restaurantId = RestaurantControllerUtils.getCurrentRestaurant().getId();
 			log.info("Getting all slots for restaurant ID: {}", restaurantId);
@@ -61,7 +61,7 @@ public class RestaurantSlotManagementController extends BaseController {
 	@GetMapping("/{slotId}")
 	@Operation(summary = "Get slot by id", description = "Retrieve a slot by its ID")
 	@ReadApiResponses
-	public ResponseEntity<ApiResponse<com.application.common.web.dto.get.SlotDTO>> getSlotById(@PathVariable Long slotId) {
+	public ResponseEntity<ApiResponse<com.application.common.web.dto.restaurant.SlotDTO>> getSlotById(@PathVariable Long slotId) {
 		return execute("get slot by id", () -> {
 			log.info("Getting slot by ID: {}", slotId);
 			return slotService.findById(slotId);

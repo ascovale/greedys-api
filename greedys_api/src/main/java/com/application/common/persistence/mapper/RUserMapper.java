@@ -7,9 +7,9 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
 import org.mapstruct.factory.Mappers;
 
-import com.application.common.web.dto.get.RUserDTO;
+import com.application.common.web.dto.restaurant.RUserDTO;
 import com.application.restaurant.persistence.model.user.RUser;
-import com.application.restaurant.web.dto.post.NewRUserDTO;
+import com.application.restaurant.web.dto.staff.NewRUserDTO;
 
 /**
  * MapStruct mapper per la conversione tra RUser e RUserDTO/NewRUserDTO

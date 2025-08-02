@@ -15,11 +15,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.application.common.persistence.mapper.Mapper;
 import com.application.common.persistence.model.Image;
-import com.application.common.web.dto.RestaurantImageDto;
-import com.application.common.web.dto.get.RestaurantDTO;
-import com.application.common.web.dto.get.RestaurantFullDetailsDto;
-import com.application.common.web.dto.get.ServiceDTO;
-import com.application.common.web.dto.get.SlotDTO;
+import com.application.common.web.dto.restaurant.RestaurantDTO;
+import com.application.common.web.dto.restaurant.RestaurantFullDetailsDto;
+import com.application.common.web.dto.restaurant.RestaurantImageDto;
+import com.application.common.web.dto.restaurant.ServiceDTO;
+import com.application.common.web.dto.restaurant.SlotDTO;
 import com.application.restaurant.persistence.dao.RUserDAO;
 import com.application.restaurant.persistence.dao.RestaurantCategoryDAO;
 import com.application.restaurant.persistence.dao.RestaurantDAO;
@@ -30,8 +30,8 @@ import com.application.restaurant.persistence.model.RestaurantCategory;
 import com.application.restaurant.persistence.model.user.RUser;
 import com.application.restaurant.persistence.model.user.RestaurantRole;
 import com.application.restaurant.service.RUserService;
-import com.application.restaurant.web.dto.post.NewRUserDTO;
-import com.application.restaurant.web.dto.post.NewRestaurantDTO;
+import com.application.restaurant.web.dto.restaurant.NewRestaurantDTO;
+import com.application.restaurant.web.dto.staff.NewRUserDTO;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

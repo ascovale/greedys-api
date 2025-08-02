@@ -25,7 +25,7 @@ import com.application.restaurant.persistence.model.Restaurant;
 import com.application.restaurant.persistence.model.RestaurantCategory;
 import com.application.restaurant.persistence.model.user.RestaurantPrivilege;
 import com.application.restaurant.persistence.model.user.RestaurantRole;
-import com.application.restaurant.web.dto.post.NewRestaurantDTO;
+import com.application.restaurant.web.dto.restaurant.NewRestaurantDTO;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

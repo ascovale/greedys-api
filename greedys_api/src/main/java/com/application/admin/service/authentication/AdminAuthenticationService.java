@@ -9,10 +9,10 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.application.admin.persistence.model.Admin;
 import com.application.admin.service.AdminService;
-import com.application.admin.web.dto.get.AdminDTO;
+import com.application.admin.web.dto.admin.AdminDTO;
 import com.application.common.security.jwt.JwtUtil;
-import com.application.common.web.dto.post.AuthRequestDTO;
-import com.application.common.web.dto.post.AuthResponseDTO;
+import com.application.common.web.dto.security.AuthRequestDTO;
+import com.application.common.web.dto.security.AuthResponseDTO;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,8 +36,6 @@ public class AdminAuthenticationService {
     public AuthResponseDTO login(AuthRequestDTO authenticationRequest) {
         
         log.debug("Admin authentication request received for username: {}", authenticationRequest.getUsername());
-
-        
             // Authenticate the user using Spring Security's AuthenticationManager
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(

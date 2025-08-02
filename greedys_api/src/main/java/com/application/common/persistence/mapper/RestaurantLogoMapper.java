@@ -8,7 +8,7 @@ import org.mapstruct.ReportingPolicy;
 import org.mapstruct.factory.Mappers;
 
 import com.application.common.persistence.model.Image;
-import com.application.common.web.dto.RestaurantLogoDto;
+import com.application.common.web.dto.restaurant.RestaurantLogoDto;
 
 /**
  * MapStruct mapper per la conversione tra Image e RestaurantLogoDto

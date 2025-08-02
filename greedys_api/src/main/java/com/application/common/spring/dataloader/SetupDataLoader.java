@@ -12,7 +12,7 @@ import com.application.admin.AdminSetup;
 import com.application.common.persistence.dao.SetupConfigDAO;
 import com.application.common.persistence.model.systemconfig.SetupConfig;
 import com.application.common.service.AllergyService;
-import com.application.common.web.dto.post.NewAllergyDTO;
+import com.application.common.web.dto.customer.NewAllergyDTO;
 import com.application.customer.CustomerSetup;
 import com.application.restaurant.RestaurantDataLoader;
 

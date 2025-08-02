@@ -11,14 +11,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.admin.service.AdminReservationService;
-import com.application.admin.web.dto.post.AdminNewReservationDTO;
+import com.application.admin.web.dto.reservation.AdminNewReservationDTO;
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.CreateApiResponses;
 import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.persistence.model.reservation.Reservation;
 import com.application.common.service.reservation.ReservationService;
 import com.application.common.web.ApiResponse;
-import com.application.common.web.dto.get.ReservationDTO;
+import com.application.common.web.dto.reservations.ReservationDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;

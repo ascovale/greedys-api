@@ -15,13 +15,13 @@ import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.CreateApiResponses;
 import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.web.ApiResponse;
-import com.application.common.web.dto.get.DishDTO;
-import com.application.common.web.dto.get.MenuDTO;
+import com.application.common.web.dto.menu.DishDTO;
+import com.application.common.web.dto.menu.MenuDTO;
 import com.application.restaurant.controller.utils.RestaurantControllerUtils;
 import com.application.restaurant.service.RestaurantMenuService;
-import com.application.restaurant.web.dto.post.NewDishDTO;
-import com.application.restaurant.web.dto.post.NewMenuDTO;
-import com.application.restaurant.web.dto.post.NewMenuDishDTO;
+import com.application.restaurant.web.dto.menu.NewDishDTO;
+import com.application.restaurant.web.dto.menu.NewMenuDTO;
+import com.application.restaurant.web.dto.menu.NewMenuDishDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;

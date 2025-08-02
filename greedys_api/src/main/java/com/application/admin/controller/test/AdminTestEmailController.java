@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.application.admin.web.dto.post.EmailRequestDTO;
+import com.application.admin.web.dto.communication.EmailRequestDTO;
 import com.application.common.controller.BaseController;
 import com.application.common.service.EmailService;
 import com.application.common.web.ApiResponse;

@@ -27,7 +27,7 @@ import com.application.admin.persistence.model.Admin;
 import com.application.admin.persistence.model.AdminPrivilege;
 import com.application.admin.persistence.model.AdminRole;
 import com.application.admin.persistence.model.AdminVerificationToken;
-import com.application.admin.web.dto.post.NewAdminDTO;
+import com.application.admin.web.dto.admin.NewAdminDTO;
 import com.application.common.security.jwt.constants.TokenValidationConstants;
 import com.application.common.service.EmailService;
 import com.application.common.web.error.UserAlreadyExistException;

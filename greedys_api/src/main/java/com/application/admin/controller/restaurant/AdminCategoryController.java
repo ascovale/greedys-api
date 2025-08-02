@@ -18,7 +18,7 @@ import com.application.common.controller.annotation.CreateApiResponses;
 import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.service.RestaurantCategoryService;
 import com.application.common.web.ApiResponse;
-import com.application.common.web.dto.RestaurantCategoryDTO;
+import com.application.common.web.dto.restaurant.RestaurantCategoryDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;

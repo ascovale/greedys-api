@@ -7,7 +7,7 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
 import org.mapstruct.factory.Mappers;
 
-import com.application.common.web.dto.ClientUserDto;
+import com.application.common.web.dto.customer.ClientUserDto;
 import com.application.customer.persistence.model.Customer;
 
 /**

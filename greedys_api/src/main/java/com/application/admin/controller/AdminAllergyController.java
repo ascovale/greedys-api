@@ -14,7 +14,7 @@ import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.CreateApiResponses;
 import com.application.common.service.AllergyService;
 import com.application.common.web.ApiResponse;
-import com.application.common.web.dto.post.NewAllergyDTO;
+import com.application.common.web.dto.customer.NewAllergyDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;

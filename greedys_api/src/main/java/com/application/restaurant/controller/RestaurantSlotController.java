@@ -14,7 +14,7 @@ import com.application.common.controller.annotation.CreateApiResponses;
 import com.application.common.web.ApiResponse;
 import com.application.restaurant.controller.utils.RestaurantControllerUtils;
 import com.application.restaurant.service.SlotService;
-import com.application.restaurant.web.dto.post.RestaurantNewSlotDTO;
+import com.application.restaurant.web.dto.services.RestaurantNewSlotDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;

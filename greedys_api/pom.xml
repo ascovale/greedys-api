@@ -91,6 +91,29 @@
             <artifactId>firebase-admin</artifactId>
             <version>9.5.0</version>
         </dependency>
+        
+        <!-- Google Maps Services -->
+        <dependency>
+            <groupId>com.google.maps</groupId>
+            <artifactId>google-maps-services</artifactId>
+            <version>2.2.0</version>
+        </dependency>
+        
+        <!-- Google OAuth2 -->
+        <dependency>
+            <groupId>com.google.oauth-client</groupId>
+            <artifactId>google-oauth-client-jetty</artifactId>
+            <version>1.36.0</version>
+        </dependency>
+        
+        <!-- TODO: UNCOMMENT WHEN GOOGLE BUSINESS PROFILE API ACCESS IS APPROVED -->
+        <!--
+        <dependency>
+            <groupId>com.google.apis</groupId>
+            <artifactId>google-api-services-mybusinessbusinessinformation</artifactId>
+            <version>v1-rev20220201-1.32.1</version>
+        </dependency>
+        -->
 
         <!-- Getter & Setter -->
         <dependency>

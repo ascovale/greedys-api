@@ -18,7 +18,7 @@ import com.application.admin.service.AdminService;
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.web.ApiResponse;
-import com.application.common.web.dto.put.UpdatePasswordDTO;
+import com.application.common.web.dto.security.UpdatePasswordDTO;
 import com.application.common.web.error.InvalidOldPasswordException;
 
 import io.swagger.v3.oas.annotations.Operation;

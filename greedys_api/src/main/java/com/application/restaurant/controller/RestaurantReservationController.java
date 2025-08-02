@@ -25,10 +25,10 @@ import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.persistence.model.reservation.Reservation;
 import com.application.common.service.reservation.ReservationService;
 import com.application.common.web.ApiResponse;
-import com.application.common.web.dto.get.ReservationDTO;
+import com.application.common.web.dto.reservations.ReservationDTO;
 import com.application.restaurant.persistence.model.user.RUser;
 import com.application.restaurant.service.RestaurantNotificationService;
-import com.application.restaurant.web.dto.post.RestaurantNewReservationDTO;
+import com.application.restaurant.web.dto.reservation.RestaurantNewReservationDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;

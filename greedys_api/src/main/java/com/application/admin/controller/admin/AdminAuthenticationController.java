@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.application.admin.service.authentication.AdminAuthenticationService;
 import com.application.common.controller.BaseController;
 import com.application.common.web.ApiResponse;
-import com.application.common.web.dto.post.AuthRequestDTO;
-import com.application.common.web.dto.post.AuthResponseDTO;
+import com.application.common.web.dto.security.AuthRequestDTO;
+import com.application.common.web.dto.security.AuthResponseDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

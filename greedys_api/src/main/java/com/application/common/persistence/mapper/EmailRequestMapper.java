@@ -5,7 +5,7 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
 import org.mapstruct.factory.Mappers;
 
-import com.application.admin.web.dto.post.EmailRequestDTO;
+import com.application.admin.web.dto.communication.EmailRequestDTO;
 
 /**
  * MapStruct mapper per EmailRequestDTO

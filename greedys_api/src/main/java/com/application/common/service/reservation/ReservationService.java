@@ -17,14 +17,14 @@ import com.application.common.persistence.model.reservation.Reservation;
 import com.application.common.persistence.model.reservation.ReservationRequest;
 import com.application.common.persistence.model.reservation.Slot;
 import com.application.common.service.events.ReservationCreatedEvent;
-import com.application.common.web.dto.get.ReservationDTO;
+import com.application.common.web.dto.reservations.ReservationDTO;
 import com.application.customer.persistence.dao.ReservationDAO;
 import com.application.customer.persistence.dao.ReservationRequestDAO;
 import com.application.restaurant.persistence.dao.ClosedDayDAO;
 import com.application.restaurant.persistence.dao.ServiceDAO;
 import com.application.restaurant.persistence.dao.SlotDAO;
 import com.application.restaurant.persistence.model.Restaurant;
-import com.application.restaurant.web.dto.post.RestaurantNewReservationDTO;
+import com.application.restaurant.web.dto.reservation.RestaurantNewReservationDTO;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
