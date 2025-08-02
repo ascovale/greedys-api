@@ -11,6 +11,7 @@ import com.application.common.controller.BaseController;
 import com.application.common.web.ApiResponse;
 import com.application.common.web.dto.security.AuthRequestDTO;
 import com.application.common.web.dto.security.AuthResponseDTO;
+import com.application.common.web.dto.security.RefreshTokenRequestDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -31,5 +32,13 @@ public class AdminAuthenticationController extends BaseController {
     public ResponseEntity<ApiResponse<AuthResponseDTO>> createAuthenticationToken(
             @RequestBody AuthRequestDTO authenticationRequest) {
         return execute("admin login", () -> adminAuthenticationService.login(authenticationRequest));
+    }
+
+    @Operation(summary = "Refresh authentication token", description = "Refresh an admin JWT token using a refresh token")
+    @PostMapping(value = "/refresh", produces = "application/json")
+    public ResponseEntity<ApiResponse<AuthResponseDTO>> refreshToken(@RequestBody RefreshTokenRequestDTO refreshRequest) {
+        return execute("admin refresh token", () -> 
+            adminAuthenticationService.refreshToken(refreshRequest.getRefreshToken())
+        );
     }
 }

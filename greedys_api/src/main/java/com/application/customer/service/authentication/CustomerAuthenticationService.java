@@ -104,10 +104,64 @@ public class CustomerAuthenticationService {
 
 		final String jwt = jwtUtil.generateToken(customerDetails);
 		log.debug("JWT generated for username: {}", authenticationRequest.getUsername());
-
-		final AuthResponseDTO responseDTO = new AuthResponseDTO(jwt, new CustomerDTO(customerDetails));
+		
+		// Generiamo refresh token solo se rememberMe è true
+		final AuthResponseDTO responseDTO;
+		if (authenticationRequest.isRememberMe()) {
+			final String refreshToken = jwtUtil.generateRefreshToken(customerDetails);
+			responseDTO = AuthResponseDTO.builder()
+					.jwt(jwt)
+					.refreshToken(refreshToken)
+					.user(new CustomerDTO(customerDetails))
+					.build();
+			log.debug("Refresh token generated for username: {}", authenticationRequest.getUsername());
+		} else {
+			responseDTO = new AuthResponseDTO(jwt, new CustomerDTO(customerDetails));
+		}
+		
 		return responseDTO;
+	}
 
+	public AuthResponseDTO refreshToken(String refreshToken) {
+		log.debug("Refresh token request received");
+		
+		try {
+			// Verifica che sia un refresh token valido
+			if (!jwtUtil.isRefreshToken(refreshToken)) {
+				throw new SecurityException("Invalid refresh token type");
+			}
+			
+			// Estrae l'username dal refresh token
+			String username = jwtUtil.extractUsername(refreshToken);
+			
+			// Trova il customer
+			final Customer customerDetails = customerDAO.findByEmail(username);
+			if (customerDetails == null) {
+				log.warn("No customer found with email from refresh token: {}", username);
+				throw new EntityNotFoundException("Customer not found");
+			}
+			
+			// Verifica il refresh token
+			if (!jwtUtil.validateToken(refreshToken, customerDetails)) {
+				throw new SecurityException("Invalid or expired refresh token");
+			}
+			
+			// Genera nuovi token
+			final String newJwt = jwtUtil.generateToken(customerDetails);
+			final String newRefreshToken = jwtUtil.generateRefreshToken(customerDetails);
+			
+			log.debug("New tokens generated for username: {}", username);
+			
+			return AuthResponseDTO.builder()
+					.jwt(newJwt)
+					.refreshToken(newRefreshToken)
+					.user(new CustomerDTO(customerDetails))
+					.build();
+					
+		} catch (Exception e) {
+			log.error("Refresh token validation failed: {}", e.getMessage());
+			throw new SecurityException("Invalid refresh token");
+		}
 	}
 
 	public AuthResponseDTO loginWithGoogle(AuthRequestGoogleDTO authenticationRequest) {
