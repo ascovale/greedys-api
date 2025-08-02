@@ -21,7 +21,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class CodeVerificationRequestDTO {
     
-    @Schema(description = "OTP verification code", example = "123456", required = true)
+    @Schema(description = "OTP verification code", example = "123456", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "Verification code is required")
     @Pattern(regexp = "^[0-9]{4,6}$", message = "Verification code must be 4-6 digits")
     private String code;

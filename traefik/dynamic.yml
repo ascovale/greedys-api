@@ -1,0 +1,66 @@
+# Dynamic Configuration
+http:
+  middlewares:
+    # CORS Middleware
+    cors:
+      headers:
+        accessControlAllowMethods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+          - PATCH
+        accessControlAllowOriginList:
+          - "https://greedys.it"  # Il tuo sito principale
+          - "https://www.greedys.it"  # Versione www
+          - "https://app.greedys.it"  # Eventuale app frontend
+        accessControlAllowHeaders:
+          - "*"
+        accessControlExposeHeaders:
+          - "Authorization"
+          - "Content-Type"
+        accessControlAllowCredentials: true
+        accessControlMaxAge: 86400
+    
+    # Security Headers
+    security:
+      headers:
+        frameDeny: true
+        sslRedirect: true
+        browserXssFilter: true
+        contentTypeNosniff: true
+        forceSTSHeader: true
+        stsIncludeSubdomains: true
+        stsPreload: true
+        stsSeconds: 31536000
+        customRequestHeaders:
+          X-Forwarded-Proto: "https"
+    
+    # Rate Limiting
+    rate-limit:
+      rateLimit:
+        burst: 100
+        average: 50
+        period: 1m
+    
+    # Basic Auth per admin/dashboard
+    admin-auth:
+      basicAuth:
+        users:
+          - "admin:$2y$10$yourhashpassword"  # Genera con: htpasswd -nb admin yourpassword
+
+tls:
+  options:
+    default:
+      sslProtocols:
+        - "TLSv1.2"
+        - "TLSv1.3"
+      cipherSuites:
+        - "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"
+        - "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305"
+        - "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"
+      curvePreferences:
+        - "CurveP521"
+        - "CurveP384"
+      minVersion: "VersionTLS12"

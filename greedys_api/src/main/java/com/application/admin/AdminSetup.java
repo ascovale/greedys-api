@@ -13,7 +13,6 @@ import com.application.admin.persistence.dao.AdminRoleDAO;
 import com.application.admin.persistence.model.Admin;
 import com.application.admin.persistence.model.AdminPrivilege;
 import com.application.admin.persistence.model.AdminRole;
-import com.application.admin.service.AdminService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +25,6 @@ public class AdminSetup {
     private final AdminPrivilegeDAO adminPrivilegeDAO;
     private final AdminRoleDAO adminRoleDAO;
     private final AdminDAO adminDAO;
-    private final AdminService adminService;
 
     @Transactional
     public void setupAdminRolesAndPrivileges() {

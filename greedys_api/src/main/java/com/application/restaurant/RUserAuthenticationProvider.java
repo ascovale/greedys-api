@@ -1,6 +1,5 @@
 package com.application.restaurant;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -10,14 +9,20 @@ import org.springframework.stereotype.Component;
 
 import com.application.restaurant.persistence.dao.RUserDAO;
 import com.application.restaurant.persistence.model.user.RUser;
+import com.application.restaurant.service.security.RUserDetailsService;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Slf4j
 public class RUserAuthenticationProvider extends DaoAuthenticationProvider {
-    @Autowired
-    private RUserDAO rUserDAO;
+    
+    private final RUserDAO rUserDAO;
+
+    public RUserAuthenticationProvider(RUserDAO rUserDAO, RUserDetailsService userDetailsService) {
+        super(userDetailsService);
+        this.rUserDAO = rUserDAO;
+    }
 
     @Override
     public Authentication authenticate(Authentication auth) throws AuthenticationException {

@@ -21,11 +21,11 @@ import lombok.NoArgsConstructor;
 @Builder
 public class VerificationRequestDTO {
     
-    @Schema(description = "Restaurant ID to verify", example = "123", required = true)
+    @Schema(description = "Restaurant ID to verify", example = "123", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "Restaurant ID is required")
     private Long restaurantId;
     
-    @Schema(description = "Phone number to verify (Italian format)", example = "+393331234567", required = true)
+    @Schema(description = "Phone number to verify (Italian format)", example = "+393331234567", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "Phone number is required")
     private String phoneNumber;
 }

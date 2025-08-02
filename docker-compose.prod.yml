@@ -1,0 +1,110 @@
+version: '3.8'
+
+services:
+  # Traefik Reverse Proxy con Let's Encrypt
+  traefik:
+    image: traefik:v3.0
+    container_name: traefik
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"  # Dashboard Traefik (protetto)
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro
+      - traefik-ssl-certs:/ssl-certs
+    labels:
+      - "traefik.enable=true"
+      # Dashboard
+      - "traefik.http.routers.traefik.rule=Host(`traefik.greedys.it`)"  # SOSTITUISCI con il tuo dominio
+      - "traefik.http.routers.traefik.tls=true"
+      - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.traefik.service=api@internal"
+      # Basic Auth per il dashboard
+      - "traefik.http.routers.traefik.middlewares=auth"
+      - "traefik.http.middlewares.auth.basicauth.users=admin:$$2y$$10$$yourhashpassword"
+    networks:
+      - traefik
+      - greedys-network
+
+  # Database MySQL
+  db:
+    image: mysql:8.0
+    container_name: greedys-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_password
+      MYSQL_DATABASE: greedys_v1
+      MYSQL_USER: greedys
+      MYSQL_PASSWORD_FILE: /run/secrets/db_password
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./initdb.d:/docker-entrypoint-initdb.d
+    secrets:
+      - db_password
+    networks:
+      - greedys-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Greedys API Application
+  greedys-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: greedys-api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/greedys_v1
+      - APP_BASE_URL=https://api.greedys.it  # SOSTITUISCI con il tuo dominio
+    secrets:
+      - db_password
+      - source: google_service_account
+        target: /app/google-service-account.json
+    labels:
+      - "traefik.enable=true"
+      # Main API Routes
+      - "traefik.http.routers.greedys-api.rule=Host(`api.greedys.it`)"  # SOSTITUISCI con il tuo dominio
+      - "traefik.http.routers.greedys-api.tls=true"
+      - "traefik.http.routers.greedys-api.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.greedys-api.service=greedys-api"
+      - "traefik.http.services.greedys-api.loadbalancer.server.port=8080"
+      # Middleware per CORS e sicurezza
+      - "traefik.http.routers.greedys-api.middlewares=cors,security"
+      # HTTPS Redirect
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.routers.greedys-api-insecure.rule=Host(`api.greedys.it`)"  # SOSTITUISCI con il tuo dominio
+      - "traefik.http.routers.greedys-api-insecure.middlewares=redirect-to-https"
+    networks:
+      - greedys-network
+      - traefik
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  traefik:
+    external: true
+  greedys-network:
+    driver: bridge
+
+volumes:
+  mysql-data:
+  traefik-ssl-certs:
+
+secrets:
+  db_password:
+    file: ./secured/db_password.txt
+  google_service_account:
+    file: ./secured/greedy-69de3-968988eeefce.json

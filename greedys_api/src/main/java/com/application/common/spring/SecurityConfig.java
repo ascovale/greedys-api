@@ -22,12 +22,15 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.application.admin.AdminAuthenticationProvider;
 import com.application.admin.AdminRequestFilter;
+import com.application.admin.persistence.dao.AdminDAO;
 import com.application.admin.service.security.AdminUserDetailsService;
 import com.application.customer.CustomerAuthenticationProvider;
 import com.application.customer.CustomerRequestFilter;
+import com.application.customer.persistence.dao.CustomerDAO;
 import com.application.customer.service.security.CustomerUserDetailsService;
 import com.application.restaurant.RUserAuthenticationProvider;
 import com.application.restaurant.RUserRequestFilter;
+import com.application.restaurant.persistence.dao.RUserDAO;
 import com.application.restaurant.service.security.RUserDetailsService;
 
 import lombok.RequiredArgsConstructor;
@@ -45,6 +48,9 @@ public class SecurityConfig {
         private final RUserRequestFilter restaurantJwtRequestFilter;
         private final CustomerRequestFilter customerJwtRequestFilter;
         private final AdminRequestFilter adminJwtRequestFilter;
+        private final RUserDAO rUserDAO;
+        private final CustomerDAO customerDAO;
+        private final AdminDAO adminDAO;
 
         // TODO: make sure the authentication filter is not required for login,
         // registration, and other public operations
@@ -54,7 +60,6 @@ public class SecurityConfig {
                         throws Exception {
                 http
                                 .securityMatcher("/restaurant/**")
-                                .requiresChannel(channel -> channel.anyRequest().requiresSecure())
                                 .csrf(csrf -> csrf.disable())
                                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                                 .authorizeHttpRequests(authz -> authz
@@ -86,7 +91,6 @@ public class SecurityConfig {
                         throws Exception {
                 http
                                 .securityMatcher("/customer/**")
-                                .requiresChannel(channel -> channel.anyRequest().requiresSecure())
                                 .csrf(csrf -> csrf.disable())
                                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                                 .authorizeHttpRequests(authz -> authz
@@ -125,7 +129,6 @@ public class SecurityConfig {
                         throws Exception {
                 http
                                 .securityMatcher("/admin/**")
-                                .requiresChannel(channel -> channel.anyRequest().requiresSecure())
                                 .csrf(csrf -> csrf.disable())
                                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                                 .authorizeHttpRequests(authz -> authz
@@ -163,11 +166,10 @@ public class SecurityConfig {
                 UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
                 CorsConfiguration config = new CorsConfiguration();
                 config.setAllowCredentials(true);
-                config.addAllowedOriginPattern("*"); // Allow all origins
-                config.addAllowedHeader("*");
-                config.addAllowedMethod("*");
-                config.addExposedHeader("Authorization"); // Add exposed headers
-                config.addExposedHeader("Content-Type");
+                config.setAllowedOriginPatterns(java.util.Arrays.asList("*")); // Metodo moderno
+                config.setAllowedHeaders(java.util.Arrays.asList("*")); // Metodo moderno
+                config.setAllowedMethods(java.util.Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")); // Specifico
+                config.setExposedHeaders(java.util.Arrays.asList("Authorization", "Content-Type")); // Metodo moderno
                 source.registerCorsConfiguration("/**", config);
                 return source;
         }
@@ -182,10 +184,7 @@ public class SecurityConfig {
 
         @Bean
         RUserAuthenticationProvider RUserAuthenticationProvider() {
-                RUserAuthenticationProvider provider = new RUserAuthenticationProvider();
-                provider.setUserDetailsService(RUserDetailsService);
-                provider.setPasswordEncoder(passwordEncoder());
-                return provider;
+                return new RUserAuthenticationProvider(rUserDAO, RUserDetailsService);
         }
 
         @Bean
@@ -198,10 +197,7 @@ public class SecurityConfig {
 
         @Bean
         CustomerAuthenticationProvider customerAuthenticationProvider() {
-                CustomerAuthenticationProvider provider = new CustomerAuthenticationProvider();
-                provider.setUserDetailsService(customerUserDetailsService);
-                provider.setPasswordEncoder(passwordEncoder());
-                return provider;
+                return new CustomerAuthenticationProvider(customerDAO, customerUserDetailsService);
         }
 
         @Bean
@@ -220,9 +216,7 @@ public class SecurityConfig {
 
         @Bean
         AdminAuthenticationProvider adminAuthenticationProvider() {
-                AdminAuthenticationProvider provider = new AdminAuthenticationProvider(adminUserDetailsService);
-                provider.setPasswordEncoder(passwordEncoder());
-                return provider;
+                return new AdminAuthenticationProvider(adminDAO, adminUserDetailsService);
         }
 
         //TODO RIMOVERE TOGLIERE REMEMBER ME FORSE METTERE refreshTOKEN

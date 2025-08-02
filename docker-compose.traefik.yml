@@ -1,0 +1,147 @@
+version: '3.8'
+
+services:
+  # Traefik - Reverse Proxy con Let's Encrypt
+  traefik:
+    image: traefik:v3.0
+    container_name: traefik
+    restart: unless-stopped
+    command:
+      # API and Dashboard
+      - --api.dashboard=true
+      - --api.insecure=false
+      # Entry points
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      # Docker provider
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.network=traefik-network
+      # Certificate resolver per Let's Encrypt
+      - --certificatesresolvers.letsencrypt.acme.tlschallenge=true
+      - --certificatesresolvers.letsencrypt.acme.email=admin@yourdomain.com  # CAMBIA QUESTO
+      - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
+      - --certificatesresolvers.letsencrypt.acme.caserver=https://acme-v02.api.letsencrypt.org/directory
+      # Global redirect HTTP -> HTTPS
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      # Logging
+      - --log.level=INFO
+      - --accesslog=true
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/letsencrypt:/letsencrypt
+      - ./traefik/dynamic:/etc/traefik/dynamic
+    networks:
+      - traefik-network
+    labels:
+      # Dashboard
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard.rule=Host(`traefik.yourdomain.com`)"  # CAMBIA QUESTO
+      - "traefik.http.routers.dashboard.tls=true"
+      - "traefik.http.routers.dashboard.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.dashboard.service=api@internal"
+      - "traefik.http.routers.dashboard.middlewares=auth"
+      # Auth middleware per dashboard
+      - "traefik.http.middlewares.auth.basicauth.users=admin:$$2y$$10$$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi"  # admin:password
+
+  # Greedys API Application
+  greedys-api:
+    image: registry.gitlab.com/psychoorange/greedys_api:latest
+    container_name: greedys-api
+    restart: unless-stopped
+    depends_on:
+      - db
+    networks:
+      - traefik-network
+      - app-network
+    environment:
+      SPRING_PROFILES_ACTIVE: "docker"
+      # Configurazione per HTTP (Traefik gestisce HTTPS)
+      SERVER_PORT: 8080
+      SERVER_SSL_ENABLED: false
+    secrets:
+      - db_password
+      - email_password
+      - service_account
+    labels:
+      # Traefik configuration
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik-network"
+      # HTTP Router
+      - "traefik.http.routers.greedys-api.rule=Host(`api.yourdomain.com`)"  # CAMBIA QUESTO
+      - "traefik.http.routers.greedys-api.tls=true"
+      - "traefik.http.routers.greedys-api.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.greedys-api.service=greedys-api"
+      # Service
+      - "traefik.http.services.greedys-api.loadbalancer.server.port=8080"
+      # Middlewares per sicurezza
+      - "traefik.http.routers.greedys-api.middlewares=security-headers,rate-limit"
+      # Security headers
+      - "traefik.http.middlewares.security-headers.headers.frameDeny=true"
+      - "traefik.http.middlewares.security-headers.headers.sslRedirect=true"
+      - "traefik.http.middlewares.security-headers.headers.browserXssFilter=true"
+      - "traefik.http.middlewares.security-headers.headers.contentTypeNosniff=true"
+      - "traefik.http.middlewares.security-headers.headers.forceSTSHeader=true"
+      - "traefik.http.middlewares.security-headers.headers.stsIncludeSubdomains=true"
+      - "traefik.http.middlewares.security-headers.headers.stsPreload=true"
+      - "traefik.http.middlewares.security-headers.headers.stsSeconds=31536000"
+      # Rate limiting
+      - "traefik.http.middlewares.rate-limit.ratelimit.average=100"
+      - "traefik.http.middlewares.rate-limit.ratelimit.period=1m"
+
+  # Database MySQL
+  db:
+    image: mysql:8.0
+    container_name: greedys-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: greedys_v1
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_password
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./initdb.d:/docker-entrypoint-initdb.d
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$(cat /run/secrets/db_password)"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    secrets:
+      - db_password
+
+  # Watchtower per auto-updates (opzionale)
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_POLL_INTERVAL=3600  # Check ogni ora
+      - WATCHTOWER_INCLUDE_STOPPED=true
+    networks:
+      - traefik-network
+
+networks:
+  traefik-network:
+    external: true
+  app-network:
+    driver: bridge
+
+volumes:
+  db_data:
+
+secrets:
+  db_password:
+    external: true
+  email_password:
+    external: true
+  service_account:
+    external: true

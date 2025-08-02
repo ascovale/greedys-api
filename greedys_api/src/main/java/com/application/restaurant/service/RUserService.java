@@ -282,7 +282,6 @@ public class RUserService {
         ru.setStatus(newStatus);
         ruDAO.save(ru);
 
-        //TODO:NOn credo ci sia bisogno di rifare jwt in ogni caso fare un test sullo status dopo averlo cambiato
     }
 
     public RUserDTO addRUserToRestaurant(NewRUserDTO RUserDTO, Long restaurantId) {

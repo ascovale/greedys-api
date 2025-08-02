@@ -1,4 +1,4 @@
-package com.application.restaurant.web.controller.verification;
+package com.application.admin.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.web.ApiResponse;
 import com.application.restaurant.service.verification.RestaurantTwilioVerificationService;
-import com.application.restaurant.web.dto.verification.CodeVerificationRequestDTO;
 import com.application.restaurant.web.dto.verification.VerificationRequestDTO;
 import com.application.restaurant.web.dto.verification.VerificationResponseDTO;
 
@@ -32,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
  * @since 1.0
  */
 @RestController
-@RequestMapping("/api/restaurant/verification")
+@RequestMapping("/admin/restaurant/verification")
 @RequiredArgsConstructor
 @Validated
 @Slf4j
