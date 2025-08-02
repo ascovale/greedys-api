@@ -1,0 +1,72 @@
+# Traefik Configuration
+global:
+  checkNewVersion: false
+  sendAnonymousUsage: false
+
+# API and Dashboard
+api:
+  dashboard: true
+  debug: false
+
+# Entry Points
+entryPoints:
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+          permanent: true
+  websecure:
+    address: ":443"
+
+# Providers
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
+    network: traefik
+  file:
+    filename: /etc/traefik/dynamic.yml
+    watch: true
+
+# Certificate Resolvers (Let's Encrypt)
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: beeinggreedy@gmail.com  # ✅ Email aggiornata!
+      storage: /ssl-certs/acme.json
+      httpChallenge:
+        entryPoint: web
+      # Per wildcard certificates usa DNS challenge:
+      # dnsChallenge:
+      #   provider: cloudflare
+      #   resolvers:
+      #     - "1.1.1.1:53"
+      #     - "8.8.8.8:53"
+
+# Logging
+log:
+  level: INFO
+  format: json
+
+accessLog:
+  format: json
+  fields:
+    defaultMode: keep
+    names:
+      ClientUsername: drop
+    headers:
+      defaultMode: keep
+      names:
+        User-Agent: redact
+        Authorization: drop
+        Content-Type: keep
+
+# Metrics (optional)
+metrics:
+  prometheus:
+    addEntryPointsLabels: true
+    addServicesLabels: true
+    addRoutersLabels: true

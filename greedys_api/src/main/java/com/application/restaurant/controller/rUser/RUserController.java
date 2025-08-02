@@ -3,7 +3,6 @@ package com.application.restaurant.controller.rUser;
 import java.util.List;
 import java.util.Locale;
 
-import org.springframework.context.MessageSource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -43,7 +42,6 @@ import lombok.extern.slf4j.Slf4j;
 public class RUserController extends BaseController {
 
     private final RUserService RUserService;
-    private final MessageSource messages;
     private final RestaurantRoleDAO roleDAO;
 
     /**

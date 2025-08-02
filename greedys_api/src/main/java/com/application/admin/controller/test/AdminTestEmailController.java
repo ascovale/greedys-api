@@ -12,7 +12,6 @@ import com.application.common.controller.BaseController;
 import com.application.common.service.EmailService;
 import com.application.common.web.ApiResponse;
 import com.application.customer.service.notification.CustomerNotificationService;
-import com.application.restaurant.service.RestaurantNotificationService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -31,7 +30,6 @@ import lombok.extern.slf4j.Slf4j;
 public class AdminTestEmailController extends BaseController {
     private final EmailService emailService;
     private final CustomerNotificationService notificationService;
-    private final RestaurantNotificationService restaurantNotificationService;
     
     @Operation(
         summary = "Send test email", 

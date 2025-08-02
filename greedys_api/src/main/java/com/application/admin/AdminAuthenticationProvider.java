@@ -1,6 +1,5 @@
 package com.application.admin;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -18,11 +17,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AdminAuthenticationProvider extends DaoAuthenticationProvider {
 
-    @Autowired
-    private AdminDAO adminDAO;
+    private final AdminDAO adminDAO;
 
-    public AdminAuthenticationProvider(AdminUserDetailsService userDetailsService) {
-        setUserDetailsService(userDetailsService);
+    public AdminAuthenticationProvider(AdminDAO adminDAO, AdminUserDetailsService userDetailsService) {
+        super(userDetailsService);
+        this.adminDAO = adminDAO;
     }
 
     @Override

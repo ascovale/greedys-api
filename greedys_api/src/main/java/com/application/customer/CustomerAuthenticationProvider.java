@@ -1,6 +1,5 @@
 package com.application.customer;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -10,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import com.application.customer.persistence.dao.CustomerDAO;
 import com.application.customer.persistence.model.Customer;
+import com.application.customer.service.security.CustomerUserDetailsService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -17,8 +17,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class CustomerAuthenticationProvider extends DaoAuthenticationProvider {
 
-    @Autowired
-    private CustomerDAO customerDAO;
+    private final CustomerDAO customerDAO;
+
+    public CustomerAuthenticationProvider(CustomerDAO customerDAO, CustomerUserDetailsService userDetailsService) {
+        super(userDetailsService);
+        this.customerDAO = customerDAO;
+    }
 
     @Override
     public Authentication authenticate(Authentication auth) throws AuthenticationException {

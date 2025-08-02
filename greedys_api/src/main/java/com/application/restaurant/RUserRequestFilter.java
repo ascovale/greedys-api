@@ -98,22 +98,5 @@ public class RUserRequestFilter extends OncePerRequestFilter {
                path.startsWith("/js/");
     }
 
-    private UserDetails loadUserDetails(String username, String tokenType, Object claims, HttpServletResponse response)
-            throws IOException {
-        if ("hub".equals(tokenType)) {
-            String email = (String) ((java.util.Map<?, ?>) claims).get("email");
-            if (email == null) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("Email claim missing in hub token.");
-                return null;
-            }
-            return org.springframework.security.core.userdetails.User //ORRIBILE
-                    .withUsername(email)
-                    .password("")
-                    .authorities("PRIVILEGE_HUB", "PRIVILEGE_CHANGE_PASSWORD")
-                    .build();
-        } else {
-            return userDetailsService.loadUserByUsername(username);
-        }
-    }
+
 }

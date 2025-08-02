@@ -222,10 +222,6 @@ public class AdminRestaurantVerificationController extends BaseController {
                         "SYSTEM_AUTO_ANALYSIS"
                     );
                     
-                    // TODO: Save the request to database for admin review
-                    // If confidence score is very high (>90), could auto-approve
-                    // If very low (<30), could auto-reject
-                    // Otherwise, mark as pending admin review
                     
                     if (analysis.getConfidenceScore() >= 90) {
                         // Auto-approve high confidence requests

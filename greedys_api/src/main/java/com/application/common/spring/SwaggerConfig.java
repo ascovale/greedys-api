@@ -33,9 +33,11 @@ public class SwaggerConfig {
     OpenApiCustomizer sortSchemasCustomizer() {
         return openApi -> {
             if (openApi.getComponents() != null && openApi.getComponents().getSchemas() != null) {
+                @SuppressWarnings("rawtypes")
                 Map<String, Schema> original = openApi.getComponents().getSchemas();
+                @SuppressWarnings("rawtypes")
                 Map<String, Schema> sorted = new TreeMap<>();
-                for (Map.Entry<String, Schema> entry : original.entrySet()) {
+                for (@SuppressWarnings("rawtypes") Map.Entry<String, Schema> entry : original.entrySet()) {
                     sorted.put(entry.getKey(), entry.getValue());
                 }
                 openApi.getComponents().setSchemas(sorted);
