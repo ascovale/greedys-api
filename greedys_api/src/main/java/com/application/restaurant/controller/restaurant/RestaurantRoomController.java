@@ -1,8 +1,8 @@
 package com.application.restaurant.controller.restaurant;
 
 import java.util.Collection;
+import java.util.List;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,7 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.ReadApiResponses;
-import com.application.common.web.ApiResponse;
+import com.application.common.web.ListResponseWrapper;
+import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.RoomDTO;
 import com.application.restaurant.controller.utils.RestaurantControllerUtils;
 import com.application.restaurant.persistence.model.Room;
@@ -39,16 +40,17 @@ public class RestaurantRoomController extends BaseController {
 	@GetMapping(value = "/all")
 	@Operation(summary = "Get rooms of a restaurant", description = "Retrieve the rooms of a restaurant")
 	@ReadApiResponses
-	public ResponseEntity<ApiResponse<Collection<RoomDTO>>> getRooms() {
-		return execute("get restaurant rooms", () -> {
+	public ListResponseWrapper<RoomDTO> getRooms() {
+		return executeList("get restaurant rooms", () -> {
 			log.info("Getting rooms for restaurant: {}", RestaurantControllerUtils.getCurrentRestaurant().getId());
-			return roomService.findByRestaurant(RestaurantControllerUtils.getCurrentRestaurant().getId());
+			Collection<RoomDTO> rooms = roomService.findByRestaurant(RestaurantControllerUtils.getCurrentRestaurant().getId());
+			return List.copyOf(rooms);
 		});
 	}
 
 	@PostMapping
 	@Operation(summary = "Add a room to a restaurant", description = "Add a new room to a restaurant")
-	public ResponseEntity<ApiResponse<Room>> addRoom(@RequestBody NewRoomDTO roomDto) {
+	public ResponseWrapper<Room> addRoom(@RequestBody NewRoomDTO roomDto) {
 		return executeCreate("add room", "Room added successfully", () -> {
 			log.info("Adding new room for restaurant: {}", RestaurantControllerUtils.getCurrentRestaurant().getId());
 			return roomService.createRoom(roomDto);
@@ -57,7 +59,7 @@ public class RestaurantRoomController extends BaseController {
 
 	@DeleteMapping(value = "/remove/{roomId}")
 	@Operation(summary = "Remove a room", description = "Remove a specific room by its ID")
-	public ResponseEntity<ApiResponse<String>> removeRoom(@PathVariable Long roomId) {
+	public ResponseWrapper<String> removeRoom(@PathVariable Long roomId) {
 		return executeVoid("remove room", "Room removed successfully", () -> {
 			log.info("Removing room with ID: {}", roomId);
 			roomService.deleteRoom(roomId);

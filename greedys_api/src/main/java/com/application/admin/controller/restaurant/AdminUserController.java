@@ -1,13 +1,12 @@
 package com.application.admin.controller.restaurant;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
-import com.application.common.web.ApiResponse;
+import com.application.common.web.ResponseWrapper;
 import com.application.restaurant.service.RUserService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,7 +27,7 @@ public class AdminUserController extends BaseController {
 
 	@PostMapping("/{RUserId}/accept")
 	@Operation(summary = "Accept a user", description = "Accept a user for a specific restaurant")
-	public ResponseEntity<ApiResponse<String>> acceptUser(@PathVariable Long RUserId) {
+	public ResponseWrapper<String> acceptUser(@PathVariable Long RUserId) {
 		return executeVoid("accept user", "User accepted successfully", () -> {
 			rUserService.acceptRUser(RUserId);
 		});

@@ -2,8 +2,8 @@ package com.application.customer.controller.restaurant;
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.List;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,7 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.ReadApiResponses;
-import com.application.common.web.ApiResponse;
+import com.application.common.web.ListResponseWrapper;
+import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.menu.MenuDTO;
 import com.application.common.web.dto.menu.MenuDishDTO;
 import com.application.restaurant.service.RestaurantMenuService;
@@ -35,50 +36,65 @@ public class CustomerMenuController extends BaseController {
     @Operation(summary = "Get menus by restaurant ID", description = "Retrieve all menus for a specific restaurant by its ID")
     @GetMapping("/{restaurantId}/menus")
     @ReadApiResponses
-    public ResponseEntity<ApiResponse<Collection<MenuDTO>>> getMenusByRestaurantId(@PathVariable Long restaurantId) {
-        return execute("get menus by restaurant", () -> restaurantMenuService.getMenusByRestaurant(restaurantId));
+    public ListResponseWrapper<MenuDTO> getMenusByRestaurantId(@PathVariable Long restaurantId) {
+        return executeList("get menus by restaurant", () -> {
+            Collection<MenuDTO> menus = restaurantMenuService.getMenusByRestaurant(restaurantId);
+            return menus instanceof List ? (List<MenuDTO>) menus : List.copyOf(menus);
+        });
     }
 
     @Operation(summary = "Get menus with services valid in a period", description = "Retrieve menus for a restaurant with services valid in a given period")
     @GetMapping("/{restaurantId}/menus/period")
     @ReadApiResponses
-    public ResponseEntity<ApiResponse<Collection<MenuDTO>>> getMenusWithServicesValidInPeriod(
+    public ListResponseWrapper<MenuDTO> getMenusWithServicesValidInPeriod(
             @PathVariable Long restaurantId,
             @RequestParam("startDate") LocalDate startDate,
             @RequestParam("endDate") LocalDate endDate) {
-        return execute("get menus with services valid in period", () -> restaurantMenuService.getMenusWithServicesValidInPeriod(restaurantId, startDate, endDate));
+        return executeList("get menus with services valid in period", () -> {
+            Collection<MenuDTO> menus = restaurantMenuService.getMenusWithServicesValidInPeriod(restaurantId, startDate, endDate);
+            return menus instanceof List ? (List<MenuDTO>) menus : List.copyOf(menus);
+        });
     }
     
     @Operation(summary = "Get dishes by menu ID", description = "Retrieve all dishes for a specific menu by its ID")
     @GetMapping("/menus/{menuId}/dishes")
     @ReadApiResponses
-    public ResponseEntity<ApiResponse<Collection<MenuDishDTO>>> getDishesByMenuId(@PathVariable Long menuId) {
-        return execute("get dishes by menu", () -> restaurantMenuService.getMenuDishesByMenuId(menuId));
+    public ListResponseWrapper<MenuDishDTO> getDishesByMenuId(@PathVariable Long menuId) {
+        return executeList("get dishes by menu", () -> {
+            Collection<MenuDishDTO> dishes = restaurantMenuService.getMenuDishesByMenuId(menuId);
+            return dishes instanceof List ? (List<MenuDishDTO>) dishes : List.copyOf(dishes);
+        });
     }
 
     @Operation(summary = "Get menu details by ID", description = "Retrieve details of a specific menu by its ID")
     @GetMapping("/menus/{menuId}")
     @ReadApiResponses
-    public ResponseEntity<ApiResponse<MenuDTO>> getMenuDetailsById(@PathVariable Long menuId) {
+    public ResponseWrapper<MenuDTO> getMenuDetailsById(@PathVariable Long menuId) {
         return execute("get menu details", () -> restaurantMenuService.getMenuById(menuId));
     }
 
     @Operation(summary = "Get menus by service ID that are active and enabled in a date", description = "Retrieve all menus for a specific service that are active and enabled in a given date")
     @GetMapping("/service/{serviceId}/menus/active-enabled")
     @ReadApiResponses
-    public ResponseEntity<ApiResponse<Collection<MenuDTO>>> getActiveEnabledMenusByServiceId(
+    public ListResponseWrapper<MenuDTO> getActiveEnabledMenusByServiceId(
             @PathVariable Long serviceId,
             @RequestParam("date") LocalDate date) {
-        return execute("get active enabled menus by service", () -> restaurantMenuService.getActiveEnabledMenusByServiceId(serviceId, date));
+        return executeList("get active enabled menus by service", () -> {
+            Collection<MenuDTO> menus = restaurantMenuService.getActiveEnabledMenusByServiceId(serviceId, date);
+            return menus instanceof List ? (List<MenuDTO>) menus : List.copyOf(menus);
+        });
     }
 
     @Operation(summary = "Get menus by service ID that are active and enabled in a period", description = "Retrieve all menus for a specific service that are active and enabled in a given period")
     @GetMapping("/service/{serviceId}/menus/active-enabled/period")
     @ReadApiResponses
-    public ResponseEntity<ApiResponse<Collection<MenuDTO>>> getActiveEnabledMenusByServiceIdAndPeriod(
+    public ListResponseWrapper<MenuDTO> getActiveEnabledMenusByServiceIdAndPeriod(
             @PathVariable Long serviceId,
             @RequestParam("startDate") LocalDate startDate,
             @RequestParam("endDate") LocalDate endDate) {
-        return execute("get active enabled menus by service and period", () -> restaurantMenuService.getActiveEnabledMenusByServiceIdAndPeriod(serviceId, startDate, endDate));
+        return executeList("get active enabled menus by service and period", () -> {
+            Collection<MenuDTO> menus = restaurantMenuService.getActiveEnabledMenusByServiceIdAndPeriod(serviceId, startDate, endDate);
+            return menus instanceof List ? (List<MenuDTO>) menus : List.copyOf(menus);
+        });
     }
 }

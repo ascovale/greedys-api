@@ -4,7 +4,6 @@ import java.util.Date;
 import java.util.Locale;
 
 import org.springframework.context.MessageSource;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.ReadApiResponses;
-import com.application.common.web.ApiResponse;
+import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.customer.CustomerDTO;
 import com.application.common.web.dto.customer.CustomerStatisticsDTO;
 import com.application.common.web.dto.security.UpdatePasswordDTO;
@@ -49,21 +48,21 @@ public class CustomerController extends BaseController {
     @Operation(summary = "Get Customer ID", description = "Retrieves the ID of the current customer")
     @GetMapping("/id")
     @ReadApiResponses
-    public ResponseEntity<ApiResponse<Long>> getCustomerId() {
+    public ResponseWrapper<Long> getCustomerId() {
         return execute("getCustomerId", () -> {
             return CustomerControllerUtils.getCurrentCustomerId();
         });
     }
     @Operation(summary = "Update customer phone number", description = "Updates the phone number of a specific customer by their ID")
     @PutMapping("/update/phone")
-    public ResponseEntity<ApiResponse<String>> updatePhone(@RequestParam String phone) {
+    public ResponseWrapper<String> updatePhone(@RequestParam String phone) {
         return executeVoid("updatePhone", "Phone number updated successfully", () -> 
             customerService.updatePhone(CustomerControllerUtils.getCurrentCustomerId(), phone));
     }
 
     @Operation(summary = "Update customer date of birth", description = "Updates the date of birth of a specific customer by their ID")
     @PutMapping("/update/dateOfBirth")
-    public ResponseEntity<ApiResponse<String>> updateDateOfBirth(@RequestParam Date dateOfBirth) {
+    public ResponseWrapper<String> updateDateOfBirth(@RequestParam Date dateOfBirth) {
         return executeVoid("updateDateOfBirth", "Date of birth updated successfully", () -> 
             customerService.updateDateOfBirth(CustomerControllerUtils.getCurrentCustomerId(), dateOfBirth));
     }
@@ -101,7 +100,7 @@ public class CustomerController extends BaseController {
 
     @Operation(summary = "Get current customer statistics", description = "Retrieves statistics for the current authenticated customer including no-show rate, reservations count, etc.")
     @GetMapping("/statistics/current")
-    public ResponseEntity<ApiResponse<CustomerStatisticsDTO>> getCurrentCustomerStatistics() {
+    public ResponseWrapper<CustomerStatisticsDTO> getCurrentCustomerStatistics() {
         return execute("getCurrentCustomerStatistics", () -> {
             Customer currentCustomer = CustomerControllerUtils.getCurrentCustomer();
             return customerService.getCustomerStatistics(currentCustomer.getId());
@@ -110,7 +109,7 @@ public class CustomerController extends BaseController {
 
     @Operation(summary = "Get customer statistics", description = "Retrieves statistics for a specific customer by ID including no-show rate, reservations count, etc.")
     @GetMapping("/{customerId}/statistics")
-    public ResponseEntity<ApiResponse<CustomerStatisticsDTO>> getCustomerStatistics(
+    public ResponseWrapper<CustomerStatisticsDTO> getCustomerStatistics(
             @Parameter(description = "The ID of the customer to retrieve statistics for", required = true, example = "1")
             @PathVariable Long customerId) {
         return execute("getCustomerStatistics", () -> customerService.getCustomerStatistics(customerId));
@@ -120,13 +119,13 @@ public class CustomerController extends BaseController {
 
     @Operation(summary = "Get current customer", description = "Retrieves the current authenticated customer")
     @GetMapping("/get")
-    public ResponseEntity<ApiResponse<CustomerDTO>> getCustomer() {
+    public ResponseWrapper<CustomerDTO> getCustomer() {
         return execute("getCustomer", () -> new CustomerDTO(CustomerControllerUtils.getCurrentCustomer()));
     }
 
     @Operation(summary = "Generate new token for password change", description = "Changes the user's password after verifying the old password")
     @PostMapping(value = "/password/new_token")
-    public ResponseEntity<ApiResponse<String>> changeUserPassword(
+    public ResponseWrapper<String> changeUserPassword(
             @Parameter(description = "Locale for response messages") final Locale locale,
             @Parameter(description = "DTO containing the old and new password", required = true) @Valid UpdatePasswordDTO passwordDto) {
         return executeVoid("changeUserPassword", messages.getMessage("message.updatePasswordSuc", null, locale), () -> {
@@ -142,28 +141,28 @@ public class CustomerController extends BaseController {
 
     @Operation(summary = "Delete customer", description = "Deletes a specific customer by their ID")
     @DeleteMapping("/delete")
-    public ResponseEntity<ApiResponse<String>> deleteCustomer() {
+    public ResponseWrapper<String> deleteCustomer() {
         return executeVoid("deleteCustomer", "Customer deleted successfully", () -> 
             customerService.markCustomerHasDeleted(CustomerControllerUtils.getCurrentCustomerId()));
     }
 
     @Operation(summary = "Update customer first name", description = "Updates the first name of a specific customer by their ID")
     @PutMapping("/update/firstName")
-    public ResponseEntity<ApiResponse<String>> updateFirstName(@RequestParam String firstName) {
+    public ResponseWrapper<String> updateFirstName(@RequestParam String firstName) {
         return executeVoid("updateFirstName", "First name updated successfully", () -> 
             customerService.updateFirstName(CustomerControllerUtils.getCurrentCustomerId(), firstName));
     }
 
     @Operation(summary = "Update customer last name", description = "Updates the last name of a specific customer by their ID")
     @PutMapping("/update/lastName")
-    public ResponseEntity<ApiResponse<String>> updateLastName(@RequestParam String lastName) {
+    public ResponseWrapper<String> updateLastName(@RequestParam String lastName) {
         return executeVoid("updateLastName", "Last name updated successfully", () -> 
             customerService.updateLastName(CustomerControllerUtils.getCurrentCustomerId(), lastName));
     }
 
     @Operation(summary = "Update customer email", description = "Updates the email of a specific customer by their ID")
     @PutMapping("/update/email")
-    public ResponseEntity<ApiResponse<String>> updateEmail(@RequestParam String email) {
+    public ResponseWrapper<String> updateEmail(@RequestParam String email) {
         return executeVoid("updateEmail", "Email updated successfully", () -> 
             customerService.updateEmail(CustomerControllerUtils.getCurrentCustomerId(), email));
     }

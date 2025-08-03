@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.CreateApiResponses;
 import com.application.common.service.RestaurantService;
-import com.application.common.web.ApiResponse;
+import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.RestaurantDTO;
 import com.application.common.web.dto.security.AuthResponseDTO;
 import com.application.restaurant.service.authentication.RestaurantAuthenticationService;
@@ -27,6 +27,9 @@ import com.application.restaurant.web.dto.restaurant.NewRestaurantDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -52,9 +55,11 @@ public class RestaurantRegistrationController extends BaseController {
     }
 
     @Operation(summary = "Request to register a new restaurant", description = "Request to register a new restaurant")
+    @ApiResponse(responseCode = "201", description = "Restaurant registered successfully", 
+                content = @Content(schema = @Schema(implementation = RestaurantDTO.class)))
     @PostMapping(value = "/new")
     @CreateApiResponses
-    public ResponseEntity<ApiResponse<RestaurantDTO>> registerRestaurant(@RequestBody NewRestaurantDTO restaurantDto) {
+    public ResponseWrapper<RestaurantDTO> registerRestaurant(@RequestBody NewRestaurantDTO restaurantDto) {
         return executeCreate("register restaurant", "Restaurant registered successfully", () -> {
             log.debug("Registering restaurant with information:", restaurantDto);
             return restaurantService.registerRestaurant(restaurantDto);
@@ -63,17 +68,22 @@ public class RestaurantRegistrationController extends BaseController {
     }
     //TODO richiesta verifica email
     
+    @Operation(summary = "Resend registration token", description = "Resends the registration token")
+    @ApiResponse(responseCode = "200", description = "Registration token resent successfully", 
+                content = @Content(schema = @Schema(implementation = String.class)))
     @GetMapping(value = "/resend_token")
     @ResponseBody
-    public ResponseEntity<ApiResponse<String>> resendRegistrationToken(final HttpServletRequest request,
+    public ResponseWrapper<String> resendRegistrationToken(final HttpServletRequest request,
             @RequestParam("token") final String existingToken) {
         return executeVoid("resend registration token", () -> 
             restaurantAuthenticationService.resendRegistrationToken(request, existingToken));
     }
 
     @Operation(summary = "Request password reset", description = "Sends a password reset token to the restaurant user's email")
+    @ApiResponse(responseCode = "200", description = "Password reset token sent successfully", 
+                content = @Content(schema = @Schema(implementation = String.class)))
     @PostMapping(value = "/password/forgot")
-    public ResponseEntity<ApiResponse<String>> forgotPassword(@RequestParam("email") final String userEmail,
+    public ResponseWrapper<String> forgotPassword(@RequestParam("email") final String userEmail,
             final HttpServletRequest request) {
         return execute("forgot password", () -> {
             ResponseEntity<String> response = restaurantAuthenticationService.forgotPassword(userEmail, request);
@@ -82,9 +92,11 @@ public class RestaurantRegistrationController extends BaseController {
     }
 
     @Operation(summary = "Change restaurant and get a new JWT", description = "Switches the restaurant and returns a new JWT for the specified restaurant ID")
+    @ApiResponse(responseCode = "200", description = "Restaurant switched successfully", 
+                content = @Content(schema = @Schema(implementation = AuthResponseDTO.class)))
     @PreAuthorize("@securityRUserService.hasPermissionForRestaurant(#restaurantId)")
     @PostMapping(value = "/change-restaurant", produces = "application/json")
-    public ResponseEntity<ApiResponse<AuthResponseDTO>> changeRestaurant(@RequestParam Long restaurantId) {
+    public ResponseWrapper<AuthResponseDTO> changeRestaurant(@RequestParam Long restaurantId) {
         return execute("change restaurant", () -> restaurantAuthenticationService.changeRestaurant(restaurantId));
     }
 

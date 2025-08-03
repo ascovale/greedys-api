@@ -1,6 +1,5 @@
 package com.application.admin.controller.admin;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,7 +14,7 @@ import com.application.admin.service.AdminRegistrationService;
 import com.application.admin.web.dto.admin.NewAdminDTO;
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.CreateApiResponses;
-import com.application.common.web.ApiResponse;
+import com.application.common.web.ResponseWrapper;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -37,7 +36,7 @@ public class AdminRegistrationController extends BaseController {
     @Operation(summary = "Register a new admin")
     @CreateApiResponses
     @PostMapping("/")
-    public ResponseEntity<ApiResponse<Admin>> registerUserAccount(@Valid @RequestBody NewAdminDTO accountDto, HttpServletRequest request) {
+    public ResponseWrapper<Admin> registerUserAccount(@Valid @RequestBody NewAdminDTO accountDto, HttpServletRequest request) {
         return executeCreate("register new admin",  () -> {
             return adminRegistrationService.registerNewAdmin(accountDto, request);
         });
@@ -45,7 +44,7 @@ public class AdminRegistrationController extends BaseController {
 
     @Operation(summary = "Confirm admin registration")
     @GetMapping(value = "/confirm")
-    public ResponseEntity<ApiResponse<String>> confirmRegistration(final HttpServletRequest request, @RequestParam final String token) {
+    public ResponseWrapper<String> confirmRegistration(final HttpServletRequest request, @RequestParam final String token) {
         return execute("confirm admin registration", () -> {
             return adminRegistrationService.confirmRegistrationAndAuthenticate(token, request.getLocale());
         });
@@ -54,7 +53,7 @@ public class AdminRegistrationController extends BaseController {
     @Operation(summary = "Resend verification token")
     @RequestMapping(value = "/resend_token", method = RequestMethod.GET)
     @ResponseBody
-    public ResponseEntity<ApiResponse<String>> resendRegistrationToken(final HttpServletRequest request, @RequestParam("token") final String existingToken) {
+    public ResponseWrapper<String> resendRegistrationToken(final HttpServletRequest request, @RequestParam("token") final String existingToken) {
         return execute("resend verification token", () -> {
             return adminRegistrationService.resendVerificationToken(existingToken, request, request.getLocale());
         });

@@ -1,9 +1,5 @@
 package com.application.customer.controller.customer;
 
-import java.util.List;
-
-import org.springframework.data.domain.Page;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,7 +12,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.service.AllergyService;
-import com.application.common.web.ApiResponse;
+import com.application.common.web.ListResponseWrapper;
+import com.application.common.web.PageResponseWrapper;
+import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.customer.AllergyDTO;
 import com.application.customer.persistence.model.Customer;
 import com.application.customer.service.CustomerService;
@@ -39,34 +37,34 @@ public class CustomerAllergyController extends BaseController {
 
     @Operation(summary = "Add allergy to customer", description = "Adds an allergy to the currently authenticated customer using the allergy ID")
     @PostMapping("/add/{allergyId}")
-    public ResponseEntity<ApiResponse<String>> addAllergyToCustomer(@PathVariable Long allergyId) {
+    public ResponseWrapper<String> addAllergyToCustomer(@PathVariable Long allergyId) {
         return executeVoid("addAllergyToCustomer", () -> customerService.addAllergyToCustomer(allergyId));
     }
 
     @Operation(summary = "Remove allergy from customer", description = "Removes an allergy from the currently authenticated customer using the allergy ID")
     @DeleteMapping("/remove/{allergyId}")
-    public ResponseEntity<ApiResponse<String>> removeAllergyFromUser(@PathVariable Long allergyId) {
+    public ResponseWrapper<String> removeAllergyFromUser(@PathVariable Long allergyId) {
         return executeVoid("removeAllergyFromUser", "Allergy removed successfully", () -> customerService.removeAllergyToCustomer(allergyId));
     }
 
     @Operation(summary = "Get allergies of customer", description = "Returns all allergies of the currently authenticated customer")
     @GetMapping("/allergies")
     @ReadApiResponses
-    public ResponseEntity<ApiResponse<List<AllergyDTO>>> getAllergiesOfCustomer() {
-        return execute("getAllergiesOfCustomer", () -> customerService.getAllergies(getCurrentCustomer().getId()));
+    public ListResponseWrapper<AllergyDTO> getAllergiesOfCustomer() {
+        return executeList("getAllergiesOfCustomer", () -> customerService.getAllergies(getCurrentCustomer().getId()));
     }
 
     @Operation(summary = "Get paginated allergies of customer", description = "Returns paginated allergies of the currently authenticated customer")
     @GetMapping("/paginated")
     @ReadApiResponses
-    public ResponseEntity<ApiResponse<Page<AllergyDTO>>> getPaginatedAllergiesOfCustomer(@RequestParam int page, @RequestParam int size) {
+    public PageResponseWrapper<AllergyDTO> getPaginatedAllergiesOfCustomer(@RequestParam int page, @RequestParam int size) {
         return executePaginated("getPaginatedAllergiesOfCustomer", () -> customerService.getPaginatedAllergies(page, size));
     }
 
     @Operation(summary = "Get allergy by ID", description = "Returns a specific allergy of the currently authenticated customer using the allergy ID")
     @GetMapping("/{allergyId}")
     @ReadApiResponses
-    public ResponseEntity<ApiResponse<AllergyDTO>> getAllergyById(@PathVariable Long allergyId) {
+    public ResponseWrapper<AllergyDTO> getAllergyById(@PathVariable Long allergyId) {
         return execute("getAllergyById", () -> allergyService.getAllergyById(allergyId));
     }
 
