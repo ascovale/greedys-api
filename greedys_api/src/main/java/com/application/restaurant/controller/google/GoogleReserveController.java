@@ -1,6 +1,5 @@
 package com.application.restaurant.controller.google;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.application.common.controller.BaseController;
 import com.application.common.persistence.model.reservation.Reservation;
 import com.application.common.persistence.model.reservation.ReservationRequest;
-import com.application.common.web.ApiResponse;
+import com.application.common.web.ResponseWrapper;
 import com.application.restaurant.service.google.after.GoogleReserveService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -40,7 +39,7 @@ public class GoogleReserveController extends BaseController {
                      "Restituisce i dettagli della prenotazione e l'ID di conferma."
     )
     @PostMapping("/book")
-    public ResponseEntity<ApiResponse<Reservation>> createReservation(
+    public ResponseWrapper<Reservation> createReservation(
             @RequestBody ReservationRequest reservationRequest) {
         
         return execute("create reservation", "Prenotazione creata con successo", 
@@ -61,7 +60,7 @@ public class GoogleReserveController extends BaseController {
                      "Può cambiare data, ora, numero di persone e richieste speciali."
     )
     @PutMapping("/{reservationId}")
-    public ResponseEntity<ApiResponse<Reservation>> modifyReservation(
+    public ResponseWrapper<Reservation> modifyReservation(
             @PathVariable String reservationId,
             @RequestBody ReservationRequest newDetails) {
         
@@ -82,7 +81,7 @@ public class GoogleReserveController extends BaseController {
         description = "Cancella una prenotazione esistente. Richiede l'ID della prenotazione e un motivo opzionale."
     )
     @DeleteMapping("/{reservationId}")
-    public ResponseEntity<ApiResponse<Boolean>> cancelReservation(
+    public ResponseWrapper<Boolean> cancelReservation(
             @PathVariable String reservationId,
             @RequestParam(required = false) String reason) {
         

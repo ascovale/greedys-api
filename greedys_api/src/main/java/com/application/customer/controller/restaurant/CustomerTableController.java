@@ -1,8 +1,8 @@
 package com.application.customer.controller.restaurant;
 
 import java.util.Collection;
+import java.util.List;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.ReadApiResponses;
-import com.application.common.web.ApiResponse;
+import com.application.common.web.ListResponseWrapper;
 import com.application.common.web.dto.restaurant.TableDTO;
 import com.application.restaurant.service.TableService;
 
@@ -31,7 +31,10 @@ public class CustomerTableController extends BaseController {
 	@GetMapping("/room/{roomId}/tables")
 	@ReadApiResponses
 	@Operation(summary = "Get tables of a room", description = "Retrieve the tables of a room")
-	public ResponseEntity<ApiResponse<Collection<TableDTO>>> getTables(@PathVariable Long roomId) {
-		return execute("get tables for room", () -> tableService.findByRoom(roomId));
+	public ListResponseWrapper<TableDTO> getTables(@PathVariable Long roomId) {
+		return executeList("get tables for room", () -> {
+			Collection<TableDTO> tables = tableService.findByRoom(roomId);
+			return tables instanceof List ? (List<TableDTO>) tables : List.copyOf(tables);
+		});
 	}
 }

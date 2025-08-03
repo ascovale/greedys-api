@@ -6,7 +6,6 @@ import java.util.Locale;
 import java.util.stream.Collectors;
 
 import org.springframework.context.MessageSource;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -23,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.CreateApiResponses;
-import com.application.common.web.ApiResponse;
+import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.security.AuthRequestGoogleDTO;
 import com.application.common.web.dto.security.AuthResponseDTO;
 import com.application.customer.persistence.model.Customer;
@@ -55,7 +54,7 @@ public class CustomerRegistrationController extends BaseController {
     @Operation(summary = "Register a new customer", description = "Registers a new customer account and sends a verification email.")
     @PostMapping("/new")
     @CreateApiResponses
-    public ResponseEntity<ApiResponse<String>> registerCustomerAccount(@Valid @RequestBody NewCustomerDTO accountDto,
+    public ResponseWrapper<String> registerCustomerAccount(@Valid @RequestBody NewCustomerDTO accountDto,
             HttpServletRequest request) {
         return executeCreate("Register new customer", () -> {
             customerAuthenticationService.registerNewCustomerAccount(accountDto);
@@ -65,7 +64,7 @@ public class CustomerRegistrationController extends BaseController {
 
     @Operation(summary = "Send password reset email", description = "Sends an email with a password reset token to the specified customer.")
     @PostMapping("/password/forgot")
-    public ResponseEntity<ApiResponse<String>> sendPasswordResetEmail(@RequestParam String email, HttpServletRequest request) {
+    public ResponseWrapper<String> sendPasswordResetEmail(@RequestParam String email, HttpServletRequest request) {
         return executeVoid("Send password reset email", "Password reset email sent successfully", () -> {
             customerAuthenticationService.sendPasswordResetEmail(email, getAppUrl(request), request.getLocale());
         });
@@ -73,7 +72,7 @@ public class CustomerRegistrationController extends BaseController {
 
     @Operation(summary = "Confirm password change with token", description = "Confirms the password change using a token")
     @PutMapping(value = "/password/confirm")
-    public ResponseEntity<ApiResponse<String>> confirmPasswordChange(
+    public ResponseWrapper<String> confirmPasswordChange(
             @Parameter(description = "Password reset token") @RequestParam final String token) {
         return execute("Validate password reset token", () -> {
             return securityCustomerService.validatePasswordResetToken(token);
@@ -84,7 +83,7 @@ public class CustomerRegistrationController extends BaseController {
     @Operation(summary = "Confirm customer registration", description = "Validates the registration token and activates the customer account.")
     @RequestMapping(value = "/confirm", method = RequestMethod.GET)
     @ResponseBody
-    public ResponseEntity<ApiResponse<String>> confirmRegistrationResponse(final HttpServletRequest request,
+    public ResponseWrapper<String> confirmRegistrationResponse(final HttpServletRequest request,
             @RequestParam final String token) throws UnsupportedEncodingException {
         return executeVoid("Confirm customer registration", () -> {
             Locale locale = request.getLocale();
@@ -101,7 +100,7 @@ public class CustomerRegistrationController extends BaseController {
     @Operation(summary = "Resend registration token", description = "Generates and sends a new registration token to the customer.")
     @RequestMapping(value = "/resend_token", method = RequestMethod.GET)
     @ResponseBody
-    public ResponseEntity<ApiResponse<String>> resendRegistrationToken(final HttpServletRequest request,
+    public ResponseWrapper<String> resendRegistrationToken(final HttpServletRequest request,
             @RequestParam("token") final String existingToken) {
         return executeVoid("Resend registration token", () -> {
             customerAuthenticationService.resendRegistrationToken(existingToken, getAppUrl(request), request.getLocale());
@@ -114,7 +113,7 @@ public class CustomerRegistrationController extends BaseController {
     // 4. Google Authentication
     @Operation(summary = "Authenticate with Google", description = "Authenticates or if not exist register a customer using a Google token and returns a JWT token.")
     @PostMapping("/google")
-    public ResponseEntity<ApiResponse<AuthResponseDTO>> authenticateWithGoogle(@RequestBody AuthRequestGoogleDTO authRequest) {
+    public ResponseWrapper<AuthResponseDTO> authenticateWithGoogle(@RequestBody AuthRequestGoogleDTO authRequest) {
         return execute("Authenticate with Google", () -> customerAuthenticationService.authenticateWithGoogle(authRequest.getToken()));
     }
 

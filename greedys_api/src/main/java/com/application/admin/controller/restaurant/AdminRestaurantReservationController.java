@@ -2,23 +2,25 @@ package com.application.admin.controller.restaurant;
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.List;
 
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.service.reservation.ReservationService;
-import com.application.common.web.ApiResponse;
+import com.application.common.web.ListResponseWrapper;
+import com.application.common.web.PageResponseWrapper;
 import com.application.common.web.dto.reservations.ReservationDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -41,29 +43,38 @@ public class AdminRestaurantReservationController extends BaseController {
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_RESTAURANT_READ')")
 	@GetMapping(value = "{restaurantId}/reservation")
 	@ReadApiResponses
-	public ResponseEntity<ApiResponse<Collection<ReservationDTO>>> getReservations(
+	@ResponseStatus(HttpStatus.OK)
+	public ListResponseWrapper<ReservationDTO> getReservations(
 			@PathVariable Long restaurantId,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end) {
-		return execute("get reservations", () -> reservationService.getReservations(restaurantId, start, end));
+		return executeList("get reservations", () -> {
+			Collection<ReservationDTO> reservations = reservationService.getReservations(restaurantId, start, end);
+			return reservations instanceof List ? (List<ReservationDTO>) reservations : new java.util.ArrayList<>(reservations);
+		});
 	}
 
 	@Operation(summary = "Get all accepted reservations of a restaurant", description = "Retrieve all accepted reservations of a restaurant")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_RESTAURANT_READ')")
 	@GetMapping(value = "{restaurantId}/reservation/accepted")
 	@ReadApiResponses
-	public ResponseEntity<ApiResponse<Collection<ReservationDTO>>> getAcceptedReservations(
+	@ResponseStatus(HttpStatus.OK)
+	public ListResponseWrapper<ReservationDTO> getAcceptedReservations(
 			@PathVariable Long restaurantId,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end) {
-		return execute("get accepted reservations", () -> reservationService.getAcceptedReservations(restaurantId, start, end));
+		return executeList("get accepted reservations", () -> {
+			Collection<ReservationDTO> reservations = reservationService.getAcceptedReservations(restaurantId, start, end);
+			return reservations instanceof List ? (List<ReservationDTO>) reservations : new java.util.ArrayList<>(reservations);
+		});
 	}
 
 	@Operation(summary = "Get all reservations of a restaurant with pagination", description = "Retrieve all reservations of a restaurant with pagination")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_RESTAURANT_READ')")
 	@GetMapping(value = "{restaurantId}/reservation/pageable")
 	@ReadApiResponses
-	public ResponseEntity<ApiResponse<Page<ReservationDTO>>> getReservationsPageable(
+	@ResponseStatus(HttpStatus.OK)
+	public PageResponseWrapper<ReservationDTO> getReservationsPageable(
 			@PathVariable Long restaurantId,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end,
@@ -77,18 +88,23 @@ public class AdminRestaurantReservationController extends BaseController {
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_RESTAURANT_READ')")
 	@GetMapping(value = "{restaurantId}/reservation/pending")
 	@ReadApiResponses
-	public ResponseEntity<ApiResponse<Collection<ReservationDTO>>> getPendingReservations(
+	@ResponseStatus(HttpStatus.OK)
+	public ListResponseWrapper<ReservationDTO> getPendingReservations(
 			@PathVariable Long restaurantId,
 			@RequestParam(required = false) LocalDate start,
 			@RequestParam(required = false) LocalDate end) {
-		return execute("get pending reservations", () -> reservationService.getPendingReservations(restaurantId, start, end));
+		return executeList("get pending reservations", () -> {
+			Collection<ReservationDTO> reservations = reservationService.getPendingReservations(restaurantId, start, end);
+			return reservations instanceof List ? (List<ReservationDTO>) reservations : new java.util.ArrayList<>(reservations);
+		});
 	}
 
 	@Operation(summary = "Get all pending reservations of a restaurant with pagination", description = "Retrieve all pending reservations of a restaurant with pagination")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_RESTAURANT_READ')")
 	@GetMapping(value = "{restaurantId}/reservation/pending/pageable")
 	@ReadApiResponses
-	public ResponseEntity<ApiResponse<Page<ReservationDTO>>> getPendingReservationsPageable(
+	@ResponseStatus(HttpStatus.OK)
+	public PageResponseWrapper<ReservationDTO> getPendingReservationsPageable(
 		@PathVariable Long restaurantId,
 		@RequestParam(required = false) LocalDate start,
 		@RequestParam(required = false) LocalDate end,

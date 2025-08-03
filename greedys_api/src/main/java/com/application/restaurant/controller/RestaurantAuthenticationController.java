@@ -1,8 +1,6 @@
 package com.application.restaurant.controller;
 
-import java.util.List;
-
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -12,12 +10,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.security.jwt.JwtUtil;
-import com.application.common.web.ApiResponse;
+import com.application.common.web.ListResponseWrapper;
+import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.RestaurantDTO;
 import com.application.common.web.dto.security.AuthResponseDTO;
 import com.application.common.web.dto.security.RefreshTokenRequestDTO;
@@ -27,10 +27,15 @@ import com.application.restaurant.service.authentication.RestaurantAuthenticatio
 import io.jsonwebtoken.Claims;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 @RestController
 @Tag(name = "Restaurant Authentication", description = "Controller for restaurant authentication")
 @RequestMapping("/restaurant/user/auth")
@@ -43,10 +48,13 @@ public class RestaurantAuthenticationController extends BaseController {
     private final RestaurantAuthenticationService restaurantAuthenticationService;
 
     @Operation(summary = "Get list of restaurants for hub user", description = "Given a hub JWT, returns the list of restaurants associated with the hub user")
+    @ApiResponse(responseCode = "200", description = "Restaurants retrieved successfully", 
+                content = @Content(array = @ArraySchema(schema = @Schema(implementation = RestaurantDTO.class))))
     @GetMapping(value = "/restaurants", produces = "application/json")
     @ReadApiResponses
-    public ResponseEntity<ApiResponse<List<RestaurantDTO>>> restaurants(@Parameter(hidden = true) @RequestHeader("Authorization") String authHeader) {
-        return execute("get restaurants for hub user", () -> {
+    @ResponseStatus(HttpStatus.OK)
+    public ListResponseWrapper<RestaurantDTO> restaurants(@Parameter(hidden = true) @RequestHeader("Authorization") String authHeader) {
+        return executeList("get restaurants for hub user", () -> {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             
             if (authentication == null || !authentication.isAuthenticated()) {
@@ -60,8 +68,11 @@ public class RestaurantAuthenticationController extends BaseController {
 
     @PreAuthorize("hasAuthority('PRIVILEGE_HUB')")
     @Operation(summary = "Select a restaurant after intermediate login", description = "Given a hub JWT and a restaurantId, returns a JWT for the selected restaurant user")
+    @ApiResponse(responseCode = "200", description = "Restaurant selected successfully", 
+                content = @Content(schema = @Schema(implementation = AuthResponseDTO.class)))
     @GetMapping(value = "/select-restaurant", produces = "application/json")
-    public ResponseEntity<ApiResponse<AuthResponseDTO>> selectRestaurant(@RequestParam Long restaurantId) {
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseWrapper<AuthResponseDTO> selectRestaurant(@RequestParam Long restaurantId) {
         return execute("select restaurant", () -> {
             if (restaurantId == null || restaurantId <= 0) {
                 throw new IllegalArgumentException("Invalid restaurantId: " + restaurantId);
@@ -94,16 +105,22 @@ public class RestaurantAuthenticationController extends BaseController {
     }
 
     @Operation(summary = "Refresh hub token", description = "Refresh a hub JWT token using a hub refresh token")
+    @ApiResponse(responseCode = "200", description = "Hub token refreshed successfully", 
+                content = @Content(schema = @Schema(implementation = AuthResponseDTO.class)))
     @PostMapping(value = "/refresh/hub", produces = "application/json")
-    public ResponseEntity<ApiResponse<AuthResponseDTO>> refreshHubToken(@RequestBody RefreshTokenRequestDTO refreshRequest) {
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseWrapper<AuthResponseDTO> refreshHubToken(@RequestBody RefreshTokenRequestDTO refreshRequest) {
         return execute("refresh hub token", () -> 
             restaurantAuthenticationService.refreshHubToken(refreshRequest.getRefreshToken())
         );
     }
 
     @Operation(summary = "Refresh restaurant user token", description = "Refresh a restaurant user JWT token using a refresh token")
+    @ApiResponse(responseCode = "200", description = "Restaurant user token refreshed successfully", 
+                content = @Content(schema = @Schema(implementation = AuthResponseDTO.class)))
     @PostMapping(value = "/refresh", produces = "application/json")
-    public ResponseEntity<ApiResponse<AuthResponseDTO>> refreshRUserToken(@RequestBody RefreshTokenRequestDTO refreshRequest) {
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseWrapper<AuthResponseDTO> refreshRUserToken(@RequestBody RefreshTokenRequestDTO refreshRequest) {
         return execute("refresh restaurant user token", () -> 
             restaurantAuthenticationService.refreshRUserToken(refreshRequest.getRefreshToken())
         );

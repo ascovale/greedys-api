@@ -1,8 +1,5 @@
 package com.application.customer.controller.restaurant;
 
-import java.util.List;
-
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -10,7 +7,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.ReadApiResponses;
-import com.application.common.web.ApiResponse;
+import com.application.common.web.ListResponseWrapper;
+import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.SlotDTO;
 import com.application.restaurant.service.SlotService;
 
@@ -31,14 +29,14 @@ public class CustomerSlotController extends BaseController {
 	@GetMapping("/{restaurantId}/slots")
 	@Operation(summary = "Get all slots by restaurant ID", description = "Retrieve all available slots for a specific restaurant")
 	@ReadApiResponses
-	public ResponseEntity<ApiResponse<List<SlotDTO>>> getAllSlotsByRestaurantId(@PathVariable Long restaurantId) {
-		return execute("get all slots by restaurant", () -> slotService.findSlotsByRestaurantId(restaurantId));
+	public ListResponseWrapper<SlotDTO> getAllSlotsByRestaurantId(@PathVariable Long restaurantId) {
+		return executeList("get all slots by restaurant", () -> slotService.findSlotsByRestaurantId(restaurantId));
 	}
 
 	@Operation(summary = "Get slot by id", description = "Retrieve a slot by its ID")
 	@GetMapping("/slot/{slotId}")
 	@ReadApiResponses
-	public ResponseEntity<ApiResponse<SlotDTO>> getSlotById(@PathVariable Long slotId) {
+	public ResponseWrapper<SlotDTO> getSlotById(@PathVariable Long slotId) {
 		return execute("get slot by id", () -> slotService.findById(slotId));
 	}
 }

@@ -1,13 +1,12 @@
 package com.application.restaurant.controller.rUser;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
-import com.application.common.web.ApiResponse;
+import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.security.AuthRequestDTO;
 import com.application.common.web.dto.security.AuthRequestGoogleDTO;
 import com.application.common.web.dto.security.AuthResponseDTO;
@@ -29,7 +28,7 @@ public class RUserAuthController extends BaseController {
 
     @Operation(summary = "Generate an authentication token", description = "Authenticates a user and returns a JWT token or a selection token if multiple restaurants are available")
     @PostMapping(value = "/login", produces = "application/json")
-    public ResponseEntity<ApiResponse<AuthResponseDTO>> createAuthenticationToken(@RequestBody AuthRequestDTO authenticationRequest) {
+    public ResponseWrapper<AuthResponseDTO> createAuthenticationToken(@RequestBody AuthRequestDTO authenticationRequest) {
         return execute("authenticate user", () -> {
             try {
                 return restaurantAuthenticationService.loginWithHubSupport(authenticationRequest);
@@ -41,7 +40,7 @@ public class RUserAuthController extends BaseController {
 
     @Operation(summary = "Authenticate with Google", description = "Authenticates a restaurant user hub using Google OAuth2")
     @PostMapping("/google")
-    public ResponseEntity<ApiResponse<AuthResponseDTO>> authenticateWithGoogle(@RequestBody AuthRequestGoogleDTO authRequest) {
+    public ResponseWrapper<AuthResponseDTO> authenticateWithGoogle(@RequestBody AuthRequestGoogleDTO authRequest) {
         return execute("google authentication", () -> 
             restaurantAuthenticationService.loginWithGoogle(authRequest));
     }
