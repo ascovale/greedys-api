@@ -39,7 +39,7 @@ public class CustomerNotificationService {
                 .map(notification -> new NotificationDto(
                     notification.getId(), 
                     notification.getCustomer().getId(), 
-                    notification.isRead(),
+                    notification.getIsRead(),
                     notification.getBody(),
                     notification.getCreationTime()
 
@@ -53,7 +53,7 @@ public class CustomerNotificationService {
     @Transactional
     public void read(Long idNotification) {
         CustomerNotification notification = findById(idNotification).get();
-        notification.setRead(true);
+        notification.setIsRead(true);
         notificationDAO.save(notification);
     }
     
@@ -78,7 +78,7 @@ public class CustomerNotificationService {
 
     @Transactional
     public Page<CustomerNotification> getUnreadNotifications(Pageable pageable) {
-        return notificationDAO.findByCustomerAndReadFalse(getCurrentUser(), pageable);
+        return notificationDAO.findByCustomerAndIsReadFalse(getCurrentUser(), pageable);
     }
 
     //TODO da testare

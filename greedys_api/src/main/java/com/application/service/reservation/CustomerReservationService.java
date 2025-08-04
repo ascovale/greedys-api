@@ -49,7 +49,6 @@ public class CustomerReservationService {
                 .notes(reservationDto.getNotes())
                 .date(reservationDto.getReservationDay())
                 .slot(slot)
-                .createdBy(customer) // TODO : Test this that it works
                 .status(Reservation.Status.ACCEPTED)
                 .build();
         

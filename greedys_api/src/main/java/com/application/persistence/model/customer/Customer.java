@@ -31,7 +31,7 @@ import lombok.experimental.SuperBuilder;
 @Table(name = "customer")
 public class Customer extends AbstractUser {
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "customer")
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "createdBy")
     @Builder.Default
     private Set<Reservation> reservations = new HashSet<>();
 

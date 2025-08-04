@@ -8,9 +8,11 @@ import com.application.controller.validators.ValidEmail;
 import com.application.controller.validators.ValidPassword;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.NoArgsConstructor;
 
 @PasswordMatches
 @Schema(name = "ClientUserDto", description = "DTO for client user details")
+@NoArgsConstructor
 public class ClientUserDto {
     @NotNull
     @Size(min = 1, message = "{Size.companyUserDto.firstName}")

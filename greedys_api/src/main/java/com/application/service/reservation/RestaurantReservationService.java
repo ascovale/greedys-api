@@ -43,11 +43,14 @@ public class RestaurantReservationService {
     }
 
     public ReservationDTO createReservation(RestaurantNewReservationDTO reservationDto, Restaurant restaurant) {
+
         Slot slot = entityManager.getReference(Slot.class, reservationDto.getIdSlot());
         if (slot == null || slot.getDeleted()) {
             throw new IllegalArgumentException("Slot is either null or deleted");
         }
+        
         var reservation = Reservation.builder()
+                .userName(reservationDto.getUserName())
                 .pax(reservationDto.getPax())
                 .kids(reservationDto.getKids())
                 .notes(reservationDto.getNotes())

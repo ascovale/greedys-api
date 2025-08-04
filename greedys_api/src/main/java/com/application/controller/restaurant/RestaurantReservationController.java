@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.controller.utils.ControllerUtils;
+import com.application.persistence.model.notification.RNotificationType;
 import com.application.persistence.model.reservation.Reservation;
 import com.application.persistence.model.restaurant.user.RUser;
 import com.application.service.RestaurantNotificationService;
@@ -75,6 +76,7 @@ public class RestaurantReservationController {
 				"New reservation created",
 				"Reservation for " + dto.getPax() + " pax on " + dto.getReservationDay() + " at " + dto.getIdSlot(),
 				null,
+				RNotificationType.RESERVATION_ACCEPTED,
 				rUser.getRestaurant().getId()
 		);
 		return ResponseEntity.ok().build();

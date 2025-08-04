@@ -17,7 +17,15 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
+@Getter
+@Setter
+@SuperBuilder
+@NoArgsConstructor
 @Entity
 @Table(name = "notification_restaurant")
 public class RestaurantNotification extends ANotification {
@@ -26,6 +34,7 @@ public class RestaurantNotification extends ANotification {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    // TODO : Forse è  meglio una relazione con Restaurant piuttosto che con RUser
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "RUser_id")
     private RUser RUser;
@@ -38,22 +47,4 @@ public class RestaurantNotification extends ANotification {
 	@Column(name = "type", nullable = false)
 	private RNotificationType type;
 
-
-    public RestaurantNotification(RNotificationType type, RUser RUser, String title, String body, Map<String, String> data) {
-        super(title, body, data);
-		this.type = type;
-        this.RUser = RUser;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public RUser getRUser() {
-        return RUser;
-    }
-
-    public Instant getCreationTime() {
-        return creationTime;
-    }
 }

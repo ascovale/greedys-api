@@ -6,12 +6,14 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import lombok.Builder.Default;
 
 @Getter
 @Setter
+@NoArgsConstructor
 @SuperBuilder
 @Schema(name = "NewBaseReservationDTO", description = "Base DTO for creating a reservation")
 public abstract class NewBaseReservationDTO {

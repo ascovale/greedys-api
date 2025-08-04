@@ -15,7 +15,15 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
+@Getter
+@Setter
+@SuperBuilder
+@NoArgsConstructor
 @Entity
 @Table(name = "notification")
 public class CustomerNotification extends ANotification {
@@ -34,23 +42,4 @@ public class CustomerNotification extends ANotification {
 	@CreationTimestamp
 	private Instant creationTime;
 
-	public CustomerNotification(Customer customer, String title, String body, Map<String, String> data) {
-		super(title, body, data);
-		this.customer = customer;
-		
-	}
-
-
-	public Long getId() {
-		return id;
-	}
-
-	public Customer getCustomer() {
-		return customer;
-	}
-
-	public Instant getCreationTime() {
-		return creationTime;
-	}
- 
 }

@@ -3,9 +3,6 @@ package com.application.persistence.model.reservation;
 import java.time.LocalTime;
 
 import com.application.mapper.Mapper.Weekday;
-import com.application.web.dto.post.LocalTimeDeserializer;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;

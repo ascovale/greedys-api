@@ -23,6 +23,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import jakarta.persistence.EntityManagerFactory;
+import com.application.persistence.model.user.AbstractUser;
 
 @Configuration
 @EnableJpaRepositories(basePackages = "com.application.persistence.dao")
@@ -106,8 +107,10 @@ public class PersistenceJPAConfig {
     }
 
     @Bean
-    AuditorAware<String> auditorProvider() {
+    AuditorAware<AbstractUser> auditorProvider() {
         return () -> Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
-                .map(authentication -> authentication.getName());
+                .map(authentication -> authentication.getPrincipal())
+                .filter(principal -> principal instanceof AbstractUser)
+                .map(principal -> (AbstractUser) principal);
     }
 }
