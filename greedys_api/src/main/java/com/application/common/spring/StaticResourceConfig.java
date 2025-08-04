@@ -13,7 +13,8 @@ public class StaticResourceConfig implements WebMvcConfigurer {
                 .addResourceLocations("classpath:/static/logo_api.png");
         // Mapping per favicon
         registry.addResourceHandler("/favicon.ico")
-                .addResourceLocations("classpath:/static/favicon.ico");
+                .addResourceLocations("classpath:/static/")
+                .setCachePeriod(86400);
         // Regola per servire la custom Swagger UI con priorità sulla cartella custom
         registry.addResourceHandler("/swagger-ui/**")
                 .addResourceLocations("classpath:/static/swagger-ui/", "classpath:/META-INF/resources/webjars/");

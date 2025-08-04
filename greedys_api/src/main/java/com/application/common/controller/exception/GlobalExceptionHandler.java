@@ -115,11 +115,18 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ResponseWrapper<String> handleNoResourceFoundException(NoResourceFoundException ex, WebRequest request) {
         String requestUri = request.getDescription(false);
-        // Don't log favicon requests as errors - they're normal browser behavior
-        if (requestUri.contains("favicon.ico")) {
-            log.debug("Favicon not found (normal browser behavior): {}", requestUri);
+        String resourcePath = ex.getResourcePath();
+        
+        // Per favicon e altre risorse statiche, non loggare come errori - è comportamento normale del browser
+        if (resourcePath != null && (resourcePath.contains("favicon") || 
+                                   resourcePath.endsWith(".ico") || 
+                                   resourcePath.endsWith(".png") || 
+                                   resourcePath.endsWith(".jpg") || 
+                                   resourcePath.endsWith(".css") || 
+                                   resourcePath.endsWith(".js"))) {
+            log.debug("Static resource not found (normal browser behavior): {}", resourcePath);
         } else {
-            log.warn("Static resource not found: {}", requestUri);
+            log.warn("Resource not found: {}", requestUri);
         }
         return ResponseWrapper.error("Resource not found", "RESOURCE_NOT_FOUND");
     }
