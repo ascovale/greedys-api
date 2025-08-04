@@ -58,8 +58,8 @@ public class RestaurantDataLoader {
             .address("Piazza del Risorgimento 46A")
             .email("info@lasoffittarenovatio.it")
             .password("Minosse100%")
-            .ownerName("Luca")
-            .ownerSurname("Bianchi")
+            .ownerName("Stefano")
+            .ownerSurname("Di Michele")
             .build();
         restaurantService.registerRestaurant(restaurantDto);
 

@@ -49,7 +49,7 @@ public class SwaggerConfig {
     GroupedOpenApi adminApi() {
         return GroupedOpenApi.builder()
                 .group("admin-api")
-                .packagesToScan("com.application.admin.controller")
+                .packagesToScan("com.application.admin","com.application.common", "com.application.restaurant", "com.application.customer")
                 .pathsToMatch("/admin/**")
                 .addOpenApiCustomizer(groupCustomizer())
                 .build();
@@ -59,7 +59,7 @@ public class SwaggerConfig {
     GroupedOpenApi customerApi() {
         return GroupedOpenApi.builder()
                 .group("customer-api")
-                .packagesToScan("com.application.customer.controller")
+                .packagesToScan("com.application.admin","com.application.common", "com.application.restaurant", "com.application.customer")
                 .pathsToMatch("/customer/**")
                 .addOpenApiCustomizer(groupCustomizer())
                 .build();
@@ -69,7 +69,7 @@ public class SwaggerConfig {
     GroupedOpenApi restaurantApi() {
         return GroupedOpenApi.builder()
                 .group("restaurant-api")
-                .packagesToScan("com.application.restaurant.controller", "com.application.restaurant.service")
+                .packagesToScan("com.application.admin","com.application.common", "com.application.restaurant", "com.application.customer")
                 .pathsToMatch("/restaurant/**")
                 .addOpenApiCustomizer(groupCustomizer())
                 .build();

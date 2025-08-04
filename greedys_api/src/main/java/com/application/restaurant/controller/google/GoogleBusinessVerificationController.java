@@ -1,5 +1,6 @@
 package com.application.restaurant.controller.google;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -42,7 +43,7 @@ public class GoogleBusinessVerificationController extends BaseController {
                description = "Gets the list of all restaurants that the user can manage (STEP 1). " +
                            "Requires Access Token with scopes: userinfo.email, userinfo.profile, business.manage")
     @PostMapping("/get-restaurants")
-    public ResponseWrapper<RestaurantAuthorizationResult> getUserRestaurants(
+    public ResponseEntity<ResponseWrapper<RestaurantAuthorizationResult>> getUserRestaurants(
             @RequestBody UserRestaurantsRequestDTO request) {
         return execute("get user restaurants", "Restaurant list retrieved", new OperationSupplier<RestaurantAuthorizationResult>() {
             @Override
@@ -63,7 +64,7 @@ public class GoogleBusinessVerificationController extends BaseController {
                description = "Select and verify a specific restaurant via placeId (STEP 2). " +
                            "Uses the same Access Token from STEP 1")
     @PostMapping("/select-restaurant")
-    public ResponseWrapper<RestaurantVerificationResult> selectRestaurant(
+    public ResponseEntity<ResponseWrapper<RestaurantVerificationResult>> selectRestaurant(
             @RequestBody RestaurantSelectionRequestDTO request) {
         return execute("select restaurant", "Restaurant selected and verified", new OperationSupplier<RestaurantVerificationResult>() {
             @Override
@@ -80,7 +81,7 @@ public class GoogleBusinessVerificationController extends BaseController {
     @Operation(summary = "Search restaurant", 
                description = "Search for a restaurant on Google Maps without OAuth verification (for testing only)")
     @PostMapping("/search")
-    public ResponseWrapper<RestaurantSearchResult> searchRestaurant(
+    public ResponseEntity<ResponseWrapper<RestaurantSearchResult>> searchRestaurant(
             @RequestBody SearchRequestDTO request) {
         return execute("search restaurant", "Search completed", new OperationSupplier<RestaurantSearchResult>() {
             @Override

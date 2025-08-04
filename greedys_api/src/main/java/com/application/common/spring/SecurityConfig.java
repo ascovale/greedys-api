@@ -184,7 +184,9 @@ public class SecurityConfig {
 
         @Bean
         RUserAuthenticationProvider RUserAuthenticationProvider() {
-                return new RUserAuthenticationProvider(rUserDAO, RUserDetailsService);
+                RUserAuthenticationProvider provider = new RUserAuthenticationProvider(rUserDAO, RUserDetailsService);
+                provider.setPasswordEncoder(passwordEncoder());
+                return provider;
         }
 
         @Bean
@@ -197,7 +199,9 @@ public class SecurityConfig {
 
         @Bean
         CustomerAuthenticationProvider customerAuthenticationProvider() {
-                return new CustomerAuthenticationProvider(customerDAO, customerUserDetailsService);
+                CustomerAuthenticationProvider provider = new CustomerAuthenticationProvider(customerDAO, customerUserDetailsService);
+                provider.setPasswordEncoder(passwordEncoder());
+                return provider;
         }
 
         @Bean
@@ -214,12 +218,12 @@ public class SecurityConfig {
                 return new BCryptPasswordEncoder();
         }
 
-        @Bean
-        AdminAuthenticationProvider adminAuthenticationProvider() {
-                return new AdminAuthenticationProvider(adminDAO, adminUserDetailsService);
-        }
-
-        //TODO RIMOVERE TOGLIERE REMEMBER ME FORSE METTERE refreshTOKEN
+	@Bean
+	AdminAuthenticationProvider adminAuthenticationProvider() {
+		AdminAuthenticationProvider provider = new AdminAuthenticationProvider(adminDAO, adminUserDetailsService);
+		provider.setPasswordEncoder(passwordEncoder());
+		return provider;
+	}        //TODO RIMOVERE TOGLIERE REMEMBER ME FORSE METTERE refreshTOKEN
 
 
         @Bean

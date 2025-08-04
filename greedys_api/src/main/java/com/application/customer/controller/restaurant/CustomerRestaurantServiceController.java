@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,7 +35,7 @@ public class CustomerRestaurantServiceController extends BaseController {
     @GetMapping("/{restaurantId}/active-services-in-date")
     @Operation(summary = "Get active and enabled services of a restaurant for a specific date", description = "Retrieve the services of a restaurant that are active and enabled on a given date")
     @ReadApiResponses
-    public ListResponseWrapper<ServiceDTO> getActiveEnabledServicesInDate(
+    public ResponseEntity<ListResponseWrapper<ServiceDTO>> getActiveEnabledServicesInDate(
             @PathVariable Long restaurantId,
             @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate date) {
         return executeList("get active services in date", () -> {
@@ -46,7 +47,7 @@ public class CustomerRestaurantServiceController extends BaseController {
     @GetMapping("/{restaurantId}/active-services-in-period")
     @Operation(summary = "Get active and enabled services of a restaurant for a specific period", description = "Retrieve the services of a restaurant that are active and enabled in a given date range")
     @ReadApiResponses
-    public ListResponseWrapper<ServiceDTO> getActiveEnabledServicesInPeriod(
+    public ResponseEntity<ListResponseWrapper<ServiceDTO>> getActiveEnabledServicesInPeriod(
             @PathVariable Long restaurantId,
             @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
             @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end) {
@@ -59,7 +60,7 @@ public class CustomerRestaurantServiceController extends BaseController {
     @GetMapping("/{restaurantId}/services")
     @Operation(summary = "Get services of a restaurant", description = "Retrieve all services of a restaurant")
     @ReadApiResponses
-    public ListResponseWrapper<ServiceDTO> getServices(@PathVariable Long restaurantId) {
+    public ResponseEntity<ListResponseWrapper<ServiceDTO>> getServices(@PathVariable Long restaurantId) {
         return executeList("get restaurant services", () -> {
             Collection<ServiceDTO> services = restaurantService.getServices(restaurantId);
             return services instanceof List ? (List<ServiceDTO>) services : List.copyOf(services);

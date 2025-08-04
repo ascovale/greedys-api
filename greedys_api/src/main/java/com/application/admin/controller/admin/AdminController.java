@@ -2,6 +2,7 @@ package com.application.admin.controller.admin;
 
 import java.util.Locale;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -40,7 +41,7 @@ public class AdminController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_ADMIN_WRITE')")
     @Operation(summary = "Block user", description = "Blocks a user by their ID")
     @PutMapping("/{adminId}/block")
-    public ResponseWrapper<String> blockUser(@PathVariable Long adminId) {
+    public ResponseEntity<ResponseWrapper<String>> blockUser(@PathVariable Long adminId) {
         return executeVoid("block admin", "User blocked successfully", () -> {
             adminService.updateAdminStatus(adminId, Admin.Status.BLOCKED);
         });
@@ -49,7 +50,7 @@ public class AdminController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_ADMIN_WRITE')")
     @Operation(summary = "Enable user", description = "Enables a user by their ID")
     @PutMapping("/{adminId}/enable")
-    public ResponseWrapper<String> enableUser(@PathVariable Long adminId) {
+    public ResponseEntity<ResponseWrapper<String>> enableUser(@PathVariable Long adminId) {
         return executeVoid("enable admin", "User enabled successfully", () -> {
             adminService.updateAdminStatus(adminId, Admin.Status.ENABLED);
         });
@@ -58,7 +59,7 @@ public class AdminController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_ADMIN_WRITE')")
     @Operation(summary = "Delete admin user", description = "Deletes an admin user by their ID")
     @PutMapping("/{adminId}/delete")
-    public ResponseWrapper<String> deleteAdminUser(@PathVariable Long adminId) {
+    public ResponseEntity<ResponseWrapper<String>> deleteAdminUser(@PathVariable Long adminId) {
         return executeVoid("delete admin", "User deleted successfully", () -> {
             adminService.updateAdminStatus(adminId, Admin.Status.DELETED);
         });
@@ -66,7 +67,7 @@ public class AdminController extends BaseController {
 
     @Operation(summary = "Generate new token for password change", description = "Changes the user's password after verifying the old password")
     @PostMapping(value = "/password/new_token")
-    public ResponseWrapper<String> changeUserPassword(
+    public ResponseEntity<ResponseWrapper<String>> changeUserPassword(
             @Parameter(description = "Locale for response messages") final Locale locale,
             @Parameter(description = "DTO containing the old and new password", required = true) @RequestBody @Valid UpdatePasswordDTO passwordDto) {
         return executeVoid("change admin password", "Password changed successfully", () -> {
@@ -80,7 +81,7 @@ public class AdminController extends BaseController {
     @Operation(summary = "Get Admin ID", description = "Retrieves the ID of the current admin")
     @GetMapping("/id")
     @ReadApiResponses
-    public ResponseWrapper<Long> getAdminIdEndpoint() {
+    public ResponseEntity<ResponseWrapper<Long>> getAdminIdEndpoint() {
         return execute("get admin id", () -> AdminControllerUtils.getCurrentAdmin().getId());
     }
     

@@ -1,5 +1,6 @@
 package com.application.restaurant.controller.google;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -39,7 +40,7 @@ public class GoogleReserveController extends BaseController {
                      "Restituisce i dettagli della prenotazione e l'ID di conferma."
     )
     @PostMapping("/book")
-    public ResponseWrapper<Reservation> createReservation(
+    public ResponseEntity<ResponseWrapper<Reservation>> createReservation(
             @RequestBody ReservationRequest reservationRequest) {
         
         return execute("create reservation", "Prenotazione creata con successo", 
@@ -60,7 +61,7 @@ public class GoogleReserveController extends BaseController {
                      "Può cambiare data, ora, numero di persone e richieste speciali."
     )
     @PutMapping("/{reservationId}")
-    public ResponseWrapper<Reservation> modifyReservation(
+    public ResponseEntity<ResponseWrapper<Reservation>> modifyReservation(
             @PathVariable String reservationId,
             @RequestBody ReservationRequest newDetails) {
         
@@ -81,7 +82,7 @@ public class GoogleReserveController extends BaseController {
         description = "Cancella una prenotazione esistente. Richiede l'ID della prenotazione e un motivo opzionale."
     )
     @DeleteMapping("/{reservationId}")
-    public ResponseWrapper<Boolean> cancelReservation(
+    public ResponseEntity<ResponseWrapper<Boolean>> cancelReservation(
             @PathVariable String reservationId,
             @RequestParam(required = false) String reason) {
         

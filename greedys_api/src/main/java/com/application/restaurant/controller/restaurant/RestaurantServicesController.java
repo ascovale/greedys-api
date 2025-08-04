@@ -3,6 +3,7 @@ package com.application.restaurant.controller.restaurant;
 import java.util.Collection;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -56,7 +57,7 @@ public class RestaurantServicesController extends BaseController {
     @PreAuthorize("authentication.principal.isEnabled() & hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_WRITE')")
     @PostMapping("/new")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseWrapper<String> newService(@RequestBody RestaurantNewServiceDTO servicesDto) {
+    public ResponseEntity<ResponseWrapper<String>> newService(@RequestBody RestaurantNewServiceDTO servicesDto) {
         return executeCreate("create new service", "Service created successfully", () -> {
             System.out.println("<<<   Controller Service   >>>");
             System.out.println("<<<   name: " + servicesDto.getName());
@@ -71,7 +72,7 @@ public class RestaurantServicesController extends BaseController {
     @ReadApiResponses
     @PreAuthorize("authentication.principal.isEnabled() & hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_WRITE')")
     @DeleteMapping("/{serviceId}/delete")
-        public ResponseWrapper<String> deleteService(@PathVariable Long serviceId) {
+        public ResponseEntity<ResponseWrapper<String>> deleteService(@PathVariable Long serviceId) {
         return executeVoid("delete service", "Service deleted successfully", () -> {
             System.out.println("<<<   Controller Service   >>>");
             System.out.println("<<<   serviceId: " + serviceId);
@@ -85,7 +86,7 @@ public class RestaurantServicesController extends BaseController {
     @ReadApiResponses
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_READ')")
     @GetMapping("/{serviceId}")
-        public ResponseWrapper<ServiceDTO> getServiceById(@PathVariable Long serviceId) {
+        public ResponseEntity<ResponseWrapper<ServiceDTO>> getServiceById(@PathVariable Long serviceId) {
         return execute("get service by id", () -> serviceService.findById(serviceId));
     }
 
@@ -95,7 +96,7 @@ public class RestaurantServicesController extends BaseController {
     @ReadApiResponses
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_READ')")
     @GetMapping("/{serviceId}/slots")
-        public ListResponseWrapper<SlotDTO> getSlots(@PathVariable long serviceId) {
+        public ResponseEntity<ListResponseWrapper<SlotDTO>> getSlots(@PathVariable long serviceId) {
         return executeList("get service slots", () -> {
             Collection<SlotDTO> slots = slotService.findByService_Id(serviceId);
             return slots instanceof java.util.List ? (java.util.List<SlotDTO>) slots : new java.util.ArrayList<>(slots);
@@ -108,7 +109,7 @@ public class RestaurantServicesController extends BaseController {
     @ReadApiResponses
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_READ')")
     @GetMapping("/types")
-        public ListResponseWrapper<ServiceTypeDto> getServiceTypes() {
+        public ResponseEntity<ListResponseWrapper<ServiceTypeDto>> getServiceTypes() {
         return executeList("get service types", () -> {
             Collection<ServiceTypeDto> types = serviceService.getServiceTypesFromRUser();
             return types instanceof java.util.List ? (java.util.List<ServiceTypeDto>) types : new java.util.ArrayList<>(types);
@@ -120,7 +121,7 @@ public class RestaurantServicesController extends BaseController {
                 content = @Content(array = @ArraySchema(schema = @Schema(implementation = ServiceDTO.class))))
     @ReadApiResponses
     @GetMapping(value = "/services")
-        public ListResponseWrapper<ServiceDTO> getServices() {
+        public ResponseEntity<ListResponseWrapper<ServiceDTO>> getServices() {
         return executeList("get restaurant services", () -> {
             Collection<ServiceDTO> services = restaurantService.getServices(RestaurantControllerUtils.getCurrentRestaurant().getId());
             return services instanceof java.util.List ? (java.util.List<ServiceDTO>) services : new java.util.ArrayList<>(services);

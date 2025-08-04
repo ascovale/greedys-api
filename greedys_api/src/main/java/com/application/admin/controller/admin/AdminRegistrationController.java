@@ -1,5 +1,6 @@
 package com.application.admin.controller.admin;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -36,7 +37,7 @@ public class AdminRegistrationController extends BaseController {
     @Operation(summary = "Register a new admin")
     @CreateApiResponses
     @PostMapping("/")
-    public ResponseWrapper<Admin> registerUserAccount(@Valid @RequestBody NewAdminDTO accountDto, HttpServletRequest request) {
+    public ResponseEntity<ResponseWrapper<Admin>> registerUserAccount(@Valid @RequestBody NewAdminDTO accountDto, HttpServletRequest request) {
         return executeCreate("register new admin",  () -> {
             return adminRegistrationService.registerNewAdmin(accountDto, request);
         });
@@ -44,7 +45,7 @@ public class AdminRegistrationController extends BaseController {
 
     @Operation(summary = "Confirm admin registration")
     @GetMapping(value = "/confirm")
-    public ResponseWrapper<String> confirmRegistration(final HttpServletRequest request, @RequestParam final String token) {
+    public ResponseEntity<ResponseWrapper<String>> confirmRegistration(final HttpServletRequest request, @RequestParam final String token) {
         return execute("confirm admin registration", () -> {
             return adminRegistrationService.confirmRegistrationAndAuthenticate(token, request.getLocale());
         });
@@ -53,7 +54,7 @@ public class AdminRegistrationController extends BaseController {
     @Operation(summary = "Resend verification token")
     @RequestMapping(value = "/resend_token", method = RequestMethod.GET)
     @ResponseBody
-    public ResponseWrapper<String> resendRegistrationToken(final HttpServletRequest request, @RequestParam("token") final String existingToken) {
+    public ResponseEntity<ResponseWrapper<String>> resendRegistrationToken(final HttpServletRequest request, @RequestParam("token") final String existingToken) {
         return execute("resend verification token", () -> {
             return adminRegistrationService.resendVerificationToken(existingToken, request, request.getLocale());
         });

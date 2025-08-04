@@ -3,6 +3,7 @@ package com.application.customer.controller.restaurant;
 import java.util.Collection;
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,7 +32,7 @@ public class CustomerRoomController extends BaseController {
 	@GetMapping("/{restaurantId}/rooms")
 	@ReadApiResponses
 	@Operation(summary = "Get rooms of a restaurant", description = "Retrieve the rooms of a restaurant")
-	public ListResponseWrapper<RoomDTO> getRooms(@PathVariable Long restaurantId) {
+	public ResponseEntity<ListResponseWrapper<RoomDTO>> getRooms(@PathVariable Long restaurantId) {
 		return executeList("getRooms", () -> {
 			Collection<RoomDTO> rooms = roomService.findByRestaurant(restaurantId);
 			return rooms instanceof List ? (List<RoomDTO>) rooms : List.copyOf(rooms);

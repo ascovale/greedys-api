@@ -3,6 +3,7 @@ package com.application.admin.controller.restaurant;
 import java.util.Collection;
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -46,7 +47,7 @@ public class AdminRoomTableController extends BaseController {
 	@Operation(summary = "Get rooms of a restaurant", description = "Retrieve the rooms of a restaurant")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_READ')")
 	@ReadApiResponses
-	public ListResponseWrapper<RoomDTO> getRooms(@PathVariable Long restaurantId) {
+	public ResponseEntity<ListResponseWrapper<RoomDTO>> getRooms(@PathVariable Long restaurantId) {
 		return executeList("get rooms", () -> {
 			Collection<RoomDTO> rooms = roomService.findByRestaurant(restaurantId);
 			return rooms instanceof List ? (List<RoomDTO>) rooms : new java.util.ArrayList<>(rooms);
@@ -57,7 +58,7 @@ public class AdminRoomTableController extends BaseController {
 	@Operation(summary = "Get tables of a room", description = "Retrieve the tables of a room")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_READ')")
 	@ReadApiResponses
-	public ListResponseWrapper<TableDTO> getTables(@PathVariable Long roomId) {
+	public ResponseEntity<ListResponseWrapper<TableDTO>> getTables(@PathVariable Long roomId) {
 		return executeList("get tables", () -> {
 			Collection<TableDTO> tables = tableService.findByRoom(roomId);
 			return tables instanceof List ? (List<TableDTO>) tables : new java.util.ArrayList<>(tables);
@@ -68,7 +69,7 @@ public class AdminRoomTableController extends BaseController {
 	@Operation(summary = "Add a room to a restaurant", description = "Add a new room to a restaurant")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
 	@CreateApiResponses
-	public ResponseWrapper<String> addRoom(@PathVariable Long restaurantId, @RequestBody NewRoomDTO roomDto) {
+	public ResponseEntity<ResponseWrapper<String>> addRoom(@PathVariable Long restaurantId, @RequestBody NewRoomDTO roomDto) {
 		return executeCreate("add room", "Room created successfully", () -> {
 			roomService.createRoom(roomDto);
 			return "success";
@@ -79,7 +80,7 @@ public class AdminRoomTableController extends BaseController {
 	@Operation(summary = "Add a table to a room", description = "Add a new table to a room")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
 	@CreateApiResponses
-	public ResponseWrapper<String> addTable(@PathVariable Long restaurantId, @RequestBody NewTableDTO tableDto) {
+	public ResponseEntity<ResponseWrapper<String>> addTable(@PathVariable Long restaurantId, @RequestBody NewTableDTO tableDto) {
 		return executeCreate("add table", "Table created successfully", () -> {
 			tableService.createTable(tableDto);
 			return "success";

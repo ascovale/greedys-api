@@ -3,6 +3,7 @@ package com.application.restaurant.controller.restaurant;
 import java.util.Collection;
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -40,7 +41,7 @@ public class RestaurantRoomController extends BaseController {
 	@GetMapping(value = "/all")
 	@Operation(summary = "Get rooms of a restaurant", description = "Retrieve the rooms of a restaurant")
 	@ReadApiResponses
-	public ListResponseWrapper<RoomDTO> getRooms() {
+	public ResponseEntity<ListResponseWrapper<RoomDTO>> getRooms() {
 		return executeList("get restaurant rooms", () -> {
 			log.info("Getting rooms for restaurant: {}", RestaurantControllerUtils.getCurrentRestaurant().getId());
 			Collection<RoomDTO> rooms = roomService.findByRestaurant(RestaurantControllerUtils.getCurrentRestaurant().getId());
@@ -50,7 +51,7 @@ public class RestaurantRoomController extends BaseController {
 
 	@PostMapping
 	@Operation(summary = "Add a room to a restaurant", description = "Add a new room to a restaurant")
-	public ResponseWrapper<Room> addRoom(@RequestBody NewRoomDTO roomDto) {
+	public ResponseEntity<ResponseWrapper<Room>> addRoom(@RequestBody NewRoomDTO roomDto) {
 		return executeCreate("add room", "Room added successfully", () -> {
 			log.info("Adding new room for restaurant: {}", RestaurantControllerUtils.getCurrentRestaurant().getId());
 			return roomService.createRoom(roomDto);
@@ -59,7 +60,7 @@ public class RestaurantRoomController extends BaseController {
 
 	@DeleteMapping(value = "/remove/{roomId}")
 	@Operation(summary = "Remove a room", description = "Remove a specific room by its ID")
-	public ResponseWrapper<String> removeRoom(@PathVariable Long roomId) {
+	public ResponseEntity<ResponseWrapper<String>> removeRoom(@PathVariable Long roomId) {
 		return executeVoid("remove room", "Room removed successfully", () -> {
 			log.info("Removing room with ID: {}", roomId);
 			roomService.deleteRoom(roomId);

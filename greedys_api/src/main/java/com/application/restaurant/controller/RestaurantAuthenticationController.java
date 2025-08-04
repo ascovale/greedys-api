@@ -1,5 +1,6 @@
 package com.application.restaurant.controller;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -50,7 +51,7 @@ public class RestaurantAuthenticationController extends BaseController {
                 content = @Content(array = @ArraySchema(schema = @Schema(implementation = RestaurantDTO.class))))
     @GetMapping(value = "/restaurants", produces = "application/json")
     @ReadApiResponses
-    public ListResponseWrapper<RestaurantDTO> restaurants(@Parameter(hidden = true) @RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<ListResponseWrapper<RestaurantDTO>> restaurants(@Parameter(hidden = true) @RequestHeader("Authorization") String authHeader) {
         return executeList("get restaurants for hub user", () -> {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             
@@ -68,7 +69,7 @@ public class RestaurantAuthenticationController extends BaseController {
     @ApiResponse(responseCode = "200", description = "Restaurant selected successfully", 
                 content = @Content(schema = @Schema(implementation = AuthResponseDTO.class)))
     @GetMapping(value = "/select-restaurant", produces = "application/json")
-    public ResponseWrapper<AuthResponseDTO> selectRestaurant(@RequestParam Long restaurantId) {
+    public ResponseEntity<ResponseWrapper<AuthResponseDTO>> selectRestaurant(@RequestParam Long restaurantId) {
         return execute("select restaurant", () -> {
             if (restaurantId == null || restaurantId <= 0) {
                 throw new IllegalArgumentException("Invalid restaurantId: " + restaurantId);
@@ -104,7 +105,7 @@ public class RestaurantAuthenticationController extends BaseController {
     @ApiResponse(responseCode = "200", description = "Hub token refreshed successfully", 
                 content = @Content(schema = @Schema(implementation = AuthResponseDTO.class)))
     @PostMapping(value = "/refresh/hub", produces = "application/json")
-        public ResponseWrapper<AuthResponseDTO> refreshHubToken(@RequestBody RefreshTokenRequestDTO refreshRequest) {
+        public ResponseEntity<ResponseWrapper<AuthResponseDTO>> refreshHubToken(@RequestBody RefreshTokenRequestDTO refreshRequest) {
         return execute("refresh hub token", () -> 
             restaurantAuthenticationService.refreshHubToken(refreshRequest.getRefreshToken())
         );
@@ -114,7 +115,7 @@ public class RestaurantAuthenticationController extends BaseController {
     @ApiResponse(responseCode = "200", description = "Restaurant user token refreshed successfully", 
                 content = @Content(schema = @Schema(implementation = AuthResponseDTO.class)))
     @PostMapping(value = "/refresh", produces = "application/json")
-        public ResponseWrapper<AuthResponseDTO> refreshRUserToken(@RequestBody RefreshTokenRequestDTO refreshRequest) {
+        public ResponseEntity<ResponseWrapper<AuthResponseDTO>> refreshRUserToken(@RequestBody RefreshTokenRequestDTO refreshRequest) {
         return execute("refresh restaurant user token", () -> 
             restaurantAuthenticationService.refreshRUserToken(refreshRequest.getRefreshToken())
         );

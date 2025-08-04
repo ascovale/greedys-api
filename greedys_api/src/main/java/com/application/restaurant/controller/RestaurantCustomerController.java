@@ -1,5 +1,6 @@
 package com.application.restaurant.controller;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,7 +37,7 @@ public class RestaurantCustomerController extends BaseController {
                 content = @Content(schema = @Schema(implementation = CustomerStatisticsDTO.class)))
     @GetMapping("/{idCustomer}/statistics")
     @ReadApiResponses
-    public ResponseWrapper<CustomerStatisticsDTO> getCustomerStatistics(
+    public ResponseEntity<ResponseWrapper<CustomerStatisticsDTO>> getCustomerStatistics(
             @Parameter(description = "Customer ID", required = true, example = "1")
             @PathVariable Long idCustomer) {
         return execute("get customer statistics", () -> customerService.getCustomerStatistics(idCustomer));

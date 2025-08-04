@@ -3,6 +3,7 @@ package com.application.restaurant.controller.restaurant;
 import java.util.Collection;
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -39,7 +40,7 @@ public class RestaurantTableController extends BaseController {
 	@GetMapping(value = "/room/{roomId}")
 	@Operation(summary = "Get tables of a room", description = "Retrieve the tables of a specific room")
 	@ReadApiResponses
-	public ListResponseWrapper<TableDTO> getTables(@PathVariable Long roomId) {
+	public ResponseEntity<ListResponseWrapper<TableDTO>> getTables(@PathVariable Long roomId) {
 		return executeList("get tables for room", () -> {
 			log.info("Getting tables for room ID: {}", roomId);
 			Collection<TableDTO> tables = tableService.findByRoom(roomId);
@@ -50,7 +51,7 @@ public class RestaurantTableController extends BaseController {
 	@PostMapping
 	@Operation(summary = "Add a table to a room", description = "Add a new table to a specific room")
 
-	public ResponseWrapper<Table> addTable(@RequestBody NewTableDTO tableDto) {
+	public ResponseEntity<ResponseWrapper<Table>> addTable(@RequestBody NewTableDTO tableDto) {
 		return executeCreate("add table", "Table added successfully", () -> {
 			log.info("Adding new table to room");
 			return tableService.createTable(tableDto);
@@ -59,7 +60,7 @@ public class RestaurantTableController extends BaseController {
 
 	@DeleteMapping(value = "/remove/{tableId}")
 	@Operation(summary = "Remove a table", description = "Remove a specific table by its ID")
-	public ResponseWrapper<String> removeTable(@PathVariable Long tableId) {
+	public ResponseEntity<ResponseWrapper<String>> removeTable(@PathVariable Long tableId) {
 		return executeVoid("remove table", "Table removed successfully", () -> {
 			log.info("Removing table with ID: {}", tableId);
 			tableService.deleteTable(tableId);

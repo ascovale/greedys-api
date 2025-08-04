@@ -25,7 +25,7 @@ public class ResponseWrapper<T> {
     @Schema(description = "Response message", example = "Operation completed successfully")
     private String message;
 
-    @Schema(description = "Response data")
+    @Schema(description = "Response data")    
     private T data;
 
     @Schema(description = "Error details (present only if success = false)")
@@ -169,19 +169,4 @@ public class ResponseWrapper<T> {
                 .build();
     }
 
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public static class ErrorDetails {
-        @Schema(description = "Error code", example = "VALIDATION_ERROR")
-        private String code;
-        
-        @Schema(description = "Error message", example = "Invalid input data")
-        private String message;
-        
-        @Schema(description = "Field-specific errors")
-        private Object details;
-    }
 }

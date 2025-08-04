@@ -62,7 +62,7 @@ public class CustomerSetup {
                 .email("info@lasoffittarenovatio.it")
                 .build();
             Customer user = userService.registerNewCustomerAccount(newUser);
-
+            user.setStatus(Customer.Status.ENABLED);
             Role premiumRole = roleDAO.findByName("ROLE_PREMIUM_USER");
             if (premiumRole != null) {
                 Hibernate.initialize(user.getRoles());

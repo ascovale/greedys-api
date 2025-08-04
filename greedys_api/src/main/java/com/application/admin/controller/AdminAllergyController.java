@@ -1,5 +1,6 @@
 package com.application.admin.controller;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -33,7 +34,7 @@ public class AdminAllergyController extends BaseController {
     @Operation(summary = "Create allergy", description = "Creates a new allergy for the specified user by their ID")
     @CreateApiResponses
     @PostMapping("/new")
-    public ResponseWrapper<String> createAllergy(@RequestBody NewAllergyDTO allergyDto) {
+    public ResponseEntity<ResponseWrapper<String>> createAllergy(@RequestBody NewAllergyDTO allergyDto) {
         return executeCreate("create allergy", "Allergy created successfully", () -> {
             allergyService.createAllergy(allergyDto);
             return "Allergy created successfully";
@@ -43,7 +44,7 @@ public class AdminAllergyController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_WRITE')")
     @Operation(summary = "Delete allergy", description = "Deletes an allergy by its ID")
     @DeleteMapping("/{allergyId}/delete")
-    public ResponseWrapper<String> deleteAllergy(@PathVariable Long allergyId) {
+    public ResponseEntity<ResponseWrapper<String>> deleteAllergy(@PathVariable Long allergyId) {
         return executeVoid("delete allergy", "Allergy deleted successfully", () -> {
             allergyService.deleteAllergy(allergyId);
         });
@@ -52,7 +53,7 @@ public class AdminAllergyController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_WRITE')")
     @Operation(summary = "Modify allergy", description = "Modifies an existing allergy")
     @PutMapping("/{allergyId}/modify")
-    public ResponseWrapper<String> modifyAllergy(@PathVariable Long allergyId, @RequestBody NewAllergyDTO allergyDto) {
+    public ResponseEntity<ResponseWrapper<String>> modifyAllergy(@PathVariable Long allergyId, @RequestBody NewAllergyDTO allergyDto) {
         return executeVoid("modify allergy", "Allergy modified successfully", () -> {
             allergyService.modifyAllergy(allergyId, allergyDto);
         });

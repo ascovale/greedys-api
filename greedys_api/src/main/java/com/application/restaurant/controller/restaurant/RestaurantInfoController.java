@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,7 +38,7 @@ public class RestaurantInfoController extends BaseController {
 
 	@PostMapping(value = "/no-show-time-limit")
 	@Operation(summary = "Set no-show time limit", description = "Set the time limit for no-show reservations")
-	public ResponseWrapper<String> setNoShowTimeLimit(@RequestParam int minutes) {
+	public ResponseEntity<ResponseWrapper<String>> setNoShowTimeLimit(@RequestParam int minutes) {
 		return executeVoid("set no-show time limit", "No-show time limit updated successfully", () -> {
 			Long restaurantId = RestaurantControllerUtils.getCurrentRestaurant().getId();
 			log.info("Setting no-show time limit to {} minutes for restaurant ID: {}", minutes, restaurantId);
@@ -49,7 +50,7 @@ public class RestaurantInfoController extends BaseController {
 	@GetMapping(value = "/types")
 	@Operation(summary = "Get types of a restaurant", description = "Retrieve the types of a restaurant")
 	@ReadApiResponses
-	public ListResponseWrapper<String> getRestaurantTypesNames() {
+	public ResponseEntity<ListResponseWrapper<String>> getRestaurantTypesNames() {
 		return executeList("get restaurant types", () -> {
 			log.info("Getting restaurant types");
 			return restaurantService.getRestaurantTypesNames();
@@ -59,7 +60,7 @@ public class RestaurantInfoController extends BaseController {
 	@GetMapping(value = "/open-days")
 	@Operation(summary = "Get open days of the authenticated restaurant", description = "Retrieve the open days of the authenticated restaurant")
 	@ReadApiResponses
-	public ListResponseWrapper<String> getOpenDays(
+	public ResponseEntity<ListResponseWrapper<String>> getOpenDays(
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate end) {
 		return executeList("get open days", () -> {
@@ -73,7 +74,7 @@ public class RestaurantInfoController extends BaseController {
 	@GetMapping(value = "/closed-days")
 	@Operation(summary = "Get closed days of the authenticated restaurant", description = "Retrieve the closed days of the authenticated restaurant")
 	@ReadApiResponses
-	public ListResponseWrapper<LocalDate> getClosedDays(
+	public ResponseEntity<ListResponseWrapper<LocalDate>> getClosedDays(
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate end) {
 		return executeList("get closed days", () -> {
@@ -87,7 +88,7 @@ public class RestaurantInfoController extends BaseController {
 	@GetMapping(value = "/active-services-in-period")
 	@Operation(summary = "Get active and enabled services of the authenticated restaurant for a specific period", description = "Retrieve the services of the authenticated restaurant that are active and enabled in a given date range")
 	@ReadApiResponses
-	public ListResponseWrapper<ServiceDTO> getActiveEnabledServicesInPeriod(
+	public ResponseEntity<ListResponseWrapper<ServiceDTO>> getActiveEnabledServicesInPeriod(
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate end) {
 		return executeList("get active services in period", () -> {
@@ -101,7 +102,7 @@ public class RestaurantInfoController extends BaseController {
 	@GetMapping(value = "/active-services-in-date")
 	@Operation(summary = "Get active and enabled services of the authenticated restaurant for a specific date", description = "Retrieve the services of the authenticated restaurant that are active and enabled on a given date")
 	@ReadApiResponses
-	public ListResponseWrapper<ServiceDTO> getActiveEnabledServicesInDate(
+	public ResponseEntity<ListResponseWrapper<ServiceDTO>> getActiveEnabledServicesInDate(
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate date) {
 		return executeList("get active services in date", () -> {
 			Long restaurantId = RestaurantControllerUtils.getCurrentRestaurant().getId();
@@ -113,7 +114,7 @@ public class RestaurantInfoController extends BaseController {
 
 	@PostMapping(value = "/add-category")
 	@Operation(summary = "Add a category to the restaurant", description = "Add a new category to the authenticated restaurant")
-	public ResponseWrapper<String> addRestaurantCategory(@RequestParam Long categoryId) {
+	public ResponseEntity<ResponseWrapper<String>> addRestaurantCategory(@RequestParam Long categoryId) {
 		return executeVoid("add restaurant category", "Category added successfully", () -> {
 			Long restaurantId = RestaurantControllerUtils.getCurrentRestaurant().getId();
 			log.info("Adding category ID '{}' to restaurant ID: {}", categoryId, restaurantId);
@@ -123,7 +124,7 @@ public class RestaurantInfoController extends BaseController {
 
 	@PostMapping(value = "/remove-category")
 	@Operation(summary = "Remove a category from the restaurant", description = "Remove a category from the authenticated restaurant")
-	public ResponseWrapper<String> removeRestaurantCategory(@RequestParam Long categoryId) {
+	public ResponseEntity<ResponseWrapper<String>> removeRestaurantCategory(@RequestParam Long categoryId) {
 		return executeVoid("remove restaurant category", "Category removed successfully", () -> {
 			Long restaurantId = RestaurantControllerUtils.getCurrentRestaurant().getId();
 			log.info("Removing category ID '{}' from restaurant ID: {}", categoryId, restaurantId);

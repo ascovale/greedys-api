@@ -2,6 +2,7 @@ package com.application.customer.controller;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -67,7 +68,7 @@ public class CustomerNotificationController extends BaseController {
     @Operation(summary = "Get unread notifications", description = "Returns a pageable list of unread notifications")
     @GetMapping("/unread/{page}/{size}")
     @ReadApiResponses
-    public PageResponseWrapper<CustomerNotification> getUnreadNotifications(@PathVariable int page,
+    public ResponseEntity<PageResponseWrapper<CustomerNotification>> getUnreadNotifications(@PathVariable int page,
             @PathVariable int size) {
         Pageable pageable = PageRequest.of(page, size);
         return executePaginated("getUnreadNotifications", () -> notificationService.getUnreadNotifications(pageable));
@@ -76,7 +77,7 @@ public class CustomerNotificationController extends BaseController {
     @Operation(summary = "Get all notifications", description = "Returns a pageable list of all notifications")
     @GetMapping("/all/{page}/{size}")
     @ReadApiResponses
-    public PageResponseWrapper<CustomerNotification> getAllNotifications(@PathVariable int page,
+    public ResponseEntity<PageResponseWrapper<CustomerNotification>> getAllNotifications(@PathVariable int page,
             @PathVariable int size) {
         Pageable pageable = PageRequest.of(page, size);
         return executePaginated("getAllNotifications", () -> notificationService.getAllNotifications(pageable));
@@ -85,7 +86,7 @@ public class CustomerNotificationController extends BaseController {
     @Operation(summary = "Set notification as read", description = "Sets the notification with the given ID as the given read boolean")
     @PutMapping("/read")
     @ReadApiResponses
-    public ResponseWrapper<String> setNotificationAsRead(@RequestParam Long notificationId, @RequestParam Boolean read) {
+    public ResponseEntity<ResponseWrapper<String>> setNotificationAsRead(@RequestParam Long notificationId, @RequestParam Boolean read) {
         return executeVoid("setNotificationAsRead", "Notification marked as read", () -> 
             notificationService.read(notificationId));
     }
@@ -93,14 +94,14 @@ public class CustomerNotificationController extends BaseController {
     @Operation(summary = "Register a user's FCM token", description = "Registers a user's FCM token")
     @PostMapping("/token")
     @CreateApiResponses
-    public ResponseWrapper<String> registerUserFcmToken(@RequestBody FcmTokenDTO userFcmToken) {
+    public ResponseEntity<ResponseWrapper<String>> registerUserFcmToken(@RequestBody FcmTokenDTO userFcmToken) {
         return executeVoid("registerUserFcmToken", "FCM token registered successfully", () -> 
             customerFcmTokenRepository.saveUserFcmToken(userFcmToken));
     }
 
     @Operation(summary = "Check if a device's token is present", description = "Checks if a device's token is present")
     @GetMapping("/token/present")
-    public ResponseWrapper<String> isDeviceTokenPresent(@RequestParam String deviceId) {
+    public ResponseEntity<ResponseWrapper<String>> isDeviceTokenPresent(@RequestParam String deviceId) {
         return execute("isDeviceTokenPresent", () -> {
             boolean isPresent = customerFcmTokenRepository.isDeviceTokenPresent(deviceId);
             if (isPresent) {
@@ -112,7 +113,7 @@ public class CustomerNotificationController extends BaseController {
 
     @Operation(summary = "Verify a device's token", description = "Verifies a device's token and returns the status")
     @GetMapping("/token/verify")
-    public ResponseWrapper<String> verifyToken(@RequestParam String deviceId) {
+    public ResponseEntity<ResponseWrapper<String>> verifyToken(@RequestParam String deviceId) {
         return execute("verifyToken", () -> customerFcmTokenRepository.verifyTokenByDeviceId(deviceId));
     }
 }

@@ -31,7 +31,7 @@ public class PageResponseWrapper<T> {
     private Page<T> data;
 
     @Schema(description = "Error details (present only if success = false)")
-    private ResponseWrapper.ErrorDetails error;
+    private ErrorDetails error;
 
     @Schema(description = "Response timestamp")
     @Builder.Default
@@ -78,7 +78,7 @@ public class PageResponseWrapper<T> {
                 .build();
     }
 
-    public static <T> PageResponseWrapper<T> error(String message, ResponseWrapper.ErrorDetails error) {
+    public static <T> PageResponseWrapper<T> error(String message, ErrorDetails error) {
         return PageResponseWrapper.<T>builder()
                 .success(false)
                 .message(message)
