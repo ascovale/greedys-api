@@ -1,13 +1,12 @@
 package com.application.web.dto.get;
 
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
-
 import com.application.controller.validators.ValidEmail;
 import com.application.persistence.model.restaurant.Restaurant;
 import com.application.web.dto.RestaurantImageDto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 @Schema(name = "RestaurantDTO", description = "DTO for restaurant details")
 public class RestaurantDTO {
@@ -29,7 +28,7 @@ public class RestaurantDTO {
 		this.name = restaurant.getName();
 		this.address = restaurant.getAddress();
 		this.post_code = restaurant.getPostCode();
-		this.pi = restaurant.getpI();
+		this.pi = restaurant.getPI();
 		this.email = restaurant.getEmail();
 	}
     

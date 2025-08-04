@@ -18,7 +18,6 @@ import com.application.persistence.model.customer.Customer;
 import com.application.persistence.model.customer.Privilege;
 import com.application.persistence.model.customer.Role;
 import com.application.service.authentication.CustomerAuthenticationService;
-import com.application.web.dto.get.CustomerDTO;
 import com.application.web.dto.post.NewCustomerDTO;
 
 @Component

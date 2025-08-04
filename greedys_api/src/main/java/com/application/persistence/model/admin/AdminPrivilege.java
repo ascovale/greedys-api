@@ -10,10 +10,13 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
-
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "admin_privilege")
+@Getter
+@Setter
 public class AdminPrivilege extends BasePrivilege {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -31,31 +34,7 @@ public class AdminPrivilege extends BasePrivilege {
         this.name = name;
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(final Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(final String name) {
-        this.name = name;
-    }
-
-    public List<AdminRole> getAdminRoles() {
-		return adminRoles;
-	}
-
-	public void setRoles(List<AdminRole> adminRoles) {
-		this.adminRoles = adminRoles;
-	}
-
-	@Override
+    @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;

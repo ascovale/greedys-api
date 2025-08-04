@@ -1,12 +1,12 @@
 package com.application.web.dto.get;
 
 import java.time.LocalDate;
-
-import com.application.persistence.model.reservation.Service;
-import com.application.web.dto.ServiceTypeDto;
 import java.util.Collection;
 
 import org.springframework.format.annotation.DateTimeFormat;
+
+import com.application.persistence.model.reservation.Service;
+import com.application.web.dto.ServiceTypeDto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -28,7 +28,7 @@ public class ServiceDTO {
         this.id = service.getId();
         this.name = service.getName();
         this.restaurantId = service.getRestaurant().getId();
-        this.serviceType = service.getServiceType().stream().map(ServiceTypeDto::new).toList();
+        this.serviceType = service.getServiceTypes().stream().map(ServiceTypeDto::new).toList();
         this.info = service.getInfo();
         this.validFrom = service.getValidFrom();
         this.validTo = service.getValidTo();

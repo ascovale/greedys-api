@@ -7,9 +7,19 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "image_restaurant")
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class RestaurantImage {
 	
 	@Id
@@ -19,40 +29,5 @@ public class RestaurantImage {
 	@ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "restaurant_id")
 	Restaurant restaurant;
-
-	public RestaurantImage(){};
-
-	public RestaurantImage(String name) {
-		this.name = name;
-	}
-
-	public Restaurant getRestaurant() {
-		return restaurant;
-	}
-
-	public void setRestaurant(Restaurant restaurant) {
-		this.restaurant = restaurant;
-	}
-
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	@Override
-	public String toString() {
-		return "Image [id=" + id + ", name=" + name + "]";
-	}
 
 }

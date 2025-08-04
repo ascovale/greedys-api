@@ -10,10 +10,20 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 
 @Entity
 @Table(name = "restaurant_privilege")
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class RestaurantPrivilege extends BasePrivilege{
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -22,40 +32,7 @@ public class RestaurantPrivilege extends BasePrivilege{
     @ManyToMany(mappedBy = "restaurantPrivileges")
     private Collection<RestaurantRole> restaurantRoles;
 
-    public RestaurantPrivilege() {
-        super();
-    }
-
-    public RestaurantPrivilege(final String name) {
-        super();
-        this.name = name;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(final Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(final String name) {
-        this.name = name;
-    }
-
-    public Collection<RestaurantRole> getRoles() {
-		return restaurantRoles;
-	}
-
-	public void setRestaurantRoles(Collection<RestaurantRole> restaurantRoles) {
-		this.restaurantRoles = restaurantRoles;
-	}
-
-	@Override
+    @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;

@@ -13,8 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.application.mapper.Mapper.Weekday;
 import com.application.persistence.dao.customer.ReservationDAO;
-import com.application.persistence.dao.restaurant.RestaurantDAO;
 import com.application.persistence.dao.restaurant.RUserDAO;
+import com.application.persistence.dao.restaurant.RestaurantDAO;
 import com.application.persistence.dao.restaurant.ServiceDAO;
 import com.application.persistence.dao.restaurant.ServiceTypeDAO;
 import com.application.persistence.dao.restaurant.SlotDAO;
@@ -108,9 +108,13 @@ public class ServiceService {
 	}
 
 	public void newService(NewServiceDTO newServiceDTO) {
-		Service service = new Service();
-		service.setName(newServiceDTO.getName());
-		service.setRestaurant(rService.findById(newServiceDTO.getRestaurant()));
+		Service service = Service.builder()
+		.name(newServiceDTO.getName())
+		.restaurant(rService.findById(newServiceDTO.getRestaurant()))
+		.validFrom(newServiceDTO.getValidFrom())
+		.validTo(newServiceDTO.getValidTo())
+		.active(false)
+		.build();
 
 		if (newServiceDTO.getServiceType() != null) {
 			Set<ServiceType> serviceTypes = new HashSet<>();
@@ -119,10 +123,6 @@ public class ServiceService {
 		} else {
 			service.setServiceTypes(null);
 		}
-
-		service.setValidFrom(newServiceDTO.getValidFrom());
-		service.setValidTo(newServiceDTO.getValidTo());
-		service.setActive(false);
 		serviceDAO.save(service);
 	}
 
@@ -168,13 +168,18 @@ public class ServiceService {
 	}
 
 	public void newService(AdminNewServiceDTO newServiceDTO) {
-		Service service = new Service();
 		Restaurant restaurant = rService.findById(newServiceDTO.getRestaurant());
 		if (restaurant == null) {
 			throw new IllegalArgumentException("Restaurant not found");
 		}
-		service.setName(newServiceDTO.getName());
-		service.setRestaurant(restaurant);
+		Service service = Service.builder()
+			.name(newServiceDTO.getName())
+			.restaurant(restaurant)
+			.validFrom(newServiceDTO.getValidFrom())
+			.validTo(newServiceDTO.getValidTo())
+			.active(false)
+			.build();
+
 		if (newServiceDTO.getServiceType() != null) {
 			Set<ServiceType> serviceTypes = new HashSet<>();
 			serviceTypes.add(entityManager.getReference(ServiceType.class, newServiceDTO.getServiceType()));
@@ -182,11 +187,8 @@ public class ServiceService {
 		} else {
 			service.setServiceTypes(null);
 		}
-
-		service.setValidFrom(newServiceDTO.getValidFrom());
-		service.setValidTo(newServiceDTO.getValidTo());
-		service.setActive(false);
 		serviceDAO.save(service);
+		
 	}
 
 	public void newService(Long idRestaurant, RestaurantNewServiceDTO newServiceDTO) {
@@ -194,9 +196,13 @@ public class ServiceService {
 		if (restaurant == null) {
 			throw new IllegalArgumentException("Restaurant not found");
 		}
-		Service service = new Service();
-		service.setName(newServiceDTO.getName());
-		service.setRestaurant(rService.findById(restaurant.getId()));
+		Service service = Service.builder()
+		.name(newServiceDTO.getName())
+		.restaurant(rService.findById(restaurant.getId()))
+		.validFrom(newServiceDTO.getValidFrom())
+		.validTo(newServiceDTO.getValidTo())
+		.active(false)
+		.build();
 
 		if (newServiceDTO.getServiceType() != null) {
 			Set<ServiceType> serviceTypes = new HashSet<>();
@@ -205,10 +211,6 @@ public class ServiceService {
 		} else {
 			service.setServiceTypes(null);
 		}
-
-		service.setValidFrom(newServiceDTO.getValidFrom());
-		service.setValidTo(newServiceDTO.getValidTo());
-		service.setActive(false);
 		serviceDAO.save(service);
 	}
 
@@ -248,7 +250,7 @@ public class ServiceService {
 		
 		Set<ServiceType> serviceTypes = new HashSet<>();
 		for (Service service : restaurant.getServices()) {
-			serviceTypes.addAll(service.getServiceType());
+			serviceTypes.addAll(service.getServiceTypes());
 		}
 		return serviceTypes.stream().map(ServiceTypeDto::new).toList();
 	}
@@ -282,10 +284,11 @@ public class ServiceService {
 			throw new IllegalArgumentException("Restaurant not found");
 		}
 		
-		Service service = new Service();
-		service.setName(servicesDto.getName());
-		service.setRestaurant(restaurant);
-		
+		Service service = Service.builder()
+		.name(servicesDto.getName())
+		.restaurant(restaurant)
+		.build();
+
 		if (servicesDto.getServiceType() != null) {
 			Set<ServiceType> serviceTypes = new HashSet<>();
 			serviceTypes.add(entityManager.getReference(ServiceType.class, servicesDto.getServiceType()));
