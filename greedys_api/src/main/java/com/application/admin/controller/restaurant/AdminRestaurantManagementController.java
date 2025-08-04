@@ -82,7 +82,6 @@ public class AdminRestaurantManagementController extends BaseController {
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
 	@Operation(summary = "Change restaurant email", description = "Change the email of a restaurant by its ID")
 	@PutMapping("/{restaurantId}/change_email")
-	@ResponseStatus(HttpStatus.OK)
 	public ResponseWrapper<String> changeRestaurantEmail(@PathVariable Long restaurantId, @RequestBody String newEmail) {
 		return executeVoid("change restaurant email", "Restaurant email changed successfully", () -> 
 			restaurantService.changeRestaurantEmail(restaurantId, newEmail));
@@ -91,7 +90,6 @@ public class AdminRestaurantManagementController extends BaseController {
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
 	@Operation(summary = "Mark restaurant as deleted", description = "Mark a restaurant as deleted or disabled by its ID")
 	@DeleteMapping("/{restaurantId}/delete")
-	@ResponseStatus(HttpStatus.OK)
 	public ResponseWrapper<String> markRestaurantAsDeleted(@PathVariable Long restaurantId, @RequestParam boolean deleted) {
 		return executeVoid("mark restaurant as deleted", "Restaurant marked as deleted successfully", () -> 
 			restaurantService.setRestaurantDeleted(restaurantId, deleted));

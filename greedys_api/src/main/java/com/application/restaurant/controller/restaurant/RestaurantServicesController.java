@@ -1,4 +1,4 @@
-package com.application.restaurant.controller;
+package com.application.restaurant.controller.restaurant;
 
 import java.util.Collection;
 
@@ -71,8 +71,7 @@ public class RestaurantServicesController extends BaseController {
     @ReadApiResponses
     @PreAuthorize("authentication.principal.isEnabled() & hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_WRITE')")
     @DeleteMapping("/{serviceId}/delete")
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseWrapper<String> deleteService(@PathVariable Long serviceId) {
+        public ResponseWrapper<String> deleteService(@PathVariable Long serviceId) {
         return executeVoid("delete service", "Service deleted successfully", () -> {
             System.out.println("<<<   Controller Service   >>>");
             System.out.println("<<<   serviceId: " + serviceId);
@@ -86,8 +85,7 @@ public class RestaurantServicesController extends BaseController {
     @ReadApiResponses
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_READ')")
     @GetMapping("/{serviceId}")
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseWrapper<ServiceDTO> getServiceById(@PathVariable Long serviceId) {
+        public ResponseWrapper<ServiceDTO> getServiceById(@PathVariable Long serviceId) {
         return execute("get service by id", () -> serviceService.findById(serviceId));
     }
 
@@ -97,8 +95,7 @@ public class RestaurantServicesController extends BaseController {
     @ReadApiResponses
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_READ')")
     @GetMapping("/{serviceId}/slots")
-    @ResponseStatus(HttpStatus.OK)
-    public ListResponseWrapper<SlotDTO> getSlots(@PathVariable long serviceId) {
+        public ListResponseWrapper<SlotDTO> getSlots(@PathVariable long serviceId) {
         return executeList("get service slots", () -> {
             Collection<SlotDTO> slots = slotService.findByService_Id(serviceId);
             return slots instanceof java.util.List ? (java.util.List<SlotDTO>) slots : new java.util.ArrayList<>(slots);
@@ -111,8 +108,7 @@ public class RestaurantServicesController extends BaseController {
     @ReadApiResponses
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_READ')")
     @GetMapping("/types")
-    @ResponseStatus(HttpStatus.OK)
-    public ListResponseWrapper<ServiceTypeDto> getServiceTypes() {
+        public ListResponseWrapper<ServiceTypeDto> getServiceTypes() {
         return executeList("get service types", () -> {
             Collection<ServiceTypeDto> types = serviceService.getServiceTypesFromRUser();
             return types instanceof java.util.List ? (java.util.List<ServiceTypeDto>) types : new java.util.ArrayList<>(types);
@@ -124,8 +120,7 @@ public class RestaurantServicesController extends BaseController {
                 content = @Content(array = @ArraySchema(schema = @Schema(implementation = ServiceDTO.class))))
     @ReadApiResponses
     @GetMapping(value = "/services")
-    @ResponseStatus(HttpStatus.OK)
-    public ListResponseWrapper<ServiceDTO> getServices() {
+        public ListResponseWrapper<ServiceDTO> getServices() {
         return executeList("get restaurant services", () -> {
             Collection<ServiceDTO> services = restaurantService.getServices(RestaurantControllerUtils.getCurrentRestaurant().getId());
             return services instanceof java.util.List ? (java.util.List<ServiceDTO>) services : new java.util.ArrayList<>(services);
