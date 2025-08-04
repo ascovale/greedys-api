@@ -26,10 +26,6 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @Entity
 @Table(name = "notification")
-@SuperBuilder
-@Getter
-@Setter
-@NoArgsConstructor
 public class CustomerNotification extends ANotification {
 
 	@Id
