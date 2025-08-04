@@ -11,10 +11,6 @@ import org.springframework.context.annotation.Configuration;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
-import io.swagger.v3.oas.models.media.ArraySchema;
-import io.swagger.v3.oas.models.media.Content;
-import io.swagger.v3.oas.models.media.MediaType;
-import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
@@ -82,7 +78,6 @@ public class SwaggerConfig {
     
     private OpenApiCustomizer groupCustomizer() {
         return openApi -> {
-            // Configurazione security
             String securityName = "bearerAuth";
             openApi.addSecurityItem(new SecurityRequirement().addList(securityName));
             Components components = openApi.getComponents();
@@ -91,41 +86,7 @@ public class SwaggerConfig {
                     components.addSecuritySchemes(securityName, bearerScheme());
                 }
             }
-            
-            // Fix per i generics - ServiceTypes endpoint
-            fixServiceTypesEndpoint(openApi);
         };
-    }
-    
-    private void fixServiceTypesEndpoint(OpenAPI openApi) {
-        if (openApi.getPaths() != null && openApi.getPaths().get("/admin/service/types") != null) {
-            var pathItem = openApi.getPaths().get("/admin/service/types");
-            if (pathItem.getGet() != null && pathItem.getGet().getResponses() != null) {
-                var response200 = pathItem.getGet().getResponses().get("200");
-                if (response200 != null) {
-                    // Crea schema specifico per ServiceTypeDto list
-                    ObjectSchema responseSchema = new ObjectSchema();
-                    responseSchema.addProperty("success", new Schema<>().type("boolean"));
-                    responseSchema.addProperty("message", new Schema<>().type("string"));
-                    responseSchema.addProperty("timestamp", new Schema<>().type("string").format("date-time"));
-                    
-                    // Array di ServiceTypeDto
-                    ArraySchema dataArray = new ArraySchema();
-                    dataArray.setItems(new Schema<>().$ref("#/components/schemas/ServiceTypeDto"));
-                    responseSchema.addProperty("data", dataArray);
-                    
-                    // Metadata
-                    responseSchema.addProperty("metadata", new Schema<>().$ref("#/components/schemas/ListMetadata"));
-                    
-                    // Applica lo schema
-                    Content content = new Content();
-                    MediaType mediaType = new MediaType();
-                    mediaType.setSchema(responseSchema);
-                    content.addMediaType("application/json", mediaType);
-                    response200.setContent(content);
-                }
-            }
-        }
     }
 
     private Components baseComponents() {
