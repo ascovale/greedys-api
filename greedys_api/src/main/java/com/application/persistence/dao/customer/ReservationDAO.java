@@ -17,6 +17,7 @@ import com.application.web.dto.get.ReservationDTO;
 @Repository
 public interface ReservationDAO extends JpaRepository<Reservation, Long> {
 
+    @Query(value = "SELECT r FROM Reservation r WHERE r.createdBy.id = :customerId")
     List<ReservationDTO> findAllByCustomer_Id(Long customerId);
 
     @Query(value = """
@@ -115,7 +116,7 @@ public interface ReservationDAO extends JpaRepository<Reservation, Long> {
 
     @Query(value = """
             SELECT r FROM Reservation r
-            WHERE r.customer.id = :customerId
+            WHERE r.createdBy.id = :customerId
                 AND r.status = :status
                 ORDER BY r.date, r.slot.start
             """)
@@ -143,7 +144,7 @@ public interface ReservationDAO extends JpaRepository<Reservation, Long> {
 
     @Query(value = """
             SELECT r FROM Reservation r
-            WHERE r.customer.id = :customerId
+            WHERE r.createdBy.id = :customerId
                 AND r.status = :status
                 ORDER BY r.date, r.slot.start
             """)
@@ -159,20 +160,20 @@ public interface ReservationDAO extends JpaRepository<Reservation, Long> {
 
     @Query(value = """
             SELECT r FROM Reservation r
-            WHERE r.customer.id = :customerId
+            WHERE r.createdBy.id = :customerId
             """)
     Optional<Reservation> findByCustomer(Long customerId);
 
 
     @Query(value = """
             SELECT COUNT(r) FROM Reservation r
-            WHERE r.customer.id = :customerId
+            WHERE r.createdBy.id = :customerId
             """)
     Integer countByCustomer(Long customerId);
 
     @Query(value = """
             SELECT COUNT(r) FROM Reservation r
-            WHERE r.customer.id = :customerId AND r.status = :status
+            WHERE r.createdBy.id = :customerId AND r.status = :status
             """)
     Integer countByCustomerAndStatus(Long customerId, Reservation.Status status);
 }

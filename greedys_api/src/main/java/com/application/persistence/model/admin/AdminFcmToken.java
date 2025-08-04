@@ -3,7 +3,6 @@ package com.application.persistence.model.admin;
 import java.time.LocalDateTime;
 
 import com.application.persistence.model.fcm.AFcmToken;
-import com.google.auto.value.AutoValue.Builder;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,6 +13,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
 import lombok.Setter;
+import lombok.Builder;
 import lombok.experimental.SuperBuilder;
 
 @SuperBuilder
@@ -31,7 +31,8 @@ public class AdminFcmToken extends AFcmToken {
     @Column(nullable = false)
     private String fcmToken;
 
-    @Column(nullable = false)
+    @Column(nullable = false, updatable = false)
+    @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(nullable = false)

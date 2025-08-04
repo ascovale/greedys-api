@@ -53,14 +53,14 @@ public class RestaurantNotificationService {
         createAndSendNotifications(restaurant.getRUsers(), type);
     }
 
-    public Page<RestaurantNotification> getNotifications(Pageable pageable, boolean unreadOnly) {
-        return unreadOnly ? restaurantNotificationDAO.findByReadFalse(pageable) : restaurantNotificationDAO.findAll(pageable);
+    public Page<RestaurantNotification> getNotifications(Long userId, Pageable pageable, boolean unreadOnly) {
+        return unreadOnly ? restaurantNotificationDAO.findByUserAndReadPagable(userId, pageable) : restaurantNotificationDAO.findByUserPagable(userId, pageable);
     }
 
     public void updateNotificationReadStatus(Long notificationId, Boolean read) {
         RestaurantNotification notification = restaurantNotificationDAO.findById(notificationId)
                 .orElseThrow(() -> new IllegalArgumentException("Notification not found"));
-        notification.setRead(read);
+        notification.setIsRead(read);
         restaurantNotificationDAO.save(notification);
     }
 
@@ -82,14 +82,23 @@ public class RestaurantNotificationService {
         firebaseService.sendNotification(title, body, data, tokens);
     }
 
-    public void sendNotificationToAllUsers(String title, String body, Map<String, String> data, Long idRestaurant) {
+    public void sendNotificationToAllUsers(String title, String body, Map<String, String> data, RNotificationType type, Long idRestaurant) {
         Restaurant restaurant = restaurantDAO.findById(idRestaurant)
                 .orElseThrow(() -> new IllegalArgumentException("Restaurant not found"));
-        createAndSendFirebaseNotifications(restaurant.getRUsers(), title, body, data);
+        createAndSendFirebaseNotifications(restaurant.getRUsers(), title, body, data, type);
     }
 
-    private void createAndSendFirebaseNotifications(Collection<RUser> RUsers, String title, String body, Map<String, String> data) {
+    private void createAndSendFirebaseNotifications(Collection<RUser> RUsers, String title, String body, Map<String, String> data, RNotificationType type) {
         for (RUser RUser : RUsers) {
+
+            RestaurantNotification notification = RestaurantNotification.builder()
+                    .title(title)
+                    .body(body)
+                    .properties(data)
+                    .RUser(RUser)
+                    .type(type)
+                    .build();
+            restaurantNotificationDAO.save(notification);
             List<String> tokens = tokenService.getTokensByRUserId(RUser.getId());
             firebaseService.sendNotification(title, body, data, tokens);
         }
