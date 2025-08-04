@@ -2,6 +2,7 @@ package com.application.restaurant.controller;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -38,7 +39,7 @@ public class RestaurantNotificationController extends BaseController {
     @Operation(summary = "Get unread notifications", description = "Returns a pageable list of unread notifications")
     @ReadApiResponses
     @GetMapping("/unread/{page}/{size}")
-    public PageResponseWrapper<RestaurantNotification> getUnreadNotifications(
+    public ResponseEntity<PageResponseWrapper<RestaurantNotification>> getUnreadNotifications(
             @PathVariable int page,
             @PathVariable int size) {
         return executePaginated("get unread notifications", () -> {
@@ -52,7 +53,7 @@ public class RestaurantNotificationController extends BaseController {
                 content = @Content(schema = @Schema(implementation = String.class)))
     @ReadApiResponses
     @PutMapping("/read")
-    public ResponseWrapper<String> setNotificationAsRead(
+    public ResponseEntity<ResponseWrapper<String>> setNotificationAsRead(
             @RequestParam Long notificationId, @RequestParam Boolean read) {
         return executeVoid("set notification as read", "Notification status updated successfully", () -> 
             restaurantNotificationService.updateNotificationReadStatus(notificationId, read));
@@ -61,7 +62,7 @@ public class RestaurantNotificationController extends BaseController {
     @Operation(summary = "Get all notifications", description = "Returns a pageable list of all notifications")
     @ReadApiResponses
     @GetMapping("/all/{page}/{size}")
-    public PageResponseWrapper<RestaurantNotification> getAllNotifications(
+    public ResponseEntity<PageResponseWrapper<RestaurantNotification>> getAllNotifications(
             @PathVariable int page,
             @PathVariable int size) {
         return executePaginated("get all notifications", () -> {
@@ -73,7 +74,7 @@ public class RestaurantNotificationController extends BaseController {
     @Operation(summary = "Get a specific notification", description = "Returns the notification with the given ID")
     @ReadApiResponses
     @GetMapping("/{notificationId}")
-    public ResponseWrapper<RestaurantNotification> getRestaurantNotification(
+    public ResponseEntity<ResponseWrapper<RestaurantNotification>> getRestaurantNotification(
             @PathVariable Long notificationId) {
         return execute("get notification", () -> restaurantNotificationService.getNotificationById(notificationId));
     }
@@ -83,7 +84,7 @@ public class RestaurantNotificationController extends BaseController {
                 content = @Content(schema = @Schema(implementation = String.class)))
     @ReadApiResponses
     @PutMapping("/all-read")
-    public ResponseWrapper<String> setAllNotificationsAsRead() {
+    public ResponseEntity<ResponseWrapper<String>> setAllNotificationsAsRead() {
         return executeVoid("mark all notifications as read", "All notifications marked as read", () -> 
             restaurantNotificationService.markAllNotificationsAsRead(RestaurantControllerUtils.getCurrentRUser().getId()));
     }
@@ -93,7 +94,7 @@ public class RestaurantNotificationController extends BaseController {
                 content = @Content(schema = @Schema(implementation = Long.class)))
     @ReadApiResponses
     @GetMapping("/unread/count")
-    public ResponseWrapper<Long> getUnreadNotificationsCount() {
+    public ResponseEntity<ResponseWrapper<Long>> getUnreadNotificationsCount() {
         return execute("get unread notifications count", () -> 
             restaurantNotificationService.countUnreadNotifications(RestaurantControllerUtils.getCurrentRUser()).longValue());
     }

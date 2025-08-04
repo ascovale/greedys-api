@@ -4,6 +4,7 @@ package com.application.customer.controller;
 import java.util.Collection;
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -43,7 +44,7 @@ public class CustomerReservationController extends BaseController {
 	@Operation(summary = "The customer user asks for a reservation", description = "Endpoint for the customer to request a reservation")
 	@PostMapping("/ask")
 	@CreateApiResponses
-	public ResponseWrapper<String> askReservation(@RequestBody CustomerNewReservationDTO DTO, @AuthenticationPrincipal Customer customer) {
+	public ResponseEntity<ResponseWrapper<String>> askReservation(@RequestBody CustomerNewReservationDTO DTO, @AuthenticationPrincipal Customer customer) {
 		return executeVoid("askReservation", "Reservation requested successfully", () -> 
 			customerReservationService.createReservation(DTO, customer));
 	}
@@ -51,7 +52,7 @@ public class CustomerReservationController extends BaseController {
 	@PreAuthorize("@securityCustomerService.hasPermissionOnReservation(#reservationId)")
 	@Operation(summary = "The customer user deletes a reservation", description = "Endpoint for the customer to delete a reservation")
 	@DeleteMapping("/{reservationId}/delete")
-	public ResponseWrapper<String> deleteReservation(@PathVariable Long reservationId) {
+	public ResponseEntity<ResponseWrapper<String>> deleteReservation(@PathVariable Long reservationId) {
 		return executeVoid("deleteReservation", "Reservation deleted successfully", () -> 
 			customerReservationService.deleteReservation(reservationId));
 	}
@@ -60,7 +61,7 @@ public class CustomerReservationController extends BaseController {
 	@Operation(summary = "The customer user requests a reservation modification", description = "Endpoint for the customer to request a reservation modification")
 	@CreateApiResponses
 	@PostMapping("/{reservationId}/request_modify")
-	public ResponseWrapper<String> requestModifyReservation(@PathVariable Long reservationId,
+	public ResponseEntity<ResponseWrapper<String>> requestModifyReservation(@PathVariable Long reservationId,
 			@RequestBody CustomerNewReservationDTO DTO,
 			@AuthenticationPrincipal Customer customer) {
 		return executeVoid("requestModifyReservation", "Reservation modification requested successfully", () -> 
@@ -70,7 +71,7 @@ public class CustomerReservationController extends BaseController {
 	@PreAuthorize("@securityCustomerService.hasPermissionOnReservation(#reservationId)")
 	@Operation(summary = "The customer user rejects a reservation", description = "Endpoint for the customer to reject a reservation created by the restaurant or admin")
 	@PutMapping("/{reservationId}/reject")
-	public ResponseWrapper<String> rejectReservationCreatedByAdminOrRestaurant(@PathVariable Long reservationId) {
+	public ResponseEntity<ResponseWrapper<String>> rejectReservationCreatedByAdminOrRestaurant(@PathVariable Long reservationId) {
 		return executeVoid("rejectReservation", "Reservation rejected successfully", () -> 
 			customerReservationService.rejectReservation(reservationId));
 	}
@@ -78,7 +79,7 @@ public class CustomerReservationController extends BaseController {
 	@Operation(summary = "Get user's reservations", description = "Retrieve the list of reservations for the user")
 	@GetMapping("/reservations")
 	@ReadApiResponses
-	public ListResponseWrapper<ReservationDTO> getCustomerReservations(@AuthenticationPrincipal Customer customer) {
+	public ResponseEntity<ListResponseWrapper<ReservationDTO>> getCustomerReservations(@AuthenticationPrincipal Customer customer) {
 		return executeList("getCustomerReservations", () -> {
 			Collection<ReservationDTO> reservations = customerReservationService.findAllCustomerReservations(customer.getId());
 			return reservations instanceof List ? (List<ReservationDTO>) reservations : List.copyOf(reservations);
@@ -89,7 +90,7 @@ public class CustomerReservationController extends BaseController {
 	@Operation(summary = "Get a single reservation by ID", description = "Retrieve a specific reservation for the user by its ID")
 	@ReadApiResponses
 	@GetMapping("/{reservationId}")
-	public ResponseWrapper<ReservationDTO> getReservationById(@PathVariable Long reservationId) {
+	public ResponseEntity<ResponseWrapper<ReservationDTO>> getReservationById(@PathVariable Long reservationId) {
 		return execute("getReservationById", () -> customerReservationService.findReservationById(reservationId));
 	}
 }

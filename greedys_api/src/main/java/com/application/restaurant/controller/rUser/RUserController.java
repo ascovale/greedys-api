@@ -2,6 +2,7 @@ package com.application.restaurant.controller.rUser;
 
 import java.util.Locale;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -53,7 +54,7 @@ public class RUserController extends BaseController {
     @Operation(summary = "Add a role to a restaurant user", description = "Assign a specific role to an existing restaurant user")
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_' + #role.toUpperCase() + '_WRITE')")
     @PostMapping(value = "/add_role")
-    public ResponseWrapper<RUserDTO> addRoleToRUser(
+    public ResponseEntity<ResponseWrapper<RUserDTO>> addRoleToRUser(
             @RequestParam String role,
             @RequestParam Long RUserId) {
         return execute("add role to user", () -> {
@@ -72,7 +73,7 @@ public class RUserController extends BaseController {
     @Operation(summary = "Remove a role from a restaurant user", description = "Remove a specific role from an existing restaurant user")
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_' + #role.toUpperCase() + '_WRITE')")
     @PostMapping(value = "/remove_role")
-    public ResponseWrapper<RUserDTO> removeRoleFromRUser(
+    public ResponseEntity<ResponseWrapper<RUserDTO>> removeRoleFromRUser(
             @RequestParam String role,
             @RequestParam Long RUserId) {
         return execute("remove role from user", () -> {
@@ -102,7 +103,7 @@ public class RUserController extends BaseController {
     @Operation(summary = "Disable a restaurant user", description = "Disable a restaurant user")
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_MANAGER_WRITE')")
     @DeleteMapping(value = "/disable_user/{RUserId}")
-    public ResponseWrapper<String> disableRUser(@PathVariable Long RUserId) {
+    public ResponseEntity<ResponseWrapper<String>> disableRUser(@PathVariable Long RUserId) {
         return executeVoid("disable user", "User disabled successfully", () -> 
             RUserService.disableRUser(RestaurantControllerUtils.getCurrentRUser().getId(), RUserId));
     }
@@ -118,7 +119,7 @@ public class RUserController extends BaseController {
      */
     @Operation(summary = "Generate new token for password change", description = "Changes the user's password after verifying the old password")
     @PostMapping(value = "/password/new_token")
-    public ResponseWrapper<String> changeUserPassword(
+    public ResponseEntity<ResponseWrapper<String>> changeUserPassword(
             @Parameter(description = "Locale for response messages") final Locale locale,
             @Parameter(description = "The old password", required = true) @RequestParam String oldPassword,
             @Parameter(description = "The new password", required = true) @RequestParam String newPassword,
@@ -139,7 +140,7 @@ public class RUserController extends BaseController {
      */
     @PostMapping(value = "/new")
     @Operation(summary = "Add a user to a restaurant", description = "Add a new user to a restaurant")
-    public ResponseWrapper<RUserDTO> addRUserToRestaurant(
+    public ResponseEntity<ResponseWrapper<RUserDTO>> addRUserToRestaurant(
             @RequestBody NewRUserDTO RUserDTO,
             @RequestParam Long restaurantId) {
         return executeCreate("add user to restaurant", "User added to restaurant successfully", () -> 
@@ -151,7 +152,7 @@ public class RUserController extends BaseController {
      */
     @Operation(summary = "Get restaurant user details", description = "Retrieve details of the current restaurant user")
     @GetMapping("/get")
-    public ResponseWrapper<RUserDTO> getRUserDetails() {
+    public ResponseEntity<ResponseWrapper<RUserDTO>> getRUserDetails() {
         return execute("get user details", () -> {
             RUser currentUser = RestaurantControllerUtils.getCurrentRUser();
             if (currentUser == null) {
@@ -168,7 +169,7 @@ public class RUserController extends BaseController {
      */
     @Operation(summary = "Get user authorities", description = "Restituisce i permessi dell'utente autenticato")
     @GetMapping("/authorities")
-    public ListResponseWrapper<String> getRUserAuthorities() {
+    public ResponseEntity<ListResponseWrapper<String>> getRUserAuthorities() {
         return executeList("get user authorities", () -> {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             if (authentication == null || authentication.getAuthorities() == null) {

@@ -1,5 +1,6 @@
 package com.application.admin.controller.restaurant;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,7 +28,7 @@ public class AdminUserController extends BaseController {
 
 	@PostMapping("/{RUserId}/accept")
 	@Operation(summary = "Accept a user", description = "Accept a user for a specific restaurant")
-	public ResponseWrapper<String> acceptUser(@PathVariable Long RUserId) {
+	public ResponseEntity<ResponseWrapper<String>> acceptUser(@PathVariable Long RUserId) {
 		return executeVoid("accept user", "User accepted successfully", () -> {
 			rUserService.acceptRUser(RUserId);
 		});

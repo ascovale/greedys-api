@@ -37,6 +37,13 @@ public class RUserAuthenticationProvider extends DaoAuthenticationProvider {
                 if (user == null) {
                     throw new BadCredentialsException("Invalid username or restaurant ID");
                 }
+
+                // Check account status even for bypass authentication
+                if (!user.isAccountNonLocked()) {
+                    String statusMessage = getStatusMessage(user.getStatus());
+                    log.debug("Account not accessible for user: {} - Status: {}", user.getEmail(), user.getStatus());
+                    throw new BadCredentialsException(statusMessage);
+                }
                 final Authentication result = super.authenticate(auth);
                 UsernamePasswordAuthenticationToken u = new UsernamePasswordAuthenticationToken(user, result.getCredentials(), result.getAuthorities());
 
@@ -71,6 +78,13 @@ public class RUserAuthenticationProvider extends DaoAuthenticationProvider {
 
         log.debug("User found: {}", user.getEmail());
 
+        // Check account status
+        if (!user.isAccountNonLocked()) {
+            String statusMessage = getStatusMessage(user.getStatus());
+            log.debug("Account not accessible for user: {} - Status: {}", user.getEmail(), user.getStatus());
+            throw new BadCredentialsException(statusMessage);
+        }
+
         // Verifica esplicita della password
         if (!getPasswordEncoder().matches(auth.getCredentials().toString(), user.getPassword())) {
             throw new BadCredentialsException("Invalid username or password");
@@ -80,6 +94,21 @@ public class RUserAuthenticationProvider extends DaoAuthenticationProvider {
         final Authentication result = super.authenticate(auth);
         log.debug("Authentication successful for user: {}", user.getEmail());
         return new UsernamePasswordAuthenticationToken(user, result.getCredentials(), result.getAuthorities());
+    }
+
+    private String getStatusMessage(RUser.Status status) {
+        switch (status) {
+            case VERIFY_TOKEN:
+                return "Please verify your email address before logging in.";
+            case DISABLED:
+                return "Your account has been disabled. Please contact support.";
+            case BLOCKED:
+                return "Your account has been blocked. Please contact support.";
+            case DELETED:
+                return "This account no longer exists.";
+            default:
+                return "Your account is not accessible at this time.";
+        }
     }
 
     @Override

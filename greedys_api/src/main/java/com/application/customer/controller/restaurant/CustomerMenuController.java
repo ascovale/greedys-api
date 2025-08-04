@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,7 +37,7 @@ public class CustomerMenuController extends BaseController {
     @Operation(summary = "Get menus by restaurant ID", description = "Retrieve all menus for a specific restaurant by its ID")
     @GetMapping("/{restaurantId}/menus")
     @ReadApiResponses
-    public ListResponseWrapper<MenuDTO> getMenusByRestaurantId(@PathVariable Long restaurantId) {
+    public ResponseEntity<ListResponseWrapper<MenuDTO>> getMenusByRestaurantId(@PathVariable Long restaurantId) {
         return executeList("get menus by restaurant", () -> {
             Collection<MenuDTO> menus = restaurantMenuService.getMenusByRestaurant(restaurantId);
             return menus instanceof List ? (List<MenuDTO>) menus : List.copyOf(menus);
@@ -46,7 +47,7 @@ public class CustomerMenuController extends BaseController {
     @Operation(summary = "Get menus with services valid in a period", description = "Retrieve menus for a restaurant with services valid in a given period")
     @GetMapping("/{restaurantId}/menus/period")
     @ReadApiResponses
-    public ListResponseWrapper<MenuDTO> getMenusWithServicesValidInPeriod(
+    public ResponseEntity<ListResponseWrapper<MenuDTO>> getMenusWithServicesValidInPeriod(
             @PathVariable Long restaurantId,
             @RequestParam("startDate") LocalDate startDate,
             @RequestParam("endDate") LocalDate endDate) {
@@ -59,7 +60,7 @@ public class CustomerMenuController extends BaseController {
     @Operation(summary = "Get dishes by menu ID", description = "Retrieve all dishes for a specific menu by its ID")
     @GetMapping("/menus/{menuId}/dishes")
     @ReadApiResponses
-    public ListResponseWrapper<MenuDishDTO> getDishesByMenuId(@PathVariable Long menuId) {
+    public ResponseEntity<ListResponseWrapper<MenuDishDTO>> getDishesByMenuId(@PathVariable Long menuId) {
         return executeList("get dishes by menu", () -> {
             Collection<MenuDishDTO> dishes = restaurantMenuService.getMenuDishesByMenuId(menuId);
             return dishes instanceof List ? (List<MenuDishDTO>) dishes : List.copyOf(dishes);
@@ -69,14 +70,14 @@ public class CustomerMenuController extends BaseController {
     @Operation(summary = "Get menu details by ID", description = "Retrieve details of a specific menu by its ID")
     @GetMapping("/menus/{menuId}")
     @ReadApiResponses
-    public ResponseWrapper<MenuDTO> getMenuDetailsById(@PathVariable Long menuId) {
+    public ResponseEntity<ResponseWrapper<MenuDTO>> getMenuDetailsById(@PathVariable Long menuId) {
         return execute("get menu details", () -> restaurantMenuService.getMenuById(menuId));
     }
 
     @Operation(summary = "Get menus by service ID that are active and enabled in a date", description = "Retrieve all menus for a specific service that are active and enabled in a given date")
     @GetMapping("/service/{serviceId}/menus/active-enabled")
     @ReadApiResponses
-    public ListResponseWrapper<MenuDTO> getActiveEnabledMenusByServiceId(
+    public ResponseEntity<ListResponseWrapper<MenuDTO>> getActiveEnabledMenusByServiceId(
             @PathVariable Long serviceId,
             @RequestParam("date") LocalDate date) {
         return executeList("get active enabled menus by service", () -> {
@@ -88,7 +89,7 @@ public class CustomerMenuController extends BaseController {
     @Operation(summary = "Get menus by service ID that are active and enabled in a period", description = "Retrieve all menus for a specific service that are active and enabled in a given period")
     @GetMapping("/service/{serviceId}/menus/active-enabled/period")
     @ReadApiResponses
-    public ListResponseWrapper<MenuDTO> getActiveEnabledMenusByServiceIdAndPeriod(
+    public ResponseEntity<ListResponseWrapper<MenuDTO>> getActiveEnabledMenusByServiceIdAndPeriod(
             @PathVariable Long serviceId,
             @RequestParam("startDate") LocalDate startDate,
             @RequestParam("endDate") LocalDate endDate) {

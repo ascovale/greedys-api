@@ -37,9 +37,39 @@ public class CustomerAuthenticationProvider extends DaoAuthenticationProvider {
             throw new BadCredentialsException("Invalid username or password");
         }
 
-        // Procedi con l'autenticazione standard
-        final Authentication result = super.authenticate(auth);
-        return new UsernamePasswordAuthenticationToken(user, result.getCredentials(), result.getAuthorities());
+        // Verifica lo stato dell'account prima di procedere
+        if (!user.isAccountNonLocked()) {
+            String statusMessage = getStatusMessage(user.getStatus());
+            log.warn("Account locked for user {}: {}", auth.getName(), statusMessage);
+            throw new BadCredentialsException(statusMessage);
+        }
+
+        try {
+            // Procedi con l'autenticazione standard
+            final Authentication result = super.authenticate(auth);
+            return new UsernamePasswordAuthenticationToken(user, result.getCredentials(), result.getAuthorities());
+        } catch (AuthenticationException e) {
+            // Cattura e stampa il motivo dell'errore
+            log.error("Errore durante l'autenticazione per l'utente {}: {}", auth.getName(), e.getMessage());
+            throw e;
+        }
+    }
+
+    private String getStatusMessage(Customer.Status status) {
+        switch (status) {
+            case VERIFY_TOKEN:
+                return "Account not verified. Please check your email and click the verification link.";
+            case DISABLED:
+                return "Account is disabled. Please contact support.";
+            case BLOCKED:
+                return "Account is blocked. Please contact support.";
+            case DELETED:
+                return "Account has been deleted.";
+            case AUTO_DELETE:
+                return "Account is scheduled for deletion.";
+            default:
+                return "Account is not active.";
+        }
     }
 
     @Override

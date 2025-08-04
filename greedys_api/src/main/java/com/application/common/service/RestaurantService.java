@@ -105,7 +105,8 @@ public class RestaurantService {
 			.build();
 		
 		RUser owner = rUserService.registerRUser(RUserDTO, restaurant);
-		rUserService.acceptRUser(owner.getId());
+		owner.setStatus(RUser.Status.ENABLED);
+		ruDAO.save(owner);
 		return new RestaurantDTO(restaurant);
 	}
 

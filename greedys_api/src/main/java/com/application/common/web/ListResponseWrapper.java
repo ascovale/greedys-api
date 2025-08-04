@@ -30,7 +30,7 @@ public class ListResponseWrapper<T> {
     private List<T> data;
 
     @Schema(description = "Error details (present only if success = false)")
-    private ResponseWrapper.ErrorDetails error;
+    private ErrorDetails error;
 
     @Schema(description = "Response timestamp")
     @Builder.Default
@@ -77,7 +77,7 @@ public class ListResponseWrapper<T> {
                 .build();
     }
 
-    public static <T> ListResponseWrapper<T> error(String message, ResponseWrapper.ErrorDetails error) {
+    public static <T> ListResponseWrapper<T> error(String message, ErrorDetails error) {
         return ListResponseWrapper.<T>builder()
                 .success(false)
                 .message(message)

@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
@@ -15,10 +16,10 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+import com.application.common.web.ErrorDetails;
 import com.application.common.web.ListResponseWrapper;
 import com.application.common.web.ResponseWrapper;
 
@@ -37,83 +38,88 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(NoSuchElementException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseWrapper<String> handleNoSuchElementException(NoSuchElementException ex, WebRequest request) {
+    public ResponseEntity<ResponseWrapper<String>> handleNoSuchElementException(NoSuchElementException ex, WebRequest request) {
         logPotentialBaseControllerMiss("NoSuchElementException", ex, request);
         log.warn("Resource not found: ", ex);
-        return ResponseWrapper.error("Resource not found", "RESOURCE_NOT_FOUND");
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ResponseWrapper.<String>error("Resource not found", "RESOURCE_NOT_FOUND"));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseWrapper<String> handleIllegalArgumentException(IllegalArgumentException ex, WebRequest request) {
+    public ResponseEntity<ResponseWrapper<String>> handleIllegalArgumentException(IllegalArgumentException ex, WebRequest request) {
         logPotentialBaseControllerMiss("IllegalArgumentException", ex, request);
         log.warn("Invalid request: ", ex);
-        return ResponseWrapper.error("Invalid request: " + ex.getMessage(), "INVALID_REQUEST");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ResponseWrapper.<String>error("Invalid request: " + ex.getMessage(), "INVALID_REQUEST"));
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-    @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
-    public ResponseWrapper<String> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex, WebRequest request) {
+    public ResponseEntity<ResponseWrapper<String>> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex, WebRequest request) {
+        logPotentialBaseControllerMiss("HttpRequestMethodNotSupportedException", ex, request);
         log.warn("HTTP method not supported: ", ex);
-        return ResponseWrapper.error("HTTP method not supported for this endpoint", "METHOD_NOT_ALLOWED");
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
+                .body(ResponseWrapper.<String>error("HTTP method not supported for this endpoint", "METHOD_NOT_ALLOWED"));
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseWrapper<String> handleNotReadable(HttpMessageNotReadableException ex, WebRequest request) {
+    public ResponseEntity<ResponseWrapper<String>> handleNotReadable(HttpMessageNotReadableException ex, WebRequest request) {
+        logPotentialBaseControllerMiss("HttpMessageNotReadableException", ex, request);
         log.warn("Unreadable request or invalid format: ", ex);
-        return ResponseWrapper.error("Unreadable request or invalid format", "INVALID_FORMAT");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ResponseWrapper.<String>error("Unreadable request or invalid format", "INVALID_FORMAT"));
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseWrapper<String> handleMissingParam(MissingServletRequestParameterException ex, WebRequest request) {
+    public ResponseEntity<ResponseWrapper<String>> handleMissingParam(MissingServletRequestParameterException ex, WebRequest request) {
+        logPotentialBaseControllerMiss("MissingServletRequestParameterException", ex, request);
         log.warn("Missing parameter: ", ex);
-        return ResponseWrapper.error("Missing parameter: " + ex.getParameterName(), "MISSING_PARAMETER");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ResponseWrapper.<String>error("Missing parameter: " + ex.getParameterName(), "MISSING_PARAMETER"));
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseWrapper<String> handleConstraintViolation(ConstraintViolationException ex, WebRequest request) {
+    public ResponseEntity<ResponseWrapper<String>> handleConstraintViolation(ConstraintViolationException ex, WebRequest request) {
         logPotentialBaseControllerMiss("ConstraintViolationException", ex, request);
         log.warn("Validation error: ", ex);
-        return ResponseWrapper.error("Validation error: " + ex.getMessage(), "VALIDATION_ERROR");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ResponseWrapper.<String>error("Validation error: " + ex.getMessage(), "VALIDATION_ERROR"));
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
-    @ResponseStatus(HttpStatus.CONFLICT)
-    public ResponseWrapper<String> handleDataIntegrityViolation(DataIntegrityViolationException ex, WebRequest request) {
+    public ResponseEntity<ResponseWrapper<String>> handleDataIntegrityViolation(DataIntegrityViolationException ex, WebRequest request) {
         logPotentialBaseControllerMiss("DataIntegrityViolationException", ex, request);
         log.error("Data integrity violation: ", ex);
-        return ResponseWrapper.error("Data integrity violation", "DATA_INTEGRITY_VIOLATION");
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ResponseWrapper.<String>error("Data integrity violation", "DATA_INTEGRITY_VIOLATION"));
     }
 
     @ExceptionHandler(UsernameNotFoundException.class)
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public ResponseWrapper<String> handleUsernameNotFoundException(UsernameNotFoundException ex, WebRequest request) {
+    public ResponseEntity<ResponseWrapper<String>> handleUsernameNotFoundException(UsernameNotFoundException ex, WebRequest request) {
+        logPotentialBaseControllerMiss("UsernameNotFoundException", ex, request);
         log.error("Authentication failed: ", ex);
-        return ResponseWrapper.error("Authentication failed: invalid credentials", "AUTHENTICATION_FAILED");
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ResponseWrapper.<String>error("Authentication failed: invalid credentials", "AUTHENTICATION_FAILED"));
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    @ResponseStatus(HttpStatus.FORBIDDEN)
-    public ResponseWrapper<String> handleAccessDeniedException(AccessDeniedException ex, WebRequest request) {
+    public ResponseEntity<ResponseWrapper<String>> handleAccessDeniedException(AccessDeniedException ex, WebRequest request) {
+        logPotentialBaseControllerMiss("AccessDeniedException", ex, request);
         log.warn("Access denied: ", ex);
-        return ResponseWrapper.error("Access denied: you do not have the necessary privileges", "ACCESS_DENIED");
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ResponseWrapper.<String>error("Access denied: you do not have the necessary privileges", "ACCESS_DENIED"));
     }
 
     @ExceptionHandler(InternalAuthenticationServiceException.class)
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public ResponseWrapper<String> handleInternalAuthenticationServiceException(
+    public ResponseEntity<ResponseWrapper<String>> handleInternalAuthenticationServiceException(
             InternalAuthenticationServiceException ex, WebRequest request) {
+        logPotentialBaseControllerMiss("InternalAuthenticationServiceException", ex, request);
         log.error("Authentication service error: ", ex);
-        return ResponseWrapper.error("Authentication service error", "AUTHENTICATION_SERVICE_ERROR");
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ResponseWrapper.<String>error("Authentication service error", "AUTHENTICATION_SERVICE_ERROR"));
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseWrapper<String> handleNoResourceFoundException(NoResourceFoundException ex, WebRequest request) {
+    public ResponseEntity<ResponseWrapper<String>> handleNoResourceFoundException(NoResourceFoundException ex, WebRequest request) {
         String requestUri = request.getDescription(false);
         String resourcePath = ex.getResourcePath();
         
@@ -128,16 +134,16 @@ public class GlobalExceptionHandler {
         } else {
             log.warn("Resource not found: {}", requestUri);
         }
-        return ResponseWrapper.error("Resource not found", "RESOURCE_NOT_FOUND");
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ResponseWrapper.<String>error("Resource not found", "RESOURCE_NOT_FOUND"));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ListResponseWrapper<ResponseWrapper.ErrorDetails> handleValidationException(MethodArgumentNotValidException ex, WebRequest request) {
+    public ResponseEntity<ListResponseWrapper<ErrorDetails>> handleValidationException(MethodArgumentNotValidException ex, WebRequest request) {
         logPotentialBaseControllerMiss("MethodArgumentNotValidException", ex, request);
         
-        List<ResponseWrapper.ErrorDetails> fieldErrors = ex.getBindingResult().getFieldErrors().stream()
-                .map(error -> ResponseWrapper.ErrorDetails.builder()
+        List<ErrorDetails> fieldErrors = ex.getBindingResult().getFieldErrors().stream()
+                .map(error -> ErrorDetails.builder()
                         .code("VALIDATION_ERROR")
                         .message(error.getField() + ": " + error.getDefaultMessage())
                         .details(error.getRejectedValue())
@@ -148,23 +154,22 @@ public class GlobalExceptionHandler {
         
         log.warn("Validation error: {}", mainMessage, ex);
         
-        ResponseWrapper.ErrorDetails errorDetails = ResponseWrapper.ErrorDetails.builder()
+        ListResponseWrapper<ErrorDetails> response = ListResponseWrapper.error("Validation failed", ErrorDetails.builder()
                 .code("VALIDATION_ERROR")
                 .message(mainMessage)
                 .details(fieldErrors)
-                .build();
-                
-        ListResponseWrapper<ResponseWrapper.ErrorDetails> response = ListResponseWrapper.error("Validation failed", errorDetails);
+                .build());
         response.setData(fieldErrors);
-        return response;
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
     @ExceptionHandler(Exception.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ResponseWrapper<String> handleGenericException(Exception ex, WebRequest request) {
+    public ResponseEntity<ResponseWrapper<String>> handleGenericException(Exception ex, WebRequest request) {
         log.error("🔴 UNHANDLED EXCEPTION in GlobalExceptionHandler - This should potentially be handled by BaseController: {} - Request: {}", 
                 ex.getClass().getSimpleName(), request.getDescription(false), ex);
-        return ResponseWrapper.error("Internal server error", "INTERNAL_ERROR");
+        logPotentialBaseControllerMiss("Exception", ex, request);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ResponseWrapper.<String>error("An unexpected error occurred", "INTERNAL_SERVER_ERROR"));
     }
 
 }

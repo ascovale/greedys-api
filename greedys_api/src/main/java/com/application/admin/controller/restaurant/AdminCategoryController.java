@@ -2,6 +2,7 @@ package com.application.admin.controller.restaurant;
 
 import java.util.Collection;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -40,7 +41,7 @@ public class AdminCategoryController extends BaseController {
 	@Operation(summary = "Get types of a restaurant", description = "Retrieve the types of a restaurant")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
 	@ReadApiResponses
-	public ListResponseWrapper<String> getRestaurantTypesNames(@PathVariable Long restaurantId) {
+	public ResponseEntity<ListResponseWrapper<String>> getRestaurantTypesNames(@PathVariable Long restaurantId) {
 		return executeList("get restaurant types", () -> {
 			Collection<String> types = restaurantCategoryService.getRestaurantTypesNames(restaurantId);
 			return types instanceof java.util.List ? (java.util.List<String>) types : new java.util.ArrayList<>(types);
@@ -51,7 +52,7 @@ public class AdminCategoryController extends BaseController {
 	@Operation(summary = "Create category", description = "Create a new category for the specified restaurant")
 	@CreateApiResponses
 	@PostMapping("/category/new")
-	public ResponseWrapper<String> createCategory(@RequestBody RestaurantCategoryDTO restaurantCategoryDto) {
+	public ResponseEntity<ResponseWrapper<String>> createCategory(@RequestBody RestaurantCategoryDTO restaurantCategoryDto) {
 		return executeCreate("create category", "Category created successfully", () -> {
 			restaurantCategoryService.createRestaurantCategory(restaurantCategoryDto);
 			return "Category created successfully";
@@ -62,7 +63,7 @@ public class AdminCategoryController extends BaseController {
 	@Operation(summary = "Delete category", description = "Delete a category by its ID")
 	@DeleteMapping("/category/{categoryId}/delete")
 	@ReadApiResponses
-	public ResponseWrapper<String> deleteCategory(@PathVariable Long categoryId) {
+	public ResponseEntity<ResponseWrapper<String>> deleteCategory(@PathVariable Long categoryId) {
 		return executeVoid("delete category", "Category deleted successfully", () -> {
 			restaurantCategoryService.deleteRestaurantCategory(categoryId);
 		});
@@ -72,7 +73,7 @@ public class AdminCategoryController extends BaseController {
 	@Operation(summary = "Update category", description = "Update an existing category by its ID")
 	@PutMapping("/category/{categoryId}/update")
 	@ReadApiResponses
-	public ResponseWrapper<String> updateCategory(@PathVariable Long categoryId,
+	public ResponseEntity<ResponseWrapper<String>> updateCategory(@PathVariable Long categoryId,
 			@RequestBody RestaurantCategoryDTO restaurantCategoryDto) {
 		return executeVoid("update category", "Category updated successfully", () -> {
 			restaurantCategoryService.updateRestaurantCategory(categoryId, restaurantCategoryDto);

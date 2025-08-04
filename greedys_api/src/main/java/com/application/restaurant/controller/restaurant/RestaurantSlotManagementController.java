@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,7 +40,7 @@ public class RestaurantSlotManagementController extends BaseController {
 	@GetMapping(value = "/day-slots")
 	@Operation(summary = "Get day slots of the authenticated restaurant", description = "Retrieve the daily slots of the authenticated restaurant")
 	@ReadApiResponses
-	public ListResponseWrapper<SlotDTO> getDaySlots(
+	public ResponseEntity<ListResponseWrapper<SlotDTO>> getDaySlots(
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate date) {
 		return executeList("get day slots", () -> {
 			Long restaurantId = RestaurantControllerUtils.getCurrentRestaurant().getId();
@@ -52,7 +53,7 @@ public class RestaurantSlotManagementController extends BaseController {
 	@GetMapping(value = "/all")
 	@Operation(summary = "Get all slots of the authenticated restaurant", description = "Retrieve all available slots for the authenticated restaurant")
 	@ReadApiResponses
-	public ListResponseWrapper<SlotDTO> getAllSlots() {
+	public ResponseEntity<ListResponseWrapper<SlotDTO>> getAllSlots() {
 		return executeList("get all slots", () -> {
 			Long restaurantId = RestaurantControllerUtils.getCurrentRestaurant().getId();
 			log.info("Getting all slots for restaurant ID: {}", restaurantId);
@@ -63,7 +64,7 @@ public class RestaurantSlotManagementController extends BaseController {
 	@GetMapping("/{slotId}")
 	@Operation(summary = "Get slot by id", description = "Retrieve a slot by its ID")
 	@ReadApiResponses
-	public ResponseWrapper<SlotDTO> getSlotById(@PathVariable Long slotId) {
+	public ResponseEntity<ResponseWrapper<SlotDTO>> getSlotById(@PathVariable Long slotId) {
 		return execute("get slot by id", () -> {
 			log.info("Getting slot by ID: {}", slotId);
 			return slotService.findById(slotId);

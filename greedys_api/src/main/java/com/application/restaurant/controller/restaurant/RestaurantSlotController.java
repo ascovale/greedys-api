@@ -1,5 +1,6 @@
 package com.application.restaurant.controller.restaurant;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -40,7 +41,7 @@ public class RestaurantSlotController extends BaseController {
     @CreateApiResponses
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SLOT_WRITE')")
     @PostMapping("/new")
-    public ResponseWrapper<String> newSlot(@RequestBody RestaurantNewSlotDTO slotDto) {
+    public ResponseEntity<ResponseWrapper<String>> newSlot(@RequestBody RestaurantNewSlotDTO slotDto) {
         return executeCreate("create new slot", "Slot created successfully", () -> {
             slotService.addSlot(RestaurantControllerUtils.getCurrentRUser().getId(), slotDto);
             return "success";
@@ -53,7 +54,7 @@ public class RestaurantSlotController extends BaseController {
     @ReadApiResponses
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SLOT_WRITE')")
     @DeleteMapping("/cancel/{slotId}")
-    public ResponseWrapper<String> cancelSlot(@PathVariable Long slotId) {
+    public ResponseEntity<ResponseWrapper<String>> cancelSlot(@PathVariable Long slotId) {
         return execute("cancel slot", () -> {
             boolean isCanceled = slotService.cancelSlot(RestaurantControllerUtils.getCurrentRUser().getId(), slotId);
             if (isCanceled) {

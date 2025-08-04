@@ -59,7 +59,7 @@ public class RestaurantRegistrationController extends BaseController {
                 content = @Content(schema = @Schema(implementation = RestaurantDTO.class)))
     @PostMapping(value = "/new")
     @CreateApiResponses
-    public ResponseWrapper<RestaurantDTO> registerRestaurant(@RequestBody NewRestaurantDTO restaurantDto) {
+    public ResponseEntity<ResponseWrapper<RestaurantDTO>> registerRestaurant(@RequestBody NewRestaurantDTO restaurantDto) {
         return executeCreate("register restaurant", "Restaurant registered successfully", () -> {
             log.debug("Registering restaurant with information:", restaurantDto);
             return restaurantService.registerRestaurant(restaurantDto);
@@ -73,7 +73,7 @@ public class RestaurantRegistrationController extends BaseController {
                 content = @Content(schema = @Schema(implementation = String.class)))
     @GetMapping(value = "/resend_token")
     @ResponseBody
-    public ResponseWrapper<String> resendRegistrationToken(final HttpServletRequest request,
+    public ResponseEntity<ResponseWrapper<String>> resendRegistrationToken(final HttpServletRequest request,
             @RequestParam("token") final String existingToken) {
         return executeVoid("resend registration token", () -> 
             restaurantAuthenticationService.resendRegistrationToken(request, existingToken));
@@ -83,7 +83,7 @@ public class RestaurantRegistrationController extends BaseController {
     @ApiResponse(responseCode = "200", description = "Password reset token sent successfully", 
                 content = @Content(schema = @Schema(implementation = String.class)))
     @PostMapping(value = "/password/forgot")
-    public ResponseWrapper<String> forgotPassword(@RequestParam("email") final String userEmail,
+    public ResponseEntity<ResponseWrapper<String>> forgotPassword(@RequestParam("email") final String userEmail,
             final HttpServletRequest request) {
         return execute("forgot password", () -> {
             ResponseEntity<String> response = restaurantAuthenticationService.forgotPassword(userEmail, request);
@@ -96,7 +96,7 @@ public class RestaurantRegistrationController extends BaseController {
                 content = @Content(schema = @Schema(implementation = AuthResponseDTO.class)))
     @PreAuthorize("@securityRUserService.hasPermissionForRestaurant(#restaurantId)")
     @PostMapping(value = "/change-restaurant", produces = "application/json")
-    public ResponseWrapper<AuthResponseDTO> changeRestaurant(@RequestParam Long restaurantId) {
+    public ResponseEntity<ResponseWrapper<AuthResponseDTO>> changeRestaurant(@RequestParam Long restaurantId) {
         return execute("change restaurant", () -> restaurantAuthenticationService.changeRestaurant(restaurantId));
     }
 

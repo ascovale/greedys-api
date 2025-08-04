@@ -1,5 +1,6 @@
 package com.application.admin.controller.restaurant;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -38,7 +39,7 @@ public class AdminRUserController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_USER_WRITE')")
     @Operation(summary = "Block restaurant user", description = "Blocks a restaurant user by their ID")
     @PutMapping("/{RUserId}/block")
-    public ResponseWrapper<String> blockRUser(@PathVariable Long RUserId) {
+    public ResponseEntity<ResponseWrapper<String>> blockRUser(@PathVariable Long RUserId) {
         return executeVoid("block restaurant user", "Restaurant user blocked successfully", () -> {
             RUserService.updateRUserStatus(RUserId, RUser.Status.BLOCKED);
         });
@@ -47,7 +48,7 @@ public class AdminRUserController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_USER_WRITE')")
     @Operation(summary = "Enable restaurant user", description = "Enables a restaurant user by their ID")
     @PutMapping("/{RUserId}/enable")
-    public ResponseWrapper<String> enableRUser(@PathVariable Long RUserId) {
+    public ResponseEntity<ResponseWrapper<String>> enableRUser(@PathVariable Long RUserId) {
         return executeVoid("enable restaurant user", "Restaurant user enabled successfully", () -> {
             RUserService.updateRUserStatus(RUserId, RUser.Status.ENABLED);
         });
@@ -56,7 +57,7 @@ public class AdminRUserController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_USER_WRITE')")
     @Operation(summary = "Change restaurant owner", description = "Changes the owner of a restaurant")
     @PutMapping("/{restaurantId}/changeOwner/{idOldOwner}/{idNewOwner}")
-    public ResponseWrapper<String> changeRestaurantOwner(@PathVariable Long restaurantId, @PathVariable Long idOldOwner,
+    public ResponseEntity<ResponseWrapper<String>> changeRestaurantOwner(@PathVariable Long restaurantId, @PathVariable Long idOldOwner,
             @PathVariable Long idNewOwner) {
         return executeVoid("change restaurant owner", "Restaurant owner changed successfully", () -> {
             RUserService.changeRestaurantOwner(restaurantId, idOldOwner, idNewOwner);
@@ -67,7 +68,7 @@ public class AdminRUserController extends BaseController {
     @GetMapping("/login/{RUserId}")
     @Operation(summary = "Get JWT Token of a restaurant user", description = "Returns the JWT token of a restaurant user")
     @ReadApiResponses
-    public ResponseWrapper<AuthResponseDTO> loginHasRUser(@PathVariable Long RUserId, HttpServletRequest request) {
+    public ResponseEntity<ResponseWrapper<AuthResponseDTO>> loginHasRUser(@PathVariable Long RUserId, HttpServletRequest request) {
         return execute("get restaurant user token", () -> adminRUserAuthenticationService.adminLoginToRUser(RUserId, request));
     }
 
@@ -75,7 +76,7 @@ public class AdminRUserController extends BaseController {
     @Operation(summary = "Get restaurant users", description = "Retrieves the list of users for a specific restaurant")
     @GetMapping("/{restaurantId}/users")
     @ReadApiResponses
-    public ListResponseWrapper<RUserDTO> getRUsers(@PathVariable Long restaurantId) {
+    public ResponseEntity<ListResponseWrapper<RUserDTO>> getRUsers(@PathVariable Long restaurantId) {
         return executeList("get restaurant users", () -> RUserService.getRUsersByRestaurantId(restaurantId));
     }
 

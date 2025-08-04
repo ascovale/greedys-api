@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -51,7 +52,7 @@ public class RestaurantMenuController extends BaseController {
                 content = @Content(array = @ArraySchema(schema = @Schema(implementation = MenuDTO.class))))
     @ReadApiResponses
     @GetMapping("/all")
-        public ListResponseWrapper<MenuDTO> getRestaurantMenus() {
+        public ResponseEntity<ListResponseWrapper<MenuDTO>> getRestaurantMenus() {
         return executeList("get restaurant menus", () -> {
             Collection<MenuDTO> menus = restaurantMenuService.getMenusByRestaurant(RestaurantControllerUtils.getCurrentRestaurant().getId());
             return menus instanceof List ? (List<MenuDTO>) menus : new java.util.ArrayList<>(menus);
@@ -64,7 +65,7 @@ public class RestaurantMenuController extends BaseController {
     @ReadApiResponses
     @PreAuthorize("@securityRUserService.isMenuOwnedByRestaurant(#menuId, authentication.principal.restaurantId)")
     @GetMapping("/{menuId}/dishes")
-        public ListResponseWrapper<MenuDishDTO> getMenuDishes(@PathVariable Long menuId) {
+        public ResponseEntity<ListResponseWrapper<MenuDishDTO>> getMenuDishes(@PathVariable Long menuId) {
         return executeList("get menu dishes", () -> restaurantMenuService.getMenuDishesByMenuId(menuId));
     }
 
@@ -74,7 +75,7 @@ public class RestaurantMenuController extends BaseController {
     @ReadApiResponses
     @PreAuthorize("@securityRUserService.isMenuOwnedByRestaurant(#menuId, authentication.principal.restaurantId)")
     @GetMapping("/{menuId}")
-        public ResponseWrapper<MenuDTO> getMenuDetails(@PathVariable Long menuId) {
+        public ResponseEntity<ResponseWrapper<MenuDTO>> getMenuDetails(@PathVariable Long menuId) {
         return execute("get menu details", () -> restaurantMenuService.getMenuById(menuId));
     }
 
@@ -83,7 +84,7 @@ public class RestaurantMenuController extends BaseController {
                 content = @Content(array = @ArraySchema(schema = @Schema(implementation = DishDTO.class))))
     @ReadApiResponses
     @GetMapping("/dishes/all")
-        public ListResponseWrapper<DishDTO> getDishes() {
+        public ResponseEntity<ListResponseWrapper<DishDTO>> getDishes() {
         return executeList("get restaurant dishes", () -> {
             Collection<DishDTO> dishes = restaurantMenuService.getDishesByRestaurant(RestaurantControllerUtils.getCurrentRestaurant().getId());
             return dishes instanceof List ? (List<DishDTO>) dishes : new java.util.ArrayList<>(dishes);
@@ -96,7 +97,7 @@ public class RestaurantMenuController extends BaseController {
     @CreateApiResponses
     @PostMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseWrapper<String> createMenu(@RequestBody NewMenuDTO newMenu) {
+    public ResponseEntity<ResponseWrapper<String>> createMenu(@RequestBody NewMenuDTO newMenu) {
         return executeCreate("create menu", "Menu created successfully", () -> {
             restaurantMenuService.addMenu(newMenu);
             return "success";
@@ -110,7 +111,7 @@ public class RestaurantMenuController extends BaseController {
     @PreAuthorize("@securityRUserService.isMenuOwnedByRestaurant(#newMenuItem.menuId, authentication.principal.restaurantId)")
     @PostMapping("/dishes/add")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseWrapper<String> addDishToMenu(@RequestBody NewMenuDishDTO newMenuItem) {
+    public ResponseEntity<ResponseWrapper<String>> addDishToMenu(@RequestBody NewMenuDishDTO newMenuItem) {
         return executeCreate("add dish to menu", "Dish added to menu successfully", () -> {
             restaurantMenuService.addMenuDish(newMenuItem);
             return "success";
@@ -123,7 +124,7 @@ public class RestaurantMenuController extends BaseController {
     @CreateApiResponses
     @PostMapping("/dishes/create")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseWrapper<String> createDish(@RequestBody NewDishDTO newItem) {
+    public ResponseEntity<ResponseWrapper<String>> createDish(@RequestBody NewDishDTO newItem) {
         return executeCreate("create dish", "Dish created successfully", () -> {
             restaurantMenuService.createDish(newItem);
             return "success";

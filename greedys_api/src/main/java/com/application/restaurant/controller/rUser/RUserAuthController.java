@@ -1,5 +1,6 @@
 package com.application.restaurant.controller.rUser;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,7 +29,7 @@ public class RUserAuthController extends BaseController {
 
     @Operation(summary = "Generate an authentication token", description = "Authenticates a user and returns a JWT token or a selection token if multiple restaurants are available")
     @PostMapping(value = "/login", produces = "application/json")
-    public ResponseWrapper<AuthResponseDTO> createAuthenticationToken(@RequestBody AuthRequestDTO authenticationRequest) {
+    public ResponseEntity<ResponseWrapper<AuthResponseDTO>> createAuthenticationToken(@RequestBody AuthRequestDTO authenticationRequest) {
         return execute("authenticate user", () -> {
             try {
                 return restaurantAuthenticationService.loginWithHubSupport(authenticationRequest);
@@ -40,7 +41,7 @@ public class RUserAuthController extends BaseController {
 
     @Operation(summary = "Authenticate with Google", description = "Authenticates a restaurant user hub using Google OAuth2")
     @PostMapping("/google")
-    public ResponseWrapper<AuthResponseDTO> authenticateWithGoogle(@RequestBody AuthRequestGoogleDTO authRequest) {
+    public ResponseEntity<ResponseWrapper<AuthResponseDTO>> authenticateWithGoogle(@RequestBody AuthRequestGoogleDTO authRequest) {
         return execute("google authentication", () -> 
             restaurantAuthenticationService.loginWithGoogle(authRequest));
     }

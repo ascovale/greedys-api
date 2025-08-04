@@ -1,5 +1,6 @@
 package com.application.admin.controller;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -48,7 +49,7 @@ public class RestaurantVerificationController extends BaseController {
     )
     @CreateApiResponses
     @PostMapping("/initiate")
-    public ResponseWrapper<VerificationResponseDTO> initiateVerification(
+    public ResponseEntity<ResponseWrapper<VerificationResponseDTO>> initiateVerification(
             @Valid @RequestBody VerificationRequestDTO request) {
         
         return executeCreate("initiate verification", () -> {
@@ -63,7 +64,7 @@ public class RestaurantVerificationController extends BaseController {
     )
     @CreateApiResponses
     @PostMapping("/{restaurantId}/verify")
-    public ResponseWrapper<VerificationResponseDTO> verifyCode(
+    public ResponseEntity<ResponseWrapper<VerificationResponseDTO>> verifyCode(
             @Parameter(description = "Restaurant ID") 
             @PathVariable @NotNull Long restaurantId,
             
@@ -82,7 +83,7 @@ public class RestaurantVerificationController extends BaseController {
     )
     @ReadApiResponses
     @GetMapping("/{restaurantId}/status")
-    public ResponseWrapper<VerificationResponseDTO> getVerificationStatus(
+    public ResponseEntity<ResponseWrapper<VerificationResponseDTO>> getVerificationStatus(
             @Parameter(description = "Restaurant ID") 
             @PathVariable @NotNull Long restaurantId) {
         
@@ -98,7 +99,7 @@ public class RestaurantVerificationController extends BaseController {
     )
     @CreateApiResponses
     @PostMapping("/{restaurantId}/cancel")
-    public ResponseWrapper<VerificationResponseDTO> cancelVerification(
+    public ResponseEntity<ResponseWrapper<VerificationResponseDTO>> cancelVerification(
             @Parameter(description = "Restaurant ID") 
             @PathVariable @NotNull Long restaurantId) {
         

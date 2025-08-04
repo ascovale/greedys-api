@@ -37,6 +37,13 @@ public class AdminAuthenticationProvider extends DaoAuthenticationProvider {
             throw new BadCredentialsException("Invalid username or password");
         }
 
+        // Verifica lo stato dell'account prima di procedere
+        if (user.getStatus() != Admin.Status.ENABLED) {
+            String statusMessage = getStatusMessage(user.getStatus());
+            log.warn("Account not enabled for admin {}: {}", auth.getName(), statusMessage);
+            throw new BadCredentialsException(statusMessage);
+        }
+
         try {
             // Procedi con l'autenticazione standard
             final Authentication result = super.authenticate(auth);
@@ -45,6 +52,21 @@ public class AdminAuthenticationProvider extends DaoAuthenticationProvider {
             // Cattura e stampa il motivo dell'errore
             log.error("Errore durante l'autenticazione per l'utente {}: {}", auth.getName(), e.getMessage());
             throw e;
+        }
+    }
+
+    private String getStatusMessage(Admin.Status status) {
+        switch (status) {
+            case VERIFY_TOKEN:
+                return "Admin account not verified. Please check your email and click the verification link.";
+            case DISABLED:
+                return "Admin account is disabled. Please contact support.";
+            case BLOCKED:
+                return "Admin account is blocked. Please contact support.";
+            case DELETED:
+                return "Admin account has been deleted.";
+            default:
+                return "Admin account is not active.";
         }
     }
 

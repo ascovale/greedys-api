@@ -1,6 +1,7 @@
 package com.application.admin.controller;
 
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -36,7 +37,7 @@ public class AdminCustomerController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_WRITE')")
     @Operation(summary = "Block customer", description = "Blocks a customer by their ID")
     @PutMapping("/{customerId}/block")
-    public ResponseWrapper<String> blockUser(@PathVariable Long customerId) {
+    public ResponseEntity<ResponseWrapper<String>> blockUser(@PathVariable Long customerId) {
         return executeVoid("block customer", "Customer blocked successfully", () -> {
             adminCustomerService.updateCustomerStatus(customerId, Customer.Status.BLOCKED);
         });
@@ -45,7 +46,7 @@ public class AdminCustomerController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_WRITE')")
     @Operation(summary = "Enable user", description = "Enables a user by their ID")
     @PutMapping("/{customerId}/enable")
-    public ResponseWrapper<String> enableCustomer(@PathVariable Long customerId) {
+    public ResponseEntity<ResponseWrapper<String>> enableCustomer(@PathVariable Long customerId) {
         return executeVoid("enable customer", "User enabled successfully", () -> {
             adminCustomerService.updateCustomerStatus(customerId, Customer.Status.ENABLED);
         });
@@ -55,7 +56,7 @@ public class AdminCustomerController extends BaseController {
     @Operation(summary = "List customers with pagination", description = "Returns a paginated list of customers")
     @GetMapping("/customers/page")
     @ReadApiResponses
-    public PageResponseWrapper<CustomerDTO> listCustomersWithPagination(@RequestParam int page, @RequestParam int size) {
+    public ResponseEntity<PageResponseWrapper<CustomerDTO>> listCustomersWithPagination(@RequestParam int page, @RequestParam int size) {
         return executePaginated("list customers", () -> adminCustomerService.findAll(PageRequest.of(page, size)));
         
     }
@@ -64,7 +65,7 @@ public class AdminCustomerController extends BaseController {
     @Operation(summary = "Get JWT Token of a customer", description = "Get JWT Token of a customer")
     @ReadApiResponses
     @GetMapping("/login/{customerId}")
-    public ResponseWrapper<AuthResponseDTO> loginTokenHasCustomer(@PathVariable Long customerId) {
+    public ResponseEntity<ResponseWrapper<AuthResponseDTO>> loginTokenHasCustomer(@PathVariable Long customerId) {
         return execute("get customer token", () -> {
             return adminCustomerAuthenticationService.adminLoginToCustomer(customerId);
         });
@@ -73,7 +74,7 @@ public class AdminCustomerController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_WRITE')")
     @Operation(summary = "Add role to customer", description = "Adds a role to a customer by their ID")
     @PutMapping("/{customerId}/add_role")
-    public ResponseWrapper<String> addRoleToCustomer(@PathVariable Long customerId, @RequestParam String role) {
+    public ResponseEntity<ResponseWrapper<String>> addRoleToCustomer(@PathVariable Long customerId, @RequestParam String role) {
         return executeVoid("add role to customer", "Role added successfully", () -> {
             adminCustomerService.addRoleToCustomer(customerId, role);
         });
@@ -82,7 +83,7 @@ public class AdminCustomerController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_WRITE')")
     @Operation(summary = "Remove role from customer", description = "Removes a role from a customer by their ID")
     @PutMapping("/{customerId}/remove_role")
-    public ResponseWrapper<String> removeRoleFromCustomer(@PathVariable Long customerId, @RequestParam String role) {
+    public ResponseEntity<ResponseWrapper<String>> removeRoleFromCustomer(@PathVariable Long customerId, @RequestParam String role) {
         return executeVoid("remove role from customer", "Role removed successfully", () -> {
             adminCustomerService.removeRoleFromCustomer(customerId, role);
         });
@@ -91,7 +92,7 @@ public class AdminCustomerController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_WRITE')")
     @Operation(summary = "Add privilege to role", description = "Aggiunge un permesso a un ruolo specifico")
     @PutMapping("/role/{roleName}/add_permission")
-    public ResponseWrapper<String> addPermissionToRole(@PathVariable String roleName, @RequestParam String permission) {
+    public ResponseEntity<ResponseWrapper<String>> addPermissionToRole(@PathVariable String roleName, @RequestParam String permission) {
         return executeVoid("add permission to role", "Permission added successfully", () -> {
             adminCustomerService.addPrivilegeToRole(roleName, permission);
         });
@@ -100,7 +101,7 @@ public class AdminCustomerController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_WRITE')")
     @Operation(summary = "Remove privilege from role", description = "Rimuove un permesso da un ruolo specifico")
     @PutMapping("/role/{roleName}/remove_permission")
-    public ResponseWrapper<String> removePermissionFromRole(@PathVariable String roleName, @RequestParam String permission) {
+    public ResponseEntity<ResponseWrapper<String>> removePermissionFromRole(@PathVariable String roleName, @RequestParam String permission) {
         return executeVoid("remove permission from role", "Permission removed successfully", () -> {
             adminCustomerService.removePrivilegeFromRole(roleName, permission);
         });
