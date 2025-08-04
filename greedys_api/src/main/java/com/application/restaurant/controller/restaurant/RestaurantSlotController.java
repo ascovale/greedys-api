@@ -1,4 +1,4 @@
-package com.application.restaurant.controller;
+package com.application.restaurant.controller.restaurant;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;

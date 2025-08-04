@@ -84,8 +84,7 @@ public class RestaurantReservationController extends BaseController {
 	@ApiResponse(responseCode = "200", description = "Reservation accepted successfully", 
                 content = @Content(schema = @Schema(implementation = String.class)))
 	@PreAuthorize("@securityRUserService.hasPermissionOnReservation(#reservationId)")
-	@ResponseStatus(HttpStatus.OK)
-	public ResponseWrapper<String> acceptReservation(@PathVariable Long reservationId) {
+		public ResponseWrapper<String> acceptReservation(@PathVariable Long reservationId) {
 		return executeVoid("accept reservation", "Reservation accepted successfully", () -> 
 			reservationService.setStatus(reservationId, Reservation.Status.ACCEPTED));
 	}
@@ -94,8 +93,7 @@ public class RestaurantReservationController extends BaseController {
 	@Operation(summary = "Reject a reservation", description = "Endpoint to reject a reservation by its ID")
 	@ApiResponse(responseCode = "200", description = "Reservation rejected successfully", 
                 content = @Content(schema = @Schema(implementation = String.class)))
-	@ResponseStatus(HttpStatus.OK)
-	public ResponseWrapper<String> rejectReservation(@PathVariable Long reservationId) {
+		public ResponseWrapper<String> rejectReservation(@PathVariable Long reservationId) {
 		return executeVoid("reject reservation", "Reservation rejected successfully", () -> 
 			reservationService.setStatus(reservationId, Reservation.Status.REJECTED));
 	}
@@ -104,8 +102,7 @@ public class RestaurantReservationController extends BaseController {
 	@Operation(summary = "Mark a reservation as no show", description = "Endpoint to mark a reservation as no show by its ID")
 	@ApiResponse(responseCode = "200", description = "Reservation marked as no show successfully", 
                 content = @Content(schema = @Schema(implementation = String.class)))
-	@ResponseStatus(HttpStatus.OK)
-	public ResponseWrapper<String> markReservationNoShow(@PathVariable Long reservationId) {
+		public ResponseWrapper<String> markReservationNoShow(@PathVariable Long reservationId) {
 		return executeVoid("mark reservation no show", "Reservation marked as no show successfully", () -> 
 			reservationService.setStatus(reservationId, Reservation.Status.NO_SHOW));
 	}
@@ -114,8 +111,7 @@ public class RestaurantReservationController extends BaseController {
 	@Operation(summary = "Mark a reservation as seated", description = "Endpoint to mark a reservation as seated by its ID")
 	@ApiResponse(responseCode = "200", description = "Reservation marked as seated successfully", 
                 content = @Content(schema = @Schema(implementation = String.class)))
-	@ResponseStatus(HttpStatus.OK)
-	public ResponseWrapper<String> markReservationSeated(@PathVariable Long reservationId) {
+		public ResponseWrapper<String> markReservationSeated(@PathVariable Long reservationId) {
 		return executeVoid("mark reservation seated", "Reservation marked as seated successfully", () -> 
 			reservationService.setStatus(reservationId, Reservation.Status.SEATED));
 	}
@@ -124,8 +120,7 @@ public class RestaurantReservationController extends BaseController {
 	@ApiResponse(responseCode = "200", description = "Reservation modification accepted successfully", 
                 content = @Content(schema = @Schema(implementation = String.class)))
 	@PutMapping("/accept_modification/{modId}")
-	@ResponseStatus(HttpStatus.OK)
-	public ResponseWrapper<String> acceptReservationModificationRequest(@PathVariable Long modId) {
+		public ResponseWrapper<String> acceptReservationModificationRequest(@PathVariable Long modId) {
 		return executeVoid("accept reservation modification", "Reservation modification accepted successfully", () -> 
 			reservationService.AcceptReservatioModifyRequest(modId));
 	}
@@ -135,7 +130,6 @@ public class RestaurantReservationController extends BaseController {
                 content = @Content(array = @ArraySchema(schema = @Schema(implementation = ReservationDTO.class))))
 	@GetMapping(value = "/reservations")
 	@ReadApiResponses
-	@ResponseStatus(HttpStatus.OK)
 	public ListResponseWrapper<ReservationDTO> getReservations(
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end,
@@ -148,11 +142,8 @@ public class RestaurantReservationController extends BaseController {
 	}
 
 	@Operation(summary = "Get all accepted reservations of a restaurant", description = "Retrieve all accepted reservations of a restaurant")
-	@ApiResponse(responseCode = "200", description = "Accepted reservations retrieved successfully", 
-                content = @Content(array = @ArraySchema(schema = @Schema(implementation = ReservationDTO.class))))
 	@GetMapping(value = "/accepted/get")
 	@ReadApiResponses
-	@ResponseStatus(HttpStatus.OK)
 	public ListResponseWrapper<ReservationDTO> getAcceptedReservations(
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end,
@@ -165,31 +156,8 @@ public class RestaurantReservationController extends BaseController {
 	}
 
 	@Operation(summary = "Get all reservations of a restaurant with pagination", description = "Retrieve all reservations of a restaurant with pagination")
-	@ApiResponse(responseCode = "200", description = "Paginated reservations retrieved successfully",
-        content = @Content(schema = @Schema(
-            type = "object",
-            description = "Page<ReservationDTO> - Spring Page object with content array of ReservationDTO and pagination metadata. The 'content' property is an array of ReservationDTO objects.",
-            requiredProperties = {"content", "totalElements", "totalPages", "size", "number"},
-            subTypes = {ReservationDTO.class},
-            example = """
-                {
-                    "content": [
-                        {"id": 1, "customerName": "John Doe", "status": "PENDING", "reservationDay": "2024-01-15", "pax": 4},
-                        {"id": 2, "customerName": "Jane Smith", "status": "ACCEPTED", "reservationDay": "2024-01-15", "pax": 2}
-                    ],
-                    "totalElements": 50,
-                    "totalPages": 5,
-                    "size": 10,
-                    "number": 0,
-                    "first": true,
-                    "last": false,
-                    "empty": false
-                }
-                """
-        )))
 	@GetMapping(value = "/pageable")
 	@ReadApiResponses
-	@ResponseStatus(HttpStatus.OK)
 	public PageResponseWrapper<ReservationDTO> getReservationsPageable(
 			@AuthenticationPrincipal RUser rUser,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
@@ -208,8 +176,7 @@ public class RestaurantReservationController extends BaseController {
                 content = @Content(array = @ArraySchema(schema = @Schema(implementation = ReservationDTO.class))))
 	@GetMapping(value = "/pending/get")
 	@ReadApiResponses
-	@ResponseStatus(HttpStatus.OK)
-	public ListResponseWrapper<ReservationDTO> getPendingReservations(
+		public ListResponseWrapper<ReservationDTO> getPendingReservations(
 			@RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end,
 			@AuthenticationPrincipal RUser rUser) {
