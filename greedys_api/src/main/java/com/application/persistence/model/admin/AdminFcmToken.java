@@ -12,11 +12,15 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.Setter;
 import lombok.Builder;
 import lombok.experimental.SuperBuilder;
 
 @SuperBuilder
+@Getter
+@Setter
 @Entity
 public class AdminFcmToken extends AFcmToken {
     @Id
@@ -37,20 +41,4 @@ public class AdminFcmToken extends AFcmToken {
 
     @Column(nullable = false)
     private String deviceId;
-
-    // Getters only for id
-    public Long getId() { return id; }
-
-    // Other Getters and Setters
-    public Admin getAdmin() { return admin; }
-    public void setAdmin(Admin admin) { this.admin = admin; }
-
-    public String getFcmToken() { return fcmToken; }
-    public void setFcmToken(String fcmToken) { this.fcmToken = fcmToken; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-
-    public String getDeviceId() { return deviceId; }
-    public void setDeviceId(String deviceId) { this.deviceId = deviceId; }
 }

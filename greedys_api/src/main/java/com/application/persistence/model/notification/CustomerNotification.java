@@ -1,11 +1,11 @@
 package com.application.persistence.model.notification;
 
 import java.time.Instant;
-import java.util.Map;
 
 import org.hibernate.annotations.CreationTimestamp;
 
 import com.application.persistence.model.customer.Customer;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -26,9 +26,11 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @Entity
 @Table(name = "notification")
+@SuperBuilder
+@Getter
+@Setter
+@NoArgsConstructor
 public class CustomerNotification extends ANotification {
-
-	
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)

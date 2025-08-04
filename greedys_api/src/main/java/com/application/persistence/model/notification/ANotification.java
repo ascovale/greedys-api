@@ -15,11 +15,12 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import jakarta.persistence.MapKeyColumn;
 
+
+@MappedSuperclass
+@SuperBuilder
 @Getter
 @Setter
-@SuperBuilder
 @NoArgsConstructor
-@MappedSuperclass
 public abstract class ANotification {
     
     @Column(name = "title", nullable = false)

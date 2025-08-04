@@ -22,11 +22,11 @@ import lombok.Setter;
 
 @Entity
 @Table(name = "plate")
-@NoArgsConstructor
-@AllArgsConstructor
 @Getter
 @Setter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Dish {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -75,4 +75,5 @@ public class Dish {
         inverseJoinColumns = @JoinColumn(name = "allergen_id")
     )
     private List<Allergen> allergens;
+
 }

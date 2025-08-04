@@ -3,36 +3,24 @@ package com.application.persistence.model.systemconfig;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class SetupConfig {
     @Id
     private Long id;
+    @Builder.Default
     private boolean alreadySetup=false;
+    @Builder.Default
     private boolean dataUploaded=false;
 
-    public boolean isDataUploaded() {
-        return dataUploaded;
-    }
-
-    public void setDataUploaded(boolean dataUploaded) {
-        this.dataUploaded = dataUploaded;
-    }
-
-    // getters and setters
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public boolean isAlreadySetup() {
-        return alreadySetup;
-    }
-
-    public void setAlreadySetup(boolean alreadySetup) {
-        this.alreadySetup = alreadySetup;
-    }
 }
