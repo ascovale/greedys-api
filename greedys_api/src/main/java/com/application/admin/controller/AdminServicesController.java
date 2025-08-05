@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.CreateApiResponses;
 import com.application.common.controller.annotation.ReadApiResponses;
+import com.application.common.controller.annotation.WrapperType;
 import com.application.common.web.ListResponseWrapper;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.ServiceTypeDto;
@@ -43,6 +44,7 @@ public class AdminServicesController extends BaseController {
     @GetMapping("/types")
     @Operation(summary = "Get all service types", description = "Retrieve all service types.")
     @ReadApiResponses
+    @WrapperType(dataClass = ServiceTypeDto.class)
     public ResponseEntity<ListResponseWrapper<ServiceTypeDto>> getServiceTypes() {
         return executeList("get service types", () -> {
             Collection<ServiceTypeDto> serviceTypes = serviceService.getServiceTypes();

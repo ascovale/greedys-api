@@ -46,12 +46,24 @@ public class SwaggerConfig {
     }
 
     @Bean
+    WrapperTypeOperationCustomizer wrapperTypeOperationCustomizer() {
+        return new WrapperTypeOperationCustomizer();
+    }
+
+    @Bean
+    WrapperTypeCustomizer wrapperTypeCustomizer() {
+        return new WrapperTypeCustomizer();
+    }
+
+    @Bean
     GroupedOpenApi adminApi() {
         return GroupedOpenApi.builder()
                 .group("admin-api")
                 .packagesToScan("com.application.admin","com.application.common", "com.application.restaurant", "com.application.customer")
                 .pathsToMatch("/admin/**")
                 .addOpenApiCustomizer(groupCustomizer())
+                .addOpenApiCustomizer(wrapperTypeCustomizer())
+                .addOperationCustomizer(wrapperTypeOperationCustomizer())
                 .build();
     }
 
@@ -62,6 +74,8 @@ public class SwaggerConfig {
                 .packagesToScan("com.application.admin","com.application.common", "com.application.restaurant", "com.application.customer")
                 .pathsToMatch("/customer/**")
                 .addOpenApiCustomizer(groupCustomizer())
+                .addOpenApiCustomizer(wrapperTypeCustomizer())
+                .addOperationCustomizer(wrapperTypeOperationCustomizer())
                 .build();
     }
 
@@ -72,6 +86,8 @@ public class SwaggerConfig {
                 .packagesToScan("com.application.admin","com.application.common", "com.application.restaurant", "com.application.customer")
                 .pathsToMatch("/restaurant/**")
                 .addOpenApiCustomizer(groupCustomizer())
+                .addOpenApiCustomizer(wrapperTypeCustomizer())
+                .addOperationCustomizer(wrapperTypeOperationCustomizer())
                 .build();
     }
 
