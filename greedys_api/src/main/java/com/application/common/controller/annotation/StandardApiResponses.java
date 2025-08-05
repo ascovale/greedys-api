@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
-@Target({ElementType.METHOD})
+@Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @ApiResponses(value = {
     @ApiResponse(responseCode = "400", description = "Bad Request - Invalid input parameters"),

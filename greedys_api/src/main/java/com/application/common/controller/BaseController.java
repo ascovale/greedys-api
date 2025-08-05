@@ -5,7 +5,9 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 
+import com.application.common.controller.annotation.StandardApiResponses;
 import com.application.common.web.ListResponseWrapper;
 import com.application.common.web.PageResponseWrapper;
 import com.application.common.web.ResponseWrapper;
@@ -15,8 +17,10 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Base controller with standardized response methods
  */
+@Controller
 @Slf4j
-public abstract class BaseController {
+@StandardApiResponses
+public class BaseController {
 
     /**
      * Create a successful response with data
