@@ -50,4 +50,10 @@ public @interface WrapperType {
      * @return response description
      */
     String description() default "Successful operation";
+    
+    /**
+     * HTTP response code for this operation
+     * @return the HTTP response code (default: "200")
+     */
+    String responseCode() default "200";
 }

@@ -13,7 +13,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
-import com.application.common.controller.annotation.ReadApiResponses;
+import com.application.common.controller.annotation.WrapperDataType;
+import com.application.common.controller.annotation.WrapperType;
 import com.application.common.service.RestaurantService;
 import com.application.common.web.ListResponseWrapper;
 import com.application.common.web.dto.restaurant.RestaurantDTO;
@@ -35,14 +36,15 @@ public class CustomerRestaurantInfoController extends BaseController {
 
 	@Operation(summary = "Get all restaurants", description = "Retrieve all restaurants")
 	@GetMapping("")
-	@ReadApiResponses
-	public ResponseEntity<ListResponseWrapper<RestaurantDTO>> getRestaurants() {
+	
+	@WrapperType(dataClass = RestaurantDTO.class, type = WrapperDataType.LIST)
+    public ResponseEntity<ListResponseWrapper<RestaurantDTO>> getRestaurants() {
 		return executeList("get all restaurants", () -> restaurantService.findAll().stream().map(r -> new RestaurantDTO(r)).toList());
 	}
 
 	@GetMapping("/{restaurantId}/open-days")
 	@Operation(summary = "Get open days of a restaurant", description = "Retrieve the open days of a restaurant")
-	@ReadApiResponses
+	
 	public ResponseEntity<ListResponseWrapper<String>> getOpenDays(
 			@PathVariable Long restaurantId,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
@@ -55,8 +57,9 @@ public class CustomerRestaurantInfoController extends BaseController {
 
 	@GetMapping("/{restaurantId}/closed-days")
 	@Operation(summary = "Get closed days of a restaurant", description = "Retrieve the closed days of a restaurant")
-	@ReadApiResponses
-	public ResponseEntity<ListResponseWrapper<LocalDate>> getClosedDays(
+	
+	@WrapperType(dataClass = LocalDate.class, type = WrapperDataType.LIST)
+    public ResponseEntity<ListResponseWrapper<LocalDate>> getClosedDays(
 			@PathVariable Long restaurantId,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end) {
@@ -68,8 +71,9 @@ public class CustomerRestaurantInfoController extends BaseController {
 
 	@GetMapping("/{restaurantId}/day-slots")
 	@Operation(summary = "Get day slots of a restaurant", description = "Retrieve the daily slots of a restaurant")
-	@ReadApiResponses
-	public ResponseEntity<ListResponseWrapper<SlotDTO>> getDaySlots(
+	
+	@WrapperType(dataClass = SlotDTO.class, type = WrapperDataType.LIST)
+    public ResponseEntity<ListResponseWrapper<SlotDTO>> getDaySlots(
 			@PathVariable Long restaurantId,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate date) {
 		return executeList("get day slots", () -> {
@@ -80,8 +84,9 @@ public class CustomerRestaurantInfoController extends BaseController {
 
 	@Operation(summary = "Search restaurants by name", description = "Search for restaurants by name")
 	@GetMapping("/search")
-	@ReadApiResponses
-	public ResponseEntity<ListResponseWrapper<RestaurantDTO>> searchRestaurants(@RequestParam String name) {
+	
+	@WrapperType(dataClass = RestaurantDTO.class, type = WrapperDataType.LIST)
+    public ResponseEntity<ListResponseWrapper<RestaurantDTO>> searchRestaurants(@RequestParam String name) {
 		return executeList("search restaurants", () -> {
 			Collection<RestaurantDTO> restaurants = restaurantService.findBySearchTerm(name);
 			return restaurants instanceof List ? (List<RestaurantDTO>) restaurants : List.copyOf(restaurants);
@@ -90,8 +95,8 @@ public class CustomerRestaurantInfoController extends BaseController {
 
 	@GetMapping("/{restaurantId}/types")
 	@Operation(summary = "Get types of a restaurant", description = "Retrieve the types of a restaurant")
-	@ReadApiResponses
-	public ResponseEntity<ListResponseWrapper<String>> getRestaurantTypesNames(@PathVariable Long restaurantId) {
+	
+	    public ResponseEntity<ListResponseWrapper<String>> getRestaurantTypesNames(@PathVariable Long restaurantId) {
 		return executeList("get restaurant types", () -> {
 			Collection<String> types = restaurantService.getRestaurantTypesNames(restaurantId);
 			return types instanceof List ? (List<String>) types : List.copyOf(types);

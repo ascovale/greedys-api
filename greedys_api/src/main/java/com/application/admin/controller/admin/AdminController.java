@@ -16,7 +16,8 @@ import com.application.admin.controller.utils.AdminControllerUtils;
 import com.application.admin.persistence.model.Admin;
 import com.application.admin.service.AdminService;
 import com.application.common.controller.BaseController;
-import com.application.common.controller.annotation.ReadApiResponses;
+import com.application.common.controller.annotation.WrapperDataType;
+import com.application.common.controller.annotation.WrapperType;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.security.UpdatePasswordDTO;
 import com.application.common.web.error.InvalidOldPasswordException;
@@ -80,7 +81,7 @@ public class AdminController extends BaseController {
 
     @Operation(summary = "Get Admin ID", description = "Retrieves the ID of the current admin")
     @GetMapping("/id")
-    @ReadApiResponses
+    @WrapperType(dataClass = Long.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<Long>> getAdminIdEndpoint() {
         return execute("get admin id", () -> AdminControllerUtils.getCurrentAdmin().getId());
     }

@@ -13,7 +13,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
-import com.application.common.controller.annotation.ReadApiResponses;
+import com.application.common.controller.annotation.WrapperDataType;
+import com.application.common.controller.annotation.WrapperType;
 import com.application.common.security.jwt.JwtUtil;
 import com.application.common.web.ListResponseWrapper;
 import com.application.common.web.ResponseWrapper;
@@ -26,10 +27,6 @@ import com.application.restaurant.service.authentication.RestaurantAuthenticatio
 import io.jsonwebtoken.Claims;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -47,18 +44,18 @@ public class RestaurantAuthenticationController extends BaseController {
     private final RestaurantAuthenticationService restaurantAuthenticationService;
 
     @Operation(summary = "Get list of restaurants for hub user", description = "Given a hub JWT, returns the list of restaurants associated with the hub user")
-    @ApiResponse(responseCode = "200", description = "Restaurants retrieved successfully", 
-                content = @Content(array = @ArraySchema(schema = @Schema(implementation = RestaurantDTO.class))))
     @GetMapping(value = "/restaurants", produces = "application/json")
-    @ReadApiResponses
-    public ResponseEntity<ListResponseWrapper<RestaurantDTO>> restaurants(@Parameter(hidden = true) @RequestHeader("Authorization") String authHeader) {
+    
+    @WrapperType(dataClass = RestaurantDTO.class, type = WrapperDataType.LIST)
+    public ResponseEntity<ListResponseWrapper<RestaurantDTO>> restaurants(
+            @Parameter(hidden = true) @RequestHeader("Authorization") String authHeader) {
         return executeList("get restaurants for hub user", () -> {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            
+
             if (authentication == null || !authentication.isAuthenticated()) {
                 throw new IllegalStateException("No authenticated principal found");
             }
-            
+
             String hubEmail = extractHubEmail(authentication, authHeader);
             return restaurantAuthenticationService.getRestaurantsForUserHub(hubEmail);
         });
@@ -66,9 +63,9 @@ public class RestaurantAuthenticationController extends BaseController {
 
     @PreAuthorize("hasAuthority('PRIVILEGE_HUB')")
     @Operation(summary = "Select a restaurant after intermediate login", description = "Given a hub JWT and a restaurantId, returns a JWT for the selected restaurant user")
-    @ApiResponse(responseCode = "200", description = "Restaurant selected successfully", 
-                content = @Content(schema = @Schema(implementation = AuthResponseDTO.class)))
+
     @GetMapping(value = "/select-restaurant", produces = "application/json")
+    @WrapperType(dataClass = AuthResponseDTO.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<AuthResponseDTO>> selectRestaurant(@RequestParam Long restaurantId) {
         return execute("select restaurant", () -> {
             if (restaurantId == null || restaurantId <= 0) {
@@ -80,7 +77,7 @@ public class RestaurantAuthenticationController extends BaseController {
 
     private String extractHubEmail(Authentication authentication, String authHeader) throws Exception {
         Object principal = authentication.getPrincipal();
-        
+
         if (principal instanceof RUser) {
             RUser rUser = (RUser) principal;
             return rUser.getEmail();
@@ -88,36 +85,34 @@ public class RestaurantAuthenticationController extends BaseController {
             if (authHeader == null || !authHeader.toLowerCase().startsWith("bearer ")) {
                 throw new IllegalArgumentException("Missing or invalid Authorization header");
             }
-            
+
             String hubJwt = authHeader.substring(7);
             Claims claims = jwtUtil.extractAllClaims(hubJwt);
             String type = claims.get("type", String.class);
-            
+
             if (!"hub".equals(type)) {
                 throw new SecurityException("JWT does not belong to a hub user");
             }
-            
+
             return claims.get("email", String.class);
         }
     }
 
     @Operation(summary = "Refresh hub token", description = "Refresh a hub JWT token using a hub refresh token")
-    @ApiResponse(responseCode = "200", description = "Hub token refreshed successfully", 
-                content = @Content(schema = @Schema(implementation = AuthResponseDTO.class)))
     @PostMapping(value = "/refresh/hub", produces = "application/json")
-        public ResponseEntity<ResponseWrapper<AuthResponseDTO>> refreshHubToken(@RequestBody RefreshTokenRequestDTO refreshRequest) {
-        return execute("refresh hub token", () -> 
-            restaurantAuthenticationService.refreshHubToken(refreshRequest.getRefreshToken())
-        );
+    @WrapperType(dataClass = AuthResponseDTO.class, type = WrapperDataType.DTO)
+    public ResponseEntity<ResponseWrapper<AuthResponseDTO>> refreshHubToken(
+            @RequestBody RefreshTokenRequestDTO refreshRequest) {
+        return execute("refresh hub token",
+                () -> restaurantAuthenticationService.refreshHubToken(refreshRequest.getRefreshToken()));
     }
 
     @Operation(summary = "Refresh restaurant user token", description = "Refresh a restaurant user JWT token using a refresh token")
-    @ApiResponse(responseCode = "200", description = "Restaurant user token refreshed successfully", 
-                content = @Content(schema = @Schema(implementation = AuthResponseDTO.class)))
     @PostMapping(value = "/refresh", produces = "application/json")
-        public ResponseEntity<ResponseWrapper<AuthResponseDTO>> refreshRUserToken(@RequestBody RefreshTokenRequestDTO refreshRequest) {
-        return execute("refresh restaurant user token", () -> 
-            restaurantAuthenticationService.refreshRUserToken(refreshRequest.getRefreshToken())
-        );
+    @WrapperType(dataClass = AuthResponseDTO.class, type = WrapperDataType.DTO)
+    public ResponseEntity<ResponseWrapper<AuthResponseDTO>> refreshRUserToken(
+            @RequestBody RefreshTokenRequestDTO refreshRequest) {
+        return execute("refresh restaurant user token",
+                () -> restaurantAuthenticationService.refreshRUserToken(refreshRequest.getRefreshToken()));
     }
 }

@@ -17,7 +17,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
-import com.application.common.controller.annotation.CreateApiResponses;
+import com.application.common.controller.annotation.WrapperDataType;
+import com.application.common.controller.annotation.WrapperType;
 import com.application.common.service.RestaurantService;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.RestaurantDTO;
@@ -27,9 +28,6 @@ import com.application.restaurant.web.dto.restaurant.NewRestaurantDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -55,10 +53,8 @@ public class RestaurantRegistrationController extends BaseController {
     }
 
     @Operation(summary = "Request to register a new restaurant", description = "Request to register a new restaurant")
-    @ApiResponse(responseCode = "201", description = "Restaurant registered successfully", 
-                content = @Content(schema = @Schema(implementation = RestaurantDTO.class)))
     @PostMapping(value = "/new")
-    @CreateApiResponses
+    @WrapperType(dataClass = RestaurantDTO.class, type = WrapperDataType.DTO, responseCode = "201")
     public ResponseEntity<ResponseWrapper<RestaurantDTO>> registerRestaurant(@RequestBody NewRestaurantDTO restaurantDto) {
         return executeCreate("register restaurant", "Restaurant registered successfully", () -> {
             log.debug("Registering restaurant with information:", restaurantDto);
@@ -69,8 +65,6 @@ public class RestaurantRegistrationController extends BaseController {
     //TODO richiesta verifica email
     
     @Operation(summary = "Resend registration token", description = "Resends the registration token")
-    @ApiResponse(responseCode = "200", description = "Registration token resent successfully", 
-                content = @Content(schema = @Schema(implementation = String.class)))
     @GetMapping(value = "/resend_token")
     @ResponseBody
     public ResponseEntity<ResponseWrapper<String>> resendRegistrationToken(final HttpServletRequest request,
@@ -80,8 +74,6 @@ public class RestaurantRegistrationController extends BaseController {
     }
 
     @Operation(summary = "Request password reset", description = "Sends a password reset token to the restaurant user's email")
-    @ApiResponse(responseCode = "200", description = "Password reset token sent successfully", 
-                content = @Content(schema = @Schema(implementation = String.class)))
     @PostMapping(value = "/password/forgot")
     public ResponseEntity<ResponseWrapper<String>> forgotPassword(@RequestParam("email") final String userEmail,
             final HttpServletRequest request) {
@@ -92,10 +84,9 @@ public class RestaurantRegistrationController extends BaseController {
     }
 
     @Operation(summary = "Change restaurant and get a new JWT", description = "Switches the restaurant and returns a new JWT for the specified restaurant ID")
-    @ApiResponse(responseCode = "200", description = "Restaurant switched successfully", 
-                content = @Content(schema = @Schema(implementation = AuthResponseDTO.class)))
     @PreAuthorize("@securityRUserService.hasPermissionForRestaurant(#restaurantId)")
     @PostMapping(value = "/change-restaurant", produces = "application/json")
+    @WrapperType(dataClass = AuthResponseDTO.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<AuthResponseDTO>> changeRestaurant(@RequestParam Long restaurantId) {
         return execute("change restaurant", () -> restaurantAuthenticationService.changeRestaurant(restaurantId));
     }

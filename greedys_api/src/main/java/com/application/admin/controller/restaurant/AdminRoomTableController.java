@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
-import com.application.common.controller.annotation.CreateApiResponses;
-import com.application.common.controller.annotation.ReadApiResponses;
+import com.application.common.controller.annotation.WrapperDataType;
+import com.application.common.controller.annotation.WrapperType;
 import com.application.common.web.ListResponseWrapper;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.RoomDTO;
@@ -46,8 +46,9 @@ public class AdminRoomTableController extends BaseController {
 	@GetMapping(value = "/{restaurantId}/rooms")
 	@Operation(summary = "Get rooms of a restaurant", description = "Retrieve the rooms of a restaurant")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_READ')")
-	@ReadApiResponses
-	public ResponseEntity<ListResponseWrapper<RoomDTO>> getRooms(@PathVariable Long restaurantId) {
+	
+	@WrapperType(dataClass = RoomDTO.class, type = WrapperDataType.LIST)
+    public ResponseEntity<ListResponseWrapper<RoomDTO>> getRooms(@PathVariable Long restaurantId) {
 		return executeList("get rooms", () -> {
 			Collection<RoomDTO> rooms = roomService.findByRestaurant(restaurantId);
 			return rooms instanceof List ? (List<RoomDTO>) rooms : new java.util.ArrayList<>(rooms);
@@ -57,8 +58,9 @@ public class AdminRoomTableController extends BaseController {
 	@GetMapping(value = "/room/{roomId}/tables")
 	@Operation(summary = "Get tables of a room", description = "Retrieve the tables of a room")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_READ')")
-	@ReadApiResponses
-	public ResponseEntity<ListResponseWrapper<TableDTO>> getTables(@PathVariable Long roomId) {
+	
+	@WrapperType(dataClass = TableDTO.class, type = WrapperDataType.LIST)
+    public ResponseEntity<ListResponseWrapper<TableDTO>> getTables(@PathVariable Long roomId) {
 		return executeList("get tables", () -> {
 			Collection<TableDTO> tables = tableService.findByRoom(roomId);
 			return tables instanceof List ? (List<TableDTO>) tables : new java.util.ArrayList<>(tables);
@@ -68,8 +70,8 @@ public class AdminRoomTableController extends BaseController {
 	@PostMapping(value = "/{restaurantId}/room")
 	@Operation(summary = "Add a room to a restaurant", description = "Add a new room to a restaurant")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
-	@CreateApiResponses
-	public ResponseEntity<ResponseWrapper<String>> addRoom(@PathVariable Long restaurantId, @RequestBody NewRoomDTO roomDto) {
+	@WrapperType(dataClass = String.class, responseCode = "201")
+    public ResponseEntity<ResponseWrapper<String>> addRoom(@PathVariable Long restaurantId, @RequestBody NewRoomDTO roomDto) {
 		return executeCreate("add room", "Room created successfully", () -> {
 			roomService.createRoom(roomDto);
 			return "success";
@@ -79,8 +81,8 @@ public class AdminRoomTableController extends BaseController {
 	@PostMapping(value = "/{restaurantId}/table")
 	@Operation(summary = "Add a table to a room", description = "Add a new table to a room")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
-	@CreateApiResponses
-	public ResponseEntity<ResponseWrapper<String>> addTable(@PathVariable Long restaurantId, @RequestBody NewTableDTO tableDto) {
+	@WrapperType(dataClass = String.class, type = WrapperDataType.DTO, responseCode = "201")
+    public ResponseEntity<ResponseWrapper<String>> addTable(@PathVariable Long restaurantId, @RequestBody NewTableDTO tableDto) {
 		return executeCreate("add table", "Table created successfully", () -> {
 			tableService.createTable(tableDto);
 			return "success";

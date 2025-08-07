@@ -13,6 +13,8 @@ import com.application.admin.persistence.model.Admin;
 import com.application.admin.web.dto.verification.AdminVerificationResult;
 import com.application.admin.web.dto.verification.UserRestaurantAssociation;
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.WrapperDataType;
+import com.application.common.controller.annotation.WrapperType;
 import com.application.common.web.ListResponseWrapper;
 import com.application.common.web.ResponseWrapper;
 import com.application.restaurant.service.google.RestaurantDataValidationService;
@@ -46,6 +48,7 @@ public class AdminRestaurantVerificationController extends BaseController {
                      "Uses website domain matching, phone area correlation, and name pattern analysis."
     )
     @PostMapping("/verify-email")
+    @WrapperType(dataClass = AdminVerificationResult.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<AdminVerificationResult>> verifyRestaurantEmail(
             @RequestBody RestaurantAssociationRequestDTO request) {
         
@@ -72,6 +75,7 @@ public class AdminRestaurantVerificationController extends BaseController {
                      "Provides manual verification guidance when automated methods are limited."
     )
     @PostMapping("/find-contact-email")
+    @WrapperType(dataClass = AdminVerificationResult.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<AdminVerificationResult>> findRestaurantContactEmail(
             @RequestBody RestaurantAssociationRequestDTO request) {
         
@@ -97,6 +101,7 @@ public class AdminRestaurantVerificationController extends BaseController {
                      "Returns confidence score and recommendations for admin decision."
     )
     @PostMapping("/analyze-ownership")
+    @WrapperType(dataClass = AdminVerificationResult.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<AdminVerificationResult>> analyzeRestaurantOwnership(
             @RequestBody RestaurantAssociationRequestDTO request) {
         
@@ -123,6 +128,7 @@ public class AdminRestaurantVerificationController extends BaseController {
                      "This creates a permanent record of the verification decision."
     )
     @PostMapping("/approve-association")
+    @WrapperType(dataClass = AdminVerificationResult.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<AdminVerificationResult>> approveRestaurantAssociation(
             @RequestBody AdminVerificationRequestDTO request) {
         
@@ -151,6 +157,7 @@ public class AdminRestaurantVerificationController extends BaseController {
                      "Admins can review these and make approval/rejection decisions."
     )
     @GetMapping("/pending")
+    @WrapperType(dataClass = UserRestaurantAssociation.class)
     public ResponseEntity<ListResponseWrapper<UserRestaurantAssociation>> getPendingVerifications() {
         
         return executeList("get pending verifications", () -> googlePlacesService.getPendingVerifications());
@@ -166,6 +173,7 @@ public class AdminRestaurantVerificationController extends BaseController {
                      "Compares local data with Google Places data and saves validation results."
     )
     @PostMapping("/validate-restaurant/{restaurantId}")
+    @WrapperType(dataClass = RestaurantValidationResult.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<RestaurantValidationResult>> validateRestaurantById(
             @PathVariable Long restaurantId) {
         
@@ -201,6 +209,7 @@ public class AdminRestaurantVerificationController extends BaseController {
     )
     @PostMapping("/request-association")
     // No @PreAuthorize - users can request associations
+    @WrapperType(dataClass = AdminVerificationResult.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<AdminVerificationResult>> requestRestaurantAssociation(
             @RequestBody RestaurantAssociationRequestDTO request) {
         

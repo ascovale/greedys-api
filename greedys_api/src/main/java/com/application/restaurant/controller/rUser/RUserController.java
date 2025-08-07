@@ -5,6 +5,7 @@ import java.util.Locale;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,11 +17,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.WrapperDataType;
+import com.application.common.controller.annotation.WrapperType;
 import com.application.common.web.ListResponseWrapper;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.RUserDTO;
 import com.application.common.web.error.InvalidOldPasswordException;
-import com.application.restaurant.controller.utils.RestaurantControllerUtils;
 import com.application.restaurant.persistence.dao.RestaurantRoleDAO;
 import com.application.restaurant.persistence.model.user.RUser;
 import com.application.restaurant.service.RUserService;
@@ -54,6 +56,7 @@ public class RUserController extends BaseController {
     @Operation(summary = "Add a role to a restaurant user", description = "Assign a specific role to an existing restaurant user")
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_' + #role.toUpperCase() + '_WRITE')")
     @PostMapping(value = "/add_role")
+    @WrapperType(dataClass = RUserDTO.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<RUserDTO>> addRoleToRUser(
             @RequestParam String role,
             @RequestParam Long RUserId) {
@@ -73,6 +76,7 @@ public class RUserController extends BaseController {
     @Operation(summary = "Remove a role from a restaurant user", description = "Remove a specific role from an existing restaurant user")
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_' + #role.toUpperCase() + '_WRITE')")
     @PostMapping(value = "/remove_role")
+    @WrapperType(dataClass = RUserDTO.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<RUserDTO>> removeRoleFromRUser(
             @RequestParam String role,
             @RequestParam Long RUserId) {
@@ -103,9 +107,9 @@ public class RUserController extends BaseController {
     @Operation(summary = "Disable a restaurant user", description = "Disable a restaurant user")
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_MANAGER_WRITE')")
     @DeleteMapping(value = "/disable_user/{RUserId}")
-    public ResponseEntity<ResponseWrapper<String>> disableRUser(@PathVariable Long RUserId) {
+    public ResponseEntity<ResponseWrapper<String>> disableRUser(@PathVariable Long RUserId,@AuthenticationPrincipal RUser rUser) {
         return executeVoid("disable user", "User disabled successfully", () -> 
-            RUserService.disableRUser(RestaurantControllerUtils.getCurrentRUser().getId(), RUserId));
+            RUserService.disableRUser(rUser.getId(), RUserId));
     }
 
     /**
@@ -123,12 +127,13 @@ public class RUserController extends BaseController {
             @Parameter(description = "Locale for response messages") final Locale locale,
             @Parameter(description = "The old password", required = true) @RequestParam String oldPassword,
             @Parameter(description = "The new password", required = true) @RequestParam String newPassword,
-            @Parameter(description = "The user's email (optional)") @RequestParam(required = false) String email) {
+            @Parameter(description = "The user's email (optional)") @RequestParam(required = false) String email,
+            @AuthenticationPrincipal RUser rUser) {
         return executeVoid("change user password", () -> {
-            if (!RUserService.checkIfValidOldPassword(RestaurantControllerUtils.getRUserId(), oldPassword)) {
+            if (!RUserService.checkIfValidOldPassword(rUser.getId(), oldPassword)) {
                 throw new InvalidOldPasswordException();
             }
-            RUserService.changeRUserPassword(RestaurantControllerUtils.getRUserId(), newPassword);
+            RUserService.changeRUserPassword(rUser.getId(), newPassword);
         });
     }
 
@@ -140,6 +145,7 @@ public class RUserController extends BaseController {
      */
     @PostMapping(value = "/new")
     @Operation(summary = "Add a user to a restaurant", description = "Add a new user to a restaurant")
+    @WrapperType(dataClass = RUserDTO.class, type = WrapperDataType.DTO,responseCode = "201")
     public ResponseEntity<ResponseWrapper<RUserDTO>> addRUserToRestaurant(
             @RequestBody NewRUserDTO RUserDTO,
             @RequestParam Long restaurantId) {
@@ -152,13 +158,13 @@ public class RUserController extends BaseController {
      */
     @Operation(summary = "Get restaurant user details", description = "Retrieve details of the current restaurant user")
     @GetMapping("/get")
-    public ResponseEntity<ResponseWrapper<RUserDTO>> getRUserDetails() {
+    @WrapperType(dataClass = RUserDTO.class, type = WrapperDataType.DTO)
+    public ResponseEntity<ResponseWrapper<RUserDTO>> getRUserDetails(@AuthenticationPrincipal RUser rUser) {
         return execute("get user details", () -> {
-            RUser currentUser = RestaurantControllerUtils.getCurrentRUser();
-            if (currentUser == null) {
+            if (rUser == null) {
                 throw new IllegalStateException("User not found");
             }
-            return new RUserDTO(currentUser);
+            return new RUserDTO(rUser);
         });
     }
 
@@ -169,6 +175,7 @@ public class RUserController extends BaseController {
      */
     @Operation(summary = "Get user authorities", description = "Restituisce i permessi dell'utente autenticato")
     @GetMapping("/authorities")
+    @WrapperType(dataClass = String.class, type = WrapperDataType.LIST)
     public ResponseEntity<ListResponseWrapper<String>> getRUserAuthorities() {
         return executeList("get user authorities", () -> {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

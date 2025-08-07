@@ -22,7 +22,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
-import com.application.common.controller.annotation.CreateApiResponses;
+import com.application.common.controller.annotation.WrapperDataType;
+import com.application.common.controller.annotation.WrapperType;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.security.AuthRequestGoogleDTO;
 import com.application.common.web.dto.security.AuthResponseDTO;
@@ -53,21 +54,24 @@ public class CustomerRegistrationController extends BaseController {
     private final CustomerAuthenticationService customerAuthenticationService;
 
     @Operation(summary = "Register a new customer", description = "Registers a new customer account and sends a verification email.")
+    @WrapperType(dataClass = String.class, responseCode = "201")
     @PostMapping("/new")
-    @CreateApiResponses
+    
     public ResponseEntity<ResponseWrapper<String>> registerCustomerAccount(@Valid @RequestBody NewCustomerDTO accountDto,
             HttpServletRequest request) {
-        return executeCreate("Register new customer", () -> {
+        return executeCreate("Register new customer", "Customer registered successfully", () -> {
             customerAuthenticationService.registerNewCustomerAccount(accountDto);
             return "Customer registered successfully";
         });
     }
 
     @Operation(summary = "Send password reset email", description = "Sends an email with a password reset token to the specified customer.")
+    @WrapperType(dataClass = String.class, responseCode = "200")
     @PostMapping("/password/forgot")
     public ResponseEntity<ResponseWrapper<String>> sendPasswordResetEmail(@RequestParam String email, HttpServletRequest request) {
-        return executeVoid("Send password reset email", "Password reset email sent successfully", () -> {
+        return execute("Send password reset email", () -> {
             customerAuthenticationService.sendPasswordResetEmail(email, getAppUrl(request), request.getLocale());
+            return "Password reset email sent successfully";
         });
     }
 
@@ -114,6 +118,7 @@ public class CustomerRegistrationController extends BaseController {
     // 4. Google Authentication
     @Operation(summary = "Authenticate with Google", description = "Authenticates or if not exist register a customer using a Google token and returns a JWT token.")
     @PostMapping("/google")
+    @WrapperType(dataClass = AuthResponseDTO.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<AuthResponseDTO>> authenticateWithGoogle(@RequestBody AuthRequestGoogleDTO authRequest) {
         return execute("Authenticate with Google", () -> customerAuthenticationService.authenticateWithGoogle(authRequest.getToken()));
     }

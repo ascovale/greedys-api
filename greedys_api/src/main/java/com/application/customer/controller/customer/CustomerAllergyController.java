@@ -1,7 +1,7 @@
 package com.application.customer.controller.customer;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -11,7 +11,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
-import com.application.common.controller.annotation.ReadApiResponses;
+import com.application.common.controller.annotation.WrapperDataType;
+import com.application.common.controller.annotation.WrapperType;
 import com.application.common.service.AllergyService;
 import com.application.common.web.ListResponseWrapper;
 import com.application.common.web.PageResponseWrapper;
@@ -37,9 +38,13 @@ public class CustomerAllergyController extends BaseController {
     private final AllergyService allergyService;
 
     @Operation(summary = "Add allergy to customer", description = "Adds an allergy to the currently authenticated customer using the allergy ID")
+    @WrapperType(dataClass = String.class, responseCode = "201")
     @PostMapping("/add/{allergyId}")
     public ResponseEntity<ResponseWrapper<String>> addAllergyToCustomer(@PathVariable Long allergyId) {
-        return executeVoid("addAllergyToCustomer", () -> customerService.addAllergyToCustomer(allergyId));
+        return executeCreate("addAllergyToCustomer", "Allergy added successfully", () -> {
+            customerService.addAllergyToCustomer(allergyId);
+            return "Allergy added successfully";
+        });
     }
 
     @Operation(summary = "Remove allergy from customer", description = "Removes an allergy from the currently authenticated customer using the allergy ID")
@@ -50,32 +55,26 @@ public class CustomerAllergyController extends BaseController {
 
     @Operation(summary = "Get allergies of customer", description = "Returns all allergies of the currently authenticated customer")
     @GetMapping("/allergies")
-    @ReadApiResponses
-    public ResponseEntity<ListResponseWrapper<AllergyDTO>> getAllergiesOfCustomer() {
-        return executeList("getAllergiesOfCustomer", () -> customerService.getAllergies(getCurrentCustomer().getId()));
+    
+    @WrapperType(dataClass = AllergyDTO.class, type = WrapperDataType.LIST)
+    public ResponseEntity<ListResponseWrapper<AllergyDTO>> getAllergiesOfCustomer(@AuthenticationPrincipal Customer customer) {
+        return executeList("getAllergiesOfCustomer", () -> customerService.getAllergies(customer.getId()));
     }
 
     @Operation(summary = "Get paginated allergies of customer", description = "Returns paginated allergies of the currently authenticated customer")
     @GetMapping("/paginated")
-    @ReadApiResponses
+    
     public ResponseEntity<PageResponseWrapper<AllergyDTO>> getPaginatedAllergiesOfCustomer(@RequestParam int page, @RequestParam int size) {
         return executePaginated("getPaginatedAllergiesOfCustomer", () -> customerService.getPaginatedAllergies(page, size));
     }
 
     @Operation(summary = "Get allergy by ID", description = "Returns a specific allergy of the currently authenticated customer using the allergy ID")
     @GetMapping("/{allergyId}")
-    @ReadApiResponses
+    
+    @WrapperType(dataClass = AllergyDTO.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<AllergyDTO>> getAllergyById(@PathVariable Long allergyId) {
         return execute("getAllergyById", () -> allergyService.getAllergyById(allergyId));
     }
 
-    private Customer getCurrentCustomer() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (principal instanceof Customer) {
-            return ((Customer) principal);
-        } else {
-            log.warn("This should not happen");
-            return null;
-        }
-    }
+
 }

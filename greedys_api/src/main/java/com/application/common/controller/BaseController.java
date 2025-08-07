@@ -7,6 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 
+import com.application.common.controller.annotation.CreateApiResponses;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.controller.annotation.StandardApiResponses;
 import com.application.common.web.ListResponseWrapper;
 import com.application.common.web.PageResponseWrapper;
@@ -173,6 +175,7 @@ public class BaseController {
     /**
      * Execute an operation with void return (for operations like delete, update status)
      */
+    @ReadApiResponses
     protected ResponseEntity<ResponseWrapper<String>> executeVoid(String operationName, String successMessage, VoidOperation operation) {
         try {
             operation.execute();
@@ -185,6 +188,7 @@ public class BaseController {
         /**
      * Execute an operation with void return (for operations like delete, update status)
      */
+    @ReadApiResponses
     protected ResponseEntity<ResponseWrapper<String>> executeVoid(String operationName, VoidOperation operation) {
         try {
             operation.execute();
@@ -197,6 +201,7 @@ public class BaseController {
     /**
      * Execute an operation with standardized error handling
      */
+    @ReadApiResponses
     protected <T> ResponseEntity<ResponseWrapper<T>> execute(String operation, OperationSupplier<T> supplier) {
         try {
             T result = supplier.get();
@@ -209,6 +214,7 @@ public class BaseController {
     /**
      * Execute an operation with custom success message
      */
+    @ReadApiResponses
     protected <T> ResponseEntity<ResponseWrapper<T>> execute(String operation, String successMessage, OperationSupplier<T> supplier) {
         try {
             T result = supplier.get();
@@ -221,6 +227,7 @@ public class BaseController {
     /**
      * Execute a CREATE operation with 201 Created response
      */
+    @CreateApiResponses
     protected <T> ResponseEntity<ResponseWrapper<T>> executeCreate(String operation, String successMessage, OperationSupplier<T> supplier) {
         try {
             T result = supplier.get();
@@ -234,6 +241,7 @@ public class BaseController {
     /**
      * Execute a CREATE operation with 201 Created response
      */
+    @CreateApiResponses
     protected <T> ResponseEntity<ResponseWrapper<T>> executeCreate(String operation, OperationSupplier<T> supplier) {
         try {
             T result = supplier.get();
@@ -246,6 +254,7 @@ public class BaseController {
     /**
      * Execute a paginated read operation with standardized error handling and pagination metadata
      */
+    @ReadApiResponses
     protected <T> ResponseEntity<PageResponseWrapper<T>> executePaginated(String operation, OperationSupplier<Page<T>> supplier) {
         try {
             Page<T> page = supplier.get();
@@ -298,6 +307,7 @@ public class BaseController {
     /**
      * Execute a list operation with standardized error handling
      */
+    @ReadApiResponses
     protected <T> ResponseEntity<ListResponseWrapper<T>> executeList(String operation, OperationSupplier<List<T>> supplier) {
         try {
             List<T> result = supplier.get();
@@ -310,6 +320,7 @@ public class BaseController {
     /**
      * Execute a list operation with custom success message
      */
+    @ReadApiResponses
     protected <T> ResponseEntity<ListResponseWrapper<T>> executeList(String operation, String successMessage, OperationSupplier<List<T>> supplier) {
         try {
             List<T> result = supplier.get();
@@ -354,6 +365,7 @@ public class BaseController {
     /**
      * Execute a page operation with standardized error handling
      */
+    @ReadApiResponses
     protected <T> ResponseEntity<PageResponseWrapper<T>> executePage(String operation, OperationSupplier<Page<T>> supplier) {
         try {
             Page<T> result = supplier.get();
@@ -366,6 +378,7 @@ public class BaseController {
     /**
      * Execute a page operation with custom success message
      */
+    @ReadApiResponses
     protected <T> ResponseEntity<PageResponseWrapper<T>> executePage(String operation, String successMessage, OperationSupplier<Page<T>> supplier) {
         try {
             Page<T> result = supplier.get();

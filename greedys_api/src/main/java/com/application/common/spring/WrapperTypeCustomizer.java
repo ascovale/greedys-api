@@ -56,10 +56,11 @@ public class WrapperTypeCustomizer implements OpenApiCustomizer {
             String dataClassName = (String) wrapperInfo.get("dataClass");
             String wrapperType = (String) wrapperInfo.get("type");
             String description = (String) wrapperInfo.getOrDefault("description", "Successful operation");
+            String responseCode = (String) wrapperInfo.getOrDefault("responseCode", "200");
 
             if (dataClassName != null && wrapperType != null) {
                 Schema<?> responseSchema = createWrapperSchema(dataClassName, wrapperType, openApi);
-                updateOperationResponse(operation, responseSchema, description);
+                updateOperationResponse(operation, responseSchema, description, responseCode);
             }
         }
     }
@@ -127,7 +128,7 @@ public class WrapperTypeCustomizer implements OpenApiCustomizer {
         return wrapper;
     }
 
-    private void updateOperationResponse(Operation operation, Schema<?> schema, String description) {
+    private void updateOperationResponse(Operation operation, Schema<?> schema, String description, String responseCode) {
         ApiResponse response = new ApiResponse()
                 .description(description)
                 .content(new Content()
@@ -138,6 +139,6 @@ public class WrapperTypeCustomizer implements OpenApiCustomizer {
             operation.responses(new io.swagger.v3.oas.models.responses.ApiResponses());
         }
         
-        operation.getResponses().addApiResponse("200", response);
+        operation.getResponses().addApiResponse(responseCode, response);
     }
 }

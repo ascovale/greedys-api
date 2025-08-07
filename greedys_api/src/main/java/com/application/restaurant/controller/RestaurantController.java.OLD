@@ -55,7 +55,7 @@ public class RestaurantController extends BaseController {
 
 	@GetMapping(value = "/room/{roomId}/tables")
 	@Operation(summary = "Get tables of a room", description = "Retrieve the tables of a specific room")
-	@ReadApiResponses
+	
 	public ResponseEntity<ApiResponse<Collection<TableDTO>>> getTables(@PathVariable Long roomId) {
 		return execute("get room tables", () -> tableService.findByRoom(roomId));
 	}

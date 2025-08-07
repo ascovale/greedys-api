@@ -10,7 +10,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.application.common.web.ResponseWrapper;
+import com.application.common.controller.annotation.WrapperDataType;
+import com.application.common.controller.annotation.WrapperType;
+import com.application.common.web.ListResponseWrapper;
 import com.application.common.web.dto.restaurant.ServiceTypeDto;
 import com.application.restaurant.service.ServiceService;
 
@@ -33,8 +35,9 @@ public class AdminServicesC  {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_READ')")
     @GetMapping("/types222")
     @Operation(summary = "Get all service types", description = "Retrieve all service types.")
-    public ResponseEntity<ResponseWrapper<List<ServiceTypeDto>>> getServiceTypes() {
+    @WrapperType(dataClass = ServiceTypeDto.class, type = WrapperDataType.DTO)
+    public ResponseEntity<ListResponseWrapper<ServiceTypeDto>> getServiceTypes() {
             Collection<ServiceTypeDto> serviceTypes = serviceService.getServiceTypes();
-            return ResponseEntity.ok(ResponseWrapper.success((List<ServiceTypeDto>) serviceTypes));
+            return ResponseEntity.ok(ListResponseWrapper.success((List<ServiceTypeDto>) serviceTypes));
     }
 }

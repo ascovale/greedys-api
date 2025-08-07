@@ -14,8 +14,6 @@ import com.application.common.web.ResponseWrapper;
 import com.application.customer.service.notification.CustomerNotificationService;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -31,14 +29,7 @@ public class AdminTestEmailController extends BaseController {
     private final EmailService emailService;
     private final CustomerNotificationService notificationService;
     
-    @Operation(
-        summary = "Send test email", 
-        description = "Sends a test email with the specified subject and content",
-        requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-            description = "Email request payload",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = EmailRequestDTO.class))
-        )
-    )
+    
     @PostMapping("/send_test_email")
     public ResponseEntity<ResponseWrapper<String>> sendTestEmail(@RequestBody EmailRequestDTO emailRequest) {
         return executeCreate("send test email", "Email sent successfully", () -> {

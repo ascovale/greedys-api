@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+import com.application.common.controller.annotation.WrapperType;
 import com.application.common.web.ErrorDetails;
 import com.application.common.web.ListResponseWrapper;
 import com.application.common.web.ResponseWrapper;
@@ -139,6 +140,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
+    @WrapperType(dataClass = ErrorDetails.class)
     public ResponseEntity<ListResponseWrapper<ErrorDetails>> handleValidationException(MethodArgumentNotValidException ex, WebRequest request) {
         logPotentialBaseControllerMiss("MethodArgumentNotValidException", ex, request);
         

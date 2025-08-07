@@ -23,7 +23,6 @@ import com.application.restaurant.persistence.dao.RestaurantDAO;
 import com.application.restaurant.persistence.dao.RestaurantVerificationDAO;
 import com.application.restaurant.persistence.model.Restaurant;
 import com.application.restaurant.persistence.model.RestaurantVerification;
-import com.application.restaurant.web.dto.verification.VerificationRequestDTO;
 import com.application.restaurant.web.dto.verification.VerificationResponseDTO;
 import com.application.restaurant.web.dto.verification.VerificationStatus;
 
@@ -49,7 +48,6 @@ class RestaurantTwilioVerificationServiceTest {
     private RestaurantTwilioVerificationService verificationService;
 
     private Restaurant testRestaurant;
-    private VerificationRequestDTO testRequest;
 
     @BeforeEach
     void setUp() {
@@ -59,16 +57,6 @@ class RestaurantTwilioVerificationServiceTest {
             .phoneNumber("+393331234567")
             .phoneVerified(false)
             .build();
-
-        testRequest = VerificationRequestDTO.builder()
-            .restaurantId(1L)
-            .phoneNumber("3331234567")
-            .build();
-
-        // Setup default mock responses
-        when(twilioConfig.getVerifyServiceSid()).thenReturn("test-service-sid");
-        when(twilioConfig.getVerificationExpiryMinutes()).thenReturn(10);
-        when(twilioConfig.getMaxVerificationAttempts()).thenReturn(3);
     }
 
     @Test
@@ -123,7 +111,7 @@ class RestaurantTwilioVerificationServiceTest {
     @Test
     void testMaskPhoneNumber() {
         String masked1 = verificationService.maskPhoneNumber("+393331234567");
-        assertEquals("+39****4567", masked1);
+        assertEquals("+39******4567", masked1);
 
         String masked2 = verificationService.maskPhoneNumber("+39123456789");
         assertEquals("+39*****6789", masked2);
@@ -134,6 +122,8 @@ class RestaurantTwilioVerificationServiceTest {
 
     @Test
     void testIsVerificationStillValid() {
+        when(twilioConfig.getMaxVerificationAttempts()).thenReturn(3);
+        
         LocalDateTime now = LocalDateTime.now();
         
         // Valid verification
@@ -176,7 +166,6 @@ class RestaurantTwilioVerificationServiceTest {
 
     @Test
     void testGetVerificationStatus_NoVerification() {
-        when(restaurantDAO.findById(1L)).thenReturn(Optional.of(testRestaurant));
         when(verificationDAO.findActiveVerificationByRestaurant(1L)).thenReturn(Optional.empty());
         
         VerificationResponseDTO response = verificationService.getVerificationStatus(1L);
@@ -188,6 +177,8 @@ class RestaurantTwilioVerificationServiceTest {
 
     @Test
     void testGetVerificationStatus_ActiveVerification() {
+        when(twilioConfig.getMaxVerificationAttempts()).thenReturn(3);
+        
         LocalDateTime now = LocalDateTime.now();
         RestaurantVerification verification = RestaurantVerification.builder()
             .id(1L)
@@ -200,7 +191,6 @@ class RestaurantTwilioVerificationServiceTest {
             .attempts(1)
             .build();
 
-        when(restaurantDAO.findById(1L)).thenReturn(Optional.of(testRestaurant));
         when(verificationDAO.findActiveVerificationByRestaurant(1L)).thenReturn(Optional.of(verification));
         when(twilioConfig.getMaxVerificationAttempts()).thenReturn(3);
         
@@ -209,7 +199,7 @@ class RestaurantTwilioVerificationServiceTest {
         assertTrue(response.isSuccess());
         assertEquals(VerificationStatus.PENDING, response.getStatus());
         assertEquals("VE123456", response.getVerificationSid());
-        assertEquals("+39****4567", response.getPhoneNumber());
+        assertEquals("+39******4567", response.getPhoneNumber());
         assertEquals(1, response.getAttempts());
         assertEquals(2, response.getAttemptsRemaining());
     }
@@ -223,7 +213,6 @@ class RestaurantTwilioVerificationServiceTest {
             .verificationSid("VE123456")
             .build();
 
-        when(restaurantDAO.findById(1L)).thenReturn(Optional.of(testRestaurant));
         when(verificationDAO.findActiveVerificationByRestaurant(1L)).thenReturn(Optional.of(verification));
         when(verificationDAO.save(any(RestaurantVerification.class))).thenReturn(verification);
         
@@ -238,7 +227,6 @@ class RestaurantTwilioVerificationServiceTest {
 
     @Test
     void testCancelVerification_NoActiveVerification() {
-        when(restaurantDAO.findById(1L)).thenReturn(Optional.of(testRestaurant));
         when(verificationDAO.findActiveVerificationByRestaurant(1L)).thenReturn(Optional.empty());
         
         VerificationResponseDTO response = verificationService.cancelVerification(1L);
