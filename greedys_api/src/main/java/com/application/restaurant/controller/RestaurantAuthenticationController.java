@@ -100,6 +100,7 @@ public class RestaurantAuthenticationController extends BaseController {
 
     @Operation(summary = "Refresh hub token", description = "Refresh a hub JWT token using a hub refresh token")
     @PostMapping(value = "/refresh/hub", produces = "application/json")
+    @PreAuthorize("hasAuthority('PRIVILEGE_REFRESH_ONLY')")
     @WrapperType(dataClass = AuthResponseDTO.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<AuthResponseDTO>> refreshHubToken(
             @RequestBody RefreshTokenRequestDTO refreshRequest) {
@@ -109,6 +110,7 @@ public class RestaurantAuthenticationController extends BaseController {
 
     @Operation(summary = "Refresh restaurant user token", description = "Refresh a restaurant user JWT token using a refresh token")
     @PostMapping(value = "/refresh", produces = "application/json")
+    @PreAuthorize("hasAuthority('PRIVILEGE_REFRESH_ONLY')")
     @WrapperType(dataClass = AuthResponseDTO.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<AuthResponseDTO>> refreshRUserToken(
             @RequestBody RefreshTokenRequestDTO refreshRequest) {

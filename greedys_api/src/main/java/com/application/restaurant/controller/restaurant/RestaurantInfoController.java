@@ -51,7 +51,7 @@ public class RestaurantInfoController extends BaseController {
 
 	@GetMapping(value = "/types")
 	@Operation(summary = "Get types of a restaurant", description = "Retrieve the types of a restaurant")
-	
+	@WrapperType(dataClass = String.class, type = WrapperDataType.LIST)
 	    public ResponseEntity<ListResponseWrapper<String>> getRestaurantTypesNames() {
 		return executeList("get restaurant types", () -> {
 			log.info("Getting restaurant types");
@@ -61,7 +61,7 @@ public class RestaurantInfoController extends BaseController {
 
 	@GetMapping(value = "/open-days")
 	@Operation(summary = "Get open days of the authenticated restaurant", description = "Retrieve the open days of the authenticated restaurant")
-	
+	@WrapperType(dataClass = String.class, type = WrapperDataType.LIST)
 	    public ResponseEntity<ListResponseWrapper<String>> getOpenDays(
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate end,

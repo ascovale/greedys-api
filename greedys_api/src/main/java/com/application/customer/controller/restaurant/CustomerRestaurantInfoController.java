@@ -44,7 +44,7 @@ public class CustomerRestaurantInfoController extends BaseController {
 
 	@GetMapping("/{restaurantId}/open-days")
 	@Operation(summary = "Get open days of a restaurant", description = "Retrieve the open days of a restaurant")
-	
+	@WrapperType(dataClass = String.class, type = WrapperDataType.LIST)
 	public ResponseEntity<ListResponseWrapper<String>> getOpenDays(
 			@PathVariable Long restaurantId,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
@@ -95,7 +95,7 @@ public class CustomerRestaurantInfoController extends BaseController {
 
 	@GetMapping("/{restaurantId}/types")
 	@Operation(summary = "Get types of a restaurant", description = "Retrieve the types of a restaurant")
-	
+	@WrapperType(dataClass = String.class, type = WrapperDataType.LIST)
 	    public ResponseEntity<ListResponseWrapper<String>> getRestaurantTypesNames(@PathVariable Long restaurantId) {
 		return executeList("get restaurant types", () -> {
 			Collection<String> types = restaurantService.getRestaurantTypesNames(restaurantId);

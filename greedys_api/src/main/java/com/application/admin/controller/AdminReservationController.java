@@ -38,7 +38,7 @@ public class AdminReservationController extends BaseController {
 	
 	@PostMapping("/new")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_WRITE')")
-	@WrapperType(dataClass = String.class, responseCode = "201") 
+	@WrapperType(dataClass = String.class, type = WrapperDataType.DTO, responseCode = "201") 
 	public ResponseEntity<ResponseWrapper<String>> createReservation(@RequestBody AdminNewReservationDTO DTO) {
 		return executeCreate("create reservation", () -> {
 			adminReservationService.createReservation(DTO);

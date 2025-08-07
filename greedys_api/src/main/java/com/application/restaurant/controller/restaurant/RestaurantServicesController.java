@@ -96,7 +96,7 @@ public class RestaurantServicesController extends BaseController {
     
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_READ')")
     @GetMapping("/types")
-    @WrapperType(dataClass = ServiceTypeDto.class)
+    @WrapperType(dataClass = ServiceTypeDto.class, type = WrapperDataType.LIST)
     public ResponseEntity<ListResponseWrapper<ServiceTypeDto>> getServiceTypes() {
         return executeList("get service types", () -> {
             Collection<ServiceTypeDto> types = serviceService.getServiceTypesFromRUser();

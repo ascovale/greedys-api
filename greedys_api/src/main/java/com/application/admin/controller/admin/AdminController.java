@@ -4,6 +4,7 @@ import java.util.Locale;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -70,12 +71,13 @@ public class AdminController extends BaseController {
     @PostMapping(value = "/password/new_token")
     public ResponseEntity<ResponseWrapper<String>> changeUserPassword(
             @Parameter(description = "Locale for response messages") final Locale locale,
-            @Parameter(description = "DTO containing the old and new password", required = true) @RequestBody @Valid UpdatePasswordDTO passwordDto) {
+            @Parameter(description = "DTO containing the old and new password", required = true) @RequestBody @Valid UpdatePasswordDTO passwordDto,
+            @AuthenticationPrincipal final Admin admin) {
         return executeVoid("change admin password", "Password changed successfully", () -> {
-            if (!adminService.checkIfValidOldPassword(getAdminId(), passwordDto.getOldPassword())) {
+            if (!adminService.checkIfValidOldPassword(admin.getId(), passwordDto.getOldPassword())) {
                 throw new InvalidOldPasswordException();
             }
-            adminService.changeAdminPassword(getAdminId(), passwordDto.getNewPassword());
+            adminService.changeAdminPassword(admin.getId(), passwordDto.getNewPassword());
         });
     }
 
@@ -86,7 +88,4 @@ public class AdminController extends BaseController {
         return execute("get admin id", () -> AdminControllerUtils.getCurrentAdmin().getId());
     }
     
-    private Long getAdminId() {
-        return AdminControllerUtils.getCurrentAdmin().getId();
-    }
 }

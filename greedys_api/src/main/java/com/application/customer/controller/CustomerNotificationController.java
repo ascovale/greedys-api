@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.WrapperDataType;
 import com.application.common.controller.annotation.WrapperType;
 import com.application.common.web.PageResponseWrapper;
 import com.application.common.web.ResponseWrapper;
@@ -66,7 +67,7 @@ public class CustomerNotificationController extends BaseController {
 
     @Operation(summary = "Get unread notifications", description = "Returns a pageable list of unread notifications")
     @GetMapping("/unread/{page}/{size}")
-    
+    @WrapperType(dataClass = CustomerNotification.class, type = WrapperDataType.PAGE)
     public ResponseEntity<PageResponseWrapper<CustomerNotification>> getUnreadNotifications(@PathVariable int page,
             @PathVariable int size) {
         Pageable pageable = PageRequest.of(page, size);
@@ -75,7 +76,7 @@ public class CustomerNotificationController extends BaseController {
 
     @Operation(summary = "Get all notifications", description = "Returns a pageable list of all notifications")
     @GetMapping("/all/{page}/{size}")
-    
+    @WrapperType(dataClass = CustomerNotification.class, type = WrapperDataType.PAGE)
     public ResponseEntity<PageResponseWrapper<CustomerNotification>> getAllNotifications(@PathVariable int page,
             @PathVariable int size) {
         Pageable pageable = PageRequest.of(page, size);

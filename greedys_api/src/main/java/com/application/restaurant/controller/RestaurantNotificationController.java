@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
-import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.controller.annotation.WrapperDataType;
 import com.application.common.controller.annotation.WrapperType;
 import com.application.common.web.PageResponseWrapper;
@@ -37,7 +36,7 @@ public class RestaurantNotificationController extends BaseController {
     private final RestaurantNotificationService restaurantNotificationService;
 
     @Operation(summary = "Get unread notifications", description = "Returns a pageable list of unread notifications")
-    
+    @WrapperType(dataClass = RestaurantNotification.class, type = WrapperDataType.PAGE)
     @GetMapping("/unread/{page}/{size}")
     public ResponseEntity<PageResponseWrapper<RestaurantNotification>> getUnreadNotifications(
             @PathVariable int page,
@@ -58,7 +57,7 @@ public class RestaurantNotificationController extends BaseController {
     }
 
     @Operation(summary = "Get all notifications", description = "Returns a pageable list of all notifications")
-    
+    @WrapperType(dataClass = RestaurantNotification.class, type = WrapperDataType.PAGE)
     @GetMapping("/all/{page}/{size}")
     public ResponseEntity<PageResponseWrapper<RestaurantNotification>> getAllNotifications(
             @PathVariable int page,

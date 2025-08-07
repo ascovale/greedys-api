@@ -37,13 +37,13 @@ public @interface WrapperType {
      * The data class type that will be wrapped
      * @return the class of the data object
      */
-    Class<?> dataClass();
+    Class<?> dataClass() default String.class;
     
     /**
      * The wrapper type to use for the response
      * @return the wrapper data type (DTO, LIST, or PAGE)
      */
-    WrapperDataType type() default WrapperDataType.LIST;
+    WrapperDataType type() default WrapperDataType.DTO;
     
     /**
      * Optional description for the response

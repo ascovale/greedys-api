@@ -63,7 +63,7 @@ public class CustomerAllergyController extends BaseController {
 
     @Operation(summary = "Get paginated allergies of customer", description = "Returns paginated allergies of the currently authenticated customer")
     @GetMapping("/paginated")
-    
+    @WrapperType(dataClass = AllergyDTO.class, type = WrapperDataType.PAGE)
     public ResponseEntity<PageResponseWrapper<AllergyDTO>> getPaginatedAllergiesOfCustomer(@RequestParam int page, @RequestParam int size) {
         return executePaginated("getPaginatedAllergiesOfCustomer", () -> customerService.getPaginatedAllergies(page, size));
     }
