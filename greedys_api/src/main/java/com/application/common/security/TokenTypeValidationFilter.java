@@ -95,6 +95,16 @@ public class TokenTypeValidationFilter extends OncePerRequestFilter {
                 }
                 log.debug("Valid access token for endpoint {} {}", method, path);
             }
+            
+            // 🎯 NUOVO: Controllo User Type vs Endpoint
+            if (!isValidUserTypeForEndpoint(token, path)) {
+                log.warn("Token user type mismatch for endpoint {} {}", method, path);
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.setContentType("application/json");
+                response.getWriter().write("{\"error\":\"Token user type not allowed for this endpoint\"}");
+                return;
+            }
+            
         } catch (Exception e) {
             log.error("Error validating token type for path {} {}: {}", method, path, e.getMessage());
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -114,5 +124,27 @@ public class TokenTypeValidationFilter extends OncePerRequestFilter {
                path.equals("/admin/auth/refresh") ||
                path.equals("/restaurant/user/auth/refresh") ||
                path.equals("/restaurant/user/auth/refresh/hub");
+    }
+    
+    /**
+     * Verifica se il tipo di utente del token è compatibile con l'endpoint
+     */
+    private boolean isValidUserTypeForEndpoint(String token, String path) {
+        try {
+            String userType = jwtUtil.extractUserType(token);
+            
+            if (path.startsWith("/customer/")) {
+                return "customer".equals(userType);
+            } else if (path.startsWith("/admin/")) {
+                return "admin".equals(userType);
+            } else if (path.startsWith("/restaurant/")) {
+                return "restaurant".equals(userType) || "hub".equals(userType);
+            }
+            
+            return true; // Per altri endpoint
+        } catch (Exception e) {
+            log.error("Error extracting user type from token: {}", e.getMessage());
+            return false;
+        }
     }
 }

@@ -109,7 +109,7 @@ public class SecurityConfig {
                                 // 2° HubValidationFilter - Limita Hub agli endpoint permessi  
                                 .addFilterAfter(hubValidationFilter, tokenTypeValidationFilter.getClass())
                                 // 3° RUserRequestFilter - AUTENTICAZIONE finale (SecurityContext)
-                                .addFilterBefore(restaurantJwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
+                                .addFilterAfter(restaurantJwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
                                 .authenticationManager(authenticationManager);
 
                 return http.build();

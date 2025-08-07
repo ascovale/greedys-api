@@ -48,7 +48,6 @@ public class CustomerRestaurantServiceController extends BaseController {
 
     @GetMapping("/{restaurantId}/active-services-in-period")
     @Operation(summary = "Get active and enabled services of a restaurant for a specific period", description = "Retrieve the services of a restaurant that are active and enabled in a given date range")
-    
     @WrapperType(dataClass = ServiceDTO.class, type = WrapperDataType.LIST)
     public ResponseEntity<ListResponseWrapper<ServiceDTO>> getActiveEnabledServicesInPeriod(
             @PathVariable Long restaurantId,
