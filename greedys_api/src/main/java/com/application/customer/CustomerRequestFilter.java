@@ -9,6 +9,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Service;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.application.common.security.SecurityPatterns;
 import com.application.common.security.jwt.JwtUtil;
 import com.application.customer.service.security.CustomerUserDetailsService;
 
@@ -81,10 +82,8 @@ public class CustomerRequestFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getRequestURI();
-        return path.startsWith("/swagger-ui/") ||
-               path.startsWith("/favicon.ico") ||
-               path.startsWith("/logo_api.png") ||
-               path.startsWith("/css/") ||
-               path.startsWith("/js/");
+        
+        // Usa SecurityPatterns per verificare se l'endpoint è pubblico (include risorse statiche)
+        return SecurityPatterns.isPublicPath(path);
     }
 }

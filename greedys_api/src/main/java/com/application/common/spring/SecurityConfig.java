@@ -24,6 +24,7 @@ import com.application.admin.AdminAuthenticationProvider;
 import com.application.admin.AdminRequestFilter;
 import com.application.admin.persistence.dao.AdminDAO;
 import com.application.admin.service.security.AdminUserDetailsService;
+import com.application.common.security.SecurityPatterns;
 import com.application.common.security.TokenTypeValidationFilter;
 import com.application.customer.CustomerAuthenticationProvider;
 import com.application.customer.CustomerRequestFilter;
@@ -97,18 +98,7 @@ public class SecurityConfig {
                                 .csrf(csrf -> csrf.disable())
                                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                                 .authorizeHttpRequests(authz -> authz
-
-                                                .requestMatchers(
-                                                                "/doc**", "/swagger-ui/**",
-                                                                "/register/**", "/v3/api-docs*/**", "/api/**",
-                                                                "/auth/**",
-                                                                "/reservation/**", "/error*", "/actuator/health",
-                                                                "/public/**", "/restaurant/user/auth/login",
-                                                                "/restaurant/user/auth/google",
-                                                                "/logo_api.png", // accesso libero al logo
-                                                                "/swagger-groups" // accesso libero alla lista gruppi
-                                                                                  // swagger
-                                                )
+                                                .requestMatchers(SecurityPatterns.getRestaurantPublicPatterns())
                                                 .permitAll()
                                                 .requestMatchers("/restaurant/**").authenticated())
                                 .sessionManagement(management -> management
@@ -142,24 +132,7 @@ public class SecurityConfig {
                                 .csrf(csrf -> csrf.disable())
                                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                                 .authorizeHttpRequests(authz -> authz
-                                                .requestMatchers(
-                                                                /*
-                                                                 * "/customer/public/**", "/customer/swagger-ui/**",
-                                                                 * "/customer/v3/api-docs**",
-                                                                 */
-                                                                "/doc**", "/swagger-ui/**",
-                                                                "/register/**", "/v3/api-docs*/**", "/api/**",
-                                                                "/auth/**",
-                                                                "/reservation/**", "/error*", "/actuator/health",
-                                                                "/public/**", "/customer/auth/**",
-                                                                "/customer/user/auth/google",
-                                                                "/logo_api.png", // free access to the logo
-                                                                "/swagger-groups", // free access to the swagger groups
-                                                                                   // list
-                                                                "/customer/restaurant/**" // Makes all
-                                                                                          // customer/restaurant
-                                                                                          // endpoints public
-                                                )
+                                                .requestMatchers(SecurityPatterns.getCustomerPublicPatterns())
                                                 .permitAll()
                                                 .requestMatchers("/customer/**").authenticated())
                                 .sessionManagement(management -> management
@@ -192,16 +165,7 @@ public class SecurityConfig {
                                 .csrf(csrf -> csrf.disable())
                                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                                 .authorizeHttpRequests(authz -> authz
-                                                .requestMatchers(
-                                                                "/doc**", "/swagger-ui/**",
-                                                                "/register/**", "/v3/api-docs*/**", "/api/**",
-                                                                "/auth/**",
-                                                                "/reservation/**", "/error*", "/actuator/health",
-                                                                "/public/**", "/admin/auth/**",
-                                                                "/logo_api.png", // accesso libero al logo
-                                                                "/swagger-groups" // accesso libero alla lista gruppi
-                                                                                  // swagger
-                                                )
+                                                .requestMatchers(SecurityPatterns.getAdminPublicPatterns())
                                                 .permitAll()
                                                 .requestMatchers("/admin/**").authenticated())
                                 .sessionManagement(management -> management
@@ -212,6 +176,28 @@ public class SecurityConfig {
                                 // 2° AdminRequestFilter - AUTENTICAZIONE finale (SecurityContext)
                                 .addFilterBefore(adminJwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
                                 .authenticationManager(authenticationManager);
+
+                return http.build();
+        }
+
+        /*
+         * ============================================================================
+         * DEFAULT FILTER CHAIN - Per endpoint non coperti dalle altre filter chain
+         * ============================================================================
+         * Gestisce endpoint come /v3/api-docs/*, /actuator/*, etc.
+         * ============================================================================
+         */
+        @Bean
+        SecurityFilterChain defaultFilterChain(HttpSecurity http) throws Exception {
+                http
+                                .csrf(csrf -> csrf.disable())
+                                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                                .authorizeHttpRequests(authz -> authz
+                                                .requestMatchers(SecurityPatterns.DEFAULT_PUBLIC_PATTERNS)
+                                                .permitAll()
+                                                .anyRequest().authenticated())
+                                .sessionManagement(management -> management
+                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
                 return http.build();
         }
@@ -287,8 +273,7 @@ public class SecurityConfig {
 		AdminAuthenticationProvider provider = new AdminAuthenticationProvider(adminDAO, adminUserDetailsService);
 		provider.setPasswordEncoder(passwordEncoder());
 		return provider;
-	}        //TODO RIMOVERE TOGLIERE REMEMBER ME FORSE METTERE refreshTOKEN
-
+	} 
 
         @Bean
         HttpSessionEventPublisher httpSessionEventPublisher() {
