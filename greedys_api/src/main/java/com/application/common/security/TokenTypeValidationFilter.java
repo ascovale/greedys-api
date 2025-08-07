@@ -26,6 +26,20 @@ public class TokenTypeValidationFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
 
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getRequestURI();
+        
+        // Non applicare il filtro agli endpoint pubblici
+        boolean isPublic = SecurityPatterns.isPublicPath(path);
+        
+        if (isPublic) {
+            log.debug("Skipping TokenTypeValidationFilter for public endpoint: {}", path);
+        }
+        
+        return isPublic; // Se è pubblico, non applicare il filtro
+    }
+
+    @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                   FilterChain filterChain) throws ServletException, IOException {
         
