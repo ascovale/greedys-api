@@ -110,7 +110,7 @@ public class RestaurantReservationController extends BaseController {
 	@Operation(summary = "Get all reservations of a restaurant", description = "Retrieve all reservations of a restaurant")
 	@GetMapping(value = "/reservations")
 	
-	@WrapperType(dataClass = ReservationDTO.class)
+	@WrapperType(dataClass = ReservationDTO.class, type = WrapperDataType.LIST)
 	public ResponseEntity<ListResponseWrapper<ReservationDTO>> getReservations(
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end,
@@ -126,7 +126,7 @@ public class RestaurantReservationController extends BaseController {
 	@Operation(summary = "Get all accepted reservations of a restaurant", description = "Retrieve all accepted reservations of a restaurant")
 	@GetMapping(value = "/accepted/get")
 	
-	@WrapperType(dataClass = ReservationDTO.class)
+	@WrapperType(dataClass = ReservationDTO.class, type = WrapperDataType.LIST)
 	public ResponseEntity<ListResponseWrapper<ReservationDTO>> getAcceptedReservations(
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end,
@@ -142,7 +142,7 @@ public class RestaurantReservationController extends BaseController {
 
 	@Operation(summary = "Get all reservations of a restaurant with pagination", description = "Retrieve all reservations of a restaurant with pagination")
 	@GetMapping(value = "/pageable")
-	
+	@WrapperType(dataClass = ReservationDTO.class, type = WrapperDataType.PAGE)
 	public ResponseEntity<PageResponseWrapper<ReservationDTO>> getReservationsPageable(
 			@AuthenticationPrincipal RUser rUser,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
@@ -159,7 +159,7 @@ public class RestaurantReservationController extends BaseController {
 	@Operation(summary = "Get all pending reservations of a restaurant", description = "Retrieve all pending reservations of a restaurant with optional date filtering")
 	@GetMapping(value = "/pending/get")
 	
-	@WrapperType(dataClass = ReservationDTO.class)
+	@WrapperType(dataClass = ReservationDTO.class, type = WrapperDataType.LIST)
 	public ResponseEntity<ListResponseWrapper<ReservationDTO>> getPendingReservations(
 			@RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end,

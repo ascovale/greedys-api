@@ -1,6 +1,7 @@
 package com.application.admin.controller.admin;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,6 +40,7 @@ public class AdminAuthenticationController extends BaseController {
 
     @Operation(summary = "Refresh authentication token", description = "Refresh an admin JWT token using a refresh token")
     @PostMapping(value = "/refresh", produces = "application/json")
+    @PreAuthorize("hasAuthority('PRIVILEGE_REFRESH_ONLY')")
     @WrapperType(dataClass = AuthResponseDTO.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<AuthResponseDTO>> refreshToken(@RequestBody RefreshTokenRequestDTO refreshRequest) {
         return execute("admin refresh token", () -> 

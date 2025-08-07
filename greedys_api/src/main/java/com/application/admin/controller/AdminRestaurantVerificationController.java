@@ -157,7 +157,7 @@ public class AdminRestaurantVerificationController extends BaseController {
                      "Admins can review these and make approval/rejection decisions."
     )
     @GetMapping("/pending")
-    @WrapperType(dataClass = UserRestaurantAssociation.class)
+    @WrapperType(dataClass = UserRestaurantAssociation.class , type = WrapperDataType.LIST)
     public ResponseEntity<ListResponseWrapper<UserRestaurantAssociation>> getPendingVerifications() {
         
         return executeList("get pending verifications", () -> googlePlacesService.getPendingVerifications());

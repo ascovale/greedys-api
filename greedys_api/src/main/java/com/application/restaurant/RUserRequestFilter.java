@@ -36,42 +36,60 @@ public class RUserRequestFilter extends OncePerRequestFilter {
 
         String jwt = authorizationHeader.substring(7);
         String username = jwtUtil.extractUsername(jwt);
-        Object claims;
-        String tokenType;
-
-        try {
-            claims = jwtUtil.extractAllClaims(jwt);
-            tokenType = (String) ((java.util.Map<?, ?>) claims).get("type");
-        } catch (Exception e) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Invalid token claims.");
-            return;
-        }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            System.out.println("[FILTER] No authentication found in context. Loading user details...");
+            
+            // 🔍 Verifica che il token sia per Restaurant (user o hub)
+            String userType = jwtUtil.extractUserType(jwt);
+            if (!"restaurant-user".equals(userType) && !"restaurant-hub".equals(userType)) {
+                // Token non valido per questo filtro - ERRORE 401
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json");
+                response.getWriter().write("{\"error\":\"Invalid token type for restaurant endpoint\"}");
+                return;
+            }
+            
+            // Il HubValidationFilter ha già gestito la validazione Hub
+            // Qui gestiamo sia RUser normali che Hub per l'autenticazione
+            
             UserDetails userDetails;
-            if ("hub".equals(tokenType)) {
-                // Crea un UserDetails custom per hub solo se claims non è null
-                String email = null;
-                if (claims != null) {
-                    email = (String) ((java.util.Map<?,?>)claims).get("email");
-                }
+            try {
+            if (jwtUtil.isAnyHubToken(jwt)) {
+                // Crea UserDetails custom per hub
+                Object claims = jwtUtil.extractAllClaims(jwt);
+                String email = (String) ((java.util.Map<?,?>)claims).get("email");
                 if (email == null) {
-                    System.out.println("[FILTER] Email claim is missing for hub token, sending 401");
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     response.getWriter().write("Email claim missing in hub token.");
                     return;
                 }
-                userDetails = org.springframework.security.core.userdetails.User
-                    .withUsername(email) 
-                    .password("") // Nessuna password
-                    .authorities("PRIVILEGE_HUB","PRIVILEGE_CHANGE_PASSWORD")
-                    .build();
-                System.out.println("[FILTER] Created custom UserDetails for hub: " + userDetails.getUsername());
+                
+                // 🔄 Distingui tra Access e Refresh Hub token per i permessi
+                if (jwtUtil.isHubRefreshToken(jwt)) {
+                    // Refresh Hub token: solo permesso di refresh
+                    userDetails = org.springframework.security.core.userdetails.User
+                        .withUsername(email) 
+                        .password("") 
+                        .authorities("PRIVILEGE_REFRESH_ONLY") // Solo refresh
+                        .build();
+                } else {
+                    // Access Hub token: permessi completi
+                    userDetails = org.springframework.security.core.userdetails.User
+                        .withUsername(email) 
+                        .password("") 
+                        .authorities("PRIVILEGE_HUB","PRIVILEGE_CHANGE_PASSWORD") // Permessi completi
+                        .build();
+                }
             } else {
+                // 👤 Token RUser normale
                 userDetails = this.userDetailsService.loadUserByUsername(username);
-                System.out.println("[FILTER] Authorities: " + userDetails.getAuthorities());
+                
+                // 🔄 Per refresh token, potremmo limitare i permessi (opzionale)
+                if (jwtUtil.isRefreshToken(jwt)) {
+                    // Refresh token: permessi limitati (opzionale - dipende dai requirements)
+                    // In questo caso manteniamo tutti i permessi per compatibilità
+                    // ma potremmo creare UserDetails con permessi limitati se necessario
+                }
             }
             if (jwtUtil.validateToken(jwt, userDetails)) {
                 UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
@@ -81,6 +99,11 @@ public class RUserRequestFilter extends OncePerRequestFilter {
             } else {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.getWriter().write("Token validation failed.");
+                return;
+            }
+            } catch (Exception e) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("Invalid token claims.");
                 return;
             }
         }

@@ -40,10 +40,30 @@ public class AdminRequestFilter extends OncePerRequestFilter {
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            
+            // 🔍 Verifica che il token sia per Admin
+            String userType = jwtUtil.extractUserType(jwt);
+            if (!"admin".equals(userType)) {
+                // Token non valido per questo filtro - ERRORE 401
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json");
+                response.getWriter().write("{\"error\":\"Invalid token type for admin endpoint\"}");
+                return;
+            }
+            
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
 
             if (jwtUtil.validateToken(jwt, userDetails)) {
-
+                
+                // 🔄 Gestisci authorities basate sul tipo di token
+                if (jwtUtil.isRefreshToken(jwt)) {
+                    // Refresh token: solo permesso di refresh (massima sicurezza)
+                    userDetails = org.springframework.security.core.userdetails.User
+                        .withUsername(userDetails.getUsername())
+                        .password(userDetails.getPassword())
+                        .authorities("PRIVILEGE_REFRESH_ONLY") // Solo refresh
+                        .build();
+                } 
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
                 usernamePasswordAuthenticationToken

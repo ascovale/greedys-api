@@ -40,9 +40,33 @@ public class CustomerRequestFilter extends OncePerRequestFilter {
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            
+            // 🔍 Verifica che il token sia per Customer
+            String userType = jwtUtil.extractUserType(jwt);
+            if (!"customer".equals(userType)) {
+                // Token non valido per questo filtro - ERRORE 401
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json");
+                response.getWriter().write("{\"error\":\"Invalid token type for customer endpoint\"}");
+                return;
+            }
+            
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
 
             if (jwtUtil.validateToken(jwt, userDetails)) {
+                
+                // 🔄 Gestisci authorities basate sul tipo di token
+                if (jwtUtil.isRefreshToken(jwt)) {
+                    // Refresh token: solo permesso di refresh (massima sicurezza)
+                    userDetails = org.springframework.security.core.userdetails.User
+                        .withUsername(userDetails.getUsername())
+                        .password(userDetails.getPassword())
+                        .authorities("PRIVILEGE_REFRESH_ONLY") // Solo refresh
+                        .build();
+                } else {
+                    // Access token: mantieni tutte le authorities originali dal DB
+                    // (userDetails già caricato dal DB con authorities corrette)
+                }
 
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());

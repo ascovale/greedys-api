@@ -24,11 +24,13 @@ import com.application.admin.AdminAuthenticationProvider;
 import com.application.admin.AdminRequestFilter;
 import com.application.admin.persistence.dao.AdminDAO;
 import com.application.admin.service.security.AdminUserDetailsService;
+import com.application.common.security.TokenTypeValidationFilter;
 import com.application.customer.CustomerAuthenticationProvider;
 import com.application.customer.CustomerRequestFilter;
 import com.application.customer.persistence.dao.CustomerDAO;
 import com.application.customer.service.security.CustomerUserDetailsService;
 import com.application.restaurant.RUserAuthenticationProvider;
+import com.application.restaurant.RUserHubValidationFilter;
 import com.application.restaurant.RUserRequestFilter;
 import com.application.restaurant.persistence.dao.RUserDAO;
 import com.application.restaurant.service.security.RUserDetailsService;
@@ -48,12 +50,44 @@ public class SecurityConfig {
         private final RUserRequestFilter restaurantJwtRequestFilter;
         private final CustomerRequestFilter customerJwtRequestFilter;
         private final AdminRequestFilter adminJwtRequestFilter;
+        private final TokenTypeValidationFilter tokenTypeValidationFilter;
+        private final RUserHubValidationFilter hubValidationFilter;
         private final RUserDAO rUserDAO;
         private final CustomerDAO customerDAO;
         private final AdminDAO adminDAO;
 
         // TODO: make sure the authentication filter is not required for login,
         // registration, and other public operations
+        
+        /*
+         * ============================================================================
+         * RESTAURANT FILTER CHAIN - SEQUENZA DEI 3 FILTRI PER /restaurant/**
+         * ============================================================================
+         * 
+         * ESEMPIO: GET /restaurant/switch-restaurant con Hub Access Token
+         * 
+         * 1️⃣ TokenTypeValidationFilter:
+         *    ✅ "È un access token?" → SÌ → continua
+         *    ❌ Se fosse refresh token su endpoint normale → BLOCCATO
+         * 
+         * 2️⃣ HubValidationFilter:
+         *    ✅ "È un token Hub?" → SÌ
+         *    ✅ "Può accedere a /switch-restaurant?" → SÌ → continua
+         *    ❌ Se Hub tentasse /orders → BLOCCATO (403 Forbidden)
+         *    ✅ Se fosse RUser normale → passa sempre
+         * 
+         * 3️⃣ RUserRequestFilter:
+         *    ✅ "Estraggo type=hub dal token"
+         *    ✅ "Carico claims e creo UserDetails per Hub"
+         *    ✅ "Valido il token"
+         *    ✅ "FACCIO L'AUTENTICAZIONE" → SecurityContext popolato
+         * 
+         * 📤 Response: Endpoint accessibile con utente Hub autenticato
+         * 
+         * NOTA: Solo RUserRequestFilter fa l'autenticazione vera (SecurityContext)
+         *       I primi due sono filtri di validazione/autorizzazione
+         * ============================================================================
+         */
         @Bean
         SecurityFilterChain RUserFilterChain(HttpSecurity http,
                         @Qualifier("restaurantAuthenticationManager") AuthenticationManager authenticationManager)
@@ -79,12 +113,26 @@ public class SecurityConfig {
                                                 .requestMatchers("/restaurant/**").authenticated())
                                 .sessionManagement(management -> management
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                                // SEQUENZA FILTRI (ORDINE IMPORTANTE):
+                                // 1° TokenTypeValidationFilter - Verifica Access vs Refresh Token
+                                .addFilterBefore(tokenTypeValidationFilter, UsernamePasswordAuthenticationFilter.class)
+                                // 2° HubValidationFilter - Limita Hub agli endpoint permessi  
+                                .addFilterAfter(hubValidationFilter, tokenTypeValidationFilter.getClass())
+                                // 3° RUserRequestFilter - AUTENTICAZIONE finale (SecurityContext)
                                 .addFilterBefore(restaurantJwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
                                 .authenticationManager(authenticationManager);
 
                 return http.build();
         }
 
+        /*
+         * ============================================================================
+         * CUSTOMER FILTER CHAIN - SEQUENZA DEI 2 FILTRI PER /customer/**
+         * ============================================================================
+         * 1️⃣ TokenTypeValidationFilter - Verifica Access vs Refresh Token
+         * 2️⃣ CustomerRequestFilter - AUTENTICAZIONE (SecurityContext)
+         * ============================================================================
+         */
         @Bean
         SecurityFilterChain customerFilterChain(HttpSecurity http,
                         @Qualifier("customerAuthenticationManager") AuthenticationManager authenticationManager)
@@ -116,6 +164,10 @@ public class SecurityConfig {
                                                 .requestMatchers("/customer/**").authenticated())
                                 .sessionManagement(management -> management
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                                // SEQUENZA FILTRI:
+                                // 1° TokenTypeValidationFilter - Verifica Access vs Refresh Token  
+                                .addFilterBefore(tokenTypeValidationFilter, UsernamePasswordAuthenticationFilter.class)
+                                // 2° CustomerRequestFilter - AUTENTICAZIONE finale (SecurityContext)
                                 .addFilterBefore(customerJwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
 
                                 .authenticationManager(authenticationManager);
@@ -123,6 +175,14 @@ public class SecurityConfig {
                 return http.build();
         }
 
+        /*
+         * ============================================================================
+         * ADMIN FILTER CHAIN - SEQUENZA DEI 2 FILTRI PER /admin/**
+         * ============================================================================
+         * 1️⃣ TokenTypeValidationFilter - Verifica Access vs Refresh Token
+         * 2️⃣ AdminRequestFilter - AUTENTICAZIONE (SecurityContext)
+         * ============================================================================
+         */
         @Bean
         SecurityFilterChain adminFilterChain(HttpSecurity http,
                         @Qualifier("adminAuthenticationManager") AuthenticationManager authenticationManager)
@@ -146,6 +206,10 @@ public class SecurityConfig {
                                                 .requestMatchers("/admin/**").authenticated())
                                 .sessionManagement(management -> management
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                                // SEQUENZA FILTRI:
+                                // 1° TokenTypeValidationFilter - Verifica Access vs Refresh Token
+                                .addFilterBefore(tokenTypeValidationFilter, UsernamePasswordAuthenticationFilter.class)
+                                // 2° AdminRequestFilter - AUTENTICAZIONE finale (SecurityContext)
                                 .addFilterBefore(adminJwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
                                 .authenticationManager(authenticationManager);
 

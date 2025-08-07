@@ -83,6 +83,8 @@ public class JwtUtil {
                 .map(Object::toString)
                 .collect(Collectors.toList()));
         claims.put("access_type", "access");
+        // Determina il tipo di utente basato sulle authorities
+        claims.put("user_type", determineUserType(userDetails));
         return createToken(claims, userDetails.getUsername(), expiration);
     }
 
@@ -90,6 +92,9 @@ public class JwtUtil {
         Map<String, Object> claims = new HashMap<>();
         claims.put("access_type", "refresh");
         claims.put("email", userDetails.getUsername());
+        claims.put("authorities", List.of("PRIVILEGE_REFRESH_ONLY")); // Solo permesso di refresh
+        // Determina il tipo di utente basato sulle authorities
+        claims.put("user_type", determineUserType(userDetails));
         return createToken(claims, userDetails.getUsername(), refreshExpiration);
     }
 
@@ -98,6 +103,8 @@ public class JwtUtil {
         claims.put("type", "hub");
         claims.put("access_type", "refresh");
         claims.put("email", user.getEmail());
+        claims.put("authorities", List.of("PRIVILEGE_REFRESH_ONLY")); // Solo permesso di refresh per Hub
+        claims.put("user_type", "restaurant-hub"); // Tipo utente specifico per Hub
         return createToken(claims, user.getEmail(), refreshExpiration);
     }
 
@@ -141,7 +148,7 @@ public class JwtUtil {
     public boolean isHubToken(String token) {
         try {
             Claims claims = extractAllClaims(token);
-            return "hub".equals(claims.get("type"));
+            return "hub".equals(claims.get("type")) && "access".equals(claims.get("access_type"));
         } catch (Exception e) {
             return false;
         }
@@ -155,6 +162,15 @@ public class JwtUtil {
             return false;
         }
     }
+    
+    public boolean isAnyHubToken(String token) {
+        try {
+            Claims claims = extractAllClaims(token);
+            return "hub".equals(claims.get("type"));
+        } catch (Exception e) {
+            return false;
+        }
+    }
 
     public String generateHubToken(RUserHub user) {
         Map<String, Object> claims = new HashMap<>();
@@ -162,10 +178,51 @@ public class JwtUtil {
         claims.put("access_type", "access");
         claims.put("authorities", hubPrivileges());
         claims.put("email", user.getEmail());
+        claims.put("user_type", "restaurant-hub"); // Tipo utente specifico per Hub
         return createToken(claims, user.getEmail(), expiration);
     }
 
     private List<String> hubPrivileges() {
         return List.of("PRIVILEGE_HUB", "PRIVILEGE_CHANGE_PASSWORD");
+    }
+    
+    /**
+     * Estrae le authorities dal token JWT
+     */
+    @SuppressWarnings("unchecked")
+    public List<String> extractAuthorities(String token) {
+        Claims claims = extractAllClaims(token);
+        Object authoritiesObj = claims.get("authorities");
+        if (authoritiesObj instanceof List) {
+            return (List<String>) authoritiesObj;
+        }
+        return List.of(); // Fallback per token senza authorities
+    }
+    
+    /**
+     * Estrae il tipo di utente dal token JWT
+     */
+    public String extractUserType(String token) {
+        Claims claims = extractAllClaims(token);
+        return (String) claims.get("user_type");
+    }
+    
+    /**
+     * Determina il tipo di utente basato sulle authorities di UserDetails
+     */
+    private String determineUserType(UserDetails userDetails) {
+        String authoritiesString = userDetails.getAuthorities().stream()
+                .map(Object::toString)
+                .collect(Collectors.joining(","));
+        
+        if (authoritiesString.contains("PRIVILEGE_ADMIN")) {
+            return "admin";
+        } else if (authoritiesString.contains("PRIVILEGE_CUSTOMER")) {
+            return "customer";
+        } else if (authoritiesString.contains("PRIVILEGE_RESTAURANT")) {
+            return "restaurant-user";
+        } else {
+            return "unknown";
+        }
     }
 }
