@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,12 +14,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
-import com.application.common.controller.annotation.ReadApiResponses;
+import com.application.common.controller.annotation.WrapperDataType;
+import com.application.common.controller.annotation.WrapperType;
 import com.application.common.web.ListResponseWrapper;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.RoomDTO;
-import com.application.restaurant.controller.utils.RestaurantControllerUtils;
 import com.application.restaurant.persistence.model.Room;
+import com.application.restaurant.persistence.model.user.RUser;
 import com.application.restaurant.service.RoomService;
 import com.application.restaurant.web.dto.restaurant.NewRoomDTO;
 
@@ -40,20 +42,23 @@ public class RestaurantRoomController extends BaseController {
 
 	@GetMapping(value = "/all")
 	@Operation(summary = "Get rooms of a restaurant", description = "Retrieve the rooms of a restaurant")
-	@ReadApiResponses
-	public ResponseEntity<ListResponseWrapper<RoomDTO>> getRooms() {
+	
+	@WrapperType(dataClass = RoomDTO.class, type = WrapperDataType.LIST)
+    public ResponseEntity<ListResponseWrapper<RoomDTO>> getRooms(@AuthenticationPrincipal RUser rUser) {
 		return executeList("get restaurant rooms", () -> {
-			log.info("Getting rooms for restaurant: {}", RestaurantControllerUtils.getCurrentRestaurant().getId());
-			Collection<RoomDTO> rooms = roomService.findByRestaurant(RestaurantControllerUtils.getCurrentRestaurant().getId());
+			log.info("Getting rooms for restaurant: {}", rUser.getRestaurant().getId());
+			Collection<RoomDTO> rooms = roomService.findByRestaurant(rUser.getRestaurant().getId());
 			return List.copyOf(rooms);
 		});
 	}
 
 	@PostMapping
 	@Operation(summary = "Add a room to a restaurant", description = "Add a new room to a restaurant")
-	public ResponseEntity<ResponseWrapper<Room>> addRoom(@RequestBody NewRoomDTO roomDto) {
+	@WrapperType(dataClass = Room.class, type = WrapperDataType.DTO, responseCode = "201")
+    public ResponseEntity<ResponseWrapper<Room>> addRoom(@RequestBody NewRoomDTO roomDto,
+			@AuthenticationPrincipal RUser rUser) {
 		return executeCreate("add room", "Room added successfully", () -> {
-			log.info("Adding new room for restaurant: {}", RestaurantControllerUtils.getCurrentRestaurant().getId());
+			log.info("Adding new room for restaurant: {}", rUser.getRestaurant().getId());
 			return roomService.createRoom(roomDto);
 		});
 	}

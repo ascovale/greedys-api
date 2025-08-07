@@ -7,7 +7,6 @@ import java.util.List;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -18,12 +17,11 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
-import com.application.common.controller.annotation.CreateApiResponses;
-import com.application.common.controller.annotation.ReadApiResponses;
+import com.application.common.controller.annotation.WrapperDataType;
+import com.application.common.controller.annotation.WrapperType;
 import com.application.common.persistence.model.reservation.Reservation;
 import com.application.common.service.reservation.ReservationService;
 import com.application.common.web.ListResponseWrapper;
@@ -35,10 +33,6 @@ import com.application.restaurant.service.RestaurantNotificationService;
 import com.application.restaurant.web.dto.reservation.RestaurantNewReservationDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -61,76 +55,62 @@ public class RestaurantReservationController extends BaseController {
 	private final RestaurantNotificationService restaurantNotificationService;
 
 	@Operation(summary = "Create a new reservation", description = "Endpoint to create a new reservation")
-	@ApiResponse(responseCode = "201", description = "Reservation created successfully", 
-                content = @Content(schema = @Schema(implementation = String.class)))
 	@PostMapping("/new")
 	@PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_RESERVATION_WRITE')")
-	@CreateApiResponses
-	@ResponseStatus(HttpStatus.CREATED)
-	public ResponseEntity<ResponseWrapper<String>> createReservation(@RequestBody RestaurantNewReservationDTO dto, @AuthenticationPrincipal RUser rUser) {
+	@WrapperType(dataClass = String.class, type = WrapperDataType.DTO, responseCode = "201")
+	public ResponseEntity<ResponseWrapper<String>> createReservation(@RequestBody RestaurantNewReservationDTO dto,
+			@AuthenticationPrincipal RUser rUser) {
 		return executeCreate("create reservation", "Reservation created successfully", () -> {
 			reservationService.createReservation(dto, rUser.getRestaurant());
 			restaurantNotificationService.sendNotificationToAllUsers(
 					"New reservation created",
 					"Reservation for " + dto.getPax() + " pax on " + dto.getReservationDay() + " at " + dto.getIdSlot(),
 					null,
-					rUser.getRestaurant().getId()
-			);
+					rUser.getRestaurant().getId());
 			return "success";
 		});
 	}
 
 	@PutMapping("/{reservationId}/accept")
 	@Operation(summary = "Accept a reservation", description = "Endpoint to accept a reservation by its ID")
-	@ApiResponse(responseCode = "200", description = "Reservation accepted successfully", 
-                content = @Content(schema = @Schema(implementation = String.class)))
 	@PreAuthorize("@securityRUserService.hasPermissionOnReservation(#reservationId)")
-		public ResponseEntity<ResponseWrapper<String>> acceptReservation(@PathVariable Long reservationId) {
-		return executeVoid("accept reservation", "Reservation accepted successfully", () -> 
-			reservationService.setStatus(reservationId, Reservation.Status.ACCEPTED));
+	public ResponseEntity<ResponseWrapper<String>> acceptReservation(@PathVariable Long reservationId) {
+		return executeVoid("accept reservation", "Reservation accepted successfully",
+				() -> reservationService.setStatus(reservationId, Reservation.Status.ACCEPTED));
 	}
 
 	@PutMapping("/{reservationId}/reject")
 	@Operation(summary = "Reject a reservation", description = "Endpoint to reject a reservation by its ID")
-	@ApiResponse(responseCode = "200", description = "Reservation rejected successfully", 
-                content = @Content(schema = @Schema(implementation = String.class)))
-		public ResponseEntity<ResponseWrapper<String>> rejectReservation(@PathVariable Long reservationId) {
-		return executeVoid("reject reservation", "Reservation rejected successfully", () -> 
-			reservationService.setStatus(reservationId, Reservation.Status.REJECTED));
+	public ResponseEntity<ResponseWrapper<String>> rejectReservation(@PathVariable Long reservationId) {
+		return executeVoid("reject reservation", "Reservation rejected successfully",
+				() -> reservationService.setStatus(reservationId, Reservation.Status.REJECTED));
 	}
 
 	@PutMapping("/{reservationId}/no_show")
 	@Operation(summary = "Mark a reservation as no show", description = "Endpoint to mark a reservation as no show by its ID")
-	@ApiResponse(responseCode = "200", description = "Reservation marked as no show successfully", 
-                content = @Content(schema = @Schema(implementation = String.class)))
-		public ResponseEntity<ResponseWrapper<String>> markReservationNoShow(@PathVariable Long reservationId) {
-		return executeVoid("mark reservation no show", "Reservation marked as no show successfully", () -> 
-			reservationService.setStatus(reservationId, Reservation.Status.NO_SHOW));
+	public ResponseEntity<ResponseWrapper<String>> markReservationNoShow(@PathVariable Long reservationId) {
+		return executeVoid("mark reservation no show", "Reservation marked as no show successfully",
+				() -> reservationService.setStatus(reservationId, Reservation.Status.NO_SHOW));
 	}
 
 	@PutMapping("/{reservationId}/seated")
 	@Operation(summary = "Mark a reservation as seated", description = "Endpoint to mark a reservation as seated by its ID")
-	@ApiResponse(responseCode = "200", description = "Reservation marked as seated successfully", 
-                content = @Content(schema = @Schema(implementation = String.class)))
-		public ResponseEntity<ResponseWrapper<String>> markReservationSeated(@PathVariable Long reservationId) {
-		return executeVoid("mark reservation seated", "Reservation marked as seated successfully", () -> 
-			reservationService.setStatus(reservationId, Reservation.Status.SEATED));
+	public ResponseEntity<ResponseWrapper<String>> markReservationSeated(@PathVariable Long reservationId) {
+		return executeVoid("mark reservation seated", "Reservation marked as seated successfully",
+				() -> reservationService.setStatus(reservationId, Reservation.Status.SEATED));
 	}
 
 	@Operation(summary = "Accept a reservation modification request", description = "Endpoint to accept a reservation modification request by its ID")
-	@ApiResponse(responseCode = "200", description = "Reservation modification accepted successfully", 
-                content = @Content(schema = @Schema(implementation = String.class)))
 	@PutMapping("/accept_modification/{modId}")
-		public ResponseEntity<ResponseWrapper<String>> acceptReservationModificationRequest(@PathVariable Long modId) {
-		return executeVoid("accept reservation modification", "Reservation modification accepted successfully", () -> 
-			reservationService.AcceptReservatioModifyRequest(modId));
+	public ResponseEntity<ResponseWrapper<String>> acceptReservationModificationRequest(@PathVariable Long modId) {
+		return executeVoid("accept reservation modification", "Reservation modification accepted successfully",
+				() -> reservationService.AcceptReservatioModifyRequest(modId));
 	}
 
 	@Operation(summary = "Get all reservations of a restaurant", description = "Retrieve all reservations of a restaurant")
-	@ApiResponse(responseCode = "200", description = "Reservations retrieved successfully", 
-                content = @Content(array = @ArraySchema(schema = @Schema(implementation = ReservationDTO.class))))
 	@GetMapping(value = "/reservations")
-	@ReadApiResponses
+	
+	@WrapperType(dataClass = ReservationDTO.class)
 	public ResponseEntity<ListResponseWrapper<ReservationDTO>> getReservations(
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end,
@@ -138,27 +118,31 @@ public class RestaurantReservationController extends BaseController {
 		return executeList("get reservations", () -> {
 			Long restaurantId = rUser.getRestaurant().getId();
 			Collection<ReservationDTO> reservations = reservationService.getReservations(restaurantId, start, end);
-			return reservations instanceof List ? (List<ReservationDTO>) reservations : new java.util.ArrayList<>(reservations);
+			return reservations instanceof List ? (List<ReservationDTO>) reservations
+					: new java.util.ArrayList<>(reservations);
 		});
 	}
 
 	@Operation(summary = "Get all accepted reservations of a restaurant", description = "Retrieve all accepted reservations of a restaurant")
 	@GetMapping(value = "/accepted/get")
-	@ReadApiResponses
+	
+	@WrapperType(dataClass = ReservationDTO.class)
 	public ResponseEntity<ListResponseWrapper<ReservationDTO>> getAcceptedReservations(
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end,
 			@AuthenticationPrincipal RUser rUser) {
 		return executeList("get accepted reservations", () -> {
 			Long restaurantId = rUser.getRestaurant().getId();
-			Collection<ReservationDTO> reservations = reservationService.getAcceptedReservations(restaurantId, start, end);
-			return reservations instanceof List ? (List<ReservationDTO>) reservations : new java.util.ArrayList<>(reservations);
+			Collection<ReservationDTO> reservations = reservationService.getAcceptedReservations(restaurantId, start,
+					end);
+			return reservations instanceof List ? (List<ReservationDTO>) reservations
+					: new java.util.ArrayList<>(reservations);
 		});
 	}
 
 	@Operation(summary = "Get all reservations of a restaurant with pagination", description = "Retrieve all reservations of a restaurant with pagination")
 	@GetMapping(value = "/pageable")
-	@ReadApiResponses
+	
 	public ResponseEntity<PageResponseWrapper<ReservationDTO>> getReservationsPageable(
 			@AuthenticationPrincipal RUser rUser,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
@@ -173,18 +157,19 @@ public class RestaurantReservationController extends BaseController {
 	}
 
 	@Operation(summary = "Get all pending reservations of a restaurant", description = "Retrieve all pending reservations of a restaurant with optional date filtering")
-	@ApiResponse(responseCode = "200", description = "Pending reservations retrieved successfully", 
-                content = @Content(array = @ArraySchema(schema = @Schema(implementation = ReservationDTO.class))))
 	@GetMapping(value = "/pending/get")
-	@ReadApiResponses
-		public ResponseEntity<ListResponseWrapper<ReservationDTO>> getPendingReservations(
+	
+	@WrapperType(dataClass = ReservationDTO.class)
+	public ResponseEntity<ListResponseWrapper<ReservationDTO>> getPendingReservations(
 			@RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end,
 			@AuthenticationPrincipal RUser rUser) {
 		return executeList("get pending reservations", () -> {
 			Long restaurantId = rUser.getRestaurant().getId();
-			Collection<ReservationDTO> reservations = reservationService.getPendingReservations(restaurantId, start, end);
-			return reservations instanceof List ? (List<ReservationDTO>) reservations : new java.util.ArrayList<>(reservations);
+			Collection<ReservationDTO> reservations = reservationService.getPendingReservations(restaurantId, start,
+					end);
+			return reservations instanceof List ? (List<ReservationDTO>) reservations
+					: new java.util.ArrayList<>(reservations);
 		});
 	}
 }

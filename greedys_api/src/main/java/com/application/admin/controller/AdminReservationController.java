@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.application.admin.service.AdminReservationService;
 import com.application.admin.web.dto.reservation.AdminNewReservationDTO;
 import com.application.common.controller.BaseController;
-import com.application.common.controller.annotation.CreateApiResponses;
-import com.application.common.controller.annotation.ReadApiResponses;
+import com.application.common.controller.annotation.WrapperDataType;
+import com.application.common.controller.annotation.WrapperType;
 import com.application.common.persistence.model.reservation.Reservation;
 import com.application.common.service.reservation.ReservationService;
 import com.application.common.web.ResponseWrapper;
@@ -35,9 +35,10 @@ public class AdminReservationController extends BaseController {
 	private final AdminReservationService adminReservationService;
 
 	@Operation(summary = "Create a new reservation", description = "Endpoint to create a new reservation")
-	@CreateApiResponses
+	
 	@PostMapping("/new")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_WRITE')")
+	@WrapperType(dataClass = String.class, responseCode = "201") 
 	public ResponseEntity<ResponseWrapper<String>> createReservation(@RequestBody AdminNewReservationDTO DTO) {
 		return executeCreate("create reservation", () -> {
 			adminReservationService.createReservation(DTO);
@@ -91,10 +92,10 @@ public class AdminReservationController extends BaseController {
 	}
 
 	@Operation(summary = "Get reservation by ID", description = "Endpoint to get a reservation by its ID")
-	@ReadApiResponses
 	@GetMapping("/{reservationId}")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_READ')")
-	public ResponseEntity<ResponseWrapper<ReservationDTO>> getReservation(@PathVariable Long reservationId) {
+	@WrapperType(dataClass = ReservationDTO.class, type = WrapperDataType.DTO)
+    public ResponseEntity<ResponseWrapper<ReservationDTO>> getReservation(@PathVariable Long reservationId) {
 		return execute("get reservation", () -> {
 			return adminReservationService.findReservationById(reservationId);
 		});
@@ -103,7 +104,8 @@ public class AdminReservationController extends BaseController {
 	@Operation(summary = "Modify a reservation", description = "Endpoint to modify an existing reservation")
 	@PutMapping("/{reservationId}/modify")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_WRITE')")
-	public ResponseEntity<ResponseWrapper<ReservationDTO>> modifyReservation(@PathVariable Long reservationId, @RequestBody AdminNewReservationDTO reservationDto) {
+	@WrapperType(dataClass = ReservationDTO.class, type = WrapperDataType.DTO)
+    public ResponseEntity<ResponseWrapper<ReservationDTO>> modifyReservation(@PathVariable Long reservationId, @RequestBody AdminNewReservationDTO reservationDto) {
 		return execute("modify reservation", () -> {
 			return adminReservationService.modifyReservation(reservationId, reservationDto);
 		});

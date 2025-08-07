@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
-import com.application.common.controller.annotation.CreateApiResponses;
-import com.application.common.controller.annotation.ReadApiResponses;
+import com.application.common.controller.annotation.WrapperDataType;
+import com.application.common.controller.annotation.WrapperType;
 import com.application.common.web.ResponseWrapper;
 import com.application.restaurant.service.verification.RestaurantTwilioVerificationService;
 import com.application.restaurant.web.dto.verification.VerificationRequestDTO;
@@ -47,8 +47,9 @@ public class RestaurantVerificationController extends BaseController {
         summary = "Initiate phone verification",
         description = "Sends an OTP code to the restaurant's phone number for verification"
     )
-    @CreateApiResponses
+    
     @PostMapping("/initiate")
+    @WrapperType(dataClass = VerificationResponseDTO.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<VerificationResponseDTO>> initiateVerification(
             @Valid @RequestBody VerificationRequestDTO request) {
         
@@ -62,8 +63,9 @@ public class RestaurantVerificationController extends BaseController {
         summary = "Verify OTP code",
         description = "Verifies the OTP code sent to the restaurant's phone number"
     )
-    @CreateApiResponses
+    
     @PostMapping("/{restaurantId}/verify")
+    @WrapperType(dataClass = VerificationResponseDTO.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<VerificationResponseDTO>> verifyCode(
             @Parameter(description = "Restaurant ID") 
             @PathVariable @NotNull Long restaurantId,
@@ -81,8 +83,9 @@ public class RestaurantVerificationController extends BaseController {
         summary = "Get verification status",
         description = "Retrieves the current verification status for a restaurant"
     )
-    @ReadApiResponses
+    
     @GetMapping("/{restaurantId}/status")
+    @WrapperType(dataClass = VerificationResponseDTO.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<VerificationResponseDTO>> getVerificationStatus(
             @Parameter(description = "Restaurant ID") 
             @PathVariable @NotNull Long restaurantId) {
@@ -97,8 +100,9 @@ public class RestaurantVerificationController extends BaseController {
         summary = "Cancel verification",
         description = "Cancels an active verification for a restaurant"
     )
-    @CreateApiResponses
+    
     @PostMapping("/{restaurantId}/cancel")
+    @WrapperType(dataClass = VerificationResponseDTO.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<VerificationResponseDTO>> cancelVerification(
             @Parameter(description = "Restaurant ID") 
             @PathVariable @NotNull Long restaurantId) {

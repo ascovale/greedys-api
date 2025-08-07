@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
-import com.application.common.controller.annotation.CreateApiResponses;
+import com.application.common.controller.annotation.WrapperType;
 import com.application.common.service.AllergyService;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.customer.NewAllergyDTO;
@@ -32,7 +32,7 @@ public class AdminAllergyController extends BaseController {
 
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_WRITE')")
     @Operation(summary = "Create allergy", description = "Creates a new allergy for the specified user by their ID")
-    @CreateApiResponses
+    @WrapperType(dataClass = String.class, responseCode = "201")
     @PostMapping("/new")
     public ResponseEntity<ResponseWrapper<String>> createAllergy(@RequestBody NewAllergyDTO allergyDto) {
         return executeCreate("create allergy", "Allergy created successfully", () -> {

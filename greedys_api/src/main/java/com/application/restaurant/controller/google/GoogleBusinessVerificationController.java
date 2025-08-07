@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.WrapperDataType;
+import com.application.common.controller.annotation.WrapperType;
 import com.application.common.web.ResponseWrapper;
 import com.application.restaurant.service.google.RestaurantGooglePlacesService;
 import com.application.restaurant.service.google.after.RestaurantGoogleVerificationService;
@@ -43,6 +45,7 @@ public class GoogleBusinessVerificationController extends BaseController {
                description = "Gets the list of all restaurants that the user can manage (STEP 1). " +
                            "Requires Access Token with scopes: userinfo.email, userinfo.profile, business.manage")
     @PostMapping("/get-restaurants")
+    @WrapperType(dataClass = RestaurantAuthorizationResult.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<RestaurantAuthorizationResult>> getUserRestaurants(
             @RequestBody UserRestaurantsRequestDTO request) {
         return execute("get user restaurants", "Restaurant list retrieved", new OperationSupplier<RestaurantAuthorizationResult>() {
@@ -64,6 +67,7 @@ public class GoogleBusinessVerificationController extends BaseController {
                description = "Select and verify a specific restaurant via placeId (STEP 2). " +
                            "Uses the same Access Token from STEP 1")
     @PostMapping("/select-restaurant")
+    @WrapperType(dataClass = RestaurantVerificationResult.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<RestaurantVerificationResult>> selectRestaurant(
             @RequestBody RestaurantSelectionRequestDTO request) {
         return execute("select restaurant", "Restaurant selected and verified", new OperationSupplier<RestaurantVerificationResult>() {
@@ -81,6 +85,7 @@ public class GoogleBusinessVerificationController extends BaseController {
     @Operation(summary = "Search restaurant", 
                description = "Search for a restaurant on Google Maps without OAuth verification (for testing only)")
     @PostMapping("/search")
+    @WrapperType(dataClass = RestaurantSearchResult.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<RestaurantSearchResult>> searchRestaurant(
             @RequestBody SearchRequestDTO request) {
         return execute("search restaurant", "Search completed", new OperationSupplier<RestaurantSearchResult>() {

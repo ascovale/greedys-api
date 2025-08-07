@@ -28,7 +28,7 @@ public class AdminUserController extends BaseController {
 
 	@PostMapping("/{RUserId}/accept")
 	@Operation(summary = "Accept a user", description = "Accept a user for a specific restaurant")
-	public ResponseEntity<ResponseWrapper<String>> acceptUser(@PathVariable Long RUserId) {
+    public ResponseEntity<ResponseWrapper<String>> acceptUser(@PathVariable Long RUserId) {
 		return executeVoid("accept user", "User accepted successfully", () -> {
 			rUserService.acceptRUser(RUserId);
 		});

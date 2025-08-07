@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.application.admin.service.AdminCustomerService;
 import com.application.admin.service.authentication.AdminCustomerAuthenticationService;
 import com.application.common.controller.BaseController;
-import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.controller.annotation.WrapperDataType;
 import com.application.common.controller.annotation.WrapperType;
 import com.application.common.web.PageResponseWrapper;
@@ -57,7 +56,6 @@ public class AdminCustomerController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_READ')")
     @Operation(summary = "List customers with pagination", description = "Returns a paginated list of customers")
     @GetMapping("/customers/page")
-    @ReadApiResponses
     @WrapperType(dataClass = CustomerDTO.class, type = WrapperDataType.PAGE)
     public ResponseEntity<PageResponseWrapper<CustomerDTO>> listCustomersWithPagination(@RequestParam int page, @RequestParam int size) {
         return executePaginated("list customers", () -> adminCustomerService.findAll(PageRequest.of(page, size)));
@@ -66,8 +64,8 @@ public class AdminCustomerController extends BaseController {
 
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_SWITCH_TO_CUSTOMER')")
     @Operation(summary = "Get JWT Token of a customer", description = "Get JWT Token of a customer")
-    @ReadApiResponses
     @GetMapping("/login/{customerId}")
+    @WrapperType(dataClass = AuthResponseDTO.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<AuthResponseDTO>> loginTokenHasCustomer(@PathVariable Long customerId) {
         return execute("get customer token", () -> {
             return adminCustomerAuthenticationService.adminLoginToCustomer(customerId);

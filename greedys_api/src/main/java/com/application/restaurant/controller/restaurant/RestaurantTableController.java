@@ -13,7 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
-import com.application.common.controller.annotation.ReadApiResponses;
+import com.application.common.controller.annotation.WrapperDataType;
+import com.application.common.controller.annotation.WrapperType;
 import com.application.common.web.ListResponseWrapper;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.TableDTO;
@@ -39,8 +40,9 @@ public class RestaurantTableController extends BaseController {
 
 	@GetMapping(value = "/room/{roomId}")
 	@Operation(summary = "Get tables of a room", description = "Retrieve the tables of a specific room")
-	@ReadApiResponses
-	public ResponseEntity<ListResponseWrapper<TableDTO>> getTables(@PathVariable Long roomId) {
+	
+	@WrapperType(dataClass = TableDTO.class, type = WrapperDataType.LIST)
+    public ResponseEntity<ListResponseWrapper<TableDTO>> getTables(@PathVariable Long roomId) {
 		return executeList("get tables for room", () -> {
 			log.info("Getting tables for room ID: {}", roomId);
 			Collection<TableDTO> tables = tableService.findByRoom(roomId);
@@ -51,7 +53,8 @@ public class RestaurantTableController extends BaseController {
 	@PostMapping
 	@Operation(summary = "Add a table to a room", description = "Add a new table to a specific room")
 
-	public ResponseEntity<ResponseWrapper<Table>> addTable(@RequestBody NewTableDTO tableDto) {
+	@WrapperType(dataClass = Table.class, type = WrapperDataType.DTO, responseCode = "201")
+    public ResponseEntity<ResponseWrapper<Table>> addTable(@RequestBody NewTableDTO tableDto) {
 		return executeCreate("add table", "Table added successfully", () -> {
 			log.info("Adding new table to room");
 			return tableService.createTable(tableDto);

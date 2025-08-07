@@ -5,6 +5,7 @@ import java.util.Locale;
 
 import org.springframework.context.MessageSource;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,13 +16,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
-import com.application.common.controller.annotation.ReadApiResponses;
+import com.application.common.controller.annotation.WrapperDataType;
+import com.application.common.controller.annotation.WrapperType;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.customer.CustomerDTO;
 import com.application.common.web.dto.customer.CustomerStatisticsDTO;
 import com.application.common.web.dto.security.UpdatePasswordDTO;
 import com.application.common.web.error.InvalidOldPasswordException;
-import com.application.customer.controller.utils.CustomerControllerUtils;
 import com.application.customer.persistence.model.Customer;
 import com.application.customer.service.CustomerService;
 import com.application.customer.service.authentication.CustomerAuthenticationService;
@@ -48,24 +49,25 @@ public class CustomerController extends BaseController {
 
     @Operation(summary = "Get Customer ID", description = "Retrieves the ID of the current customer")
     @GetMapping("/id")
-    @ReadApiResponses
-    public ResponseEntity<ResponseWrapper<Long>> getCustomerId() {
+    
+    @WrapperType(dataClass = Long.class, type = WrapperDataType.DTO)
+    public ResponseEntity<ResponseWrapper<Long>> getCustomerId(@AuthenticationPrincipal Customer customer) {
         return execute("getCustomerId", () -> {
-            return CustomerControllerUtils.getCurrentCustomerId();
+            return customer.getId();
         });
     }
     @Operation(summary = "Update customer phone number", description = "Updates the phone number of a specific customer by their ID")
     @PutMapping("/update/phone")
-    public ResponseEntity<ResponseWrapper<String>> updatePhone(@RequestParam String phone) {
+    public ResponseEntity<ResponseWrapper<String>> updatePhone(@RequestParam String phone,@AuthenticationPrincipal Customer customer) {
         return executeVoid("updatePhone", "Phone number updated successfully", () -> 
-            customerService.updatePhone(CustomerControllerUtils.getCurrentCustomerId(), phone));
+            customerService.updatePhone(customer.getId(), phone));
     }
 
     @Operation(summary = "Update customer date of birth", description = "Updates the date of birth of a specific customer by their ID")
     @PutMapping("/update/dateOfBirth")
-    public ResponseEntity<ResponseWrapper<String>> updateDateOfBirth(@RequestParam Date dateOfBirth) {
+    public ResponseEntity<ResponseWrapper<String>> updateDateOfBirth(@RequestParam Date dateOfBirth,@AuthenticationPrincipal Customer customer) {
         return executeVoid("updateDateOfBirth", "Date of birth updated successfully", () -> 
-            customerService.updateDateOfBirth(CustomerControllerUtils.getCurrentCustomerId(), dateOfBirth));
+            customerService.updateDateOfBirth(customer.getId(), dateOfBirth));
     }
     // TODO: Notification preferences settings
 
@@ -101,15 +103,16 @@ public class CustomerController extends BaseController {
 
     @Operation(summary = "Get current customer statistics", description = "Retrieves statistics for the current authenticated customer including no-show rate, reservations count, etc.")
     @GetMapping("/statistics/current")
-    public ResponseEntity<ResponseWrapper<CustomerStatisticsDTO>> getCurrentCustomerStatistics() {
+    @WrapperType(dataClass = CustomerStatisticsDTO.class, type = WrapperDataType.DTO)
+    public ResponseEntity<ResponseWrapper<CustomerStatisticsDTO>> getCurrentCustomerStatistics(@AuthenticationPrincipal Customer customer) {
         return execute("getCurrentCustomerStatistics", () -> {
-            Customer currentCustomer = CustomerControllerUtils.getCurrentCustomer();
-            return customerService.getCustomerStatistics(currentCustomer.getId());
+            return customerService.getCustomerStatistics(customer.getId());
         });
     }
 
     @Operation(summary = "Get customer statistics", description = "Retrieves statistics for a specific customer by ID including no-show rate, reservations count, etc.")
     @GetMapping("/{customerId}/statistics")
+    @WrapperType(dataClass = CustomerStatisticsDTO.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<CustomerStatisticsDTO>> getCustomerStatistics(
             @Parameter(description = "The ID of the customer to retrieve statistics for", required = true, example = "1")
             @PathVariable Long customerId) {
@@ -120,20 +123,24 @@ public class CustomerController extends BaseController {
 
     @Operation(summary = "Get current customer", description = "Retrieves the current authenticated customer")
     @GetMapping("/get")
-    public ResponseEntity<ResponseWrapper<CustomerDTO>> getCustomer() {
-        return execute("getCustomer", () -> new CustomerDTO(CustomerControllerUtils.getCurrentCustomer()));
+    @WrapperType(dataClass = CustomerDTO.class, type = WrapperDataType.DTO)
+    public ResponseEntity<ResponseWrapper<CustomerDTO>> getCustomer(@AuthenticationPrincipal Customer customer) {
+        return execute("getCustomer", () -> new CustomerDTO(customer));
     }
 
     @Operation(summary = "Generate new token for password change", description = "Changes the user's password after verifying the old password")
+    @WrapperType(dataClass = String.class, responseCode = "200")
     @PostMapping(value = "/password/new_token")
     public ResponseEntity<ResponseWrapper<String>> changeUserPassword(
             @Parameter(description = "Locale for response messages") final Locale locale,
-            @Parameter(description = "DTO containing the old and new password", required = true) @Valid UpdatePasswordDTO passwordDto) {
-        return executeVoid("changeUserPassword", messages.getMessage("message.updatePasswordSuc", null, locale), () -> {
-            if (!customerAuthenticationService.checkIfValidOldPassword(CustomerControllerUtils.getCurrentCustomerId(), passwordDto.getOldPassword())) {
+            @Parameter(description = "DTO containing the old and new password", required = true) @Valid UpdatePasswordDTO passwordDto,
+            @AuthenticationPrincipal Customer customer) {
+        return execute("changeUserPassword", () -> {
+            if (!customerAuthenticationService.checkIfValidOldPassword(customer.getId(), passwordDto.getOldPassword())) {
                 throw new InvalidOldPasswordException();
             }
-            customerAuthenticationService.changeCustomerPassword(CustomerControllerUtils.getCurrentCustomerId(), passwordDto.getNewPassword());
+            customerAuthenticationService.changeCustomerPassword(customer.getId(), passwordDto.getNewPassword());
+            return messages.getMessage("message.updatePasswordSuc", null, locale);
         });
     }
 
@@ -142,30 +149,30 @@ public class CustomerController extends BaseController {
 
     @Operation(summary = "Delete customer", description = "Deletes a specific customer by their ID")
     @DeleteMapping("/delete")
-    public ResponseEntity<ResponseWrapper<String>> deleteCustomer() {
+    public ResponseEntity<ResponseWrapper<String>> deleteCustomer(@AuthenticationPrincipal Customer customer) {
         return executeVoid("deleteCustomer", "Customer deleted successfully", () -> 
-            customerService.markCustomerHasDeleted(CustomerControllerUtils.getCurrentCustomerId()));
+            customerService.markCustomerHasDeleted(customer.getId()));
     }
 
     @Operation(summary = "Update customer first name", description = "Updates the first name of a specific customer by their ID")
     @PutMapping("/update/firstName")
-    public ResponseEntity<ResponseWrapper<String>> updateFirstName(@RequestParam String firstName) {
+    public ResponseEntity<ResponseWrapper<String>> updateFirstName(@RequestParam String firstName, @AuthenticationPrincipal Customer customer) {
         return executeVoid("updateFirstName", "First name updated successfully", () -> 
-            customerService.updateFirstName(CustomerControllerUtils.getCurrentCustomerId(), firstName));
+            customerService.updateFirstName(customer.getId(), firstName));
     }
 
     @Operation(summary = "Update customer last name", description = "Updates the last name of a specific customer by their ID")
     @PutMapping("/update/lastName")
-    public ResponseEntity<ResponseWrapper<String>> updateLastName(@RequestParam String lastName) {
+    public ResponseEntity<ResponseWrapper<String>> updateLastName(@RequestParam String lastName, @AuthenticationPrincipal Customer customer) {
         return executeVoid("updateLastName", "Last name updated successfully", () -> 
-            customerService.updateLastName(CustomerControllerUtils.getCurrentCustomerId(), lastName));
+            customerService.updateLastName(customer.getId(), lastName));
     }
 
     @Operation(summary = "Update customer email", description = "Updates the email of a specific customer by their ID")
     @PutMapping("/update/email")
-    public ResponseEntity<ResponseWrapper<String>> updateEmail(@RequestParam String email) {
+    public ResponseEntity<ResponseWrapper<String>> updateEmail(@RequestParam String email, @AuthenticationPrincipal Customer customer) {
         return executeVoid("updateEmail", "Email updated successfully", () -> 
-            customerService.updateEmail(CustomerControllerUtils.getCurrentCustomerId(), email));
+            customerService.updateEmail(customer.getId(), email));
     }
 
 

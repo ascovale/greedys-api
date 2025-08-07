@@ -16,8 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
-import com.application.common.controller.annotation.CreateApiResponses;
-import com.application.common.controller.annotation.ReadApiResponses;
+import com.application.common.controller.annotation.WrapperDataType;
 import com.application.common.controller.annotation.WrapperType;
 import com.application.common.web.ListResponseWrapper;
 import com.application.common.web.ResponseWrapper;
@@ -43,8 +42,7 @@ public class AdminServicesController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_READ')")
     @GetMapping("/types")
     @Operation(summary = "Get all service types", description = "Retrieve all service types.")
-    @ReadApiResponses
-    @WrapperType(dataClass = ServiceTypeDto.class)
+    @WrapperType(dataClass = ServiceTypeDto.class, type = WrapperDataType.LIST)
     public ResponseEntity<ListResponseWrapper<ServiceTypeDto>> getServiceTypes() {
         return executeList("get service types", () -> {
             Collection<ServiceTypeDto> serviceTypes = serviceService.getServiceTypes();
@@ -54,7 +52,7 @@ public class AdminServicesController extends BaseController {
 
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
     @Operation(summary = "Create a new service type", description = "This method creates a new service type in the system.")
-    @CreateApiResponses
+    @WrapperType(dataClass = String.class, responseCode = "201")
     @PostMapping("/type/new")
     public ResponseEntity<ResponseWrapper<String>> newServiceType(@RequestBody String serviceTypeString) {
         return executeCreate("create service type", () -> {

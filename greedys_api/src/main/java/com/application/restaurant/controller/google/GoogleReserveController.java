@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.WrapperDataType;
+import com.application.common.controller.annotation.WrapperType;
 import com.application.common.persistence.model.reservation.Reservation;
 import com.application.common.persistence.model.reservation.ReservationRequest;
 import com.application.common.web.ResponseWrapper;
@@ -40,10 +42,11 @@ public class GoogleReserveController extends BaseController {
                      "Restituisce i dettagli della prenotazione e l'ID di conferma."
     )
     @PostMapping("/book")
+    @WrapperType(dataClass = Reservation.class, type = WrapperDataType.DTO, responseCode = "201")
     public ResponseEntity<ResponseWrapper<Reservation>> createReservation(
             @RequestBody ReservationRequest reservationRequest) {
         
-        return execute("create reservation", "Prenotazione creata con successo", 
+        return executeCreate("create reservation", "Prenotazione creata con successo", 
             new OperationSupplier<Reservation>() {
                 @Override
                 public Reservation get() {
@@ -61,6 +64,7 @@ public class GoogleReserveController extends BaseController {
                      "Può cambiare data, ora, numero di persone e richieste speciali."
     )
     @PutMapping("/{reservationId}")
+    @WrapperType(dataClass = Reservation.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<Reservation>> modifyReservation(
             @PathVariable String reservationId,
             @RequestBody ReservationRequest newDetails) {
@@ -82,6 +86,7 @@ public class GoogleReserveController extends BaseController {
         description = "Cancella una prenotazione esistente. Richiede l'ID della prenotazione e un motivo opzionale."
     )
     @DeleteMapping("/{reservationId}")
+    @WrapperType(dataClass = Boolean.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<Boolean>> cancelReservation(
             @PathVariable String reservationId,
             @RequestParam(required = false) String reason) {

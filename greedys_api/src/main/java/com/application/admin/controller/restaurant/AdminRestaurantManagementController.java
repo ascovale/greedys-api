@@ -2,7 +2,6 @@ package com.application.admin.controller.restaurant;
 
 import java.util.Collection;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,17 +12,16 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
-import com.application.common.controller.annotation.CreateApiResponses;
-import com.application.common.controller.annotation.ReadApiResponses;
+import com.application.common.controller.annotation.WrapperType;
 import com.application.common.service.RestaurantService;
 import com.application.common.web.ListResponseWrapper;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.RestaurantDTO;
 import com.application.common.web.dto.restaurant.ServiceDTO;
+import com.application.restaurant.persistence.model.Restaurant;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -44,8 +42,9 @@ public class AdminRestaurantManagementController extends BaseController {
 	@GetMapping(value = "/{restaurantId}/services")
 	@Operation(summary = "Get services of a restaurant", description = "Retrieve the services of a restaurant")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_READ')")
-	@ReadApiResponses
-	public ResponseEntity<ListResponseWrapper<ServiceDTO>> getServices(@PathVariable Long restaurantId) {
+	
+	@WrapperType(dataClass = ServiceDTO.class)
+    public ResponseEntity<ListResponseWrapper<ServiceDTO>> getServices(@PathVariable Long restaurantId) {
 		return executeList("get services", () -> {
 			Collection<ServiceDTO> services = restaurantService.getServices(restaurantId);
 			return services instanceof java.util.List ? (java.util.List<ServiceDTO>) services : new java.util.ArrayList<>(services);
@@ -55,7 +54,7 @@ public class AdminRestaurantManagementController extends BaseController {
 	@Operation(summary = "Set no show time limit", description = "Set the no-show time limit for reservations")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
 	@PostMapping(value = "{restaurantId}/no_show_time_limit")
-	@ReadApiResponses
+	
 	public ResponseEntity<ResponseWrapper<String>> setNoShowTimeLimit(@PathVariable Long restaurantId, @RequestParam int minutes) {
 		return executeVoid("set no show time limit", "No-show time limit updated successfully", () -> 
 			restaurantService.setNoShowTimeLimit(restaurantId, minutes));
@@ -64,7 +63,7 @@ public class AdminRestaurantManagementController extends BaseController {
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
 	@Operation(summary = "Enable restaurant", description = "Enable a restaurant by its primary email")
 	@PutMapping("/{restaurantId}/enable_restaurant")
-	@ReadApiResponses
+	
 	public ResponseEntity<ResponseWrapper<String>> enableRestaurant(@PathVariable Long restaurantId) {
 		return executeVoid("enable restaurant", "Restaurant enabled successfully", () -> 
 			restaurantService.enableRestaurant(restaurantId));
@@ -72,11 +71,12 @@ public class AdminRestaurantManagementController extends BaseController {
 
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
 	@Operation(summary = "Create restaurant", description = "Create a new restaurant")
+	@WrapperType(dataClass = Restaurant.class, responseCode = "201")
 	@PostMapping("/new")
-	@CreateApiResponses
-	@ResponseStatus(HttpStatus.CREATED)
-	public ResponseEntity<ResponseWrapper<String>> createRestaurant(@RequestBody RestaurantDTO restaurantDto) {
-		return executeVoid("create restaurant", "Restaurant created successfully", () -> 
+	
+	
+	public ResponseEntity<ResponseWrapper<Restaurant>> createRestaurant(@RequestBody RestaurantDTO restaurantDto) {
+		return executeCreate("create restaurant", "Restaurant created successfully", () -> 
 			restaurantService.createRestaurant(restaurantDto));
 	}
 

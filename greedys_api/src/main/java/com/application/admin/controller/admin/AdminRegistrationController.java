@@ -14,7 +14,8 @@ import com.application.admin.persistence.model.Admin;
 import com.application.admin.service.AdminRegistrationService;
 import com.application.admin.web.dto.admin.NewAdminDTO;
 import com.application.common.controller.BaseController;
-import com.application.common.controller.annotation.CreateApiResponses;
+import com.application.common.controller.annotation.WrapperDataType;
+import com.application.common.controller.annotation.WrapperType;
 import com.application.common.web.ResponseWrapper;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,8 +36,9 @@ public class AdminRegistrationController extends BaseController {
     private final AdminRegistrationService adminRegistrationService;
 
     @Operation(summary = "Register a new admin")
-    @CreateApiResponses
+    
     @PostMapping("/")
+    @WrapperType(dataClass = Admin.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<Admin>> registerUserAccount(@Valid @RequestBody NewAdminDTO accountDto, HttpServletRequest request) {
         return executeCreate("register new admin",  () -> {
             return adminRegistrationService.registerNewAdmin(accountDto, request);
