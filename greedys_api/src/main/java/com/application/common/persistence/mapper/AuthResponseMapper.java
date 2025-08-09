@@ -4,7 +4,6 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
-import org.mapstruct.factory.Mappers;
 
 import com.application.common.web.dto.security.AuthResponseDTO;
 
@@ -18,8 +17,6 @@ import com.application.common.web.dto.security.AuthResponseDTO;
     unmappedTargetPolicy = ReportingPolicy.WARN
 )
 public interface AuthResponseMapper {
-
-    AuthResponseMapper INSTANCE = Mappers.getMapper(AuthResponseMapper.class);
 
     /**
      * Crea un AuthResponseDTO con JWT e user object

@@ -5,7 +5,6 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
-import org.mapstruct.factory.Mappers;
 
 import com.application.common.persistence.model.reservation.Reservation;
 import com.application.common.web.dto.reservations.NewBaseReservationDTO;
@@ -20,7 +19,6 @@ import com.application.common.web.dto.reservations.NewBaseReservationDTO;
 )
 public interface NewBaseReservationMapper {
 
-    NewBaseReservationMapper INSTANCE = Mappers.getMapper(NewBaseReservationMapper.class);
 
     /**
      * Converte un NewBaseReservationDTO in entità Reservation

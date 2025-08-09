@@ -85,6 +85,10 @@ public class CustomerAuthenticationService {
 		this.emailService = emailService;
 		this.messages = messages;
 		this.customerService = customerService;
+		
+		// Debug: verifichiamo quale AuthenticationManager viene iniettato
+		log.info("CustomerAuthenticationService initialized with AuthenticationManager: {}", 
+			authenticationManager.getClass().getSimpleName());
 	}
 
 	public AuthResponseDTO login(AuthRequestDTO authenticationRequest) {
@@ -197,6 +201,7 @@ public class CustomerAuthenticationService {
 				.surname(accountDto.getLastName())
 				.password(passwordEncoder.encode(accountDto.getPassword()))
 				.email(accountDto.getEmail())
+				.status(Customer.Status.VERIFY_TOKEN) // New customers start as needing email verification
 				.roles(new ArrayList<Role>() {
 					{
 						add(roleRepository.findByName("ROLE_CUSTOMER"));
@@ -324,6 +329,17 @@ public class CustomerAuthenticationService {
 				.orElseThrow(() -> new EntityNotFoundException("Customer not found"));
 		customer.setStatus(Customer.Status.ENABLED);
 		customerDAO.save(customer);
+	}
+
+	@Transactional
+	public void enableCustomerByEmail(String email) {
+		Customer customer = customerDAO.findByEmail(email);
+		if (customer == null) {
+			throw new EntityNotFoundException("Customer not found with email: " + email);
+		}
+		customer.setStatus(Customer.Status.ENABLED);
+		customerDAO.save(customer);
+		log.info("Customer enabled by email: {}", email);
 	}
 
 	public AuthResponseDTO adminLoginToCustomer(Long customerId, HttpServletRequest request) {

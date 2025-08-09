@@ -5,7 +5,6 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
-import org.mapstruct.factory.Mappers;
 
 import com.application.common.web.dto.customer.AllergyDTO;
 import com.application.common.web.dto.customer.NewAllergyDTO;
@@ -20,8 +19,6 @@ import com.application.customer.persistence.model.Allergy;
     unmappedTargetPolicy = ReportingPolicy.WARN
 )
 public interface AllergyMapper {
-
-    AllergyMapper INSTANCE = Mappers.getMapper(AllergyMapper.class);
 
     /**
      * Converte un'entità Allergy in AllergyDTO

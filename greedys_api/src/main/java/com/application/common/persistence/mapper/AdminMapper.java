@@ -5,7 +5,6 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
-import org.mapstruct.factory.Mappers;
 
 import com.application.admin.persistence.model.Admin;
 import com.application.admin.web.dto.admin.AdminDTO;
@@ -20,9 +19,6 @@ import com.application.admin.web.dto.admin.NewAdminDTO;
     unmappedTargetPolicy = ReportingPolicy.IGNORE
 )
 public interface AdminMapper {
-
-    AdminMapper INSTANCE = Mappers.getMapper(AdminMapper.class);
-
     /**
      * Converte un'entità Admin in AdminDTO
      * MapStruct mappa automaticamente i campi con lo stesso nome

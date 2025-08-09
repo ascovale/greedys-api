@@ -5,7 +5,6 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
-import org.mapstruct.factory.Mappers;
 
 import com.application.common.web.dto.restaurant.RestaurantCategoryDTO;
 import com.application.restaurant.persistence.model.RestaurantCategory;
@@ -20,7 +19,6 @@ import com.application.restaurant.persistence.model.RestaurantCategory;
 )
 public interface RestaurantCategoryMapper {
 
-    RestaurantCategoryMapper INSTANCE = Mappers.getMapper(RestaurantCategoryMapper.class);
 
     /**
      * Converte un'entità RestaurantCategory in RestaurantCategoryDTO

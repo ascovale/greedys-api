@@ -83,6 +83,8 @@ public class WrapperTypeCustomizer implements OpenApiCustomizer {
     private Schema<?> createDataSchema(String className) {
         // Extract simple class name for schema reference
         String simpleClassName = className.substring(className.lastIndexOf('.') + 1);
+        
+        // Always use schema reference - the schema should be defined in components
         Schema<?> schema = new Schema<>();
         schema.set$ref("#/components/schemas/" + simpleClassName);
         return schema;

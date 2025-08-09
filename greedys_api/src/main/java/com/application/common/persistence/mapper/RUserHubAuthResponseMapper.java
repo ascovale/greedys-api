@@ -4,7 +4,6 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
-import org.mapstruct.factory.Mappers;
 
 import com.application.common.web.dto.security.RUserHubAuthResponseDTO;
 import com.application.restaurant.persistence.model.user.RUser;
@@ -20,7 +19,6 @@ import com.application.restaurant.persistence.model.user.RUser;
 )
 public interface RUserHubAuthResponseMapper {
 
-    RUserHubAuthResponseMapper INSTANCE = Mappers.getMapper(RUserHubAuthResponseMapper.class);
 
     /**
      * Converte un'entità RUser in RUserHubAuthResponseDTO

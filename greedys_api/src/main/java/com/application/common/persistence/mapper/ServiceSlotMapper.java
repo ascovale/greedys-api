@@ -5,7 +5,6 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
-import org.mapstruct.factory.Mappers;
 
 import com.application.common.persistence.model.reservation.Slot;
 import com.application.common.web.dto.restaurant.ServiceSlotsDto;
@@ -20,7 +19,6 @@ import com.application.common.web.dto.restaurant.ServiceSlotsDto;
 )
 public interface ServiceSlotMapper {
 
-    ServiceSlotMapper INSTANCE = Mappers.getMapper(ServiceSlotMapper.class);
 
     /**
      * Converte un'entità Slot in ServiceSlotsDto (per singolo slot)

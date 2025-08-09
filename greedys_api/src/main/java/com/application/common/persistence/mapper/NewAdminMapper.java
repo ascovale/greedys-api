@@ -5,7 +5,6 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
-import org.mapstruct.factory.Mappers;
 
 import com.application.admin.persistence.model.Admin;
 import com.application.admin.web.dto.admin.NewAdminDTO;
@@ -20,7 +19,6 @@ import com.application.admin.web.dto.admin.NewAdminDTO;
 )
 public interface NewAdminMapper {
 
-    NewAdminMapper INSTANCE = Mappers.getMapper(NewAdminMapper.class);
 
     /**
      * Converte un NewAdminDTO in entità Admin

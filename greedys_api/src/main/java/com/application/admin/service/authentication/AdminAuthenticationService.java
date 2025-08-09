@@ -1,5 +1,6 @@
 package com.application.admin.service.authentication;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -14,18 +15,24 @@ import com.application.common.security.jwt.JwtUtil;
 import com.application.common.web.dto.security.AuthRequestDTO;
 import com.application.common.web.dto.security.AuthResponseDTO;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Transactional
-@RequiredArgsConstructor
 @Slf4j
 public class AdminAuthenticationService {
 
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final AdminService adminService;
+
+    public AdminAuthenticationService(@Qualifier("adminAuthenticationManager") AuthenticationManager authenticationManager,
+                                    JwtUtil jwtUtil,
+                                    AdminService adminService) {
+        this.authenticationManager = authenticationManager;
+        this.jwtUtil = jwtUtil;
+        this.adminService = adminService;
+    }
 
     /**
      * Authenticates an admin user and returns a JWT token
@@ -36,40 +43,39 @@ public class AdminAuthenticationService {
     public AuthResponseDTO login(AuthRequestDTO authenticationRequest) {
         
         log.debug("Admin authentication request received for username: {}", authenticationRequest.getUsername());
-            // Authenticate the user using Spring Security's AuthenticationManager
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            authenticationRequest.getUsername(),
-                            authenticationRequest.getPassword()));
-
-            log.debug("Admin authentication successful for username: {}", authenticationRequest.getUsername());
-
-            // Find the admin user by email
-            final Admin adminDetails = adminService.findAdminByEmail(authenticationRequest.getUsername());
-            if (adminDetails == null) {
-                log.error("Admin not found for username: {}", authenticationRequest.getUsername());
-                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
-            }
-
-            // Generate JWT token
-            final String jwt = jwtUtil.generateToken(adminDetails);
-            log.debug("JWT generated for admin username: {}", authenticationRequest.getUsername());
-
-            // Create response DTO with conditional refresh token
-            if (authenticationRequest.isRememberMe()) {
-                final String refreshToken = jwtUtil.generateRefreshToken(adminDetails);
-                log.debug("Remember me enabled: refresh token generated for admin: {}", authenticationRequest.getUsername());
-                
-                return AuthResponseDTO.builder()
-                        .jwt(jwt)
-                        .refreshToken(refreshToken)
-                        .user(new AdminDTO(adminDetails))
-                        .build();
-            } else {
-                return new AuthResponseDTO(jwt, new AdminDTO(adminDetails));
-            }
-
         
+        // Authenticate the user using Spring Security's AuthenticationManager
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        authenticationRequest.getUsername(),
+                        authenticationRequest.getPassword()));
+
+        log.debug("Admin authentication successful for username: {}", authenticationRequest.getUsername());
+
+        // Find the admin user by email
+        final Admin adminDetails = adminService.findAdminByEmail(authenticationRequest.getUsername());
+        if (adminDetails == null) {
+            log.error("Admin not found for username: {}", authenticationRequest.getUsername());
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
+        }
+
+        // Generate JWT token
+        final String jwt = jwtUtil.generateToken(adminDetails);
+        log.debug("JWT generated for admin username: {}", authenticationRequest.getUsername());
+
+        // Create response DTO with conditional refresh token
+        if (authenticationRequest.isRememberMe()) {
+            final String refreshToken = jwtUtil.generateRefreshToken(adminDetails);
+            log.debug("Remember me enabled: refresh token generated for admin: {}", authenticationRequest.getUsername());
+            
+            return AuthResponseDTO.builder()
+                    .jwt(jwt)
+                    .refreshToken(refreshToken)
+                    .user(new AdminDTO(adminDetails))
+                    .build();
+        } else {
+            return new AuthResponseDTO(jwt, new AdminDTO(adminDetails));
+        }
     }
 
     /**

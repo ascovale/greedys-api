@@ -2,10 +2,8 @@ package com.application.restaurant.controller;
 
 import java.io.UnsupportedEncodingException;
 
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -44,13 +42,6 @@ public class RestaurantRegistrationController extends BaseController {
 
     private final RestaurantService restaurantService;
     private final RestaurantAuthenticationService restaurantAuthenticationService;
-
-    @Bean
-    AuthenticationManager noOpAuthenticationManager() {
-        return authentication -> {
-            throw new UnsupportedOperationException("No global AuthenticationManager configured");
-        };
-    }
 
     @Operation(summary = "Request to register a new restaurant", description = "Request to register a new restaurant")
     @PostMapping(value = "/new")

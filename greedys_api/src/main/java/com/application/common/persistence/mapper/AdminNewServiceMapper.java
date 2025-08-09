@@ -5,7 +5,6 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
-import org.mapstruct.factory.Mappers;
 
 import com.application.admin.web.dto.service.AdminNewServiceDTO;
 import com.application.common.persistence.model.reservation.Service;
@@ -19,8 +18,6 @@ import com.application.common.persistence.model.reservation.Service;
     unmappedTargetPolicy = ReportingPolicy.WARN
 )
 public interface AdminNewServiceMapper {
-
-    AdminNewServiceMapper INSTANCE = Mappers.getMapper(AdminNewServiceMapper.class);
 
     /**
      * Converte un AdminNewServiceDTO in entità Service

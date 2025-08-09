@@ -26,74 +26,83 @@ public class RUserAuthenticationProvider extends DaoAuthenticationProvider {
 
     @Override
     public Authentication authenticate(Authentication auth) throws AuthenticationException {
-        if (auth.getDetails() instanceof RUserAuthenticationDetails) {
-            RUserAuthenticationDetails details = (RUserAuthenticationDetails) auth.getDetails();
-            if (details.isBypassPasswordCheck()) {
-                log.debug("Entering RUserAuthenticationProvider.authenticate method");
-                log.debug("Authenticating user with email:restaurantId: {}", auth.getName());
-                log.debug("Details: {}", details);
-
-                RUser user = rUserDAO.findByEmailAndRestaurantId(details.getEmail(), details.getRestaurantId());
-                if (user == null) {
-                    throw new BadCredentialsException("Invalid username or restaurant ID");
-                }
-
-                // Check account status even for bypass authentication
-                if (!user.isAccountNonLocked()) {
-                    String statusMessage = getStatusMessage(user.getStatus());
-                    log.debug("Account not accessible for user: {} - Status: {}", user.getEmail(), user.getStatus());
-                    throw new BadCredentialsException(statusMessage);
-                }
-                final Authentication result = super.authenticate(auth);
-                UsernamePasswordAuthenticationToken u = new UsernamePasswordAuthenticationToken(user, result.getCredentials(), result.getAuthorities());
-
-                log.debug("Authentication successful");
-                return u;
-            }
-        }
-
-        log.debug("Entering RUserAuthenticationProvider.authenticate method");
-        log.debug("Authenticating user with email:restaurantId: {}", auth.getName());
-
-        // Split the username into email and restaurantId
-        String[] parts = auth.getName().split(":");
-        if (parts.length != 2) {
-            throw new BadCredentialsException("Invalid username format. Expected 'email:restaurantId'.");
-        }
-
-        String email = parts[0];
-        Long restaurantId;
         try {
-            restaurantId = Long.parseLong(parts[1]);
-        } catch (NumberFormatException e) {
-            throw new BadCredentialsException("Invalid restaurantId format.");
+            // Gestione del bypass per autenticazione speciale
+            if (auth.getDetails() instanceof RUserAuthenticationDetails) {
+                RUserAuthenticationDetails details = (RUserAuthenticationDetails) auth.getDetails();
+                if (details.isBypassPasswordCheck()) {
+                    log.debug("Entering RUserAuthenticationProvider.authenticate method with bypass");
+                    log.debug("Authenticating user with email:restaurantId: {}", auth.getName());
+                    log.debug("Details: {}", details);
+
+                    RUser user = rUserDAO.findByEmailAndRestaurantId(details.getEmail(), details.getRestaurantId());
+                    if (user == null) {
+                        log.debug("User not found for email: {} and restaurantId: {}", details.getEmail(), details.getRestaurantId());
+                        throw new BadCredentialsException("Invalid username or restaurant ID");
+                    }
+
+                    // Check account status even for bypass authentication
+                    if (!user.isAccountNonLocked()) {
+                        String statusMessage = getStatusMessage(user.getStatus());
+                        log.debug("Account not accessible for user: {} - Status: {}", user.getEmail(), user.getStatus());
+                        throw new BadCredentialsException(statusMessage);
+                    }
+                    final Authentication result = super.authenticate(auth);
+                    UsernamePasswordAuthenticationToken u = new UsernamePasswordAuthenticationToken(user, result.getCredentials(), result.getAuthorities());
+
+                    log.debug("Authentication successful with bypass");
+                    return u;
+                }
+            }
+
+            log.debug("Entering RUserAuthenticationProvider.authenticate method");
+            log.debug("Authenticating user with email:restaurantId: {}", auth.getName());
+
+            // Split the username into email and restaurantId
+            String[] parts = auth.getName().split(":");
+            if (parts.length != 2) {
+                throw new BadCredentialsException("Invalid username format. Expected 'email:restaurantId'.");
+            }
+
+            String email = parts[0];
+            Long restaurantId;
+            try {
+                restaurantId = Long.parseLong(parts[1]);
+            } catch (NumberFormatException e) {
+                throw new BadCredentialsException("Invalid restaurantId format.");
+            }
+
+            // Prima verifica se l'utente esiste
+            final RUser user = rUserDAO.findByEmailAndRestaurantId(email, restaurantId);
+            if (user == null) {
+                log.debug("User not found for email: {} and restaurantId: {}", email, restaurantId);
+                throw new BadCredentialsException("Invalid username or password");
+            }
+
+            log.debug("User found: {}", user.getEmail());
+
+            // Verifica lo stato dell'account prima dell'autenticazione
+            if (!user.isAccountNonLocked()) {
+                String statusMessage = getStatusMessage(user.getStatus());
+                log.debug("Account not accessible for user: {} - Status: {}", user.getEmail(), user.getStatus());
+                throw new BadCredentialsException(statusMessage);
+            }
+
+            // Verifica esplicita della password
+            if (!getPasswordEncoder().matches(auth.getCredentials().toString(), user.getPassword())) {
+                log.debug("Password mismatch for user: {}", email);
+                throw new BadCredentialsException("Invalid username or password");
+            }
+
+            // Procedi con l'autenticazione standard
+            final Authentication result = super.authenticate(auth);
+            log.debug("Authentication successful for user: {}", user.getEmail());
+            return new UsernamePasswordAuthenticationToken(user, result.getCredentials(), result.getAuthorities());
+            
+        } catch (AuthenticationException e) {
+            log.error("Errore durante l'autenticazione per l'utente {}: {}", auth.getName(), e.getMessage());
+            throw e;
         }
-
-        final RUser user = rUserDAO.findByEmailAndRestaurantId(email, restaurantId);
-
-        if (user == null) {
-            log.debug("User not found for email: {} and restaurantId: {}", email, restaurantId);
-            throw new BadCredentialsException("Invalid username or password");
-        }
-
-        log.debug("User found: {}", user.getEmail());
-
-        // Check account status
-        if (!user.isAccountNonLocked()) {
-            String statusMessage = getStatusMessage(user.getStatus());
-            log.debug("Account not accessible for user: {} - Status: {}", user.getEmail(), user.getStatus());
-            throw new BadCredentialsException(statusMessage);
-        }
-
-        // Verifica esplicita della password
-        if (!getPasswordEncoder().matches(auth.getCredentials().toString(), user.getPassword())) {
-            throw new BadCredentialsException("Invalid username or password");
-        }
-
-        // Procedi con l'autenticazione standard
-        final Authentication result = super.authenticate(auth);
-        log.debug("Authentication successful for user: {}", user.getEmail());
-        return new UsernamePasswordAuthenticationToken(user, result.getCredentials(), result.getAuthorities());
     }
 
     private String getStatusMessage(RUser.Status status) {

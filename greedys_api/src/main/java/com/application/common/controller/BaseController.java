@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Controller;
 
 import com.application.common.controller.annotation.CreateApiResponses;
@@ -136,7 +138,9 @@ public class BaseController {
         // Map specific exceptions to appropriate responses
         if (e instanceof IllegalArgumentException) {
             return badRequest(e.getMessage(), "INVALID_ARGUMENT");                           // 400
-        } else if (e instanceof org.springframework.security.authentication.AuthenticationCredentialsNotFoundException) {
+        } else if (e instanceof BadCredentialsException) {
+            return unauthorized("Invalid username or password");                             // 401
+        } else if (e instanceof AuthenticationCredentialsNotFoundException) {
             return unauthorized("Authentication required: " + e.getMessage());              // 401
         } else if (e instanceof org.springframework.security.access.AccessDeniedException) {
             return forbidden("Access denied: " + e.getMessage());                          // 403
@@ -147,6 +151,8 @@ public class BaseController {
                     .body(ResponseWrapper.error("Method not allowed: " + e.getMessage(), "METHOD_NOT_ALLOWED"));
         } else if (e instanceof org.springframework.dao.DataIntegrityViolationException) {
             return conflict("Data integrity violation: " + e.getMessage());               // 409
+        } else if (e instanceof com.application.common.web.error.UserAlreadyExistException) {
+            return conflict(e.getMessage());                                              // 409
         } else if (e instanceof org.springframework.web.bind.MethodArgumentNotValidException) {
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)                 // 422
                     .body(ResponseWrapper.error("Validation failed: " + e.getMessage(), "VALIDATION_ERROR"));

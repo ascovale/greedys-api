@@ -5,7 +5,6 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
-import org.mapstruct.factory.Mappers;
 
 import com.application.admin.web.dto.reservation.AdminNewReservationDTO;
 import com.application.common.persistence.model.reservation.Reservation;
@@ -23,8 +22,6 @@ import com.application.restaurant.web.dto.reservation.RestaurantNewReservationDT
     unmappedTargetPolicy = ReportingPolicy.WARN
 )
 public interface ReservationMapper {
-
-    ReservationMapper INSTANCE = Mappers.getMapper(ReservationMapper.class);
 
     /**
      * Converte un'entità Reservation in ReservationDTO

@@ -3,7 +3,6 @@ package com.application.common.persistence.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
-import org.mapstruct.factory.Mappers;
 
 import com.application.admin.web.dto.communication.EmailRequestDTO;
 
@@ -18,7 +17,6 @@ import com.application.admin.web.dto.communication.EmailRequestDTO;
 )
 public interface EmailRequestMapper {
 
-    EmailRequestMapper INSTANCE = Mappers.getMapper(EmailRequestMapper.class);
 
     /**
      * Clona un EmailRequestDTO in un altro EmailRequestDTO

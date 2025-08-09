@@ -5,7 +5,6 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
-import org.mapstruct.factory.Mappers;
 
 import com.application.common.web.dto.restaurant.RUserDTO;
 import com.application.restaurant.persistence.model.user.RUser;
@@ -21,7 +20,6 @@ import com.application.restaurant.web.dto.staff.NewRUserDTO;
 )
 public interface RUserMapper {
 
-    RUserMapper INSTANCE = Mappers.getMapper(RUserMapper.class);
 
     /**
      * Converte un'entità RUser in RUserDTO

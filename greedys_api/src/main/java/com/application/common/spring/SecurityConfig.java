@@ -6,7 +6,8 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -107,9 +108,9 @@ public class SecurityConfig {
                                 // 1° TokenTypeValidationFilter - Verifica Access vs Refresh Token
                                 .addFilterBefore(tokenTypeValidationFilter, UsernamePasswordAuthenticationFilter.class)
                                 // 2° HubValidationFilter - Limita Hub agli endpoint permessi  
-                                .addFilterAfter(hubValidationFilter, tokenTypeValidationFilter.getClass())
+                                .addFilterAfter(hubValidationFilter, TokenTypeValidationFilter.class)
                                 // 3° RUserRequestFilter - AUTENTICAZIONE finale (SecurityContext)
-                                .addFilterAfter(restaurantJwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
+                                .addFilterAfter(restaurantJwtRequestFilter, RUserHubValidationFilter.class)
                                 .authenticationManager(authenticationManager);
 
                 return http.build();
@@ -141,7 +142,7 @@ public class SecurityConfig {
                                 // 1° TokenTypeValidationFilter - Verifica Access vs Refresh Token  
                                 .addFilterBefore(tokenTypeValidationFilter, UsernamePasswordAuthenticationFilter.class)
                                 // 2° CustomerRequestFilter - AUTENTICAZIONE finale (SecurityContext)
-                                .addFilterBefore(customerJwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
+                                .addFilterAfter(customerJwtRequestFilter, TokenTypeValidationFilter.class)
 
                                 .authenticationManager(authenticationManager);
 
@@ -174,7 +175,7 @@ public class SecurityConfig {
                                 // 1° TokenTypeValidationFilter - Verifica Access vs Refresh Token
                                 .addFilterBefore(tokenTypeValidationFilter, UsernamePasswordAuthenticationFilter.class)
                                 // 2° AdminRequestFilter - AUTENTICAZIONE finale (SecurityContext)
-                                .addFilterBefore(adminJwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
+                                .addFilterAfter(adminJwtRequestFilter, TokenTypeValidationFilter.class)
                                 .authenticationManager(authenticationManager);
 
                 return http.build();
@@ -203,15 +204,6 @@ public class SecurityConfig {
         }
 
         @Bean
-        @Primary
-        AuthenticationManager fallbackAuthenticationManager() {
-                return authentication -> {
-                        throw new UnsupportedOperationException(
-                                        "No global AuthenticationManager configured. Use specific ones with @Qualifier.");
-                };
-        }
-
-        @Bean
         CorsConfigurationSource corsConfigurationSource() {
                 UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
                 CorsConfiguration config = new CorsConfiguration();
@@ -226,10 +218,8 @@ public class SecurityConfig {
 
         @Bean
         @Qualifier("restaurantAuthenticationManager")
-        AuthenticationManager restaurantAuthenticationManager(HttpSecurity http) throws Exception {
-                AuthenticationManagerBuilder auth = http.getSharedObject(AuthenticationManagerBuilder.class);
-                auth.authenticationProvider(RUserAuthenticationProvider());
-                return auth.build();
+        AuthenticationManager restaurantAuthenticationManager() {
+                return new ProviderManager(RUserAuthenticationProvider());
         }
 
         @Bean
@@ -241,10 +231,8 @@ public class SecurityConfig {
 
         @Bean
         @Qualifier("customerAuthenticationManager")
-        AuthenticationManager customerAuthenticationManager(HttpSecurity http) throws Exception {
-                AuthenticationManagerBuilder auth = http.getSharedObject(AuthenticationManagerBuilder.class);
-                auth.authenticationProvider(customerAuthenticationProvider());
-                return auth.build();
+        AuthenticationManager customerAuthenticationManager() {
+                return new ProviderManager(customerAuthenticationProvider());
         }
 
         @Bean
@@ -256,14 +244,69 @@ public class SecurityConfig {
 
         @Bean
         @Qualifier("adminAuthenticationManager")
-        AuthenticationManager adminAuthenticationManager(HttpSecurity http) throws Exception {
-                AuthenticationManagerBuilder auth = http.getSharedObject(AuthenticationManagerBuilder.class);
-                auth.authenticationProvider(adminAuthenticationProvider());
-                return auth.build();
+        AuthenticationManager adminAuthenticationManager() {
+                return new ProviderManager(adminAuthenticationProvider());
+        }
+
+        /*
+         * ============================================================================
+         * DEFAULT AUTHENTICATION MANAGER
+         * ============================================================================
+         * 
+         * SCOPO: Fornisce un AuthenticationManager di default per Spring Security quando
+         * nessun manager specifico è configurato per una richiesta.
+         * 
+         * MOTIVAZIONE: 
+         * - Il sistema ha manager specifici per ogni tipo di utente (/restaurant, /customer, /admin)
+         * - Endpoint pubblici come /v3/api-docs, /actuator non richiedono autenticazione
+         * - Se per errore una richiesta arriva qui, significa che c'è un problema di configurazione
+         * - Meglio fallire esplicitamente con un errore chiaro piuttosto che comportamenti inaspettati
+         * 
+         * ANNOTAZIONE @Primary: 
+         * - Spring Security automaticamente usa il bean @Primary quando:
+         *   1. HttpSecurity.build() non trova un AuthenticationManager esplicito
+         *   2. Non c'è un @Qualifier specifico nel punto di injection
+         *   3. Dependency injection richiede un AuthenticationManager generico
+         * 
+         * QUANDO VIENE USATO:
+         * - defaultFilterChain (NON ha .authenticationManager() esplicito)
+         *   → Endpoint pubblici: /v3/api-docs, /actuator che NON dovrebbero autenticare
+         * - Injection points senza @Qualifier specifico
+         * - Situazioni di errore/configurazione sbagliata
+         * 
+         * NON viene usato per LOGIN (hanno AuthenticationManager esplicito):
+         * - restaurantFilterChain → usa @Qualifier("restaurantAuthenticationManager")
+         * - customerFilterChain → usa @Qualifier("customerAuthenticationManager")  
+         * - adminFilterChain → usa @Qualifier("adminAuthenticationManager")
+         * 
+         * IMPORTANTE: Se questo manager viene chiamato durante il login, indica:
+         * 1. ERRORE DI DEPENDENCY INJECTION: @Qualifier non funziona nel service
+         * 2. ERRORE DI CONFIGURAZIONE: Bean AuthenticationManager specifico non trovato
+         * 3. ERRORE DI LOGICA: Service chiama AuthenticationManager sbagliato
+         * 4. CONFLITTO DI BEAN: Due bean con stesso nome o tipo
+         * 
+         * DEBUG SPECIFICO per login con credenziali sbagliate:
+         * - CustomerAuthenticationService usa @Qualifier("customerAuthenticationManager")
+         * - Se arriva qui = Spring non trova il bean giusto o c'è conflitto
+         * - Controlla che customerAuthenticationManager() bean sia correttamente definito
+         * - Verifica che non ci siano bean duplicati con stesso @Qualifier
+         * - Errore di Validazione
+         * 
+         * NOTA: Gli endpoint /customer/auth/login usano il service, NON il filter chain
+         * Il filter chain AuthenticationManager è per JWT, il service è per login!
+         * ============================================================================
+         */
+        @Bean
+        @Primary
+        AuthenticationManager defaultAuthenticationManager() {
+                // Return a manager that always fails with authentication exception
+                return authentication -> {
+                        throw new AuthenticationServiceException(
+                                "No specific AuthenticationManager configured for this request");
+                };
         }
 
         @Bean
-        @Primary
         PasswordEncoder passwordEncoder() {
                 return new BCryptPasswordEncoder();
         }

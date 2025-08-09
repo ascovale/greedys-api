@@ -5,7 +5,6 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
-import org.mapstruct.factory.Mappers;
 
 import com.application.common.web.dto.security.PrivilegeDTO;
 import com.application.customer.persistence.model.Privilege;
@@ -20,7 +19,6 @@ import com.application.customer.persistence.model.Privilege;
 )
 public interface PrivilegeDTOMapper {
 
-    PrivilegeDTOMapper INSTANCE = Mappers.getMapper(PrivilegeDTOMapper.class);
 
     /**
      * Converte un'entità Privilege in PrivilegeDTO

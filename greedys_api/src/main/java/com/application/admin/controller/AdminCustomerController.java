@@ -53,6 +53,15 @@ public class AdminCustomerController extends BaseController {
         });
     }
 
+    @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_WRITE')")
+    @Operation(summary = "Enable customer by email", description = "Enables a customer by their email address")
+    @PutMapping("/enable")
+    public ResponseEntity<ResponseWrapper<String>> enableCustomerByEmail(@RequestParam String email) {
+        return executeVoid("enable customer by email", "Customer enabled successfully", () -> {
+            adminCustomerService.updateCustomerStatusByEmail(email, Customer.Status.ENABLED);
+        });
+    }
+
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_READ')")
     @Operation(summary = "List customers with pagination", description = "Returns a paginated list of customers")
     @GetMapping("/customers/page")
