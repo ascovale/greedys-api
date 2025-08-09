@@ -35,7 +35,7 @@ public class Dish {
     private String description;
     @ManyToMany
     @JoinTable(
-        name = "dish_photo",
+        name = "plate_photo_mapping",
         joinColumns = @JoinColumn(name = "plate_id"),
         inverseJoinColumns = @JoinColumn(name = "photo_id")
     )
@@ -43,7 +43,7 @@ public class Dish {
     private List<String> photoLinks;
     @ManyToMany
     @JoinTable(
-        name = "dish_category",
+        name = "plate_category_mapping",
         joinColumns = @JoinColumn(name = "dish_id"),
         inverseJoinColumns = @JoinColumn(name = "category_id")
     )

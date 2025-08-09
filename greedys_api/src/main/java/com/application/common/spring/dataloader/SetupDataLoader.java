@@ -3,8 +3,11 @@ package com.application.common.spring.dataloader;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.sql.DataSource;
+
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,10 +32,15 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
     private final CustomerSetup customerSetup;
     private final RestaurantDataLoader restaurantDataLoader;
     private final AllergyService allergyService;
+    private final Environment env;
+    private final DataSource dataSource;
 
     @Override
     @Transactional
     public void onApplicationEvent(final ContextRefreshedEvent event) {
+        // Attende che il database sia completamente pronto (come in Docker)
+        waitForDatabaseReady();
+        
         SetupConfig setupConfig = setupConfigDAO.findById(1L).orElse(new SetupConfig());
         if (!setupConfig.isAlreadySetup()) {
             log.info(">>> --- Setup started --- <<<");
@@ -101,6 +109,61 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
         setupConfig.setDataUploaded(true);
         setupConfigDAO.save(setupConfig);
         log.info(">>> --- Allergies Created --- <<<");
+    }
+
+    /**
+     * Attende che il database sia completamente pronto, simile alla logica Docker
+     */
+    private void waitForDatabaseReady() {
+        List<String> activeProfiles = Arrays.asList(env.getActiveProfiles());
+        
+        // Solo per profilo dev (H2)
+        if (!activeProfiles.contains("dev")) {
+            return;
+        }
+        
+        log.info("🔄 Attendo che H2 e Hibernate siano completamente pronti...");
+        int attempts = 15; // Aumentato per H2 + Hibernate DDL
+        while (attempts > 0) {
+            try {
+                // Prima verifica la connessione al database
+                var connection = dataSource.getConnection();
+                
+                // Poi verifica che le tabelle critiche esistano (verifiche specifiche per H2 DDL)
+                var stmt = connection.prepareStatement(
+                    "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME IN ('SLOT', 'SERVICE', 'RESTAURANT')"
+                );
+                var rs = stmt.executeQuery();
+                rs.next();
+                int tableCount = rs.getInt(1);
+                
+                rs.close();
+                stmt.close();
+                connection.close();
+                
+                if (tableCount >= 3) {
+                    log.info("✅ Database H2 e schema Hibernate completamente pronti (trovate {} tabelle critiche).", tableCount);
+                    Thread.sleep(500); // Piccola attesa finale per sicurezza
+                    break;
+                } else {
+                    throw new RuntimeException("Tabelle non ancora create. Trovate: " + tableCount + "/3");
+                }
+                
+            } catch (Exception ex) {
+                attempts--;
+                log.info("⏳ Database/Schema non ancora pronto: {}. Riprovo tra 2 secondi... Tentativi rimasti: {}", 
+                        ex.getMessage(), attempts);
+                try {
+                    Thread.sleep(2000); // Attende 2 secondi prima di riprovare
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw new IllegalStateException("Thread interrotto mentre si attende il DB.", ie);
+                }
+            }
+        }
+        if (attempts == 0) {
+            throw new IllegalStateException("Database H2 e schema Hibernate non completamente disponibili dopo molteplici tentativi.");
+        }
     }
 
 }

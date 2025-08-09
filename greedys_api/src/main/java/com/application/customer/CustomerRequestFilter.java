@@ -56,19 +56,17 @@ public class CustomerRequestFilter extends OncePerRequestFilter {
 
             if (jwtUtil.validateToken(jwt, userDetails)) {
                 
-                // 🔄 Gestisci authorities basate sul tipo di token
+                // ✅ Solo access token sono accettati sui filtri di autenticazione
+                // I refresh token sono gestiti direttamente nei service degli endpoint pubblici
                 if (jwtUtil.isRefreshToken(jwt)) {
-                    // Refresh token: solo permesso di refresh (massima sicurezza)
-                    userDetails = org.springframework.security.core.userdetails.User
-                        .withUsername(userDetails.getUsername())
-                        .password(userDetails.getPassword())
-                        .authorities("PRIVILEGE_REFRESH_ONLY") // Solo refresh
-                        .build();
-                } else {
-                    // Access token: mantieni tutte le authorities originali dal DB
-                    // (userDetails già caricato dal DB con authorities corrette)
+                    // Refresh token non dovrebbe essere usato per autenticazione su endpoint protetti
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"error\":\"Refresh token cannot be used for protected endpoints\"}");
+                    return;
                 }
 
+                // Access token: mantieni tutte le authorities originali dal DB
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
                 usernamePasswordAuthenticationToken

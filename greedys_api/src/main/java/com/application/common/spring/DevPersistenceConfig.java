@@ -1,8 +1,5 @@
 package com.application.common.spring;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -27,7 +24,7 @@ import jakarta.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;
 
 @Configuration
-@Profile({"docker", "prod"}) // 🔧 Solo per Docker e Produzione
+@Profile("dev") // 🚀 Solo per profilo dev
 @EnableJpaRepositories(basePackages = {
     "com.application.admin.persistence.dao",
     "com.application.customer.persistence.dao",
@@ -35,54 +32,25 @@ import lombok.RequiredArgsConstructor;
     "com.application.common.persistence.dao"
 })
 @EnableTransactionManagement
-@EnableJpaAuditing(auditorAwareRef = "auditorProvider")
+@EnableJpaAuditing(auditorAwareRef = "devAuditorProvider")
 @RequiredArgsConstructor
-public class PersistenceJPAConfig {
+public class DevPersistenceConfig {
 
     private final Environment env;
 
     @Bean
     DataSource dataSource() {
-        System.out.println("⚠️ PersistenceJPAConfig - ATTIVATO! Questo NON dovrebbe accadere in dev mode!");
+        System.out.println("🚀 DevPersistenceConfig - Configurazione H2 per sviluppo");
         
-        String dbPassword = "Minosse100%";
-        try {
-            dbPassword = new String(Files.readAllBytes(Paths.get("/run/secrets/db_password"))).trim();
-            System.out.println("✅ Password DB caricata da Docker secrets");
-        } catch (IOException e) {
-            System.out.println("⚠️ Docker secrets non trovati, uso password di default");
-            e.printStackTrace();
-        }
-        
+        // Configurazione H2 semplificata
         DataSource dataSource = DataSourceBuilder.create()
                 .url(env.getProperty("spring.datasource.url"))
                 .username(env.getProperty("spring.datasource.username"))
-                .password(dbPassword)
+                .password(env.getProperty("spring.datasource.password"))
                 .driverClassName(env.getProperty("spring.datasource.driverClassName"))
                 .build();
         
-        // Attende che il DB sia disponibile
-        int attempts = 10; // Numero massimo di tentativi
-        while (attempts > 0) {
-            try {
-                dataSource.getConnection().close();
-                System.out.println("Database disponibile.");
-                break;
-            } catch (Exception ex) {
-                attempts--;
-                System.out.println("Database non ancora disponibile. Riprovo tra 5 secondi... Tentativi rimasti: " + attempts);
-                try {
-                    Thread.sleep(5000); // Attende 5 secondi prima di riprovare
-                } catch (InterruptedException ie) {
-                    Thread.currentThread().interrupt();
-                    throw new IllegalStateException("Thread interrotto mentre si attende il DB.", ie);
-                }
-            }
-        }
-        if (attempts == 0) {
-            throw new IllegalStateException("Database non disponibile dopo molteplici tentativi.");
-        }
-        
+        System.out.println("✅ DataSource H2 configurato per sviluppo");
         return dataSource;
     }
 
@@ -113,14 +81,26 @@ public class PersistenceJPAConfig {
 
     private Properties additionalProperties() {
         Properties properties = new Properties();
-        properties.setProperty("hibernate.hbm2ddl.auto", "update");
-        properties.setProperty("hibernate.dialect", env.getProperty("spring.jpa.properties.hibernate.dialect"));
+        // Impostiamo valori hardcoded per dev profile per evitare problemi di caricamento
+        properties.setProperty("hibernate.hbm2ddl.auto", "create-drop");
+        properties.setProperty("hibernate.dialect", "org.hibernate.dialect.H2Dialect");
+        properties.setProperty("hibernate.show_sql", "true");
+        properties.setProperty("hibernate.format_sql", "true");
+        properties.setProperty("hibernate.use_sql_comments", "true");
+        properties.setProperty("hibernate.physical_naming_strategy", "org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy");
+        
+        // 🔧 Fix per H2: Configurazioni per evitare problemi di ordine tabelle
+        properties.setProperty("hibernate.hbm2ddl.create_namespaces", "true");
+        properties.setProperty("hibernate.connection.autocommit", "false");
+        properties.setProperty("hibernate.jdbc.batch_size", "0"); // Disabilita batch per dev
+        
         return properties;
     }
 
-    @Bean
+    @Bean("devAuditorProvider")
     AuditorAware<String> auditorProvider() {
         return () -> Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
-                .map(authentication -> authentication.getName());
+                .map(authentication -> authentication.getName())
+                .or(() -> Optional.of("dev-user"));
     }
 }

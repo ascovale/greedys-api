@@ -17,6 +17,8 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DishCategory {
+
+    //ERROREEEEEEE DISH USA DISH CATEGORY MA NON SO PERCHE SBAGLIATO
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
