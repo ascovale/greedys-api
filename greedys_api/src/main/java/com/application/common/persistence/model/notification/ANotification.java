@@ -35,6 +35,7 @@ public abstract class ANotification {
     @Builder.Default
     private Map<String, String> properties = new HashMap<>();
 
+    @Column(name = "is_read")
     @Builder.Default
     private Boolean read = false;
 

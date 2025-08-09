@@ -47,7 +47,8 @@ public final class SecurityPatterns {
      */
     public static final String[] RESTAURANT_AUTH_PATTERNS = {
         "/restaurant/user/auth/login", 
-        "/restaurant/user/auth/google"
+        "/restaurant/user/auth/google",
+        "/restaurant/auth/**"
     };
     
     /**

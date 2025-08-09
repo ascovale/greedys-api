@@ -65,14 +65,14 @@ public class RUserRequestFilter extends OncePerRequestFilter {
                     return;
                 }
                 
-                // 🔄 Distingui tra Access e Refresh Hub token per i permessi
+                // ✅ Solo access token sono accettati sui filtri di autenticazione
+                // I refresh token sono gestiti direttamente nei service degli endpoint pubblici
                 if (jwtUtil.isHubRefreshToken(jwt)) {
-                    // Refresh Hub token: solo permesso di refresh
-                    userDetails = org.springframework.security.core.userdetails.User
-                        .withUsername(email) 
-                        .password("") 
-                        .authorities("PRIVILEGE_REFRESH_ONLY") // Solo refresh
-                        .build();
+                    // Refresh token non dovrebbe essere usato per autenticazione su endpoint protetti
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"error\":\"Refresh token cannot be used for protected endpoints\"}");
+                    return;
                 } else {
                     // Access Hub token: permessi completi
                     userDetails = org.springframework.security.core.userdetails.User

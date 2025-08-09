@@ -83,7 +83,6 @@ public class JwtUtil {
                 .map(Object::toString)
                 .collect(Collectors.toList()));
         claims.put("access_type", "access");
-        // Determina il tipo di utente basato sulle authorities
         claims.put("user_type", determineUserType(userDetails));
         return createToken(claims, userDetails.getUsername(), expiration);
     }
@@ -93,9 +92,25 @@ public class JwtUtil {
         claims.put("access_type", "refresh");
         claims.put("email", userDetails.getUsername());
         claims.put("authorities", List.of("PRIVILEGE_REFRESH_ONLY")); // Solo permesso di refresh
-        // Determina il tipo di utente basato sulle authorities
         claims.put("user_type", determineUserType(userDetails));
         return createToken(claims, userDetails.getUsername(), refreshExpiration);
+    }
+
+    /**
+     * Determina il tipo di utente basandosi sulla classe dell'oggetto UserDetails
+     */
+    private String determineUserType(UserDetails userDetails) {
+        String className = userDetails.getClass().getSimpleName();
+        switch (className) {
+            case "Customer":
+                return "customer";
+            case "Admin":
+                return "admin";
+            case "RUser":
+                return "restaurant";
+            default:
+                throw new IllegalArgumentException("Unknown user type: " + className);
+        }
     }
 
     public String generateHubRefreshToken(RUserHub user) {
@@ -205,24 +220,5 @@ public class JwtUtil {
     public String extractUserType(String token) {
         Claims claims = extractAllClaims(token);
         return (String) claims.get("user_type");
-    }
-    
-    /**
-     * Determina il tipo di utente basato sulle authorities di UserDetails
-     */
-    private String determineUserType(UserDetails userDetails) {
-        String authoritiesString = userDetails.getAuthorities().stream()
-                .map(Object::toString)
-                .collect(Collectors.joining(","));
-        
-        if (authoritiesString.contains("PRIVILEGE_ADMIN")) {
-            return "admin";
-        } else if (authoritiesString.contains("PRIVILEGE_CUSTOMER")) {
-            return "customer";
-        } else if (authoritiesString.contains("PRIVILEGE_RESTAURANT")) {
-            return "restaurant-user";
-        } else {
-            return "unknown";
-        }
     }
 }
