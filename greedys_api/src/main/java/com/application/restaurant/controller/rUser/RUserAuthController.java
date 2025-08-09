@@ -33,13 +33,8 @@ public class RUserAuthController extends BaseController {
     @PostMapping(value = "/login", produces = "application/json")
     @WrapperType(dataClass = AuthResponseDTO.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<AuthResponseDTO>> createAuthenticationToken(@RequestBody AuthRequestDTO authenticationRequest) {
-        return execute("authenticate user", () -> {
-            try {
-                return restaurantAuthenticationService.loginWithHubSupport(authenticationRequest);
-            } catch (UnsupportedOperationException e) {
-                throw new SecurityException("Authentication failed: Invalid username or password.");
-            }
-        });
+        return execute("authenticate user", () -> 
+            restaurantAuthenticationService.loginWithHubSupport(authenticationRequest));
     }
 
     @Operation(summary = "Authenticate with Google", description = "Authenticates a restaurant user hub using Google OAuth2")

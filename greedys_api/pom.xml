@@ -225,6 +225,10 @@
                     <compilerArgs>
                         <arg>-Xlint:deprecation</arg>
                         <arg>-Xlint:unchecked</arg>
+                        <!-- Aggiungi questi argomenti per MapStruct -->
+                        <arg>-Amapstruct.verbose=true</arg>
+                        <arg>-Amapstruct.defaultComponentModel=spring</arg>
+                        <arg>-Amapstruct.suppressGeneratorTimestamp=true</arg>
                     </compilerArgs>
                     <annotationProcessorPaths>
                         <path>

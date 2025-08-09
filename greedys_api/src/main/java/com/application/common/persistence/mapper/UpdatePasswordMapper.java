@@ -5,7 +5,6 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
-import org.mapstruct.factory.Mappers;
 
 import com.application.common.persistence.model.user.AbstractUser;
 import com.application.common.web.dto.security.UpdatePasswordDTO;
@@ -20,7 +19,6 @@ import com.application.common.web.dto.security.UpdatePasswordDTO;
 )
 public interface UpdatePasswordMapper {
 
-    UpdatePasswordMapper INSTANCE = Mappers.getMapper(UpdatePasswordMapper.class);
 
     /**
      * Aggiorna la password di un utente esistente con i dati dal UpdatePasswordDTO

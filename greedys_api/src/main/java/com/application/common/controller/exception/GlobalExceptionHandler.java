@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -92,6 +93,14 @@ public class GlobalExceptionHandler {
         log.error("Data integrity violation: ", ex);
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(ResponseWrapper.<String>error("Data integrity violation", "DATA_INTEGRITY_VIOLATION"));
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ResponseWrapper<String>> handleAuthenticationException(AuthenticationException ex, WebRequest request) {
+        logPotentialBaseControllerMiss("AuthenticationException", ex, request);
+        log.error("Authentication failed: ", ex);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ResponseWrapper.<String>error("Authentication failed: invalid credentials", "AUTHENTICATION_FAILED"));
     }
 
     @ExceptionHandler(UsernameNotFoundException.class)

@@ -38,6 +38,9 @@ public class CustomerUserDetailsService implements UserDetailsService {
             customer.getAuthorities().size();
 
             return customer;
+        } catch (UsernameNotFoundException e) {
+            // Re-lancia l'eccezione di autenticazione senza wrapping
+            throw e;
         } catch (final Exception e) {
             throw new RuntimeException(e);
         }

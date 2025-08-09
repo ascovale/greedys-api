@@ -26,30 +26,32 @@ public class AdminAuthenticationProvider extends DaoAuthenticationProvider {
 
     @Override
     public Authentication authenticate(Authentication auth) throws AuthenticationException {
-        final Admin user = adminDAO.findByEmail(auth.getName());
-        if (user == null) {
-            throw new BadCredentialsException("Invalid username or password");
-        }
-
-        // Verifica esplicita della password
-        if (!getPasswordEncoder().matches(auth.getCredentials().toString(), user.getPassword())) {
-            log.debug("Password non corrisponde per l'utente: {}", auth.getName());
-            throw new BadCredentialsException("Invalid username or password");
-        }
-
-        // Verifica lo stato dell'account prima di procedere
-        if (user.getStatus() != Admin.Status.ENABLED) {
-            String statusMessage = getStatusMessage(user.getStatus());
-            log.warn("Account not enabled for admin {}: {}", auth.getName(), statusMessage);
-            throw new BadCredentialsException(statusMessage);
-        }
-
         try {
+            // Prima verifica se l'utente esiste
+            final Admin user = adminDAO.findByEmail(auth.getName());
+            if (user == null) {
+                log.debug("Failed to find admin '{}'", auth.getName());
+                throw new BadCredentialsException("Invalid username or password");
+            }
+
+            // Verifica lo stato dell'account prima dell'autenticazione
+            if (user.getStatus() != Admin.Status.ENABLED) {
+                String statusMessage = getStatusMessage(user.getStatus());
+                log.warn("Account not enabled for admin {}: {}", auth.getName(), statusMessage);
+                throw new BadCredentialsException(statusMessage);
+            }
+
+            // Verifica esplicita della password
+            if (!getPasswordEncoder().matches(auth.getCredentials().toString(), user.getPassword())) {
+                log.debug("Password non corrisponde per l'utente: {}", auth.getName());
+                throw new BadCredentialsException("Invalid username or password");
+            }
+
             // Procedi con l'autenticazione standard
             final Authentication result = super.authenticate(auth);
             return new UsernamePasswordAuthenticationToken(user, result.getCredentials(), result.getAuthorities());
+            
         } catch (AuthenticationException e) {
-            // Cattura e stampa il motivo dell'errore
             log.error("Errore durante l'autenticazione per l'utente {}: {}", auth.getName(), e.getMessage());
             throw e;
         }

@@ -41,6 +41,16 @@ public class AdminCustomerService {
         customerDAO.save(customer);
     }
 
+    public void updateCustomerStatusByEmail(String email, Customer.Status newStatus) {
+        Customer customer = customerDAO.findByEmail(email);
+        if (customer == null) {
+            throw new IllegalArgumentException("Customer not found with email: " + email);
+        }
+
+        customer.setStatus(newStatus);
+        customerDAO.save(customer);
+    }
+
     public Page<CustomerDTO> findAll(PageRequest pageable) {
         return customerDAO.findAll(pageable).map(customerDTOMapper::toDTO);
     }

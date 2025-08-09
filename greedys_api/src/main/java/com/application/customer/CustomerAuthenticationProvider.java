@@ -26,30 +26,28 @@ public class CustomerAuthenticationProvider extends DaoAuthenticationProvider {
 
     @Override
     public Authentication authenticate(Authentication auth) throws AuthenticationException {
-        final Customer user = customerDAO.findByEmail(auth.getName());
-        if (user == null) {
-            throw new BadCredentialsException("Invalid username or password");
-        }
-
-        // Verifica esplicita della password
-        if (!getPasswordEncoder().matches(auth.getCredentials().toString(), user.getPassword())) {
-            log.debug("Password non corrisponde per l'utente: {}", auth.getName());
-            throw new BadCredentialsException("Invalid username or password");
-        }
-
-        // Verifica lo stato dell'account prima di procedere
-        if (!user.isAccountNonLocked()) {
-            String statusMessage = getStatusMessage(user.getStatus());
-            log.warn("Account locked for user {}: {}", auth.getName(), statusMessage);
-            throw new BadCredentialsException(statusMessage);
-        }
-
         try {
-            // Procedi con l'autenticazione standard
+            // Prima verifica se l'utente esiste
+            final Customer user = customerDAO.findByEmail(auth.getName());
+            if (user == null) {
+                log.debug("Failed to find user '{}'", auth.getName());
+                throw new BadCredentialsException("Invalid username or password");
+            }
+
+            // Verifica lo stato dell'account prima dell'autenticazione
+            if (!user.isAccountNonLocked()) {
+                String statusMessage = getStatusMessage(user.getStatus());
+                log.warn("Account locked for user {}: {}", auth.getName(), statusMessage);
+                throw new BadCredentialsException(statusMessage);
+            }
+
+            // Lascia che DaoAuthenticationProvider gestisca l'autenticazione (password, authorities)
             final Authentication result = super.authenticate(auth);
+            
+            // Restituisci il token con l'entità Customer invece di UserDetails
             return new UsernamePasswordAuthenticationToken(user, result.getCredentials(), result.getAuthorities());
+            
         } catch (AuthenticationException e) {
-            // Cattura e stampa il motivo dell'errore
             log.error("Errore durante l'autenticazione per l'utente {}: {}", auth.getName(), e.getMessage());
             throw e;
         }

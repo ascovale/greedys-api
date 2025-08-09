@@ -29,29 +29,36 @@ public class RUserDetailsService implements UserDetailsService {
             throw new RuntimeException("blocked");
         }
 
-        // Split the username into email and restaurantId
-        String[] parts = username.split(":");
-        if (parts.length != 2) {
-            throw new UsernameNotFoundException("Invalid username format. Expected 'email:restaurantId'.");
-        }
-
-        String email = parts[0];
-        Long restaurantId;
         try {
-            restaurantId = Long.parseLong(parts[1]);
-        } catch (NumberFormatException e) {
-            throw new UsernameNotFoundException("Invalid restaurantId format.");
+            // Split the username into email and restaurantId
+            String[] parts = username.split(":");
+            if (parts.length != 2) {
+                throw new UsernameNotFoundException("Invalid username format. Expected 'email:restaurantId'.");
+            }
+
+            String email = parts[0];
+            Long restaurantId;
+            try {
+                restaurantId = Long.parseLong(parts[1]);
+            } catch (NumberFormatException e) {
+                throw new UsernameNotFoundException("Invalid restaurantId format.");
+            }
+
+            RUser user = RUserDAO.findByEmailAndRestaurantId(email, restaurantId);
+            if (user == null) {
+                throw new UsernameNotFoundException("No user found with email: " + email + " and restaurant ID: " + restaurantId);
+            }
+
+            // Forza il caricamento lazy delle autorità
+            user.getAuthorities().size();
+
+            return user;
+        } catch (UsernameNotFoundException e) {
+            // Re-lancia l'eccezione di autenticazione senza wrapping
+            throw e;
+        } catch (final Exception e) {
+            throw new RuntimeException(e);
         }
-
-        RUser user = RUserDAO.findByEmailAndRestaurantId(email, restaurantId);
-        if (user == null) {
-            throw new UsernameNotFoundException("No user found with email: " + email + " and restaurant ID: " + restaurantId);
-        }
-
-        // Forza il caricamento lazy delle autorità
-        user.getAuthorities().size();
-
-        return user;
     }
 
     public UserDetails loadUserById(final Long RUserId) throws UsernameNotFoundException {
@@ -65,6 +72,9 @@ public class RUserDetailsService implements UserDetailsService {
             user.getAuthorities().size();
 
             return user;
+        } catch (UsernameNotFoundException e) {
+            // Re-lancia l'eccezione di autenticazione senza wrapping
+            throw e;
         } catch (final Exception e) {
             throw new RuntimeException(e);
         }

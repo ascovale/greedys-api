@@ -5,7 +5,6 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
-import org.mapstruct.factory.Mappers;
 
 import com.application.common.web.dto.customer.ClientUserDto;
 import com.application.customer.persistence.model.Customer;
@@ -20,7 +19,6 @@ import com.application.customer.persistence.model.Customer;
 )
 public interface ClientUserMapper {
 
-    ClientUserMapper INSTANCE = Mappers.getMapper(ClientUserMapper.class);
 
     /**
      * Converte un'entità Customer in ClientUserDto

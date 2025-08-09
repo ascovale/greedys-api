@@ -106,13 +106,15 @@ public class SwaggerConfig {
     }
 
     private Components baseComponents() {
-        return new Components()
+        Components components = new Components()
                 .addResponses("400", new ApiResponse().description("Bad Request"))
                 .addResponses("401", new ApiResponse().description("Unauthorized"))
                 .addResponses("403", new ApiResponse().description("Forbidden"))
                 .addResponses("404", new ApiResponse().description("Not Found"))
                 .addResponses("500", new ApiResponse().description("Internal Server Error"))
                 .addResponses("405", new ApiResponse().description("Method Not Allowed"));
+                
+        return components;
     }
 
     private SecurityScheme bearerScheme() {

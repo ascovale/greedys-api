@@ -5,7 +5,6 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
-import org.mapstruct.factory.Mappers;
 
 import com.application.common.persistence.model.reservation.Service;
 import com.application.common.web.dto.restaurant.RestaurantServizioDto;
@@ -20,7 +19,6 @@ import com.application.common.web.dto.restaurant.RestaurantServizioDto;
 )
 public interface RestaurantServiceMapper {
 
-    RestaurantServiceMapper INSTANCE = Mappers.getMapper(RestaurantServiceMapper.class);
 
     /**
      * Converte un'entità Service in RestaurantServizioDto

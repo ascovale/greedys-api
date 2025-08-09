@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +26,7 @@ public class AdminSetup {
     private final AdminPrivilegeDAO adminPrivilegeDAO;
     private final AdminRoleDAO adminRoleDAO;
     private final AdminDAO adminDAO;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public void setupAdminRolesAndPrivileges() {
@@ -75,7 +77,7 @@ public class AdminSetup {
             .email("ascolesevalentino@gmail.com")
             .name("Valentino")
             .surname("Ascolese")
-            .password("Minosse100%")
+            .password(passwordEncoder.encode("Minosse100%"))
             .status(Admin.Status.ENABLED)
             .build();
         admin = adminDAO.save(admin);
@@ -85,10 +87,33 @@ public class AdminSetup {
             .email("matteo.rossi1902@gmail.com")
             .name("Matteo")
             .surname("Rossi")
-            .password("Minosse100%")
+            .password(passwordEncoder.encode("Minosse100%"))
             .status(Admin.Status.ENABLED)
             .build();
-        adminDAO.save(admin2);
+        admin2 = adminDAO.save(admin2);
+
+        Admin admin3 = Admin.builder()
+            .email("test@test.com")
+            .name("Test")
+            .surname("Test")
+            .password(passwordEncoder.encode("Test100%%%"))
+            .status(Admin.Status.ENABLED)
+            .build();
+        admin3 = adminDAO.save(admin3);
+        
+        // Assign SUPER_ADMIN role to all admins
+        AdminRole superAdminRole = adminRoleDAO.findByName("ROLE_SUPER_ADMIN");
+        if (superAdminRole != null) {
+            admin.setAdminRoles(new ArrayList<>(Arrays.asList(superAdminRole)));
+            admin2.setAdminRoles(new ArrayList<>(Arrays.asList(superAdminRole)));
+            admin3.setAdminRoles(new ArrayList<>(Arrays.asList(superAdminRole)));
+            adminDAO.save(admin);
+            adminDAO.save(admin2);
+            adminDAO.save(admin3);
+            log.info("Assigned ROLE_SUPER_ADMIN to all admins");
+        } else {
+            log.warn("ROLE_SUPER_ADMIN not found - admins may not have proper permissions");
+        }
     }
 
     @Transactional

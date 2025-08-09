@@ -5,7 +5,6 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
-import org.mapstruct.factory.Mappers;
 
 import com.application.common.persistence.model.Image;
 import com.application.common.web.dto.restaurant.RestaurantLogoDto;
@@ -20,7 +19,6 @@ import com.application.common.web.dto.restaurant.RestaurantLogoDto;
 )
 public interface RestaurantLogoMapper {
 
-    RestaurantLogoMapper INSTANCE = Mappers.getMapper(RestaurantLogoMapper.class);
 
     /**
      * Converte un'entità Image in RestaurantLogoDto

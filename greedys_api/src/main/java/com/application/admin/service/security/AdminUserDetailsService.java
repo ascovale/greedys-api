@@ -40,6 +40,9 @@ public class AdminUserDetailsService implements UserDetailsService {
             admin.getAuthorities().size();
 
             return admin;
+        } catch (UsernameNotFoundException e) {
+            // Re-lancia l'eccezione di autenticazione senza wrapping
+            throw e;
         } catch (final Exception e) {
             throw new RuntimeException(e);
         }

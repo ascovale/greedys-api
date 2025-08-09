@@ -5,7 +5,6 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
-import org.mapstruct.factory.Mappers;
 
 import com.application.common.web.dto.menu.MenuDishDTO;
 import com.application.restaurant.persistence.model.menu.MenuDish;
@@ -21,7 +20,6 @@ import com.application.restaurant.web.dto.menu.NewMenuDishDTO;
 )
 public interface MenuDishMapper {
 
-    MenuDishMapper INSTANCE = Mappers.getMapper(MenuDishMapper.class);
 
     /**
      * Converte un'entità MenuDish in MenuDishDTO
