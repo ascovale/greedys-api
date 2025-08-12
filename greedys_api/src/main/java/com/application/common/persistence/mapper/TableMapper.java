@@ -20,32 +20,18 @@ import com.application.restaurant.web.dto.restaurant.NewTableDTO;
 )
 public interface TableMapper {
 
-
     /**
      * Converte un'entità Table in TableDTO
      */
+    @Mapping(target = "room", ignore = true)
     TableDTO toDTO(Table table);
 
     /**
      * Converte un NewTableDTO in entità Table
      */
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "room", ignore = true) // Sarà impostato dal service
+    @Mapping(target = "room", ignore = true) // Sarà impostato dal service utilizzando roomId
     Table fromNewTableDTO(NewTableDTO newTableDTO);
-
-    /**
-     * Converte un TableDTO in entità Table
-     */
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "room", ignore = true) // Sarà impostato dal service
-    Table toEntity(TableDTO tableDTO);
-
-    /**
-     * Aggiorna un'entità Table esistente con i dati dal TableDTO
-     */
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "room", ignore = true)
-    void updateEntityFromDTO(TableDTO dto, @MappingTarget Table entity);
 
     /**
      * Aggiorna un'entità Table esistente con i dati dal NewTableDTO

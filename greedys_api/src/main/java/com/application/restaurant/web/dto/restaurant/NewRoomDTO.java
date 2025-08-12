@@ -12,7 +12,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class NewRoomDTO {
-    private Long idRestaurant;
     private String name;
-    private Long restaurantId;
 }

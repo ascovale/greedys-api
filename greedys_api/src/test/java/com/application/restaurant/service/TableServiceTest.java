@@ -126,7 +126,7 @@ class TableServiceTest {
         when(tableDAO.save(any(Table.class))).thenReturn(mockTable);
 
         // ACT
-        Table result = tableService.createTable(newTableDTO);
+        TableDTO result = tableService.createTable(newTableDTO);
 
         // ASSERT
         assertNotNull(result);

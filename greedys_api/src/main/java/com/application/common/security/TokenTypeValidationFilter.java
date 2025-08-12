@@ -138,7 +138,7 @@ public class TokenTypeValidationFilter extends OncePerRequestFilter {
             } else if (path.startsWith("/admin/")) {
                 return "admin".equals(userType);
             } else if (path.startsWith("/restaurant/")) {
-                return "restaurant".equals(userType) || "hub".equals(userType);
+                return "restaurant-user".equals(userType) || "restaurant-user-hub".equals(userType);
             }
             
             return true; // Per altri endpoint

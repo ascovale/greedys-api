@@ -83,16 +83,16 @@ public class JwtUtil {
                 .map(Object::toString)
                 .collect(Collectors.toList()));
         claims.put("access_type", "access");
-        claims.put("c", determineUserType(userDetails));
+        claims.put("user_type", determineUserType(userDetails));
         return createToken(claims, userDetails.getUsername(), expiration);
     }
 
     public String generateRefreshToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("access_type", "refresh");
+        claims.put("user_type", determineUserType(userDetails));
         claims.put("email", userDetails.getUsername());
         claims.put("authorities", List.of("PRIVILEGE_REFRESH_ONLY")); // Solo permesso di refresh
-        claims.put("user_type", determineUserType(userDetails));
         return createToken(claims, userDetails.getUsername(), refreshExpiration);
     }
 
@@ -119,7 +119,7 @@ public class JwtUtil {
         claims.put("access_type", "refresh");
         claims.put("email", user.getEmail());
         claims.put("authorities", List.of("PRIVILEGE_REFRESH_ONLY")); // Solo permesso di refresh per Hub
-        claims.put("user_type", "restaurant-hub"); // Tipo utente specifico per Hub
+        claims.put("user_type", "restaurant-user-hub"); // Tipo utente specifico per Hub
         return createToken(claims, user.getEmail(), refreshExpiration);
     }
 
@@ -193,7 +193,7 @@ public class JwtUtil {
         claims.put("access_type", "access");
         claims.put("authorities", hubPrivileges());
         claims.put("email", user.getEmail());
-        claims.put("user_type", "restaurant-hub"); // Tipo utente specifico per Hub
+        claims.put("user_type", "restaurant-user-hub"); // Tipo utente specifico per Hub
         return createToken(claims, user.getEmail(), expiration);
     }
 
