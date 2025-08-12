@@ -98,7 +98,7 @@ public class RestaurantService {
 		NewRUserDTO RUserDTO = NewRUserDTO.builder()
 			.restaurantId(restaurant.getId())
 			.email(restaurant.getEmail())
-			.password(restaurantDto.getPassword())
+			.password(restaurantDto.getPassword()) // FIX: Don't double-encode - let registerRUser handle encoding
 			.firstName(restaurantDto.getOwnerName())
 			.lastName(restaurantDto.getOwnerSurname())
 			.roleId(role.getId())

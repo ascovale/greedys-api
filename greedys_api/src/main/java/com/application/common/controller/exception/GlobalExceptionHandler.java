@@ -9,7 +9,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AccountExpiredException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.CredentialsExpiredException;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -93,6 +99,54 @@ public class GlobalExceptionHandler {
         log.error("Data integrity violation: ", ex);
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(ResponseWrapper.<String>error("Data integrity violation", "DATA_INTEGRITY_VIOLATION"));
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ResponseWrapper<String>> handleBadCredentialsException(BadCredentialsException ex, WebRequest request) {
+        logPotentialBaseControllerMiss("BadCredentialsException", ex, request);
+        log.error("Bad credentials: ", ex);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ResponseWrapper.<String>error("Invalid username or password", "BAD_CREDENTIALS"));
+    }
+
+    @ExceptionHandler(DisabledException.class)
+    public ResponseEntity<ResponseWrapper<String>> handleDisabledException(DisabledException ex, WebRequest request) {
+        logPotentialBaseControllerMiss("DisabledException", ex, request);
+        log.error("Account disabled: ", ex);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ResponseWrapper.<String>error("Account is disabled", "ACCOUNT_DISABLED"));
+    }
+
+    @ExceptionHandler(AccountExpiredException.class)
+    public ResponseEntity<ResponseWrapper<String>> handleAccountExpiredException(AccountExpiredException ex, WebRequest request) {
+        logPotentialBaseControllerMiss("AccountExpiredException", ex, request);
+        log.error("Account expired: ", ex);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ResponseWrapper.<String>error("Account has expired", "ACCOUNT_EXPIRED"));
+    }
+
+    @ExceptionHandler(CredentialsExpiredException.class)
+    public ResponseEntity<ResponseWrapper<String>> handleCredentialsExpiredException(CredentialsExpiredException ex, WebRequest request) {
+        logPotentialBaseControllerMiss("CredentialsExpiredException", ex, request);
+        log.error("Credentials expired: ", ex);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ResponseWrapper.<String>error("Credentials have expired", "CREDENTIALS_EXPIRED"));
+    }
+
+    @ExceptionHandler(LockedException.class)
+    public ResponseEntity<ResponseWrapper<String>> handleLockedException(LockedException ex, WebRequest request) {
+        logPotentialBaseControllerMiss("LockedException", ex, request);
+        log.error("Account locked: ", ex);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ResponseWrapper.<String>error("Account is locked", "ACCOUNT_LOCKED"));
+    }
+
+    @ExceptionHandler(InsufficientAuthenticationException.class)
+    public ResponseEntity<ResponseWrapper<String>> handleInsufficientAuthenticationException(InsufficientAuthenticationException ex, WebRequest request) {
+        logPotentialBaseControllerMiss("InsufficientAuthenticationException", ex, request);
+        log.error("Insufficient authentication: ", ex);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ResponseWrapper.<String>error("Insufficient authentication", "INSUFFICIENT_AUTHENTICATION"));
     }
 
     @ExceptionHandler(AuthenticationException.class)

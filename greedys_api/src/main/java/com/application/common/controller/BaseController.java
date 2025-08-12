@@ -5,8 +5,14 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AccountExpiredException;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.CredentialsExpiredException;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
+import org.springframework.security.authentication.LockedException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Controller;
 
 import com.application.common.controller.annotation.CreateApiResponses;
@@ -140,6 +146,18 @@ public class BaseController {
             return badRequest(e.getMessage(), "INVALID_ARGUMENT");                           // 400
         } else if (e instanceof BadCredentialsException) {
             return unauthorized("Invalid username or password");                             // 401
+        } else if (e instanceof DisabledException) {
+            return unauthorized("Account is disabled");                                      // 401
+        } else if (e instanceof AccountExpiredException) {
+            return unauthorized("Account has expired");                                      // 401
+        } else if (e instanceof CredentialsExpiredException) {
+            return unauthorized("Credentials have expired");                                 // 401
+        } else if (e instanceof LockedException) {
+            return unauthorized("Account is locked");                                        // 401
+        } else if (e instanceof UsernameNotFoundException) {
+            return unauthorized("Invalid username or password");                             // 401
+        } else if (e instanceof InsufficientAuthenticationException) {
+            return unauthorized("Insufficient authentication");                              // 401
         } else if (e instanceof AuthenticationCredentialsNotFoundException) {
             return unauthorized("Authentication required: " + e.getMessage());              // 401
         } else if (e instanceof org.springframework.security.access.AccessDeniedException) {

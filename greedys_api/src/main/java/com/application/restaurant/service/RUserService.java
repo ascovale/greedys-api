@@ -109,7 +109,6 @@ public class RUserService {
             throw new IllegalArgumentException("User already exists for this restaurant.");
         }
 
-
         System.out.println("Registering restaurant user with information:" + RUserDTO.getRestaurantId() + " ");
         RestaurantRole role = rrDAO.findById(RUserDTO.getRoleId())
             .orElseThrow(() -> new IllegalArgumentException("Role not found with id: " + RUserDTO.getRoleId()));
@@ -117,17 +116,29 @@ public class RUserService {
         // Check if a user with the same email already exists
         RUserHub existingUserHub = ruhDAO.findByEmail(RUserDTO.getEmail());
         if (existingUserHub == null) {
+            // Create new RUserHub with encoded password
             existingUserHub = RUserHub.builder()
                 .email(RUserDTO.getEmail())
                 .firstName(RUserDTO.getFirstName())
                 .lastName(RUserDTO.getLastName())
-                .password(RUserDTO.getPassword())
+                .password(passwordEncoder.encode(RUserDTO.getPassword())) // FIX: Encode password here
                 .build();
+            ruhDAO.save(existingUserHub);
+        } else {
+            // If hub already exists, update the information if necessary
+            existingUserHub.setFirstName(RUserDTO.getFirstName());
+            existingUserHub.setLastName(RUserDTO.getLastName());
+            // Only update password if it's different (for security)
+            if (!passwordEncoder.matches(RUserDTO.getPassword(), existingUserHub.getPassword())) {
+                existingUserHub.setPassword(passwordEncoder.encode(RUserDTO.getPassword()));
+            }
             ruhDAO.save(existingUserHub);
         }
 
+        // Create RUser with all required fields from RUserHub
         RUser ru = RUser.builder()
             .RUserHub(existingUserHub)
+            // These fields are required by AbstractUser @NotNull constraints but they are not needed veramente!
             .email(existingUserHub.getEmail())
             .name(existingUserHub.getFirstName())
             .surname(existingUserHub.getLastName())
@@ -136,7 +147,6 @@ public class RUserService {
             .build();
         Hibernate.initialize(ru.getRoles());
         ru.addRestaurantRole(role);
-        existingUserHub.setPassword(passwordEncoder.encode(RUserDTO.getPassword()));
         ruDAO.save(ru);
         emailService.sendRestaurantAssociationConfirmationEmail(ru);
         return ru;
@@ -282,6 +292,19 @@ public class RUserService {
         ru.setStatus(newStatus);
         ruDAO.save(ru);
 
+    }
+
+    public void updateRUserStatusByEmail(String email, RUser.Status newStatus) {
+        List<RUser> users = ruDAO.findAllByEmail(email);
+        if (users.isEmpty()) {
+            throw new IllegalArgumentException("No users found with email: " + email);
+        }
+
+        // Aggiorna lo stato di tutti gli utenti con questa email
+        for (RUser user : users) {
+            user.setStatus(newStatus);
+            ruDAO.save(user);
+        }
     }
 
     public RUserDTO addRUserToRestaurant(NewRUserDTO RUserDTO, Long restaurantId) {
