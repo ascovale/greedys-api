@@ -7,7 +7,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.application.common.persistence.mapper.RoomMapper;
+import com.application.common.persistence.mapper.TableMapper;
 import com.application.common.web.dto.restaurant.RoomDTO;
+import com.application.common.web.dto.restaurant.TableDTO;
 import com.application.restaurant.persistence.dao.RestaurantDAO;
 import com.application.restaurant.persistence.dao.RoomDAO;
 import com.application.restaurant.persistence.model.Room;
@@ -23,6 +25,7 @@ public class RoomService {
     private final RoomDAO roomDAO;
     private final RestaurantDAO restaurantDAO;
     private final RoomMapper roomMapper;
+    private final TableMapper tableMapper;
 
     public void deleteById(Long id) {
         roomDAO.deleteById(id);
@@ -32,11 +35,11 @@ public class RoomService {
         roomDAO.deleteAll();
     }
 
-    public Room createRoom(NewRoomDTO roomDto) {
+    public RoomDTO createRoom(NewRoomDTO roomDto, Long restaurantId) {
         Room room = new Room();
         room.setName(roomDto.getName());
-        room.setRestaurant(restaurantDAO.findById(roomDto.getRestaurantId()).orElseThrow(() -> new IllegalArgumentException("Restaurant not found")));
-        return roomDAO.save(room);
+        room.setRestaurant(restaurantDAO.findById(restaurantId).orElseThrow(() -> new IllegalArgumentException("Restaurant not found")));
+        return roomMapper.toDTO(roomDAO.save(room));
     }
 
     public Room findById(Long id) {
@@ -59,5 +62,13 @@ public class RoomService {
         
         Room room = roomDAO.findById(roomId).orElseThrow(() -> new IllegalArgumentException("Room not found"));
         roomDAO.delete(room);
+    }
+
+    public Collection<TableDTO> findTablesByRoomId(Long roomId) {
+        Room room = roomDAO.findById(roomId)
+            .orElseThrow(() -> new IllegalArgumentException("Room not found with id: " + roomId));
+        return room.getTables().stream()
+            .map(tableMapper::toDTO)
+            .collect(Collectors.toList());
     }
 }

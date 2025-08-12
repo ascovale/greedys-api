@@ -358,4 +358,52 @@ public class RUserService {
             .toList();
     }
 
+    /**
+     * Aggiunge un ristorante esistente ad un RUserHub esistente
+     * 
+     * @param hubEmail Email dell'hub utente
+     * @param restaurantId ID del ristorante da aggiungere
+     * @param roleId ID del ruolo da assegnare all'utente per questo ristorante
+     * @return RUserDTO del nuovo utente creato
+     * @throws IllegalArgumentException se hub, ristorante o ruolo non esistono, o se l'utente esiste già
+     */
+    public RUserDTO addRestaurantToHub(String hubEmail, Long restaurantId, Long roleId) {
+        // Trova l'hub esistente
+        RUserHub hub = ruhDAO.findByEmail(hubEmail);
+        if (hub == null) {
+            throw new IllegalArgumentException("Hub user not found with email: " + hubEmail);
+        }
+        
+        // Trova il ristorante esistente
+        Restaurant restaurant = restaurantDAO.findById(restaurantId)
+                .orElseThrow(() -> new IllegalArgumentException("Restaurant not found with ID: " + restaurantId));
+        
+        // Verifica che non esista già un RUser per questo hub e ristorante
+        RUser existingRUser = ruDAO.findByEmailAndRestaurantId(hubEmail, restaurantId);
+        if (existingRUser != null) {
+            throw new IllegalArgumentException("User already exists for this restaurant.");
+        }
+        
+        // Trova il ruolo
+        RestaurantRole role = rrDAO.findById(roleId)
+                .orElseThrow(() -> new IllegalArgumentException("Role not found with id: " + roleId));
+        
+        // Crea nuovo RUser collegato all'hub e al ristorante
+        RUser ru = RUser.builder()
+                .RUserHub(hub)
+                .email(hub.getEmail())
+                .name(hub.getFirstName())
+                .surname(hub.getLastName())
+                .password(hub.getPassword()) // Usa password dell'hub
+                .restaurant(restaurant)
+                .status(RUser.Status.ENABLED) // Abilitato di default se l'hub è già verificato
+                .build();
+        
+        Hibernate.initialize(ru.getRoles());
+        ru.addRestaurantRole(role);
+        ruDAO.save(ru);
+        
+        return new RUserDTO(ru);
+    }
+
 }

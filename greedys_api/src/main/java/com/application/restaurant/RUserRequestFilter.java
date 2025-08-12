@@ -42,7 +42,7 @@ public class RUserRequestFilter extends OncePerRequestFilter {
             
             // 🔍 Verifica che il token sia per Restaurant (user o hub)
             String userType = jwtUtil.extractUserType(jwt);
-            if (!"restaurant-user".equals(userType) && !"restaurant-hub".equals(userType)) {
+            if (!"restaurant-user".equals(userType) && !"restaurant-user-hub".equals(userType)) {
                 // Token non valido per questo filtro - ERRORE 401
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.setContentType("application/json");

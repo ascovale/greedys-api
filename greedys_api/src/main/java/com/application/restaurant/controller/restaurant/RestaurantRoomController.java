@@ -19,7 +19,6 @@ import com.application.common.controller.annotation.WrapperType;
 import com.application.common.web.ListResponseWrapper;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.RoomDTO;
-import com.application.restaurant.persistence.model.Room;
 import com.application.restaurant.persistence.model.user.RUser;
 import com.application.restaurant.service.RoomService;
 import com.application.restaurant.web.dto.restaurant.NewRoomDTO;
@@ -54,12 +53,12 @@ public class RestaurantRoomController extends BaseController {
 
 	@PostMapping
 	@Operation(summary = "Add a room to a restaurant", description = "Add a new room to a restaurant")
-	@WrapperType(dataClass = Room.class, type = WrapperDataType.DTO, responseCode = "201")
-    public ResponseEntity<ResponseWrapper<Room>> addRoom(@RequestBody NewRoomDTO roomDto,
+	@WrapperType(dataClass = RoomDTO.class, type = WrapperDataType.DTO, responseCode = "201")
+    public ResponseEntity<ResponseWrapper<RoomDTO>> addRoom(@RequestBody NewRoomDTO roomDto,
 			@AuthenticationPrincipal RUser rUser) {
 		return executeCreate("add room", "Room added successfully", () -> {
 			log.info("Adding new room for restaurant: {}", rUser.getRestaurant().getId());
-			return roomService.createRoom(roomDto);
+			return roomService.createRoom(roomDto, rUser.getRestaurant().getId());
 		});
 	}
 

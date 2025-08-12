@@ -100,13 +100,27 @@ public class RUserHubValidationFilter extends OncePerRequestFilter {
             return true;
         }
         
-        // Endpoint per cambiare ristorante (solo con access token hub)
-        if (path.contains("/switch-restaurant") || path.contains("/change-restaurant")) {
+        // Endpoint per cambiare/selezionare ristorante
+        if (path.contains("/switch-restaurant") || 
+            path.contains("/change-restaurant") || 
+            path.contains("/select-restaurant")) {
             return true;
         }
         
         // Endpoint per ottenere lista ristoranti disponibili
-        if (path.contains("/available-restaurants") && "GET".equals(method)) {
+        if ((path.contains("/restaurants") || path.contains("/available-restaurants")) && 
+            "GET".equals(method)) {
+            return true;
+        }
+        
+        // ✅ AGGIUNGI: Endpoint per ottenere ristoranti per hub
+        if (path.equals("/restaurant/user/auth/restaurants") || 
+            path.matches("/restaurant/user/auth/hub/\\d+/restaurants")) {
+            return true;
+        }
+        
+        // ✅ AGGIUNGI: Endpoint per cambiare password (se necessario per Hub)
+        if (path.contains("/change-password") && "POST".equals(method)) {
             return true;
         }
         

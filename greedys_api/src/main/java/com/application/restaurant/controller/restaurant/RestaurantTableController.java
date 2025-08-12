@@ -18,7 +18,6 @@ import com.application.common.controller.annotation.WrapperType;
 import com.application.common.web.ListResponseWrapper;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.TableDTO;
-import com.application.restaurant.persistence.model.Table;
 import com.application.restaurant.service.TableService;
 import com.application.restaurant.web.dto.restaurant.NewTableDTO;
 
@@ -53,8 +52,8 @@ public class RestaurantTableController extends BaseController {
 	@PostMapping
 	@Operation(summary = "Add a table to a room", description = "Add a new table to a specific room")
 
-	@WrapperType(dataClass = Table.class, type = WrapperDataType.DTO, responseCode = "201")
-    public ResponseEntity<ResponseWrapper<Table>> addTable(@RequestBody NewTableDTO tableDto) {
+	@WrapperType(dataClass = TableDTO.class, type = WrapperDataType.DTO, responseCode = "201")
+    public ResponseEntity<ResponseWrapper<TableDTO>> addTable(@RequestBody NewTableDTO tableDto) {
 		return executeCreate("add table", "Table added successfully", () -> {
 			log.info("Adding new table to room");
 			return tableService.createTable(tableDto);

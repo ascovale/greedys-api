@@ -32,14 +32,15 @@ public class TableService {
         tableDAO.deleteAll();
     }
 
-    public Table createTable(NewTableDTO tableDto) {
+    public TableDTO createTable(NewTableDTO tableDto) {
         Table table = new Table();
         table.setName(tableDto.getName());
         table.setCapacity(tableDto.getCapacity());
         table.setPositionX(tableDto.getPositionX());
         table.setPositionY(tableDto.getPositionY());
         table.setRoom(roomDAO.findById(tableDto.getRoomId()).orElseThrow(() -> new IllegalArgumentException("Room not found")));
-        return tableDAO.save(table);
+        Table savedTable = tableDAO.save(table);
+        return tableMapper.toDTO(savedTable);
     }
 
     public Table findById(Long id) {

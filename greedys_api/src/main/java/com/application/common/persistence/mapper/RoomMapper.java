@@ -20,10 +20,11 @@ import com.application.restaurant.web.dto.restaurant.NewRoomDTO;
 )
 public interface RoomMapper {
 
-
     /**
      * Converte un'entità Room in RoomDTO
      */
+    @Mapping(target = "restaurantId", source = "restaurant.id")
+    @Mapping(target = "tables", ignore = true) // Non mappare le tables per evitare lazy loading
     RoomDTO toDTO(Room room);
 
     /**
@@ -32,23 +33,8 @@ public interface RoomMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "restaurant", ignore = true) // Sarà impostato dal service
     @Mapping(target = "tables", ignore = true) // Non mappato nei DTO base
+    @Mapping(target = "name", source = "name")
     Room fromNewRoomDTO(NewRoomDTO newRoomDTO);
-
-    /**
-     * Converte un RoomDTO in entità Room
-     */
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "restaurant", ignore = true) // Sarà impostato dal service
-    @Mapping(target = "tables", ignore = true) // Non mappato nei DTO base
-    Room toEntity(RoomDTO roomDTO);
-
-    /**
-     * Aggiorna un'entità Room esistente con i dati dal RoomDTO
-     */
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "restaurant", ignore = true)
-    @Mapping(target = "tables", ignore = true)
-    void updateEntityFromDTO(RoomDTO dto, @MappingTarget Room entity);
 
     /**
      * Aggiorna un'entità Room esistente con i dati dal NewRoomDTO
@@ -56,5 +42,6 @@ public interface RoomMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "restaurant", ignore = true)
     @Mapping(target = "tables", ignore = true)
+    @Mapping(target = "name", source = "name")
     void updateEntityFromNewDTO(NewRoomDTO dto, @MappingTarget Room entity);
 }

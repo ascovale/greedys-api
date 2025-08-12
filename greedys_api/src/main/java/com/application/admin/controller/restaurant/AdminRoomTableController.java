@@ -73,7 +73,7 @@ public class AdminRoomTableController extends BaseController {
 	@WrapperType(dataClass = String.class, responseCode = "201")
     public ResponseEntity<ResponseWrapper<String>> addRoom(@PathVariable Long restaurantId, @RequestBody NewRoomDTO roomDto) {
 		return executeCreate("add room", "Room created successfully", () -> {
-			roomService.createRoom(roomDto);
+			roomService.createRoom(roomDto, restaurantId);
 			return "success";
 		});
 	}
