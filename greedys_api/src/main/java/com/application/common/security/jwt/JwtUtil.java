@@ -83,7 +83,7 @@ public class JwtUtil {
                 .map(Object::toString)
                 .collect(Collectors.toList()));
         claims.put("access_type", "access");
-        claims.put("user_type", determineUserType(userDetails));
+        claims.put("c", determineUserType(userDetails));
         return createToken(claims, userDetails.getUsername(), expiration);
     }
 
@@ -107,7 +107,7 @@ public class JwtUtil {
             case "Admin":
                 return "admin";
             case "RUser":
-                return "restaurant";
+                return "restaurant-user";
             default:
                 throw new IllegalArgumentException("Unknown user type: " + className);
         }

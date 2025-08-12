@@ -10,6 +10,8 @@ import org.springframework.context.MessageSource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -40,7 +42,6 @@ import com.application.restaurant.persistence.model.user.RestaurantPrivilege;
 import com.application.restaurant.service.RUserService;
 import com.application.restaurant.service.security.RUserSecurityService;
 
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -121,7 +122,7 @@ public class RestaurantAuthenticationService {
         if (RUser.getRestaurant() != null &&
                 RUser.getRestaurant().getStatus().equals(Restaurant.Status.ENABLED)
                 && RUser.isEnabled()) {  
-                    throw new IllegalArgumentException("Invalid token");
+                    throw new BadCredentialsException("Invalid token");
             }
         
             final RUserVerificationToken newToken = RUserService
@@ -163,10 +164,10 @@ public class RestaurantAuthenticationService {
         final RUser updatedUser = RUserDAO.findByEmailAndRestaurantId(currentUser.getEmail(),
                 restaurantId);
         if (updatedUser == null) {
-            throw new IllegalArgumentException("Restaurant not found or user does not have access to this restaurant.");
+            throw new BadCredentialsException("Restaurant not found or user does not have access to this restaurant.");
         }
         if (!updatedUser.isEnabled()) {
-            throw new IllegalArgumentException("User is not enabled.");
+            throw new DisabledException("User is not enabled.");
         }
         final String newJwt = jwtUtil.generateToken(updatedUser);
         return new AuthResponseDTO(newJwt, new RUserDTO(updatedUser));
@@ -179,10 +180,10 @@ public class RestaurantAuthenticationService {
         // Trova il RUser con quell'hubId e restaurantId
         RUser user = RUserDAO.findByEmailAndRestaurantId(email, restaurantId);
         if (user == null) {
-            throw new UnsupportedOperationException("User does not have access to this restaurant.");
+            throw new BadCredentialsException("User does not have access to this restaurant.");
         }
         if (!user.isEnabled()) {
-            throw new UnsupportedOperationException("User is not enabled for this restaurant.");
+            throw new DisabledException("User is not enabled for this restaurant.");
         }
         String jwt = jwtUtil.generateToken(user);
         return new AuthResponseDTO(jwt, new RUserDTO(user));
@@ -245,20 +246,26 @@ public class RestaurantAuthenticationService {
         // Trova il RUser associato all'email
         RUserHub user = RUserHubDAO.findByEmail(authenticationRequest.getUsername());
         if (user == null) {
-            throw new UnsupportedOperationException("Invalid username or password.");
+            throw new BadCredentialsException("Invalid username or password.");
         }
 
         // Verifica la password
         if (!passwordEncoder.matches(authenticationRequest.getPassword(), user.getPassword())) {
-            throw new UnsupportedOperationException("Invalid username or password.");
+            throw new BadCredentialsException("Invalid username or password.");
         }
+        
+        log.debug("Password verified successfully for user: {}", authenticationRequest.getUsername());
 
         // Recupera tutti i RUser associati a questo hub
         List<RUser> associatedUsers = RUserDAO
                 .findAllByRUserHubId(user.getId());
 
+        log.debug("Found {} associated users for hub ID: {}", 
+                 associatedUsers != null ? associatedUsers.size() : 0, user.getId());
+
         if (associatedUsers == null || associatedUsers.isEmpty()) {
-            throw new UnsupportedOperationException("No restaurants associated with this user.");
+            log.debug("No restaurants associated with user: {}", authenticationRequest.getUsername());
+            throw new BadCredentialsException("No restaurants associated with this user.");
         }
         
         log.debug("Associated users found: {} for hub: {}", associatedUsers.size(), user.getEmail());
@@ -266,9 +273,26 @@ public class RestaurantAuthenticationService {
         if (associatedUsers.size() == 1) {
             // Login classico: un solo ristorante
             RUser singleUser = associatedUsers.get(0);
+            
+            log.debug("Single user found - ID: {}, Status: {}, Restaurant ID: {}, Restaurant Status: {}", 
+                     singleUser.getId(), singleUser.getStatus(), 
+                     singleUser.getRestaurant() != null ? singleUser.getRestaurant().getId() : "null",
+                     singleUser.getRestaurant() != null ? singleUser.getRestaurant().getStatus() : "null");
+            
+            // Check if user is enabled before authentication
+            if (!singleUser.isEnabled()) {
+                log.debug("User is not enabled - User status: {}, Restaurant status: {}", 
+                         singleUser.getStatus(), 
+                         singleUser.getRestaurant() != null ? singleUser.getRestaurant().getStatus() : "null");
+                throw new DisabledException("User account is not enabled.");
+            }
+            
+            String authUsername = authenticationRequest.getUsername() + ":" + singleUser.getRestaurant().getId();
+            log.debug("Attempting authentication with username: {}", authUsername);
+            
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
-                            authenticationRequest.getUsername() + ":" + singleUser.getRestaurant().getId(),
+                            authUsername,
                             authenticationRequest.getPassword()));
             
             final String jwt = jwtUtil.generateToken(singleUser);
@@ -308,7 +332,7 @@ public class RestaurantAuthenticationService {
         try {
             // Verifica che sia un hub refresh token valido
             if (!jwtUtil.isHubRefreshToken(refreshToken)) {
-                throw new SecurityException("Invalid hub refresh token type");
+                throw new BadCredentialsException("Invalid refresh token type");
             }
             
             // Estrae l'email dal refresh token
@@ -318,7 +342,7 @@ public class RestaurantAuthenticationService {
             final RUserHub hubUser = RUserHubDAO.findByEmail(email);
             if (hubUser == null) {
                 log.warn("No hub user found with email from refresh token: {}", email);
-                throw new EntityNotFoundException("Hub user not found");
+                throw new BadCredentialsException("Invalid refresh token");
             }
             
             // Genera nuovi token hub
@@ -335,7 +359,7 @@ public class RestaurantAuthenticationService {
                     
         } catch (Exception e) {
             log.error("Hub refresh token validation failed: {}", e.getMessage());
-            throw new SecurityException("Invalid hub refresh token");
+            throw new BadCredentialsException("Invalid hub refresh token");
         }
     }
 
@@ -345,7 +369,7 @@ public class RestaurantAuthenticationService {
         try {
             // Verifica che sia un refresh token valido
             if (!jwtUtil.isRefreshToken(refreshToken)) {
-                throw new SecurityException("Invalid refresh token type");
+                throw new BadCredentialsException("Invalid refresh token type");
             }
             
             // Estrae l'username dal refresh token
@@ -354,7 +378,7 @@ public class RestaurantAuthenticationService {
             // Per RUser, il token contiene email:restaurantId
             String[] parts = username.split(":");
             if (parts.length != 2) {
-                throw new SecurityException("Invalid RUser token format");
+                throw new BadCredentialsException("Invalid RUser token format");
             }
             
             String email = parts[0];
@@ -364,12 +388,12 @@ public class RestaurantAuthenticationService {
             final RUser rUser = RUserDAO.findByEmailAndRestaurantId(email, restaurantId);
             if (rUser == null) {
                 log.warn("No RUser found with email: {} and restaurant: {}", email, restaurantId);
-                throw new EntityNotFoundException("RUser not found");
+                throw new BadCredentialsException("Invalid refresh token");
             }
             
             // Verifica il refresh token
             if (!jwtUtil.validateToken(refreshToken, rUser)) {
-                throw new SecurityException("Invalid or expired refresh token");
+                throw new BadCredentialsException("Invalid or expired refresh token");
             }
             
             // Genera nuovi token
@@ -386,7 +410,7 @@ public class RestaurantAuthenticationService {
                     
         } catch (Exception e) {
             log.error("RUser refresh token validation failed: {}", e.getMessage());
-            throw new SecurityException("Invalid refresh token");
+            throw new BadCredentialsException("Invalid refresh token");
         }
     }
 
@@ -418,7 +442,7 @@ public class RestaurantAuthenticationService {
 					);
 		} catch (Exception e) {
 			log.error("Google authentication failed: {}", e.getMessage(), e);
-			throw new RuntimeException("Google authentication failed: " + e.getMessage(), e);
+			throw new BadCredentialsException("Google authentication failed: " + e.getMessage());
 		}
 	}
 

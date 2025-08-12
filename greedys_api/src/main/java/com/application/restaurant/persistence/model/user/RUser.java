@@ -177,6 +177,4 @@ public class RUser extends AbstractUser {
         return RUserHub != null ? RUserHub.getLastName() : null;
     }
 
-
-
 }
