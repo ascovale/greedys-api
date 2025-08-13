@@ -256,7 +256,7 @@ public class ServiceService {
 		serviceTypeDAO.save(serviceType);
 	}
 
-	public void newService(RestaurantNewServiceDTO servicesDto) {
+	public ServiceDTO newService(RestaurantNewServiceDTO servicesDto) {
 		Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		if (!(principal instanceof RUser)) {
 			throw new IllegalArgumentException("User is not a RUser");
@@ -285,7 +285,9 @@ public class ServiceService {
 		service.setValidFrom(servicesDto.getValidFrom());
 		service.setValidTo(servicesDto.getValidTo());
 		service.setActive(false);
-		serviceDAO.save(service);
+		service = serviceDAO.save(service);
+
+		return new ServiceDTO(service);
 	}
 
 }

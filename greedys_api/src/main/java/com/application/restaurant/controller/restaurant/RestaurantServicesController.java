@@ -48,13 +48,12 @@ public class RestaurantServicesController extends BaseController {
     @Operation(summary = "Create a new service", description = "This method creates a new service in the system.")
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_WRITE')")
     @PostMapping("/new")
-    @WrapperType(dataClass = String.class, responseCode = "201")
-    public ResponseEntity<ResponseWrapper<String>> newService(@RequestBody RestaurantNewServiceDTO servicesDto) {
+    @WrapperType(dataClass = ServiceDTO.class, responseCode = "201")
+    public ResponseEntity<ResponseWrapper<ServiceDTO>> newService(@RequestBody RestaurantNewServiceDTO servicesDto) {
         return executeCreate("create new service", "Service created successfully", () -> {
             System.out.println("<<<   Controller Service   >>>");
             System.out.println("<<<   name: " + servicesDto.getName());
-            serviceService.newService(servicesDto);
-            return "success";
+            return serviceService.newService(servicesDto);
         });
     }
 
