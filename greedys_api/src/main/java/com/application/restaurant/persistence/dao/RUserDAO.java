@@ -32,6 +32,10 @@ public interface RUserDAO extends JpaRepository<RUser, Long>{
     @Query("SELECT ru FROM RUser ru WHERE ru.RUserHub.id = :hubId")
     List<RUser> findAllByRUserHubId(@Param("hubId") Long hubId);
 
+    @Query("SELECT ru FROM RUser ru JOIN FETCH ru.restaurant WHERE ru.id = :id")
+    RUser findByIdWithRestaurant(@Param("id") Long id);
 
+    @Query("SELECT ru FROM RUser ru JOIN FETCH ru.restaurant JOIN FETCH ru.RUserHub WHERE ru.id = :id")
+    RUser findByIdWithRestaurantAndHub(@Param("id") Long id);
 
 }

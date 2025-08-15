@@ -148,9 +148,9 @@ public class RUserController extends BaseController {
     @WrapperType(dataClass = RUserDTO.class, type = WrapperDataType.DTO,responseCode = "201")
     public ResponseEntity<ResponseWrapper<RUserDTO>> addRUserToRestaurant(
             @RequestBody NewRUserDTO RUserDTO,
-            @RequestParam Long restaurantId) {
+            @AuthenticationPrincipal RUser rUser) {
         return executeCreate("add user to restaurant", "User added to restaurant successfully", () -> 
-            RUserService.addRUserToRestaurant(RUserDTO, restaurantId));
+            RUserService.addRUserToRestaurant(RUserDTO, rUser.getRestaurant().getId()));
     }
 
     /**

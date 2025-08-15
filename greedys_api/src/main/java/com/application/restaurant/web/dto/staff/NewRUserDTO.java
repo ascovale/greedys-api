@@ -39,9 +39,6 @@ public class NewRUserDTO {
     private String email;
 
     @NotNull
-    private Long restaurantId;
-
-    @NotNull
     private Long roleId;
    
 }

@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.application.common.persistence.model.reservation.Reservation;
 import com.application.customer.persistence.dao.ReservationDAO;
+import com.application.restaurant.persistence.dao.RUserDAO;
 import com.application.restaurant.persistence.dao.RUserHubDAO;
 import com.application.restaurant.persistence.dao.SlotDAO;
 import com.application.restaurant.persistence.dao.menu.MenuDAO;
@@ -26,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 public class RUserPermissionService {
 
     private final ReservationDAO reservationRepository;
+    private final RUserDAO rUserDAO;
     private final RUserHubDAO RUserHubDAO;
     private final MenuDAO menuDAO;
     private final SlotDAO slotDAO;
@@ -37,11 +39,13 @@ public class RUserPermissionService {
         }
 
         Object principal = authentication.getPrincipal();
-        RUser RUser = null;
+        RUser rUser = null;
 
         if (principal instanceof RUser) {
-            RUser = (RUser) principal;
-            if (!isRestaurantEnabled(RUser)) {
+            rUser = (RUser) principal;
+            // Ricarica l'RUser con il restaurant per evitare LazyInitializationException
+            rUser = rUserDAO.findByIdWithRestaurantAndHub(rUser.getId());
+            if (rUser == null || !isRestaurantEnabled(rUser)) {
                 return false;
             }
         } else {
@@ -56,12 +60,12 @@ public class RUserPermissionService {
         }
 
         Long restaurantIdFromReservation = reservation.get().getRestaurant().getId();
-        Long restaurantIdFromUser = RUser.getRestaurant().getId();
+        Long restaurantIdFromUser = rUser.getRestaurant().getId();
 
         if (!restaurantIdFromReservation.equals(restaurantIdFromUser)) {
             return false;
         }
-        if (!RUser.isEnabled()) {
+        if (!rUser.isEnabled()) {
             return false;
         }
 
@@ -82,18 +86,23 @@ public class RUserPermissionService {
         }
 
         Object principal = authentication.getPrincipal();
-        RUser RUser = null;
+        RUser rUser = null;
 
         if (principal instanceof RUser) {
-            RUser = (RUser) principal;
+            rUser = (RUser) principal;
+            // Ricarica l'RUser con il restaurant per evitare LazyInitializationException
+            rUser = rUserDAO.findByIdWithRestaurantAndHub(rUser.getId());
+            if (rUser == null) {
+                return false;
+            }
         } else {
             return false;
         }
 
-        if (RUser.getRestaurant() == null) {
+        if (rUser.getRestaurant() == null) {
             return false;
         }
-        return RUser.getRestaurant().getStatus() == Restaurant.Status.ENABLED;
+        return rUser.getRestaurant().getStatus() == Restaurant.Status.ENABLED;
     }
 
     public boolean hasRUserId(Long userId, String email) {
@@ -130,9 +139,14 @@ public class RUserPermissionService {
             return false;
         }
 
-        RUser RUser = (RUser) principal;
+        RUser rUser = (RUser) principal;
+        // Ricarica l'RUser con il restaurant e RUserHub per evitare LazyInitializationException
+        rUser = rUserDAO.findByIdWithRestaurantAndHub(rUser.getId());
+        if (rUser == null || rUser.getRUserHub() == null) {
+            return false;
+        }
 
-        return RUserHubDAO.hasPermissionForRestaurant(RUser.getRUserHub().getId(),
+        return RUserHubDAO.hasPermissionForRestaurant(rUser.getRUserHub().getId(),
                 restaurantId);
     }
 
@@ -231,7 +245,9 @@ public class RUserPermissionService {
         }
 
         RUser rUser = (RUser) principal;
-        if (rUser.getRestaurant() == null) {
+        // Ricarica l'RUser con il restaurant per evitare LazyInitializationException
+        rUser = rUserDAO.findByIdWithRestaurantAndHub(rUser.getId());
+        if (rUser == null || rUser.getRestaurant() == null) {
             log.debug("isMenuOwnedByAuthenticatedUser: user has no restaurant");
             return false;
         }
@@ -259,7 +275,9 @@ public class RUserPermissionService {
         }
 
         RUser rUser = (RUser) principal;
-        if (rUser.getRestaurant() == null) {
+        // Ricarica l'RUser con il restaurant per evitare LazyInitializationException
+        rUser = rUserDAO.findByIdWithRestaurantAndHub(rUser.getId());
+        if (rUser == null || rUser.getRestaurant() == null) {
             log.debug("isSlotOwnedByAuthenticatedUser: user has no restaurant");
             return false;
         }
