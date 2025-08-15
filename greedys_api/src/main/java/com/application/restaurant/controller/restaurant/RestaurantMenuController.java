@@ -55,7 +55,7 @@ public class RestaurantMenuController extends BaseController {
 
     @Operation(summary = "Get dishes of a menu", description = "Retrieve all dishes of a specific menu")
     
-    @PreAuthorize("@securityRUserService.isMenuOwnedByRestaurant(#menuId, authentication.principal.restaurantId)")
+    @PreAuthorize("@securityRUserService.isMenuOwnedByAuthenticatedUser(#menuId)")
     @GetMapping("/{menuId}/dishes")
         @WrapperType(dataClass = MenuDishDTO.class, type = WrapperDataType.LIST)
     public ResponseEntity<ListResponseWrapper<MenuDishDTO>> getMenuDishes(@PathVariable Long menuId) {
@@ -64,7 +64,7 @@ public class RestaurantMenuController extends BaseController {
 
     @Operation(summary = "Get menu details", description = "Retrieve details of a specific menu")
     
-    @PreAuthorize("@securityRUserService.isMenuOwnedByRestaurant(#menuId, authentication.principal.restaurantId)")
+    @PreAuthorize("@securityRUserService.isMenuOwnedByAuthenticatedUser(#menuId)")
     @GetMapping("/{menuId}")
         @WrapperType(dataClass = MenuDTO.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<MenuDTO>> getMenuDetails(@PathVariable Long menuId) {
@@ -84,34 +84,31 @@ public class RestaurantMenuController extends BaseController {
     @Operation(summary = "Create a menu", description = "Create a new menu for the current restaurant")
     
     @PostMapping("/create")
-    @WrapperType(dataClass = String.class, responseCode = "201") 
+    @WrapperType(dataClass = MenuDTO.class, responseCode = "201") 
     
-    public ResponseEntity<ResponseWrapper<String>> createMenu(@RequestBody NewMenuDTO newMenu) {
+    public ResponseEntity<ResponseWrapper<MenuDTO>> createMenu(@RequestBody NewMenuDTO newMenu) {
         return executeCreate("create menu", "Menu created successfully", () -> {
-            restaurantMenuService.addMenu(newMenu);
-            return "success";
+            return restaurantMenuService.addMenu(newMenu);
         });
     }
 
     @Operation(summary = "Add a dish to a menu", description = "Add a priced dish to an existing menu")
     
-    @PreAuthorize("@securityRUserService.isMenuOwnedByRestaurant(#newMenuItem.menuId, authentication.principal.restaurantId)")
+    @PreAuthorize("@securityRUserService.isMenuOwnedByAuthenticatedUser(#newMenuItem.menuId)")
     @PostMapping("/dishes/add")
-    @WrapperType(dataClass = String.class, responseCode = "201")
-    public ResponseEntity<ResponseWrapper<String>> addDishToMenu(@RequestBody NewMenuDishDTO newMenuItem) {
+    @WrapperType(dataClass = MenuDishDTO.class, responseCode = "201")
+    public ResponseEntity<ResponseWrapper<MenuDishDTO>> addDishToMenu(@RequestBody NewMenuDishDTO newMenuItem) {
         return executeCreate("add dish to menu", "Dish added to menu successfully", () -> {
-            restaurantMenuService.addMenuDish(newMenuItem);
-            return "success";
+            return restaurantMenuService.addMenuDish(newMenuItem);
         });
     }
 
     @Operation(summary = "Create a dish", description = "Create a new dish for the current restaurant")
     @PostMapping("/dishes/create")
-    @WrapperType(dataClass = String.class, responseCode = "201")  
-    public ResponseEntity<ResponseWrapper<String>> createDish(@RequestBody NewDishDTO newItem) {
+    @WrapperType(dataClass = DishDTO.class, responseCode = "201")  
+    public ResponseEntity<ResponseWrapper<DishDTO>> createDish(@RequestBody NewDishDTO newItem, @AuthenticationPrincipal RUser rUser) {
         return executeCreate("create dish", "Dish created successfully", () -> {
-            restaurantMenuService.createDish(newItem);
-            return "success";
+            return restaurantMenuService.createDish(newItem, rUser.getRestaurant().getId());
         });
     }
 }

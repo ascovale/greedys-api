@@ -5,6 +5,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.springframework.core.annotation.AliasFor;
+
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -49,11 +51,13 @@ public @interface WrapperType {
      * Optional description for the response
      * @return response description
      */
+    @AliasFor(annotation = ApiResponse.class, attribute = "description")
     String description() default "Successful operation";
     
     /**
      * HTTP response code for this operation
      * @return the HTTP response code (default: "200")
      */
+    @AliasFor(annotation = ApiResponse.class, attribute = "responseCode")
     String responseCode() default "200";
 }
