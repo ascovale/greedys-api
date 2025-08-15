@@ -14,6 +14,7 @@ import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.WrapperType;
 import com.application.common.service.AllergyService;
 import com.application.common.web.ResponseWrapper;
+import com.application.common.web.dto.customer.AllergyDTO;
 import com.application.common.web.dto.customer.NewAllergyDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,12 +33,11 @@ public class AdminAllergyController extends BaseController {
 
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_WRITE')")
     @Operation(summary = "Create allergy", description = "Creates a new allergy for the specified user by their ID")
-    @WrapperType(dataClass = String.class, responseCode = "201")
+    @WrapperType(dataClass = AllergyDTO.class, responseCode = "201")
     @PostMapping("/new")
-    public ResponseEntity<ResponseWrapper<String>> createAllergy(@RequestBody NewAllergyDTO allergyDto) {
+    public ResponseEntity<ResponseWrapper<AllergyDTO>> createAllergy(@RequestBody NewAllergyDTO allergyDto) {
         return executeCreate("create allergy", "Allergy created successfully", () -> {
-            allergyService.createAllergy(allergyDto);
-            return "Allergy created successfully";
+            return allergyService.createAllergy(allergyDto);
         });
     }
 

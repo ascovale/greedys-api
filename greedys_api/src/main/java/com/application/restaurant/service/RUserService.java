@@ -109,7 +109,7 @@ public class RUserService {
             throw new IllegalArgumentException("User already exists for this restaurant.");
         }
 
-        System.out.println("Registering restaurant user with information:" + RUserDTO.getRestaurantId() + " ");
+        System.out.println("Registering restaurant user with information:" + restaurant.getId() + " ");
         RestaurantRole role = rrDAO.findById(RUserDTO.getRoleId())
             .orElseThrow(() -> new IllegalArgumentException("Role not found with id: " + RUserDTO.getRoleId()));
 

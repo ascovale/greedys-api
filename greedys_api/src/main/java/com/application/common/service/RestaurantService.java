@@ -96,7 +96,6 @@ public class RestaurantService {
 
 		RestaurantRole role = restaurantRoleDAO.findByName("ROLE_OWNER");
 		NewRUserDTO RUserDTO = NewRUserDTO.builder()
-			.restaurantId(restaurant.getId())
 			.email(restaurant.getEmail())
 			.password(restaurantDto.getPassword()) // FIX: Don't double-encode - let registerRUser handle encoding
 			.firstName(restaurantDto.getOwnerName())

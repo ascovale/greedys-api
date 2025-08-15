@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.application.common.persistence.mapper.AllergyMapper;
 import com.application.common.web.dto.customer.AllergyDTO;
 import com.application.common.web.dto.customer.NewAllergyDTO;
 import com.application.customer.persistence.dao.AllergyDAO;
@@ -23,10 +24,11 @@ import lombok.RequiredArgsConstructor;
 public class AllergyService {
 
     private final AllergyDAO allergyDAO;
+	private final AllergyMapper allergyMapper;
 
     public List<AllergyDTO> getAllAllergies() {
         return allergyDAO.findAll().stream()
-                .map(AllergyDTO::new)
+                .map(allergyMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
@@ -39,11 +41,12 @@ public class AllergyService {
     }
     
 	@Transactional
-	public void createAllergy(NewAllergyDTO allergyDto) {
+	public AllergyDTO createAllergy(NewAllergyDTO allergyDto) {
 		Allergy allergy = new Allergy();
 		allergy.setName(allergyDto.getName());
 		allergy.setDescription(allergyDto.getDescription());
 		allergyDAO.save(allergy);
+		return allergyMapper.toDTO(allergy);
 	}
 
 	public void deleteAllergy(Long idAllergy) {
