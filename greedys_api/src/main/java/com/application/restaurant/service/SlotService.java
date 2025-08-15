@@ -48,7 +48,7 @@ public class SlotService {
         slotDAO.save(slot);
     }
 
-    public void addSlot(Long idRUser, RestaurantNewSlotDTO slotDto) {
+    public SlotDTO addSlot(Long idRUser, RestaurantNewSlotDTO slotDto) {
         Long idRestaurant = RUserDao.findById(idRUser)
             .orElseThrow(() -> new IllegalArgumentException("RUser not found with id: " + idRUser))
             .getRestaurant().getId();
@@ -65,7 +65,7 @@ public class SlotService {
         slot.setEnd(slotDto.getEnd());
         slot.setWeekday(slotDto.getWeekday());
         slot.setService(service);
-        slotDAO.save(slot);
+        return slotMapper.toDTO(slotDAO.save(slot));
     }
 
     public Collection<SlotDTO> findByService_Id(Long param) {

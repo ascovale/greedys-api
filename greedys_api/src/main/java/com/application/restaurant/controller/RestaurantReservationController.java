@@ -54,19 +54,23 @@ public class RestaurantReservationController extends BaseController {
 	private final ReservationService reservationService;
 	private final RestaurantNotificationService restaurantNotificationService;
 
+	//TODO: Aggiungere verifica che lo slot sia del ristorante
 	@Operation(summary = "Create a new reservation", description = "Endpoint to create a new reservation")
 	@PostMapping("/new")
 	@PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_RESERVATION_WRITE')")
 	@WrapperType(dataClass = String.class, type = WrapperDataType.DTO, responseCode = "201")
 	public ResponseEntity<ResponseWrapper<String>> createReservation(@RequestBody RestaurantNewReservationDTO dto,
 			@AuthenticationPrincipal RUser rUser) {
+		log.debug("Received reservation DTO: {}", dto);
+		log.debug("DTO userName: {}, userEmail: {}, userPhoneNumber: {}, pax: {}, kids: {}, idSlot: {}, reservationDay: {}", 
+			dto.getUserName(), dto.getUserEmail(), dto.getUserPhoneNumber(), dto.getPax(), dto.getKids(), dto.getIdSlot(), dto.getReservationDay());
 		return executeCreate("create reservation", "Reservation created successfully", () -> {
 			reservationService.createReservation(dto, rUser.getRestaurant());
-			restaurantNotificationService.sendNotificationToAllUsers(
-					"New reservation created",
-					"Reservation for " + dto.getPax() + " pax on " + dto.getReservationDay() + " at " + dto.getIdSlot(),
-					null,
-					rUser.getRestaurant().getId());
+			//restaurantNotificationService.sendNotificationToAllUsers(
+			//		"New reservation created",
+			//		"Reservation for " + dto.getPax() + " pax on " + dto.getReservationDay() + " at " + dto.getIdSlot(),
+			//		null,
+			//		rUser.getRestaurant().getId());
 			return "success";
 		});
 	}

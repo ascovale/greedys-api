@@ -18,6 +18,7 @@ import com.application.common.persistence.model.reservation.ReservationRequest;
 import com.application.common.persistence.model.reservation.Slot;
 import com.application.common.service.events.ReservationCreatedEvent;
 import com.application.common.web.dto.reservations.ReservationDTO;
+import com.application.customer.persistence.dao.CustomerDAO;
 import com.application.customer.persistence.dao.ReservationDAO;
 import com.application.customer.persistence.dao.ReservationRequestDAO;
 import com.application.restaurant.persistence.dao.ClosedDayDAO;
@@ -45,6 +46,7 @@ public class ReservationService {
     private final ClosedDayDAO closedDaysDAO;
     private final SlotDAO slotDAO;
     private final ApplicationEventPublisher eventPublisher;
+    private final CustomerDAO customerDAO;
 
     public void save(Reservation reservation) {
         // Save the reservation
@@ -81,7 +83,7 @@ public class ReservationService {
     }
 
     public void setStatus(Long reservationId, Reservation.Status status) {
-        Reservation reservation = reservationDAO.findById(reservationId)
+        Reservation reservation = reservationDAO.findByIdWithRestaurant(reservationId)
                 .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
         reservation.setStatus(status);
         reservationDAO.save(reservation);
@@ -162,8 +164,16 @@ public class ReservationService {
 
     
     public ReservationDTO createReservation(RestaurantNewReservationDTO reservationDto, Restaurant restaurant) {
+        log.debug("Creating reservation with DTO: {}", reservationDto);
+        log.debug("Restaurant: {}", restaurant);
+        
         Slot slot = slotDAO.findById(reservationDto.getIdSlot())
                 .orElseThrow(() -> new IllegalArgumentException("Slot not found"));
+
+        //Customer customer = customerDAO.findByEmail(reservationDto.getUserEmail());
+        //if (customer == null) {
+        //    throw new IllegalArgumentException("Customer not found with email: " + reservationDto.getUserEmail());
+        //}
         if (slot.getDeleted()) {
             throw new IllegalArgumentException("Slot is deleted");
         }
@@ -174,6 +184,7 @@ public class ReservationService {
                 .date(reservationDto.getReservationDay())
                 .slot(slot)
                 .restaurant(restaurant)
+            //    .customer(customer)
                 .status(Reservation.Status.ACCEPTED)
                 .build();
         reservation = reservationDAO.save(reservation);

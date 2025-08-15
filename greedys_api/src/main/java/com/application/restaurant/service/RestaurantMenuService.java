@@ -78,7 +78,7 @@ public class RestaurantMenuService {
                 .toList();
     }
 
-    public void addMenuDish(NewMenuDishDTO menuDishDTO) {
+    public MenuDishDTO addMenuDish(NewMenuDishDTO menuDishDTO) {
         Dish dish = dishDAO.getReferenceById(menuDishDTO.getDishId());
         Menu menu = menuDAO.getReferenceById(menuDishDTO.getMenuId());
         MenuDish menuDish = MenuDish.builder()
@@ -86,20 +86,21 @@ public class RestaurantMenuService {
                 .dish(dish)
                 .price(menuDishDTO.getPrice())
                 .build();
-        menuDishDAO.save(menuDish);
+        menuDish=menuDishDAO.save(menuDish);
+        return menuDishMapper.toDTO(menuDish);
     }
 
-    public void createDish(NewDishDTO menuItem) {
+    public DishDTO createDish(NewDishDTO menuItem, Long restaurantId) {
         Dish item = Dish.builder()
                 .name(menuItem.getName())
                 .description(menuItem.getDescription())
-                .restaurant(restaurantDAO.getReferenceById(menuItem.getRestaurantId()))
+                .restaurant(restaurantDAO.getReferenceById(restaurantId))
                 .build();
         // item.setAllergens(menuItem.getAllergen());
-        dishDAO.save(item);
+        return dishMapper.toDTO(dishDAO.save(item));
     }
 
-    public void addMenu(NewMenuDTO menu) {
+    public MenuDTO addMenu(NewMenuDTO menu) {
         Menu newMenu = Menu.builder()
                 .name(menu.getName())
                 .description(menu.getDescription())
@@ -107,7 +108,8 @@ public class RestaurantMenuService {
                         .map(serviceId -> serviceDAO.getReferenceById(serviceId))
                         .toList())
                 .build();
-        menuDAO.save(newMenu);
+        Menu savedMenu = menuDAO.save(newMenu);
+        return menuMapper.toDTO(savedMenu);
     }
 
     public void deleteMenuItem(Long id) {

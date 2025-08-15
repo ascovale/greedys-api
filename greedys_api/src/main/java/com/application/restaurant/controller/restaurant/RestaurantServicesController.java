@@ -91,7 +91,6 @@ public class RestaurantServicesController extends BaseController {
     }
 
     @Operation(summary = "Get all service types", description = "Retrieve all service types.")
-    
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_READ')")
     @GetMapping("/types")
     @WrapperType(dataClass = ServiceTypeDto.class, type = WrapperDataType.LIST)
@@ -103,7 +102,6 @@ public class RestaurantServicesController extends BaseController {
     }
 
     @Operation(summary = "Get services of a restaurant", description = "Retrieve the services of a restaurant")
-    
     @GetMapping(value = "/services")
     @WrapperType(dataClass = ServiceDTO.class, type = WrapperDataType.LIST)
     public ResponseEntity<ListResponseWrapper<ServiceDTO>> getServices(@AuthenticationPrincipal RUser rUser) {

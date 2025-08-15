@@ -24,6 +24,7 @@ public class ServiceDTO {
     private long restaurantId;
     private Collection<ServiceTypeDto> serviceType;
     private String info;
+    private boolean enabled;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate validFrom;
@@ -40,6 +41,7 @@ public class ServiceDTO {
         this.validFrom = service.getValidFrom();
         this.validTo = service.getValidTo();
         this.active = service.isActive();
+        this.enabled = service.isEnabled();
         
     }
 }

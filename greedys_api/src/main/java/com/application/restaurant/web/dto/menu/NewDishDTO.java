@@ -19,7 +19,5 @@ public class NewDishDTO {
     private String name;
     @JsonProperty("description")
     private String description;
-    @JsonProperty("restaurantId")
-    private Long restaurantId;
 
 }

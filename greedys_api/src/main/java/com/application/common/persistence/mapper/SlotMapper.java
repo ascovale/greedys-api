@@ -42,13 +42,6 @@ public interface SlotMapper {
     Slot toEntity(SlotDTO slotDTO);
 
     /**
-     * Aggiorna un'entità Slot esistente con i dati dal SlotDTO
-     */
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "service", ignore = true)
-    void updateEntityFromDTO(SlotDTO dto, @MappingTarget Slot entity);
-
-    /**
      * Aggiorna un'entità Slot esistente con i dati dal NewSlotDTO
      */
     @Mapping(target = "id", ignore = true)
