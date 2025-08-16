@@ -84,7 +84,7 @@ public class AdminRestaurantManagementController extends BaseController {
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
 	@Operation(summary = "Change restaurant email", description = "Change the email of a restaurant by its ID")
 	@PutMapping("/{restaurantId}/change_email")
-	public ResponseEntity<ResponseWrapper<String>> changeRestaurantEmail(@PathVariable Long restaurantId, @RequestBody String newEmail) {
+	public ResponseEntity<ResponseWrapper<String>> changeRestaurantEmail(@PathVariable Long restaurantId, @RequestParam String newEmail) {
 		return executeVoid("change restaurant email", "Restaurant email changed successfully", () -> 
 			restaurantService.changeRestaurantEmail(restaurantId, newEmail));
 	}
