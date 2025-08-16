@@ -27,7 +27,9 @@ import com.application.admin.persistence.model.Admin;
 import com.application.admin.persistence.model.AdminPrivilege;
 import com.application.admin.persistence.model.AdminRole;
 import com.application.admin.persistence.model.AdminVerificationToken;
+import com.application.admin.web.dto.admin.AdminDTO;
 import com.application.admin.web.dto.admin.NewAdminDTO;
+import com.application.common.persistence.mapper.AdminMapper;
 import com.application.common.security.jwt.constants.TokenValidationConstants;
 import com.application.common.service.EmailService;
 import com.application.common.web.error.UserAlreadyExistException;
@@ -54,6 +56,7 @@ public class AdminRegistrationService {
     private final AdminRoleDAO adminRoleDAO;
     private final PasswordEncoder passwordEncoder;
     private final ApplicationEventPublisher eventPublisher;
+    private final AdminMapper adminMapper;
 
     /**
      * Constructs the application URL from the HTTP request
@@ -73,7 +76,7 @@ public class AdminRegistrationService {
      * @return The created Admin entity
      * @throws Exception if registration fails
      */
-    public Admin registerNewAdmin(NewAdminDTO accountDto, HttpServletRequest request) {
+    public AdminDTO registerNewAdmin(NewAdminDTO accountDto, HttpServletRequest request) {
         log.info("Registering new admin with email: {}", accountDto.getEmail());
         
         if (emailExists(accountDto.getEmail())) {
@@ -99,7 +102,7 @@ public class AdminRegistrationService {
         eventPublisher.publishEvent(new AdminOnRegistrationCompleteEvent(savedAdmin, Locale.ITALIAN, appUrl));
         
         log.info("Admin registered successfully with ID: {}", savedAdmin.getId());
-        return savedAdmin;
+        return adminMapper.toDTO(savedAdmin);
     }
 
     /**

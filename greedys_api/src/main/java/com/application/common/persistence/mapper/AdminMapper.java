@@ -23,8 +23,10 @@ public interface AdminMapper {
      * Converte un'entità Admin in AdminDTO
      * MapStruct mappa automaticamente i campi con lo stesso nome
      */
+    @Mapping(target = "id", source = "id")
     @Mapping(target = "firstName", source = "name")
     @Mapping(target = "lastName", source = "surname")
+    @Mapping(target = "email", source = "email")
     AdminDTO toDTO(Admin admin);
 
     /**
@@ -42,34 +44,6 @@ public interface AdminMapper {
     Admin toEntity(NewAdminDTO newAdminDTO);
 
     /**
-     * Converte un AdminDTO in entità Admin (per aggiornamenti)
-     */
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "name", source = "firstName")
-    @Mapping(target = "surname", source = "lastName")
-    @Mapping(target = "password", ignore = true) // La password non viene mappata dai DTO
-    @Mapping(target = "adminRoles", ignore = true)
-    @Mapping(target = "status", ignore = true)
-    @Mapping(target = "toReadNotification", ignore = true)
-    @Mapping(target = "nickName", ignore = true)
-    @Mapping(target = "phoneNumber", ignore = true)
-    Admin toEntity(AdminDTO adminDTO);
-
-    /**
-     * Aggiorna un'entità Admin esistente con i dati dal DTO
-     */
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "name", source = "firstName")
-    @Mapping(target = "surname", source = "lastName")
-    @Mapping(target = "password", ignore = true)
-    @Mapping(target = "adminRoles", ignore = true)
-    @Mapping(target = "status", ignore = true)
-    @Mapping(target = "toReadNotification", ignore = true)
-    @Mapping(target = "nickName", ignore = true)
-    @Mapping(target = "phoneNumber", ignore = true)
-    void updateEntityFromDTO(AdminDTO dto, @MappingTarget Admin entity);
-
-    /**
      * Aggiorna un'entità Admin esistente con i dati dal NewAdminDTO
      */
     @Mapping(target = "id", ignore = true)
@@ -82,4 +56,6 @@ public interface AdminMapper {
     @Mapping(target = "nickName", ignore = true)
     @Mapping(target = "phoneNumber", ignore = true)
     void updateEntityFromNewDTO(NewAdminDTO dto, @MappingTarget Admin entity);
+
+    
 }
