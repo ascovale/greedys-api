@@ -32,7 +32,7 @@ public class CustomerSetup {
 
     @Transactional
     public void setupCustomerRolesAndPrivileges() {
-        log.info(">>> --- Customer Setup --- <<<");
+        log.info("👥 --- Customer Setup --- ");
         final Privilege ureadPrivilege = createPrivilegeIfNotFound("READ_PRIVILEGE");
         final Privilege uwritePrivilege = createPrivilegeIfNotFound("WRITE_PRIVILEGE");
         final Privilege upasswordPrivilege = createPrivilegeIfNotFound("CHANGE_PASSWORD_PRIVILEGE");
@@ -41,20 +41,20 @@ public class CustomerSetup {
         final List<Privilege> userPrivileges = new ArrayList<>(Arrays.asList(ureadPrivilege, upasswordPrivilege));
         createRoleIfNotFound("ROLE_PREMIUM_USER", new ArrayList<>(uadminPrivileges));
         createRoleIfNotFound("ROLE_USER", new ArrayList<>(userPrivileges));
-        log.info(">>> --- Customer Setup finished --- <<<");
+        log.info("✅ --- Customer Setup finished --- ");
     }
 
     @Transactional
     public void createSomeCustomer() {
-        log.info(">>> --- Creating customer --- <<<");
+        log.info("👤 --- Creating customer --- ");
         Customer existingCustomer = userDAO.findByEmail("info@lasoffittarenovatio.it");
         if (existingCustomer != null) {
-            log.info("Customer with email info@lasoffittarenovatio.it already exists.");
+            log.info("ℹ️ Customer with email info@lasoffittarenovatio.it already exists.");
             return;
         }
 
         try {
-            log.info("Creating customer Stefano Di Michele");
+            log.info("👨‍💼 Creating customer Stefano Di Michele");
             NewCustomerDTO newUser = NewCustomerDTO.builder()
                 .firstName("Stefano")
                 .lastName("Di Michele")
@@ -74,7 +74,7 @@ public class CustomerSetup {
                 userDAO.save(user);
             }
         } catch (Exception e) {
-            log.error("Error creating customer account or assigning roles", e);
+            log.error("❌ Error creating customer account or assigning roles", e);
         }
     }
 
@@ -101,7 +101,7 @@ public class CustomerSetup {
 
     
     public void customerSetup() {
-        log.info(">>> --- Customer Setup --- <<<");
+        log.info("👥 --- Customer Setup --- ");
         final Privilege ureadPrivilege = createPrivilegeIfNotFound("READ_PRIVILEGE");
         final Privilege uwritePrivilege = createPrivilegeIfNotFound("WRITE_PRIVILEGE");
         final Privilege upasswordPrivilege = createPrivilegeIfNotFound("CHANGE_PASSWORD_PRIVILEGE");
@@ -110,7 +110,7 @@ public class CustomerSetup {
         final List<Privilege> userPrivileges = new ArrayList<>(Arrays.asList(ureadPrivilege, upasswordPrivilege));
         createRoleIfNotFound("ROLE_PREMIUM_USER", new ArrayList<>(uadminPrivileges));
         createRoleIfNotFound("ROLE_USER", new ArrayList<>(userPrivileges));
-        log.info(">>> --- Customer Setup finished --- <<<");
+        log.info("✅ --- Customer Setup finished --- ");
     }
 
 
