@@ -46,10 +46,10 @@ public class RestaurantDataLoader {
 
     @Transactional
     public void createRestaurantLaSoffittaRenovatio() {
-        log.info(">>> --- Creating Restaurant La Soffitta Renovatio --- <<<");
+        log.info("🍽️ --- Creating Restaurant La Soffitta Renovatio --- ");
         Restaurant restaurant = restaurantDAO.findByName("La Soffitta Renovatio");
         if (restaurant != null) {
-            log.info("Restaurant with name La Soffitta Renovatio already exists.");
+            log.info("ℹ️ Restaurant with name La Soffitta Renovatio already exists.");
             return;
         }
 
@@ -90,10 +90,10 @@ public class RestaurantDataLoader {
 
     @Transactional
     public void createRestaurantTrattoriaDaMario() {
-        log.info(">>> --- Creating Restaurant Trattoria Da Mario --- <<<");
+        log.info("🍝 --- Creating Restaurant Trattoria Da Mario --- ");
         Restaurant restaurant = restaurantDAO.findByName("Trattoria Da Mario");
         if (restaurant != null) {
-            log.info("Restaurant with name Trattoria Da Mario already exists.");
+            log.info("ℹ️ Restaurant with name Trattoria Da Mario already exists.");
             return;
         }
 
@@ -181,7 +181,7 @@ public class RestaurantDataLoader {
 
     @Transactional
     public void createRestaurantPrivilegesAndRoles() {
-        log.info(">>> --- Creating Restaurant Privileges and Roles --- <<<");
+        log.info("🔐 --- Creating Restaurant Privileges and Roles --- ");
         final RestaurantPrivilege managerWritePrivilege = createRestaurantPrivilegeIfNotFound("PRIVILEGE_RESTAURANT_USER_MANAGER_WRITE");
         final RestaurantPrivilege chefWritePrivilege = createRestaurantPrivilegeIfNotFound("PRIVILEGE_RESTAURANT_USER_CHEF_WRITE");
         final RestaurantPrivilege waiterWritePrivilege = createRestaurantPrivilegeIfNotFound("PRIVILEGE_RESTAURANT_USER_WAITER_WRITE");
@@ -215,18 +215,18 @@ public class RestaurantDataLoader {
         createRestaurantRoleIfNotFound("ROLE_VIEWER", viewerPrivileges);
         createRestaurantRoleIfNotFound("ROLE_CHEF", chefPrivileges);
         createRestaurantRoleIfNotFound("ROLE_WAITER", waiterPrivileges);
-        log.info(">>> --- Restaurant Privileges and Roles Created --- <<<");
+        log.info("✅ --- Restaurant Privileges and Roles Created --- ");
     }
 
     @Transactional
     public void createDefaultServiceTypes() {
-        log.info(">>> --- Creating Default Service Types --- <<<");
+        log.info("⏰ --- Creating Default Service Types --- ");
         createServiceIfNotFound("Lunch");
         createServiceIfNotFound("Dinner");
         createServiceIfNotFound("Aperitif");
         createServiceIfNotFound("Breakfast");
         createServiceIfNotFound("After Dinner");
-        log.info(">>> --- Default Service Types Created --- <<<");
+        log.info("✅ --- Default Service Types Created --- ");
     }
 
     @Transactional
@@ -244,7 +244,7 @@ public class RestaurantDataLoader {
     
     @Transactional
     public void createRestaurantCategories() {
-        log.info(">>> --- Creating Restaurant Categories --- <<<");
+        log.info("🏷️ --- Creating Restaurant Categories --- ");
         List<String> categories = Arrays.asList(
             "Pizzeria", "Cucina Italiana", "Cucina Romana", "Cinese", "Giapponese",
             "Sushi", "Senza Glutine", "Vegano", "Carne", "Pesce", "Fast Food",
@@ -267,15 +267,15 @@ public class RestaurantDataLoader {
                 restaurantCategoryDAO.save(category);
             }
         }
-        log.info(">>> --- Restaurant Categories Created --- <<<");
+        log.info("✅ --- Restaurant Categories Created --- ");
     }
 
     @Transactional
     public void assignCategoriesToLaSoffittaRenovatio() {
-        log.info(">>> --- Assigning Categories to La Soffitta Renovatio --- <<<");
+        log.info("🔗 --- Assigning Categories to La Soffitta Renovatio --- ");
         Restaurant restaurant = restaurantDAO.findByName("La Soffitta Renovatio");
         if (restaurant == null) {
-            log.warn("Restaurant La Soffitta Renovatio not found.");
+            log.warn("⚠️ Restaurant La Soffitta Renovatio not found.");
             return;
         }
 
@@ -291,7 +291,7 @@ public class RestaurantDataLoader {
         }
 
         restaurantDAO.save(restaurant);
-        log.info("    >>>  ---   Categories Assigned to La Soffitta Renovatio   ---  <<< ");
+        log.info("✅ --- Categories Assigned to La Soffitta Renovatio --- ");
     }
     
    

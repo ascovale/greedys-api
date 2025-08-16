@@ -84,18 +84,18 @@ public class AdminCustomerController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_WRITE')")
     @Operation(summary = "Add role to customer", description = "Adds a role to a customer by their ID")
     @PutMapping("/{customerId}/add_role")
-    public ResponseEntity<ResponseWrapper<String>> addRoleToCustomer(@PathVariable Long customerId, @RequestParam String role) {
+    public ResponseEntity<ResponseWrapper<String>> addRoleToCustomer(@PathVariable Long customerId, @RequestParam String roleName) {
         return executeVoid("add role to customer", "Role added successfully", () -> {
-            adminCustomerService.addRoleToCustomer(customerId, role);
+            adminCustomerService.addRoleToCustomer(customerId, roleName);
         });
     }
 
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_WRITE')")
     @Operation(summary = "Remove role from customer", description = "Removes a role from a customer by their ID")
     @PutMapping("/{customerId}/remove_role")
-    public ResponseEntity<ResponseWrapper<String>> removeRoleFromCustomer(@PathVariable Long customerId, @RequestParam String role) {
+    public ResponseEntity<ResponseWrapper<String>> removeRoleFromCustomer(@PathVariable Long customerId, @RequestParam String roleName) {
         return executeVoid("remove role from customer", "Role removed successfully", () -> {
-            adminCustomerService.removeRoleFromCustomer(customerId, role);
+            adminCustomerService.removeRoleFromCustomer(customerId, roleName);
         });
     }
 

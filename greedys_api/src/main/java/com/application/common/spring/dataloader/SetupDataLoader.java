@@ -43,7 +43,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
         
         SetupConfig setupConfig = setupConfigDAO.findById(1L).orElse(new SetupConfig());
         if (!setupConfig.isAlreadySetup()) {
-            log.info(">>> --- Setup started --- <<<");
+            log.info("🚀 --- Setup started --- ");
             setupConfig.setId(1L);
             setupConfig.setAlreadySetup(true);
             setupConfigDAO.save(setupConfig);
@@ -51,10 +51,10 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
             adminSetup.setupAdminRolesAndPrivileges();
             customerSetup.setupCustomerRolesAndPrivileges();
             restaurantDataLoader.createRestaurantPrivilegesAndRoles();
-            log.info(">>> --- Setup finished --- <<<");
+            log.info("✅ --- Setup finished --- ");
         }
         if (!setupConfig.isDataUploaded()) {
-            log.info(">>> --- Creating Test data --- <<<");
+            log.info("📊 --- Creating Test data --- ");
             setupConfig.setAlreadySetup(true);
             setupConfig.setDataUploaded(true);
             adminSetup.createSomeAdmin();
@@ -63,7 +63,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
             restaurantDataLoader.createRestaurantCategories();
             restaurantDataLoader.createRestaurantLaSoffittaRenovatio();
             restaurantDataLoader.assignCategoriesToLaSoffittaRenovatio();
-            log.info("    >>>  ---   Test data Created   ---  <<< ");
+            log.info("✅ --- Test data Created --- ");
         }
     }
 
@@ -71,11 +71,11 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
     private void createAllergies() {
         SetupConfig setupConfig = setupConfigDAO.findById(1L).orElse(new SetupConfig());
         if (setupConfig.isDataUploaded()) {
-            log.info(">>> --- Allergies already created, skipping --- <<<");
+            log.info("ℹ️ --- Allergies already created, skipping --- ");
             return;
         }
 
-        log.info(">>> --- Creating Allergies --- <<<");
+        log.info("🦠 --- Creating Allergies --- ");
         List<NewAllergyDTO> allergies = Arrays.asList(
             new NewAllergyDTO("Cereals", "Includes wheat, rye, barley, oats, and foods like bread, pasta, and cereals."),
             new NewAllergyDTO("Shellfish", "Includes shrimp, crab, lobster, and other crustaceans."),
@@ -108,7 +108,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 
         setupConfig.setDataUploaded(true);
         setupConfigDAO.save(setupConfig);
-        log.info(">>> --- Allergies Created --- <<<");
+        log.info("✅ --- Allergies Created --- ");
     }
 
     /**
