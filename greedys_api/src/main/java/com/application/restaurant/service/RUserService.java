@@ -3,12 +3,14 @@ package com.application.restaurant.service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.hibernate.Hibernate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.application.common.persistence.mapper.RUserMapper;
 import com.application.common.security.jwt.constants.TokenValidationConstants;
 import com.application.common.service.EmailService;
 import com.application.common.web.dto.restaurant.RUserDTO;
@@ -44,6 +46,7 @@ public class RUserService {
     private final RUserHubDAO ruhDAO;
     private final PasswordEncoder passwordEncoder;
     private final RUserPasswordResetTokenDAO passwordTokenRepository;
+    private final RUserMapper rUserMapper;
 
     // TODO QUANDO CREO UN UTENTE DEVO SPECIFICARE IL RUOLO CHE HA NEL RISTORANTE
     // TODO Io farei che l'user può essere creato nello stesso tempo
@@ -172,7 +175,7 @@ public class RUserService {
         ru.addRestaurantRole(role);
         ruDAO.save(ru);
 
-        return new RUserDTO(ru);
+        return rUserMapper.toDTO(ru);
     }
 
     public void disableRUser(Long idRUser, Long idRUserToDisable) {
@@ -218,7 +221,7 @@ public class RUserService {
         ru.addRestaurantRole(role);
         // non bisogna creare un nuovo ruolo bisogna mettere ruolo solo
         ruDAO.save(ru);
-        return new RUserDTO(ru);
+        return rUserMapper.toDTO(ru);
     }
 
     public boolean checkIfValidOldPassword(final Long id, final String oldPassword) {
@@ -284,11 +287,26 @@ public class RUserService {
         return ruDAO.findByEmail(userEmail);
     }
 
+    public RUserDTO getRUserByEmail(String userEmail) {
+        RUser rUser = ruDAO.findByEmail(userEmail);
+        if (rUser == null) {
+            throw new IllegalArgumentException("Restaurant user not found with email: " + userEmail);
+        }
+        return rUserMapper.toDTO(rUser);
+    }
+
+    public List<RUserDTO> getAllRUsers() {
+        List<RUser> rUsers = ruDAO.findAll();
+        return rUsers.stream()
+                .map(rUserMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
     public void updateRUserStatus(Long RUserId, RUser.Status newStatus) {
         RUser ru = ruDAO.findById(RUserId)
-                .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Restaurant user not found"));
 
-        // Aggiorna lo stato del customer
+        // Aggiorna lo stato del restaurant user
         ru.setStatus(newStatus);
         ruDAO.save(ru);
 
@@ -320,7 +338,7 @@ public class RUserService {
         // token);
         // mailSender.send(email);
 
-        return new RUserDTO(RUser);
+        return rUserMapper.toDTO(RUser);
     }
 
     public void createVerificationTokenForRUser(final RUser user, final String token) {
@@ -349,12 +367,12 @@ public class RUserService {
         ru.removeRole(role);
         ruDAO.save(ru);
 
-        return new RUserDTO(ru);
+        return rUserMapper.toDTO(ru);
     }
 
     public List<RUserDTO> getRUsersByRestaurantId(Long restaurantId) {
         return ruDAO.findByRestaurantId(restaurantId).stream()
-            .map(RUserDTO::new)
+            .map(rUserMapper::toDTO)
             .toList();
     }
 
@@ -403,7 +421,7 @@ public class RUserService {
         ru.addRestaurantRole(role);
         ruDAO.save(ru);
         
-        return new RUserDTO(ru);
+        return rUserMapper.toDTO(ru);
     }
 
 }

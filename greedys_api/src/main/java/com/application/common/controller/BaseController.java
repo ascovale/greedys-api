@@ -156,6 +156,12 @@ public class BaseController {
             return unauthorized("Account is locked");                                        // 401
         } else if (e instanceof UsernameNotFoundException) {
             return unauthorized("Invalid username or password");                             // 401
+        } else if (e instanceof com.application.common.web.error.RestaurantNotFoundException) {
+            return notFound(e.getMessage());                                                // 404
+        } else if (e instanceof com.application.common.web.error.UserNotFoundException) {
+            return notFound(e.getMessage());                                                // 404
+        } else if (e instanceof jakarta.persistence.EntityNotFoundException) {
+            return notFound(e.getMessage());                                                // 404
         } else if (e instanceof InsufficientAuthenticationException) {
             return unauthorized("Insufficient authentication");                              // 401
         } else if (e instanceof AuthenticationCredentialsNotFoundException) {
@@ -424,6 +430,18 @@ public class BaseController {
         if (e instanceof IllegalArgumentException) {
             return ResponseEntity.badRequest()
                     .body(ListResponseWrapper.error("Invalid argument: " + e.getMessage()));
+        } else if (e instanceof com.application.common.web.error.RestaurantNotFoundException) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ListResponseWrapper.error(e.getMessage()));
+        } else if (e instanceof com.application.common.web.error.UserNotFoundException) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ListResponseWrapper.error(e.getMessage()));
+        } else if (e instanceof jakarta.persistence.EntityNotFoundException) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ListResponseWrapper.error(e.getMessage()));
+        } else if (e instanceof org.springframework.security.access.AccessDeniedException) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(ListResponseWrapper.error("Access denied: " + e.getMessage()));
         } else if (e instanceof java.util.NoSuchElementException) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(ListResponseWrapper.error("Resource not found: " + e.getMessage()));
@@ -443,6 +461,18 @@ public class BaseController {
         if (e instanceof IllegalArgumentException) {
             return ResponseEntity.badRequest()
                     .body(PageResponseWrapper.error("Invalid argument: " + e.getMessage()));
+        } else if (e instanceof com.application.common.web.error.RestaurantNotFoundException) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(PageResponseWrapper.error(e.getMessage()));
+        } else if (e instanceof com.application.common.web.error.UserNotFoundException) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(PageResponseWrapper.error(e.getMessage()));
+        } else if (e instanceof jakarta.persistence.EntityNotFoundException) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(PageResponseWrapper.error(e.getMessage()));
+        } else if (e instanceof org.springframework.security.access.AccessDeniedException) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(PageResponseWrapper.error("Access denied: " + e.getMessage()));
         } else if (e instanceof java.util.NoSuchElementException) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(PageResponseWrapper.error("Resource not found: " + e.getMessage()));

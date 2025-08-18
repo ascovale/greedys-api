@@ -2,6 +2,7 @@ package com.application.customer;
 
 import java.io.IOException;
 
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -46,10 +47,7 @@ public class CustomerRequestFilter extends OncePerRequestFilter {
             String userType = jwtUtil.extractUserType(jwt);
             if (!"customer".equals(userType)) {
                 // Token non valido per questo filtro - ERRORE 401
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.setContentType("application/json");
-                response.getWriter().write("{\"error\":\"Invalid token type for customer endpoint\"}");
-                return;
+                throw new AuthenticationCredentialsNotFoundException("Invalid token type for customer endpoint");
             }
             
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
@@ -60,10 +58,7 @@ public class CustomerRequestFilter extends OncePerRequestFilter {
                 // I refresh token sono gestiti direttamente nei service degli endpoint pubblici
                 if (jwtUtil.isRefreshToken(jwt)) {
                     // Refresh token non dovrebbe essere usato per autenticazione su endpoint protetti
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    response.setContentType("application/json");
-                    response.getWriter().write("{\"error\":\"Refresh token cannot be used for protected endpoints\"}");
-                    return;
+                    throw new AuthenticationCredentialsNotFoundException("Refresh token cannot be used for protected endpoints");
                 }
 
                 // Access token: mantieni tutte le authorities originali dal DB

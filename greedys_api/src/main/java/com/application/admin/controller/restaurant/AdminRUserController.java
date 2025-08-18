@@ -84,4 +84,22 @@ public class AdminRUserController extends BaseController {
         return executeList("get restaurant users", () -> RUserService.getRUsersByRestaurantId(restaurantId));
     }
 
+    @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_USER_READ')")
+    @Operation(summary = "Get restaurant user by email", description = "Retrieves a restaurant user by email address")
+    @GetMapping("/by-email/{email}")
+    
+    @WrapperType(dataClass = RUserDTO.class, type = WrapperDataType.DTO)
+    public ResponseEntity<ResponseWrapper<RUserDTO>> getRUserByEmail(@PathVariable String email) {
+        return execute("get restaurant user by email", () -> RUserService.getRUserByEmail(email));
+    }
+
+    @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_USER_READ')")
+    @Operation(summary = "Get all restaurant users", description = "Retrieves all restaurant users in the system")
+    @GetMapping("/all")
+    
+    @WrapperType(dataClass = RUserDTO.class, type = WrapperDataType.LIST)
+    public ResponseEntity<ListResponseWrapper<RUserDTO>> getAllRUsers() {
+        return executeList("get all restaurant users", () -> RUserService.getAllRUsers());
+    }
+
 }

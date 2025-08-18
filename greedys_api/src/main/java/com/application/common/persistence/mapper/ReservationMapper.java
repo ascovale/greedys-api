@@ -33,6 +33,9 @@ public interface ReservationMapper {
     @Mapping(target = "email", ignore = true) // Non presente in entità
     @Mapping(target = "slot.service.restaurantId", source = "slot.service.restaurant.id")
     @Mapping(target = "slot.service.serviceType", ignore = true) // Troppo complesso per MapStruct
+    @Mapping(target = "createdBy", source = "createdBy.username")
+    @Mapping(target = "createdByUserType", source = "createdByUserType")
+    @Mapping(target = "createdAt", source = "createdAt")
     ReservationDTO toDTO(Reservation reservation);
 
     /**
@@ -51,6 +54,8 @@ public interface ReservationMapper {
     @Mapping(target = "modifiedAt", ignore = true)
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "modifiedBy", ignore = true)
+    @Mapping(target = "createdByUserType", ignore = true)
+    @Mapping(target = "modifiedByUserType", ignore = true)
     @Mapping(target = "acceptedBy", ignore = true)
     @Mapping(target = "acceptedAt", ignore = true)
     Reservation fromCustomerNewReservationDTO(CustomerNewReservationDTO dto);
@@ -71,6 +76,8 @@ public interface ReservationMapper {
     @Mapping(target = "modifiedAt", ignore = true)
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "modifiedBy", ignore = true)
+    @Mapping(target = "createdByUserType", ignore = true)
+    @Mapping(target = "modifiedByUserType", ignore = true)
     @Mapping(target = "acceptedBy", ignore = true)
     @Mapping(target = "acceptedAt", ignore = true)
     Reservation fromRestaurantNewReservationDTO(RestaurantNewReservationDTO dto);
@@ -90,6 +97,8 @@ public interface ReservationMapper {
     @Mapping(target = "modifiedAt", ignore = true)
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "modifiedBy", ignore = true)
+    @Mapping(target = "createdByUserType", ignore = true)
+    @Mapping(target = "modifiedByUserType", ignore = true)
     @Mapping(target = "acceptedBy", ignore = true)
     @Mapping(target = "acceptedAt", ignore = true)
     Reservation fromAdminNewReservationDTO(AdminNewReservationDTO dto);
@@ -110,6 +119,8 @@ public interface ReservationMapper {
     @Mapping(target = "modifiedAt", ignore = true)
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "modifiedBy", ignore = true)
+    @Mapping(target = "createdByUserType", ignore = true)
+    @Mapping(target = "modifiedByUserType", ignore = true)
     @Mapping(target = "acceptedBy", ignore = true)
     @Mapping(target = "acceptedAt", ignore = true)
     Reservation fromNewBaseReservationDTO(NewBaseReservationDTO dto);
@@ -129,6 +140,8 @@ public interface ReservationMapper {
     @Mapping(target = "modifiedAt", ignore = true)
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "modifiedBy", ignore = true)
+    @Mapping(target = "createdByUserType", ignore = true)
+    @Mapping(target = "modifiedByUserType", ignore = true)
     @Mapping(target = "acceptedBy", ignore = true)
     @Mapping(target = "acceptedAt", ignore = true)
     void updateEntityFromDTO(ReservationDTO dto, @MappingTarget Reservation entity);

@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.application.common.persistence.mapper.ReservationMapper;
 import com.application.common.persistence.model.reservation.Reservation;
 import com.application.common.persistence.model.reservation.ReservationRequest;
 import com.application.common.persistence.model.reservation.Slot;
@@ -47,6 +48,7 @@ public class ReservationService {
     private final SlotDAO slotDAO;
     private final ApplicationEventPublisher eventPublisher;
     private final CustomerDAO customerDAO;
+    private final ReservationMapper reservationMapper;
 
     public void save(Reservation reservation) {
         // Save the reservation
@@ -82,11 +84,12 @@ public class ReservationService {
         return reservationDAO.findById(id).orElse(null);
     }
 
-    public void setStatus(Long reservationId, Reservation.Status status) {
+    public ReservationDTO setStatus(Long reservationId, Reservation.Status status) {
         Reservation reservation = reservationDAO.findByIdWithRestaurant(reservationId)
                 .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
         reservation.setStatus(status);
         reservationDAO.save(reservation);
+        return reservationMapper.toDTO(reservation);
     }
 
     public Collection<ReservationDTO> getReservations(Long restaurantId, LocalDate start, LocalDate end) {

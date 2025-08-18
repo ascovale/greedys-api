@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.WrapperDataType;
 import com.application.common.controller.annotation.WrapperType;
+import com.application.common.persistence.mapper.RUserMapper;
 import com.application.common.web.ListResponseWrapper;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.RUserDTO;
@@ -45,6 +46,7 @@ public class RUserController extends BaseController {
 
     private final RUserService RUserService;
     private final RestaurantRoleDAO roleDAO;
+    private final RUserMapper rUserMapper;
 
     /**
      * Assigns a specific role to a restaurant user.
@@ -164,7 +166,7 @@ public class RUserController extends BaseController {
             if (rUser == null) {
                 throw new IllegalStateException("User not found");
             }
-            return new RUserDTO(rUser);
+            return rUserMapper.toDTO(rUser);
         });
     }
 

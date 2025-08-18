@@ -66,27 +66,28 @@ public class AdminReservationController extends BaseController {
 	@Operation(summary = "Mark a reservation as no show", description = "Endpoint to mark a reservation as no show by its ID")
 	@PutMapping("/{reservationId}/no_show")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_WRITE')")
-	public ResponseEntity<ResponseWrapper<String>> markReservationNoShow(@PathVariable Long reservationId) {
-		return executeVoid("mark reservation no show", "Reservation marked as no show", () -> {
-			reservationService.setStatus(reservationId, Reservation.Status.NO_SHOW);
+	@WrapperType(dataClass = ReservationDTO.class, type = WrapperDataType.DTO) 
+	public ResponseEntity<ResponseWrapper<ReservationDTO>> markReservationNoShow(@PathVariable Long reservationId) {
+		return execute("mark reservation no show", "Reservation marked as no show", () -> {
+			return reservationService.setStatus(reservationId, Reservation.Status.NO_SHOW);
 		});
 	}
 
 	@Operation(summary = "Mark a reservation as seated", description = "Endpoint to mark a reservation as seated by its ID")
 	@PutMapping("/{reservationId}/seated")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_WRITE')")
-	public ResponseEntity<ResponseWrapper<String>> markReservationSeated(@PathVariable Long reservationId) {
-		return executeVoid("mark reservation seated", "Reservation marked as seated", () -> {
-			reservationService.setStatus(reservationId, Reservation.Status.SEATED);
+	public ResponseEntity<ResponseWrapper<ReservationDTO>> markReservationSeated(@PathVariable Long reservationId) {
+		return execute("mark reservation seated", "Reservation marked as seated", () -> {
+			return reservationService.setStatus(reservationId, Reservation.Status.SEATED);
 		});
 	}
 
 	@Operation(summary = "Delete a reservation", description = "Endpoint to delete a reservation by its ID")
 	@PutMapping("/{reservationId}/delete")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_WRITE')")
-	public ResponseEntity<ResponseWrapper<String>> deleteReservation(@PathVariable Long reservationId) {
-		return executeVoid("delete reservation", "Reservation deleted successfully", () -> {
-			reservationService.setStatus(reservationId, Reservation.Status.DELETED);
+	public ResponseEntity<ResponseWrapper<ReservationDTO>> deleteReservation(@PathVariable Long reservationId) {
+		return execute("delete reservation", "Reservation deleted successfully", () -> {
+			return reservationService.setStatus(reservationId, Reservation.Status.DELETED);
 		});
 	}
 

@@ -2,6 +2,7 @@ package com.application.restaurant;
 
 import java.io.IOException;
 
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -44,10 +45,7 @@ public class RUserRequestFilter extends OncePerRequestFilter {
             String userType = jwtUtil.extractUserType(jwt);
             if (!"restaurant-user".equals(userType) && !"restaurant-user-hub".equals(userType)) {
                 // Token non valido per questo filtro - ERRORE 401
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.setContentType("application/json");
-                response.getWriter().write("{\"error\":\"Invalid token type for restaurant endpoint\"}");
-                return;
+                throw new AuthenticationCredentialsNotFoundException("Invalid token type for restaurant endpoint");
             }
             
             // Il HubValidationFilter ha già gestito la validazione Hub
@@ -60,19 +58,14 @@ public class RUserRequestFilter extends OncePerRequestFilter {
                 Object claims = jwtUtil.extractAllClaims(jwt);
                 String email = (String) ((java.util.Map<?,?>)claims).get("email");
                 if (email == null) {
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    response.getWriter().write("Email claim missing in hub token.");
-                    return;
+                    throw new AuthenticationCredentialsNotFoundException("Email claim missing in hub token");
                 }
                 
                 // ✅ Solo access token sono accettati sui filtri di autenticazione
                 // I refresh token sono gestiti direttamente nei service degli endpoint pubblici
                 if (jwtUtil.isHubRefreshToken(jwt)) {
                     // Refresh token non dovrebbe essere usato per autenticazione su endpoint protetti
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    response.setContentType("application/json");
-                    response.getWriter().write("{\"error\":\"Refresh token cannot be used for protected endpoints\"}");
-                    return;
+                    throw new AuthenticationCredentialsNotFoundException("Refresh token cannot be used for protected endpoints");
                 } else {
                     // Access Hub token: permessi completi
                     userDetails = org.springframework.security.core.userdetails.User
@@ -98,14 +91,10 @@ public class RUserRequestFilter extends OncePerRequestFilter {
                 authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             } else {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("Token validation failed.");
-                return;
+                throw new AuthenticationCredentialsNotFoundException("Token validation failed");
             }
             } catch (Exception e) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("Invalid token claims.");
-                return;
+                throw new AuthenticationCredentialsNotFoundException("Invalid token claims");
             }
         }
 

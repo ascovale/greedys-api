@@ -22,10 +22,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 
+import com.application.common.persistence.mapper.RUserMapper;
 import com.application.common.security.jwt.JwtUtil;
 import com.application.common.service.EmailService;
 import com.application.common.service.authentication.GoogleAuthService;
-import com.application.common.web.dto.restaurant.RUserDTO;
 import com.application.common.web.dto.restaurant.RestaurantDTO;
 import com.application.common.web.dto.security.AuthRequestDTO;
 import com.application.common.web.dto.security.AuthRequestGoogleDTO;
@@ -61,6 +61,7 @@ public class RestaurantAuthenticationService {
     private final RUserDAO RUserDAO;
     private final RUserHubDAO RUserHubDAO;
     private final PasswordEncoder passwordEncoder;
+    private final RUserMapper rUserMapper;
 
     public RestaurantAuthenticationService(
             @Qualifier("restaurantAuthenticationManager") AuthenticationManager authenticationManager,
@@ -73,7 +74,8 @@ public class RestaurantAuthenticationService {
             MessageSource messages,
             RUserHubDAO RUserHubDAO,
             PasswordEncoder passwordEncoder,
-            GoogleAuthService googleAuthService) {
+            GoogleAuthService googleAuthService,
+            RUserMapper rUserMapper) {
         this.authenticationManager = authenticationManager;
         this.RUserService = RUserService;
         this.jwtUtil = jwtUtil;
@@ -85,6 +87,7 @@ public class RestaurantAuthenticationService {
         this.RUserHubDAO = RUserHubDAO;
         this.passwordEncoder = passwordEncoder;
         this.googleAuthService = googleAuthService;
+        this.rUserMapper = rUserMapper;
     }
 
 
@@ -170,7 +173,7 @@ public class RestaurantAuthenticationService {
             throw new DisabledException("User is not enabled.");
         }
         final String newJwt = jwtUtil.generateToken(updatedUser);
-        return new AuthResponseDTO(newJwt, new RUserDTO(updatedUser));
+        return new AuthResponseDTO(newJwt, rUserMapper.toDTO(updatedUser));
     }
 
     public AuthResponseDTO selectRestaurant(Long restaurantId) {
@@ -186,7 +189,7 @@ public class RestaurantAuthenticationService {
             throw new DisabledException("User is not enabled for this restaurant.");
         }
         String jwt = jwtUtil.generateToken(user);
-        return new AuthResponseDTO(jwt, new RUserDTO(user));
+        return new AuthResponseDTO(jwt, rUserMapper.toDTO(user));
     }
 
     private String getAppUrl(HttpServletRequest request) {
@@ -303,10 +306,10 @@ public class RestaurantAuthenticationService {
                 return AuthResponseDTO.builder()
                         .jwt(jwt)
                         .refreshToken(refreshToken)
-                        .user(new RUserDTO(singleUser))
+                        .user(rUserMapper.toDTO(singleUser))
                         .build();
             } else {
-                return new AuthResponseDTO(jwt, new RUserDTO(singleUser));
+                return new AuthResponseDTO(jwt, rUserMapper.toDTO(singleUser));
             }
         } else {
             // Login intermedio: più ristoranti (HUB)
@@ -405,7 +408,7 @@ public class RestaurantAuthenticationService {
             return AuthResponseDTO.builder()
                     .jwt(newJwt)
                     .refreshToken(newRefreshToken)
-                    .user(new RUserDTO(rUser))
+                    .user(rUserMapper.toDTO(rUser))
                     .build();
                     
         } catch (Exception e) {
