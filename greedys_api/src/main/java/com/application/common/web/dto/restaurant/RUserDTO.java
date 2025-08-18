@@ -1,7 +1,5 @@
 package com.application.common.web.dto.restaurant;
 
-import com.application.restaurant.persistence.model.user.RUser;
-
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,11 +13,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RUserDTO {
 
+    private Long id;
     private String username;
     private Long restaurantId;
-
-    public RUserDTO(RUser user) {
-        this.username = user.getEmail();
-        this.restaurantId = user.getRestaurant().getId();
-    }
 }

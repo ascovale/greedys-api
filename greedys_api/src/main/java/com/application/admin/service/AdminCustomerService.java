@@ -11,6 +11,7 @@ import com.application.common.persistence.mapper.RoleDTOMapper;
 import com.application.common.web.dto.customer.CustomerDTO;
 import com.application.common.web.dto.security.PrivilegeDTO;
 import com.application.common.web.dto.security.RoleDTO;
+import com.application.common.web.error.UserNotFoundException;
 import com.application.customer.persistence.dao.CustomerDAO;
 import com.application.customer.persistence.dao.PrivilegeDAO;
 import com.application.customer.persistence.dao.RoleDAO;
@@ -35,7 +36,7 @@ public class AdminCustomerService {
 
     public void updateCustomerStatus(Long customerId, Customer.Status newStatus) {
         Customer customer = customerDAO.findById(customerId)
-                .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
+                .orElseThrow(() -> new UserNotFoundException("Customer not found with ID: " + customerId));
 
         customer.setStatus(newStatus);
         customerDAO.save(customer);
@@ -44,7 +45,7 @@ public class AdminCustomerService {
     public void updateCustomerStatusByEmail(String email, Customer.Status newStatus) {
         Customer customer = customerDAO.findByEmail(email);
         if (customer == null) {
-            throw new IllegalArgumentException("Customer not found with email: " + email);
+            throw new UserNotFoundException("Customer not found with email: " + email);
         }
 
         customer.setStatus(newStatus);
@@ -97,7 +98,7 @@ public class AdminCustomerService {
 
     public void addRoleToCustomer(Long customerId, String role) {
         Customer customer = customerDAO.findById(customerId)
-                .orElseThrow(() -> new EntityNotFoundException("Customer not found"));
+                .orElseThrow(() -> new UserNotFoundException("Customer not found with ID: " + customerId));
         Hibernate.initialize(customer.getRoles());
         customer.getRoles().add(roleDAO.findByName(role));
         customerDAO.save(customer);
@@ -105,7 +106,7 @@ public class AdminCustomerService {
 
     public void removeRoleFromCustomer(Long customerId, String role) {
         Customer customer = customerDAO.findById(customerId)
-                .orElseThrow(() -> new EntityNotFoundException("Customer not found"));
+                .orElseThrow(() -> new UserNotFoundException("Customer not found with ID: " + customerId));
         customer.getRoles().remove(roleDAO.findByName(role));
         customerDAO.save(customer);
     }

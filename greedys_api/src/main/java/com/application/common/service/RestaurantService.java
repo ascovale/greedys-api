@@ -151,9 +151,32 @@ public class RestaurantService {
 	}
 
 	public Collection<ServiceDTO> getServices(Long id) {
-		return rDAO.findServices(id).stream()
-				.map(ServiceDTO::new)
-				.collect(Collectors.toList());
+		try {
+			// Verify restaurant exists first with better error handling
+			boolean exists = false;
+			try {
+				exists = rDAO.existsById(id);
+			} catch (Exception e) {
+				log.warn("Error checking restaurant existence for ID {}: {}", id, e.getMessage());
+				// If existsById fails, assume restaurant doesn't exist
+				exists = false;
+			}
+			
+			if (!exists) {
+				throw new com.application.common.web.error.RestaurantNotFoundException("Restaurant not found with ID: " + id);
+			}
+			
+			return rDAO.findServices(id).stream()
+					.map(ServiceDTO::new)
+					.collect(Collectors.toList());
+		} catch (com.application.common.web.error.RestaurantNotFoundException e) {
+			// Re-throw the specific exception
+			throw e;
+		} catch (Exception e) {
+			// Log the error and throw a more specific exception
+			log.error("Error getting services for restaurant ID {}: {}", id, e.getMessage(), e);
+			throw new com.application.common.web.error.RestaurantNotFoundException("Restaurant not found with ID: " + id);
+		}
 	}
 
 	public void setNoShowTimeLimit(Long idRestaurant, int minutes) {

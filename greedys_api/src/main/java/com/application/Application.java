@@ -23,9 +23,17 @@ public class Application {
 
 	@EventListener(ApplicationReadyEvent.class)
 	public void onApplicationReady() {
-		log.info("✅ ✅ ✅ --- APPLICATION SUCCESSFULLY STARTED --- ✅ ✅ ✅");
-		log.info("🚀 Greedy's Restaurant API is now ready to accept requests!");
-		log.info("📋 All setup completed successfully");
+		log.info("                                   \\   \r\n" + //
+						"   ____                   _           \r\n" + //
+						"  / ___|_ __ ___  ___  __| |_   _ ___ \r\n" + //
+						" | |  _| '__/ _ \\/ _ \\/ _` | | | / __|\r\n" + //
+						" | |_| | | |  __/  __/ (_| | |_| \\__ \\\r\n" + //
+						"  \\____|_|  \\___|\\___|\\__,_|\\__, |___/\r\n" + //
+						"                            |___/     ");
+		log.info("\n\n📋 Restaurant Reservation Api v1.0.0");
+
+		log.info("\n\n\n✅ ✅ ✅ --- APPLICATION SUCCESSFULLY STARTED --- ✅ ✅ ✅");
+
 	}
 
 	@Bean

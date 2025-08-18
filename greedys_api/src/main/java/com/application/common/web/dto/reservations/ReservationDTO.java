@@ -1,6 +1,7 @@
 package com.application.common.web.dto.reservations;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import com.application.common.controller.validators.ValidEmail;
 import com.application.common.persistence.model.reservation.Reservation;
@@ -33,6 +34,9 @@ public class ReservationDTO {
 	private LocalDate reservationDay;
 	private Long restaurant;
 	private Status status;
+	private String createdBy;
+	private String createdByUserType;
+	private LocalDateTime createdAt;
 
 	public ReservationDTO(Reservation reservation) {
 
@@ -45,6 +49,9 @@ public class ReservationDTO {
 		this.reservationDay = reservation.getDate();
 		this.restaurant = reservation.getSlot().getService().getRestaurant().getId();
 		this.status = reservation.getStatus();
+		this.createdBy = reservation.getCreatedBy() != null ? reservation.getCreatedBy().getUsername() : null;
+		this.createdByUserType = reservation.getCreatedByUserType() != null ? reservation.getCreatedByUserType().name() : null;
+		this.createdAt = reservation.getCreatedAt();
 		
 	}
 

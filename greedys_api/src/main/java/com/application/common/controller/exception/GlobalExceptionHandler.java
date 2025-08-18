@@ -13,10 +13,8 @@ import org.springframework.security.authentication.AccountExpiredException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.security.authentication.DisabledException;
-import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.authentication.LockedException;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -135,31 +133,22 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(LockedException.class)
     public ResponseEntity<ResponseWrapper<String>> handleLockedException(LockedException ex, WebRequest request) {
-        logPotentialBaseControllerMiss("LockedException", ex, request);
+        //logPotentialBaseControllerMiss("LockedException", ex, request);
         log.error("Account locked: ", ex);
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(ResponseWrapper.<String>error("Account is locked", "ACCOUNT_LOCKED"));
     }
 
-    @ExceptionHandler(InsufficientAuthenticationException.class)
-    public ResponseEntity<ResponseWrapper<String>> handleInsufficientAuthenticationException(InsufficientAuthenticationException ex, WebRequest request) {
-        logPotentialBaseControllerMiss("InsufficientAuthenticationException", ex, request);
-        log.error("Insufficient authentication: ", ex);
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ResponseWrapper.<String>error("Insufficient authentication", "INSUFFICIENT_AUTHENTICATION"));
-    }
-
-    @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<ResponseWrapper<String>> handleAuthenticationException(AuthenticationException ex, WebRequest request) {
-        logPotentialBaseControllerMiss("AuthenticationException", ex, request);
-        log.error("Authentication failed: ", ex);
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ResponseWrapper.<String>error("Authentication failed: invalid credentials", "AUTHENTICATION_FAILED"));
-    }
+    // RIMOSSO: Non intercettare AuthenticationException e InsufficientAuthenticationException
+    // Questi devono essere gestiti dall'AuthenticationEntryPoint quando provengono dai filtri
+    // Solo le eccezioni dai controller devono essere gestite qui
+    
+    // Se necessario, aggiungere gestione specifica per eccezioni di autenticazione 
+    // provenienti specificamente dai controller (non dai filtri)
 
     @ExceptionHandler(UsernameNotFoundException.class)
     public ResponseEntity<ResponseWrapper<String>> handleUsernameNotFoundException(UsernameNotFoundException ex, WebRequest request) {
-        logPotentialBaseControllerMiss("UsernameNotFoundException", ex, request);
+        //logPotentialBaseControllerMiss("UsernameNotFoundException", ex, request);
         log.error("Authentication failed: ", ex);
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(ResponseWrapper.<String>error("Authentication failed: invalid credentials", "AUTHENTICATION_FAILED"));
@@ -167,7 +156,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ResponseWrapper<String>> handleAccessDeniedException(AccessDeniedException ex, WebRequest request) {
-        logPotentialBaseControllerMiss("AccessDeniedException", ex, request);
+        //logPotentialBaseControllerMiss("AccessDeniedException", ex, request);
         log.warn("Access denied: ", ex);
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(ResponseWrapper.<String>error("Access denied: you do not have the necessary privileges", "ACCESS_DENIED"));

@@ -6,8 +6,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.application.common.persistence.mapper.RUserMapper;
 import com.application.common.security.jwt.JwtUtil;
-import com.application.common.web.dto.restaurant.RUserDTO;
 import com.application.common.web.dto.security.AuthResponseDTO;
 import com.application.restaurant.RUserAuthenticationDetails;
 import com.application.restaurant.persistence.dao.RUserDAO;
@@ -25,6 +25,7 @@ public class AdminRUserAuthenticationService {
 
     private final RUserDAO RUserDAO;
     private final JwtUtil jwtUtil;
+    private final RUserMapper rUserMapper;
 
     /**
      * Admin login to restaurant user - allows admin to authenticate as a restaurant user
@@ -46,6 +47,6 @@ public class AdminRUserAuthenticationService {
         SecurityContextHolder.getContext().setAuthentication(authToken);
 
         final String jwt = jwtUtil.generateToken(user);
-        return new AuthResponseDTO(jwt, new RUserDTO(user));
+        return new AuthResponseDTO(jwt, rUserMapper.toDTO(user));
     }
 }

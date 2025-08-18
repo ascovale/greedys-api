@@ -34,12 +34,12 @@ import lombok.extern.slf4j.Slf4j;
  * @since 1.0
  */
 @RestController
-@RequestMapping("/admin/restaurant/verification")
+@RequestMapping("/admin/restaurant/phone-verification")
 @RequiredArgsConstructor
 @Validated
 @Slf4j
 @Tag(name = "Restaurant Verification", description = "Restaurant phone number verification operations")
-public class RestaurantVerificationController extends BaseController {
+public class TwilioRestaurantVerificationController extends BaseController {
 
     private final RestaurantTwilioVerificationService verificationService;
 

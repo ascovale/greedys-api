@@ -70,22 +70,20 @@ public class AdminRoomTableController extends BaseController {
 	@PostMapping(value = "/{restaurantId}/room")
 	@Operation(summary = "Add a room to a restaurant", description = "Add a new room to a restaurant")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
-	@WrapperType(dataClass = String.class, responseCode = "201")
-    public ResponseEntity<ResponseWrapper<String>> addRoom(@PathVariable Long restaurantId, @RequestBody NewRoomDTO roomDto) {
+	@WrapperType(dataClass = RoomDTO.class, responseCode = "201")
+    public ResponseEntity<ResponseWrapper<RoomDTO>> addRoom(@PathVariable Long restaurantId, @RequestBody NewRoomDTO roomDto) {
 		return executeCreate("add room", "Room created successfully", () -> {
-			roomService.createRoom(roomDto, restaurantId);
-			return "success";
+			return roomService.createRoom(roomDto, restaurantId);
 		});
 	}
 
 	@PostMapping(value = "/{restaurantId}/table")
 	@Operation(summary = "Add a table to a room", description = "Add a new table to a room")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
-	@WrapperType(dataClass = String.class, type = WrapperDataType.DTO, responseCode = "201")
-    public ResponseEntity<ResponseWrapper<String>> addTable(@PathVariable Long restaurantId, @RequestBody NewTableDTO tableDto) {
+	@WrapperType(dataClass = TableDTO.class, type = WrapperDataType.DTO, responseCode = "201")
+    public ResponseEntity<ResponseWrapper<TableDTO>> addTable(@PathVariable Long restaurantId, @RequestBody NewTableDTO tableDto) {
 		return executeCreate("add table", "Table created successfully", () -> {
-			tableService.createTable(tableDto);
-			return "success";
+			return tableService.createTable(tableDto);
 		});
 	}
 }

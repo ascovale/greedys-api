@@ -53,9 +53,7 @@ public class TokenTypeValidationFilter extends OncePerRequestFilter {
         // Dobbiamo solo verificare che ci sia un token valido
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             log.warn("Protected endpoint {} {} accessed without token", method, path);
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json");
-            response.getWriter().write("{\"error\":\"Authorization token required\"}");
+            writeAuthenticationError(response, "Authorization token required");
             return;
         }
         
@@ -68,18 +66,14 @@ public class TokenTypeValidationFilter extends OncePerRequestFilter {
                     // Endpoint Hub refresh: solo Hub refresh token
                     if (!jwtUtil.isHubRefreshToken(token)) {
                         log.warn("Hub refresh endpoint {} {} accessed with non-hub-refresh token", method, path);
-                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                        response.setContentType("application/json");
-                        response.getWriter().write("{\"error\":\"Hub refresh token required for this endpoint\"}");
+                        writeAuthenticationError(response, "Hub refresh token required for this endpoint");
                         return;
                     }
                 } else {
                     // Altri endpoint di refresh: solo refresh token normali
                     if (!jwtUtil.isRefreshToken(token)) {
                         log.warn("Refresh endpoint {} {} accessed with non-refresh token", method, path);
-                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                        response.setContentType("application/json");
-                        response.getWriter().write("{\"error\":\"Refresh token required for this endpoint\"}");
+                        writeAuthenticationError(response, "Refresh token required for this endpoint");
                         return;
                     }
                 }
@@ -88,28 +82,22 @@ public class TokenTypeValidationFilter extends OncePerRequestFilter {
                 // 🎯 ENDPOINT NORMALI: Solo access token
                 if (!jwtUtil.isAccessToken(token) && !jwtUtil.isHubToken(token)) {
                     log.warn("Protected endpoint {} {} accessed with non-access token", method, path);
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    response.setContentType("application/json");
-                    response.getWriter().write("{\"error\":\"Access token required for this endpoint\"}");
+                    writeAuthenticationError(response, "Access token required for this endpoint");
                     return;
                 }
                 log.debug("Valid access token for endpoint {} {}", method, path);
             }
             
-            // 🎯 NUOVO: Controllo User Type vs Endpoint
+            // 🎯 CONTROLLO USER TYPE vs ENDPOINT
             if (!isValidUserTypeForEndpoint(token, path)) {
                 log.warn("Token user type mismatch for endpoint {} {}", method, path);
-                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                response.setContentType("application/json");
-                response.getWriter().write("{\"error\":\"Token user type not allowed for this endpoint\"}");
+                writeAccessDeniedError(response, "Token user type not allowed for this endpoint");
                 return;
             }
             
         } catch (Exception e) {
             log.error("Error validating token type for path {} {}: {}", method, path, e.getMessage());
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json");
-            response.getWriter().write("{\"error\":\"Invalid token\"}");
+            writeAuthenticationError(response, "Invalid token");
             return;
         }
         
@@ -146,5 +134,38 @@ public class TokenTypeValidationFilter extends OncePerRequestFilter {
             log.error("Error extracting user type from token: {}", e.getMessage());
             return false;
         }
+    }
+    
+    /**
+     * Scrive una risposta di errore di autenticazione (401) in formato JSON compatibile con ResponseWrapper
+     */
+    private void writeAuthenticationError(HttpServletResponse response, String message) throws IOException {
+        writeErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, 
+                         "Authentication required: " + message, "AUTHENTICATION_REQUIRED");
+    }
+    
+    /**
+     * Scrive una risposta di errore di accesso negato (403) in formato JSON compatibile con ResponseWrapper
+     */
+    private void writeAccessDeniedError(HttpServletResponse response, String message) throws IOException {
+        writeErrorResponse(response, HttpServletResponse.SC_FORBIDDEN, 
+                         "Access denied: " + message, "ACCESS_DENIED");
+    }
+    
+    /**
+     * Metodo generico per scrivere risposte di errore in formato JSON compatibile con ResponseWrapper
+     */
+    private void writeErrorResponse(HttpServletResponse response, int status, String message, String errorCode) throws IOException {
+        response.setStatus(status);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        
+        com.application.common.web.ResponseWrapper<String> errorResponse = 
+            com.application.common.web.ResponseWrapper.error(message, errorCode);
+        
+        com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
+        objectMapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
+        String jsonResponse = objectMapper.writeValueAsString(errorResponse);
+        response.getWriter().write(jsonResponse);
     }
 }
