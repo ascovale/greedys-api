@@ -63,10 +63,11 @@ public class AdminServicesController extends BaseController {
 
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
     @Operation(summary = "Update a service type", description = "This method updates an existing service type.")
+    @WrapperType(dataClass = ServiceTypeDto.class, type = WrapperDataType.DTO)
     @PutMapping("/type/{typeId}/update")
-    public ResponseEntity<ResponseWrapper<String>> updateServiceType(@PathVariable Long typeId, @RequestBody String serviceTypeString) {
-        return executeVoid("update service type", "Service type updated successfully", () -> {
-            serviceService.updateServiceType(typeId, serviceTypeString);
+    public ResponseEntity<ResponseWrapper<ServiceTypeDto>> updateServiceType(@PathVariable Long typeId, @RequestBody String serviceTypeString) {
+        return execute("update service type", () -> {
+            return serviceService.updateServiceTypeAndReturn(typeId, serviceTypeString);
         });
     }
 

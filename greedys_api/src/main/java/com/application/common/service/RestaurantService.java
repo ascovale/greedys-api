@@ -289,6 +289,19 @@ public class RestaurantService {
 		rDAO.save(restaurant);
 		return restaurant;
 	}
+
+	public RestaurantDTO createRestaurantAndReturnDTO(RestaurantDTO restaurantDto) {
+		Restaurant restaurant = new Restaurant();
+		restaurant.setEmail(restaurantDto.getEmail());
+		restaurant.setName(restaurantDto.getName());
+		restaurant.setAddress(restaurantDto.getAddress());
+		restaurant.setCreationDate(LocalDate.now());
+		restaurant.setVatNumber(restaurantDto.getVatNumber());
+		restaurant.setPostCode(restaurantDto.getPost_code());
+		restaurant.setStatus(Restaurant.Status.DISABLED);
+		Restaurant savedRestaurant = rDAO.save(restaurant);
+		return new RestaurantDTO(savedRestaurant);
+	}
 	//TODO: Implement findAllPaginatedDisabled
 	/* 
 	public Page<RestaurantDTO> findAllPaginatedEnabled(Pageable pageable) {

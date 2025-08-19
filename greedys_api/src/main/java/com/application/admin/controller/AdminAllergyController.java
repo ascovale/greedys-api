@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.WrapperDataType;
 import com.application.common.controller.annotation.WrapperType;
 import com.application.common.service.AllergyService;
 import com.application.common.web.ResponseWrapper;
@@ -52,10 +53,11 @@ public class AdminAllergyController extends BaseController {
 
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_WRITE')")
     @Operation(summary = "Modify allergy", description = "Modifies an existing allergy")
+    @WrapperType(dataClass = AllergyDTO.class, type = WrapperDataType.DTO)
     @PutMapping("/{allergyId}/modify")
-    public ResponseEntity<ResponseWrapper<String>> modifyAllergy(@PathVariable Long allergyId, @RequestBody NewAllergyDTO allergyDto) {
-        return executeVoid("modify allergy", "Allergy modified successfully", () -> {
-            allergyService.modifyAllergy(allergyId, allergyDto);
+    public ResponseEntity<ResponseWrapper<AllergyDTO>> modifyAllergy(@PathVariable Long allergyId, @RequestBody NewAllergyDTO allergyDto) {
+        return execute("modify allergy", () -> {
+            return allergyService.modifyAllergyAndReturn(allergyId, allergyDto);
         });
     }
 }
