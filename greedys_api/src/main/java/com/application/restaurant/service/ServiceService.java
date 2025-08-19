@@ -249,6 +249,14 @@ public class ServiceService {
 		serviceTypeDAO.save(serviceType);
 	}
 
+	public ServiceTypeDto updateServiceTypeAndReturn(Long typeId, String serviceTypeString) {
+		ServiceType serviceType = serviceTypeDAO.findById(typeId)
+				.orElseThrow(() -> new IllegalArgumentException("Service type not found"));
+		serviceType.setName(serviceTypeString);
+		ServiceType savedServiceType = serviceTypeDAO.save(serviceType);
+		return new ServiceTypeDto(savedServiceType);
+	}
+
 	public void deleteServiceType(Long typeId) {
 		ServiceType serviceType = serviceTypeDAO.findById(typeId)
 				.orElseThrow(() -> new IllegalArgumentException("Service type not found"));

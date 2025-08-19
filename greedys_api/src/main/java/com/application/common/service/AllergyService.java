@@ -68,6 +68,20 @@ public class AllergyService {
 		allergyDAO.save(allergy);
 	}
 
+	@Transactional
+	public AllergyDTO modifyAllergyAndReturn(Long idAllergy, NewAllergyDTO allergyDto) {
+		Allergy allergy = allergyDAO.findById(idAllergy)
+				.orElseThrow(() -> new EntityNotFoundException("Allergy not found"));
+		if (allergyDto.getName() != null) {
+			allergy.setName(allergyDto.getName());
+		}
+		if (allergyDto.getDescription() != null) {
+			allergy.setDescription(allergyDto.getDescription());
+		}
+		Allergy savedAllergy = allergyDAO.save(allergy);
+		return allergyMapper.toDTO(savedAllergy);
+	}
+
     public AllergyDTO getAllergyById(Long allergyId) {
         Allergy allergy = allergyDAO.findById(allergyId)
             .orElseThrow(() -> new EntityNotFoundException("Allergy not found"));

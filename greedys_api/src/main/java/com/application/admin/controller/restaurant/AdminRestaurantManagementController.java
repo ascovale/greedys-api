@@ -22,7 +22,6 @@ import com.application.common.web.ListResponseWrapper;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.RestaurantDTO;
 import com.application.common.web.dto.restaurant.ServiceDTO;
-import com.application.restaurant.persistence.model.Restaurant;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -72,13 +71,11 @@ public class AdminRestaurantManagementController extends BaseController {
 
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
 	@Operation(summary = "Create restaurant", description = "Create a new restaurant")
-	@WrapperType(dataClass = Restaurant.class, responseCode = "201")
+	@WrapperType(dataClass = RestaurantDTO.class, type = WrapperDataType.DTO, responseCode = "201")
 	@PostMapping("/new")
-	
-	
-	public ResponseEntity<ResponseWrapper<Restaurant>> createRestaurant(@RequestBody RestaurantDTO restaurantDto) {
-		return executeCreate("create restaurant", "Restaurant created successfully", () -> 
-			restaurantService.createRestaurant(restaurantDto));
+	public ResponseEntity<ResponseWrapper<RestaurantDTO>> createRestaurant(@RequestBody RestaurantDTO restaurantDto) {
+		return executeCreate("create restaurant", () -> 
+			restaurantService.createRestaurantAndReturnDTO(restaurantDto));
 	}
 
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")

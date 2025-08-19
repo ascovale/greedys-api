@@ -71,12 +71,12 @@ public class AdminCategoryController extends BaseController {
 
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
 	@Operation(summary = "Update category", description = "Update an existing category by its ID")
+	@WrapperType(dataClass = RestaurantCategoryDTO.class, type = WrapperDataType.DTO)
 	@PutMapping("/category/{categoryId}/update")
-	
-	public ResponseEntity<ResponseWrapper<String>> updateCategory(@PathVariable Long categoryId,
+	public ResponseEntity<ResponseWrapper<RestaurantCategoryDTO>> updateCategory(@PathVariable Long categoryId,
 			@RequestBody RestaurantCategoryDTO restaurantCategoryDto) {
-		return executeVoid("update category", "Category updated successfully", () -> {
-			restaurantCategoryService.updateRestaurantCategory(categoryId, restaurantCategoryDto);
+		return execute("update category", () -> {
+			return restaurantCategoryService.updateRestaurantCategoryAndReturn(categoryId, restaurantCategoryDto);
 		});
 	}
 }

@@ -58,9 +58,9 @@ public class RestaurantCategoryService {
     }
 
     /**
-     * Updates an existing restaurant category.
+     * Updates an existing restaurant category by its ID.
      * 
-     * @param categoryId the ID of the category to update
+     * @param categoryId            the ID of the category to update
      * @param restaurantCategoryDto the updated category data
      * @throws IllegalArgumentException if the category ID is invalid
      */
@@ -71,6 +71,24 @@ public class RestaurantCategoryService {
         restaurantCategory.setName(restaurantCategoryDto.getName());
         restaurantCategory.setDescription(restaurantCategoryDto.getDescription());
         restaurantCategoryDAO.save(restaurantCategory);
+    }
+
+    /**
+     * Updates an existing restaurant category by its ID and returns the updated DTO.
+     * 
+     * @param categoryId            the ID of the category to update
+     * @param restaurantCategoryDto the updated category data
+     * @return the updated RestaurantCategoryDTO
+     * @throws IllegalArgumentException if the category ID is invalid
+     */
+    public RestaurantCategoryDTO updateRestaurantCategoryAndReturn(Long categoryId, RestaurantCategoryDTO restaurantCategoryDto) {
+        log.debug("Updating restaurant category ID: {} with data: {}", categoryId, restaurantCategoryDto.getName());
+        RestaurantCategory restaurantCategory = restaurantCategoryDAO.findById(categoryId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid category ID"));
+        restaurantCategory.setName(restaurantCategoryDto.getName());
+        restaurantCategory.setDescription(restaurantCategoryDto.getDescription());
+        RestaurantCategory savedCategory = restaurantCategoryDAO.save(restaurantCategory);
+        return RestaurantCategoryDTO.toDTO(savedCategory);
     }
 
     /**
