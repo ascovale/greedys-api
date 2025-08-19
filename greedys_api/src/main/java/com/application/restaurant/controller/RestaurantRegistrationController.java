@@ -91,9 +91,10 @@ public class RestaurantRegistrationController extends BaseController {
 
     @Operation(summary = "Confirm password change with token", description = "Confirms the password change using a token")
     @PutMapping(value = "/password/confirm")
-    public String confirmPasswordChange(
+    @WrapperType(dataClass = String.class, type = WrapperDataType.DTO)
+    public ResponseEntity<ResponseWrapper<String>> confirmPasswordChange(
             @Parameter(description = "Password reset token") @RequestParam final String token) {
-        return restaurantAuthenticationService.confirmPasswordChange(token);
+        return execute("confirm password change", () -> restaurantAuthenticationService.confirmPasswordChange(token));
     }
     /*
      * 

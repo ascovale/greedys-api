@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.application.common.service.FirebaseService;
+import com.application.common.web.dto.notification.CustomerNotificationDTO;
 import com.application.common.web.dto.shared.NotificationDto;
 import com.application.customer.persistence.dao.CustomerDAO;
 import com.application.customer.persistence.dao.NotificationDAO;
@@ -52,6 +53,15 @@ public class CustomerNotificationService {
         notification.setRead(true);
         notificationDAO.save(notification);
     }
+
+    @Transactional
+    public CustomerNotificationDTO markAsReadAndReturn(Long idNotification) {
+        CustomerNotification notification = findById(idNotification)
+                .orElseThrow(() -> new IllegalArgumentException("Notification not found"));
+        notification.setRead(true);
+        CustomerNotification savedNotification = notificationDAO.save(notification);
+        return CustomerNotificationDTO.toDTO(savedNotification);
+    }
     
     public Integer countNotification(Customer currentUser) {
         Customer user = userDAO.findById(currentUser.getId()).get();    
@@ -77,6 +87,12 @@ public class CustomerNotificationService {
         return notificationDAO.findByCustomerAndReadFalse(getCurrentUser(), pageable);
     }
 
+    @Transactional
+    public Page<CustomerNotificationDTO> getUnreadNotificationsDTO(Pageable pageable) {
+        Page<CustomerNotification> notifications = getUnreadNotifications(pageable);
+        return notifications.map(CustomerNotificationDTO::toDTO);
+    }
+
     //TODO da testare
     public Page<CustomerNotification> getAllNotifications(Pageable pageable) {
     Customer currentUser = getCurrentUser();
@@ -84,6 +100,11 @@ public class CustomerNotificationService {
         throw new IllegalStateException("User is not enabled");
     }
         return notificationDAO.findAllByCustomer(getCurrentUser(), pageable);
+    }
+
+    public Page<CustomerNotificationDTO> getAllNotificationsDTO(Pageable pageable) {
+        Page<CustomerNotification> notifications = getAllNotifications(pageable);
+        return notifications.map(CustomerNotificationDTO::toDTO);
     }
 
     public void sendNotification(String title, String body, Map<String, String> data,  Long idCustomer) {

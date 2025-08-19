@@ -180,6 +180,7 @@ public class CustomerController extends BaseController {
 
     @Operation(summary = "Update customer email", description = "Updates the email of a specific customer by their ID")
     @PutMapping("/update/email")
+    @WrapperType(dataClass = CustomerDTO.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<CustomerDTO>> updateEmail(@RequestParam String email, @AuthenticationPrincipal Customer customer) {
         return execute("updateEmail", "Email updated successfully", () -> {
             CustomerDTO updatedCustomer = customerService.updateEmail(customer.getId(), email);
