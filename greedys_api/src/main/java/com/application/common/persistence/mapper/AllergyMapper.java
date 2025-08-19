@@ -31,17 +31,6 @@ public interface AllergyMapper {
     @Mapping(target = "id", ignore = true)
     Allergy fromNewAllergyDTO(NewAllergyDTO newAllergyDTO);
 
-    /**
-     * Converte un AllergyDTO in entità Allergy
-     */
-    @Mapping(target = "id", ignore = true)
-    Allergy toEntity(AllergyDTO allergyDTO);
-
-    /**
-     * Aggiorna un'entità Allergy esistente con i dati dal AllergyDTO
-     */
-    @Mapping(target = "id", ignore = true)
-    void updateEntityFromDTO(AllergyDTO dto, @MappingTarget Allergy entity);
 
     /**
      * Aggiorna un'entità Allergy esistente con i dati dal NewAllergyDTO

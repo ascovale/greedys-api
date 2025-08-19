@@ -37,22 +37,6 @@ public interface MenuMapper {
     Menu fromNewMenuDTO(NewMenuDTO newMenuDTO);
 
     /**
-     * Converte un MenuDTO in entità Menu
-     */
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "enabled", ignore = true)
-    @Mapping(target = "services", ignore = true)
-    Menu toEntity(MenuDTO menuDTO);
-
-    /**
-     * Aggiorna un'entità Menu esistente con i dati dal MenuDTO
-     */
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "enabled", ignore = true)
-    @Mapping(target = "services", ignore = true)
-    void updateEntityFromDTO(MenuDTO dto, @MappingTarget Menu entity);
-
-    /**
      * Aggiorna un'entità Menu esistente con i dati dal NewMenuDTO
      */
     @Mapping(target = "id", ignore = true)
