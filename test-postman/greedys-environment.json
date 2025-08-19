@@ -1,0 +1,522 @@
+{
+	"id": "greedys-restaurant-env",
+	"name": "Greedy's Restaurant Testing Environment",
+	"values": [
+		{
+			"key": "baseUrl",
+			"value": "https://172.17.48.81:5050",
+			"description": "Base URL for all API endpoints",
+			"enabled": true
+		},
+		{
+			"key": "customerToken",
+			"value": "",
+			"description": "JWT token for customer authentication - populated by login requests",
+			"enabled": true
+		},
+		{
+			"key": "restaurantToken",
+			"value": "",
+			"description": "JWT token for restaurant user authentication - populated by login requests",
+			"enabled": true
+		},
+		{
+			"key": "adminToken",
+			"value": "",
+			"description": "JWT token for admin authentication - populated by login requests",
+			"enabled": true
+		},
+		{
+			"key": "refreshToken",
+			"value": "",
+			"description": "Refresh token for token renewal - populated by login responses",
+			"enabled": true
+		},
+		{
+			"key": "customerId",
+			"value": "",
+			"description": "Current customer ID - extracted from login or registration",
+			"enabled": true
+		},
+		{
+			"key": "newReservationId",
+			"value": "",
+			"description": "ID of the newly created reservation - populated by Create New Reservation test",
+			"enabled": true
+		},
+		{
+			"key": "restaurantId",
+			"value": "1",
+			"description": "Test restaurant ID - Trattoria Da Mario",
+			"enabled": true
+		},
+		{
+			"key": "laSoffittaRUserId",
+			"value": "",
+			"description": "Restaurant User ID for La Soffitta Renovatio - populated by Get Restaurant User by Email test",
+			"enabled": true
+		},
+		{
+			"key": "laSoffittaRestaurantId",
+			"value": "",
+			"description": "Restaurant ID for La Soffitta Renovatio - populated by Get Restaurant User by Email test",
+			"enabled": true
+		},
+		{
+			"key": "firstRUserId",
+			"value": "",
+			"description": "First Restaurant User ID found - populated by Get All Restaurant Users test",
+			"enabled": true
+		},
+		{
+			"key": "adminId",
+			"value": "",
+			"description": "Current admin user ID",
+			"enabled": true
+		},
+		{
+			"key": "reservationId",
+			"value": "",
+			"description": "Current reservation ID for testing modifications",
+			"enabled": true
+		},
+		{
+			"key": "slotId",
+			"value": "1",
+			"description": "Test time slot ID for evening service",
+			"enabled": true
+		},
+		{
+			"key": "menuId",
+			"value": "1",
+			"description": "Test menu ID",
+			"enabled": true
+		},
+		{
+			"key": "serviceId",
+			"value": "1",
+			"description": "Test service ID for dinner service",
+			"enabled": true
+		},
+		{
+			"key": "roomId",
+			"value": "1",
+			"description": "Test room ID",
+			"enabled": true
+		},
+		{
+			"key": "tableId",
+			"value": "1",
+			"description": "Test table ID",
+			"enabled": true
+		},
+		{
+			"key": "allergyId",
+			"value": "1",
+			"description": "Test allergy ID for gluten intolerance",
+			"enabled": true
+		},
+		{
+			"key": "customerFirstName",
+			"value": "Marco",
+			"description": "Test customer first name",
+			"enabled": true
+		},
+		{
+			"key": "customerLastName",
+			"value": "Rossi",
+			"description": "Test customer last name",
+			"enabled": true
+		},
+		{
+			"key": "customerEmail",
+			"value": "marco.rossi@email.it",
+			"description": "Test customer email address",
+			"enabled": true
+		},
+		{
+			"key": "customerPhone",
+			"value": "+39 348 123 4567",
+			"description": "Test customer phone number (Italian format)",
+			"enabled": true
+		},
+		{
+			"key": "customerPassword",
+			"value": "TestPass123!",
+			"description": "Test customer password",
+			"enabled": true
+		},
+		{
+			"key": "customerDateOfBirth",
+			"value": "1985-03-15T00:00:00Z",
+			"description": "Test customer date of birth",
+			"enabled": true
+		},
+		{
+			"key": "customer2FirstName",
+			"value": "Giulia",
+			"description": "Second test customer first name",
+			"enabled": true
+		},
+		{
+			"key": "customer2LastName",
+			"value": "Ferrari",
+			"description": "Second test customer last name",
+			"enabled": true
+		},
+		{
+			"key": "customer2Email",
+			"value": "giulia.ferrari@libero.it",
+			"description": "Second test customer email",
+			"enabled": true
+		},
+		{
+			"key": "customer2Phone",
+			"value": "+39 347 987 6543",
+			"description": "Second test customer phone",
+			"enabled": true
+		},
+		{
+			"key": "restaurantName",
+			"value": "Trattoria Da Mario",
+			"description": "Test restaurant name",
+			"enabled": true
+		},
+		{
+			"key": "restaurantEmail",
+			"value": "info@trattoriadamario.it",
+			"description": "Test restaurant email",
+			"enabled": true
+		},
+		{
+			"key": "restaurantPhone",
+			"value": "+39 06 1234 5678",
+			"description": "Test restaurant phone (Rome area code)",
+			"enabled": true
+		},
+		{
+			"key": "restaurantAddress",
+			"value": "Via Roma 123",
+			"description": "Test restaurant address",
+			"enabled": true
+		},
+		{
+			"key": "restaurantCity",
+			"value": "Roma",
+			"description": "Test restaurant city",
+			"enabled": true
+		},
+		{
+			"key": "restaurantPostCode",
+			"value": "00186",
+			"description": "Test restaurant postal code (Rome center)",
+			"enabled": true
+		},
+		{
+			"key": "restaurantVatNumber",
+			"value": "IT12345678901",
+			"description": "Test restaurant VAT number (Italian format)",
+			"enabled": true
+		},
+		{
+			"key": "restaurantPassword",
+			"value": "RestaurantPass123!",
+			"description": "Test restaurant user password",
+			"enabled": true
+		},
+		{
+			"key": "restaurant2Name",
+			"value": "Osteria del Mare",
+			"description": "Second test restaurant name",
+			"enabled": true
+		},
+		{
+			"key": "restaurant2Email",
+			"value": "info@osteriadelmare.it",
+			"description": "Second test restaurant email",
+			"enabled": true
+		},
+		{
+			"key": "restaurant2Phone",
+			"value": "+39 081 234 5678",
+			"description": "Second test restaurant phone (Naples area code)",
+			"enabled": true
+		},
+		{
+			"key": "restaurant2Address",
+			"value": "Via del Porto 45",
+			"description": "Second test restaurant address",
+			"enabled": true
+		},
+		{
+			"key": "restaurant2City",
+			"value": "Napoli",
+			"description": "Second test restaurant city",
+			"enabled": true
+		},
+		{
+			"key": "restaurant2PostCode",
+			"value": "80133",
+			"description": "Second test restaurant postal code (Naples center)",
+			"enabled": true
+		},
+		{
+			"key": "adminFirstName",
+			"value": "Giuseppe",
+			"description": "Test admin first name",
+			"enabled": true
+		},
+		{
+			"key": "adminLastName",
+			"value": "Verdi",
+			"description": "Test admin last name",
+			"enabled": true
+		},
+		{
+			"key": "adminEmail",
+			"value": "ascolesevalentino@gmail.com",
+			"description": "Test admin email",
+			"enabled": true
+		},
+		{
+			"key": "adminPassword",
+			"value": "Minosse100%",
+			"description": "Test admin password",
+			"enabled": true
+		},
+		{
+			"key": "newAdminFirstName",
+			"value": "Giuseppe",
+			"description": "New admin first name to register",
+			"enabled": true
+		},
+		{
+			"key": "newAdminLastName",
+			"value": "Verdi",
+			"description": "New admin last name to register",
+			"enabled": true
+		},
+		{
+			"key": "newAdminEmail",
+			"value": "giuseppe.verdi@greedys.com",
+			"description": "New admin email to register",
+			"enabled": true
+		},
+		{
+			"key": "newAdminPassword",
+			"value": "AdminPass123!",
+			"description": "New admin password to register",
+			"enabled": true
+		},
+		{
+			"key": "reservationDate",
+			"value": "2025-12-15",
+			"description": "Test reservation date (future date)",
+			"enabled": true
+		},
+		{
+			"key": "reservationTime",
+			"value": "20:00",
+			"description": "Test reservation time (dinner)",
+			"enabled": true
+		},
+		{
+			"key": "reservationPax",
+			"value": "2",
+			"description": "Test reservation adults count",
+			"enabled": true
+		},
+		{
+			"key": "reservationKids",
+			"value": "0",
+			"description": "Test reservation kids count",
+			"enabled": true
+		},
+		{
+			"key": "reservationNotes",
+			"value": "Anniversario di matrimonio - tavolo tranquillo per favore",
+			"description": "Test reservation notes in Italian",
+			"enabled": true
+		},
+		{
+			"key": "currentDate",
+			"value": "2024-08-08",
+			"description": "Current date for testing",
+			"enabled": true
+		},
+		{
+			"key": "futureDate",
+			"value": "2024-12-31",
+			"description": "Future date for testing availability",
+			"enabled": true
+		},
+		{
+			"key": "pastDate",
+			"value": "2024-07-01",
+			"description": "Past date for historical data testing",
+			"enabled": true
+		},
+		{
+			"key": "dishName1",
+			"value": "Spaghetti alla Carbonara",
+			"description": "Test dish name - Roman classic",
+			"enabled": true
+		},
+		{
+			"key": "dishName2",
+			"value": "Osso Buco alla Milanese",
+			"description": "Test dish name - Milanese specialty",
+			"enabled": true
+		},
+		{
+			"key": "dishName3",
+			"value": "Tiramisù della Casa",
+			"description": "Test dish name - House dessert",
+			"enabled": true
+		},
+		{
+			"key": "menuName1",
+			"value": "Menu Antipasti",
+			"description": "Test menu name for appetizers",
+			"enabled": true
+		},
+		{
+			"key": "menuName2",
+			"value": "Menu Primi Piatti",
+			"description": "Test menu name for first courses",
+			"enabled": true
+		},
+		{
+			"key": "menuName3",
+			"value": "Menu Secondi Piatti",
+			"description": "Test menu name for main courses",
+			"enabled": true
+		},
+		{
+			"key": "serviceName1",
+			"value": "Pranzo",
+			"description": "Test service name for lunch",
+			"enabled": true
+		},
+		{
+			"key": "serviceName2",
+			"value": "Cena",
+			"description": "Test service name for dinner",
+			"enabled": true
+		},
+		{
+			"key": "roomName1",
+			"value": "Sala Principale",
+			"description": "Test room name - Main dining room",
+			"enabled": true
+		},
+		{
+			"key": "roomName2",
+			"value": "Terrazza",
+			"description": "Test room name - Terrace",
+			"enabled": true
+		},
+		{
+			"key": "tableName1",
+			"value": "Tavolo 1",
+			"description": "Test table name",
+			"enabled": true
+		},
+		{
+			"key": "tableCapacity",
+			"value": "4",
+			"description": "Test table capacity",
+			"enabled": true
+		},
+		{
+			"key": "allergyName",
+			"value": "Glutine",
+			"description": "Test allergy name - Gluten",
+			"enabled": true
+		},
+		{
+			"key": "fcmToken",
+			"value": "test_fcm_token_12345",
+			"description": "Test FCM token for notifications",
+			"enabled": true
+		},
+		{
+			"key": "deviceId",
+			"value": "test_device_android_001",
+			"description": "Test device ID for notifications",
+			"enabled": true
+		},
+		{
+			"key": "googleToken",
+			"value": "test_google_oauth_token",
+			"description": "Test Google OAuth token",
+			"enabled": true
+		},
+		{
+			"key": "searchQuery",
+			"value": "trattoria",
+			"description": "Test search query for restaurants",
+			"enabled": true
+		},
+		{
+			"key": "pageNumber",
+			"value": "0",
+			"description": "Test page number for paginated requests",
+			"enabled": true
+		},
+		{
+			"key": "pageSize",
+			"value": "20",
+			"description": "Test page size for paginated requests",
+			"enabled": true
+		},
+		{
+			"key": "priceLevel",
+			"value": "$$",
+			"description": "Test restaurant price level",
+			"enabled": true
+		},
+		{
+			"key": "cuisineType",
+			"value": "Italiana Tradizionale",
+			"description": "Test cuisine type",
+			"enabled": true
+		},
+		{
+			"key": "noShowTimeLimit",
+			"value": "15",
+			"description": "Test no-show time limit in minutes",
+			"enabled": true
+		},
+		{
+			"key": "latitude",
+			"value": "41.9028",
+			"description": "Test latitude for Rome center",
+			"enabled": true
+		},
+		{
+			"key": "longitude",
+			"value": "12.4964",
+			"description": "Test longitude for Rome center",
+			"enabled": true
+		},
+		{
+			"key": "timezone",
+			"value": "Europe/Rome",
+			"description": "Italian timezone",
+			"enabled": true
+		},
+		{
+			"key": "currency",
+			"value": "EUR",
+			"description": "Euro currency code",
+			"enabled": true
+		},
+		{
+			"key": "language",
+			"value": "it-IT",
+			"description": "Italian language code",
+			"enabled": true
+		}
+	]
+}
