@@ -47,40 +47,6 @@ public interface RestaurantMapper {
     Restaurant fromNewRestaurantDTO(NewRestaurantDTO newRestaurantDTO);
 
     /**
-     * Converte un RestaurantDTO in entità Restaurant
-     */
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "postCode", source = "post_code")
-    @Mapping(target = "vatNumber", source = "vatNumber")
-    @Mapping(target = "creationDate", ignore = true) // Sarà impostato dal service
-    @Mapping(target = "status", ignore = true) // Sarà impostato dal service
-    @Mapping(target = "services", ignore = true) // Non mappato nei DTO base
-    @Mapping(target = "dishes", ignore = true) // Non mappato nei DTO base
-    @Mapping(target = "RUsers", ignore = true) // Non mappato nei DTO base
-    @Mapping(target = "restaurantImages", ignore = true) // Non mappato nei DTO base
-    @Mapping(target = "latitude", ignore = true) // Non mappato nei DTO base
-    @Mapping(target = "longitude", ignore = true) // Non mappato nei DTO base
-    @Mapping(target = "restaurantTypes", ignore = true) // Non mappato nei DTO base
-    Restaurant toEntity(RestaurantDTO restaurantDTO);
-
-    /**
-     * Aggiorna un'entità Restaurant esistente con i dati dal RestaurantDTO
-     */
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "postCode", source = "post_code")
-    @Mapping(target = "vatNumber", source = "vatNumber")
-    @Mapping(target = "creationDate", ignore = true)
-    @Mapping(target = "status", ignore = true)
-    @Mapping(target = "services", ignore = true)
-    @Mapping(target = "dishes", ignore = true)
-    @Mapping(target = "RUsers", ignore = true)
-    @Mapping(target = "restaurantImages", ignore = true)
-    @Mapping(target = "latitude", ignore = true)
-    @Mapping(target = "longitude", ignore = true)
-    @Mapping(target = "restaurantTypes", ignore = true)
-    void updateEntityFromDTO(RestaurantDTO dto, @MappingTarget Restaurant entity);
-
-    /**
      * Aggiorna un'entità Restaurant esistente con i dati dal NewRestaurantDTO
      */
     @Mapping(target = "id", ignore = true)
