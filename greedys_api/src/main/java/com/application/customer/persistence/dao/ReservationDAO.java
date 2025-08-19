@@ -115,7 +115,8 @@ public interface ReservationDAO extends JpaRepository<Reservation, Long> {
 
     @Query(value = """
             SELECT r FROM Reservation r
-            WHERE r.customer.id = :customerId
+            WHERE r.customer IS NOT NULL 
+                AND r.customer.id = :customerId
                 AND r.status = :status
                 ORDER BY r.date, r.slot.start
             """)
@@ -143,7 +144,8 @@ public interface ReservationDAO extends JpaRepository<Reservation, Long> {
 
     @Query(value = """
             SELECT r FROM Reservation r
-            WHERE r.customer.id = :customerId
+            WHERE r.customer IS NOT NULL 
+                AND r.customer.id = :customerId
                 AND r.status = :status
                 ORDER BY r.date, r.slot.start
             """)
@@ -159,9 +161,10 @@ public interface ReservationDAO extends JpaRepository<Reservation, Long> {
 
     @Query(value = """
             SELECT r FROM Reservation r
-            WHERE r.customer.id = :customerId
+            WHERE r.customer IS NOT NULL AND r.customer.id = :customerId
+            ORDER BY r.date DESC, r.slot.start
             """)
-    Optional<Reservation> findByCustomer(Long customerId);
+    Collection<Reservation> findByCustomer(Long customerId);
 
 
     @Query(value = """

@@ -18,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.application.common.persistence.mapper.CustomerMapper;
 import com.application.common.security.jwt.JwtUtil;
 import com.application.common.security.jwt.constants.TokenValidationConstants;
 import com.application.common.service.EmailService;
@@ -32,10 +33,10 @@ import com.application.customer.persistence.dao.PasswordResetTokenDAO;
 import com.application.customer.persistence.dao.RoleDAO;
 import com.application.customer.persistence.dao.VerificationTokenDAO;
 import com.application.customer.persistence.model.Customer;
+import com.application.customer.persistence.model.Customer.Status;
 import com.application.customer.persistence.model.PasswordResetToken;
 import com.application.customer.persistence.model.Role;
 import com.application.customer.persistence.model.VerificationToken;
-import com.application.customer.service.CustomerService;
 import com.application.customer.web.dto.customer.NewCustomerDTO;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
@@ -62,7 +63,7 @@ public class CustomerAuthenticationService {
 	private final JwtUtil jwtUtil;
 	private final EmailService emailService;
 	private final MessageSource messages;
-	private final CustomerService customerService;
+	private final CustomerMapper customerMapper;
 
 	public CustomerAuthenticationService(CustomerDAO customerDAO, VerificationTokenDAO tokenDAO,
 			PasswordResetTokenDAO passwordTokenRepository,
@@ -73,7 +74,7 @@ public class CustomerAuthenticationService {
 			GoogleAuthService googleAuthService,
 			EmailService emailService,
 			MessageSource messages,
-			CustomerService customerService) {
+			CustomerMapper customerMapper) {
 		this.customerDAO = customerDAO;
 		this.tokenDAO = tokenDAO;
 		this.passwordTokenRepository = passwordTokenRepository;
@@ -84,8 +85,8 @@ public class CustomerAuthenticationService {
 		this.googleAuthService = googleAuthService;
 		this.emailService = emailService;
 		this.messages = messages;
-		this.customerService = customerService;
-		
+		this.customerMapper = customerMapper;
+
 		// Debug: verifichiamo quale AuthenticationManager viene iniettato
 		log.info("CustomerAuthenticationService initialized with AuthenticationManager: {}", 
 			authenticationManager.getClass().getSimpleName());
@@ -189,6 +190,10 @@ public class CustomerAuthenticationService {
 		}
 	}
 
+	public CustomerDTO registerNewCustomer(final NewCustomerDTO accountDto)	{
+		Customer customer = registerNewCustomerAccount(accountDto);
+		return customerMapper.toDTO(customer);
+	}
 	public Customer registerNewCustomerAccount(final NewCustomerDTO accountDto) {
 		if (emailExists(accountDto.getEmail())) {
 			throw new UserAlreadyExistException("There is an account with that email adress: " + accountDto.getEmail());
@@ -359,7 +364,7 @@ public class CustomerAuthenticationService {
 	}
 
 	public void sendPasswordResetEmail(String email, String appUrl, Locale locale) {
-		Customer customer = customerService.findCustomerByEmail(email);
+		Customer customer = customerDAO.findByEmail(email);
 		if (customer == null) {
 			throw new RuntimeException("Customer not found");
 		}
@@ -383,7 +388,7 @@ public class CustomerAuthenticationService {
 				String email = idToken.getPayload().getEmail();
 				String name = (String) idToken.getPayload().get("name");
 
-				Customer customer = customerService.findCustomerByEmail(email);
+				Customer customer = customerDAO.findByEmail(email);
 				if (customer == null) {
 					String[] nameParts = name != null ? name.split(" ", 2) : new String[] { "", "" };
 					NewCustomerDTO accountDto = NewCustomerDTO.builder()
@@ -452,6 +457,11 @@ public class CustomerAuthenticationService {
 
 	private boolean emailExists(final String email) {
 		return customerDAO.findByEmail(email) != null;
+	}
+
+	public void setCustomerStatus(Long id, Status enabled) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'setCustomerStatus'");
 	}
 
 }

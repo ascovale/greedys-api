@@ -12,6 +12,8 @@ import com.application.common.persistence.model.reservation.Reservation;
 import com.application.common.persistence.model.user.AbstractUser;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
@@ -54,6 +56,7 @@ public class Customer extends AbstractUser {
         inverseJoinColumns = @JoinColumn(name = "allergy_id"))
     private List<Allergy> allergies;
 
+    @Enumerated(EnumType.STRING)
     @Builder.Default
     private Status status = Status.VERIFY_TOKEN;
 

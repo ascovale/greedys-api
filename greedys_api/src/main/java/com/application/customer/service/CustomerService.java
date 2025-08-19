@@ -51,12 +51,12 @@ public class CustomerService {
 		return customerDTOMapper.toDTO(customer);
 	}
 
-	public Customer findCustomerByEmail(final String email) {
-		return customerDAO.findByEmail(email);
+	public CustomerDTO findCustomerByEmail(final String email) {
+		return customerDTOMapper.toDTO(customerDAO.findByEmail(email));
 	}
 
-	public Optional<Customer> getCustomerByID(final long id) {
-		return customerDAO.findById(id);
+	public Optional<CustomerDTO> getCustomerByID(final long id) {
+		return customerDAO.findById(id).map(customerDTOMapper::toDTO);
 	}
 
 	private boolean emailExists(final String email) {
@@ -68,8 +68,8 @@ public class CustomerService {
 		customerDAO.save(customer);
 	}
 
-	public Customer getReference(Long customerId) {
-		return customerDAO.getReferenceById(customerId);
+	public CustomerDTO getReference(Long customerId) {
+		return customerDTOMapper.toDTO(customerDAO.getReferenceById(customerId));
 	}
 
 	public void deleteCustomerById(Long id) {
@@ -78,7 +78,7 @@ public class CustomerService {
 		customerDAO.delete(customer);
 	}
 
-	public Customer updateCustomer(Long id, NewCustomerDTO customerDto) {
+	public CustomerDTO updateCustomer(Long id, NewCustomerDTO customerDto) {
 		Customer customer = customerDAO.findById(id)
 				.orElseThrow(() -> new EntityNotFoundException("Customer not found"));
 		
@@ -91,8 +91,8 @@ public class CustomerService {
 						"There is an account with that email address: " + customerDto.getEmail());
 			}
 		}
-		
-		return customerDAO.save(customer);
+
+		return customerDTOMapper.toDTO(customerDAO.save(customer));
 	}
 
 	public CustomerDTO createCustomer(NewCustomerDTO newCustomerDTO) {
@@ -138,18 +138,20 @@ public class CustomerService {
 		}
 	}
 
-	public void enableCustomer(Long customerId) {
+	public CustomerDTO enableCustomer(Long customerId) {
 		Customer customer = customerDAO.findById(customerId)
 				.orElseThrow(() -> new EntityNotFoundException("Customer not found"));
 		customer.setStatus(Customer.Status.ENABLED);
 		customerDAO.save(customer);
+		return customerDTOMapper.toDTO(customer);
 	}
 
-	public void blockCustomer(Long customerId) {
+	public CustomerDTO blockCustomer(Long customerId) {
 		Customer customer = customerDAO.findById(customerId)
 				.orElseThrow(() -> new EntityNotFoundException("Customer not found"));
 		customer.setStatus(Customer.Status.DISABLED);
 		customerDAO.save(customer);
+		return customerDTOMapper.toDTO(customer);
 	}
 
 	public void reportRestaurantAbuse(Long restaurantId) {
@@ -214,63 +216,50 @@ public class CustomerService {
 
 
 
-	public void save(Customer customer) {
-		customerDAO.save(customer);
+	public CustomerDTO save(Customer customer) {
+		return customerDTOMapper.toDTO(customerDAO.save(customer));
 	}
 
-	public void updateFirstName(Long customerId, String firstName) {
-		Customer customer = findCustomerById(customerId);
-		if (customer == null) {
-			throw new IllegalStateException("Customer not found");
-		}
+	public CustomerDTO updateFirstName(Long customerId, String firstName) {
+		Customer customer = customerDAO.findById(customerId)
+				.orElseThrow(() -> new EntityNotFoundException("Customer not found"));
 		customer.setName(firstName);
-		saveCustomer(customer);
+		return customerDTOMapper.toDTO(customerDAO.save(customer));
 	}
 
-	public void updateLastName(Long customerId, String lastName) {
-		Customer customer = findCustomerById(customerId);
-		if (customer == null) {
-			throw new IllegalStateException("Customer not found");
-		}
+	public CustomerDTO updateLastName(Long customerId, String lastName) {
+		Customer customer = customerDAO.findById(customerId)
+				.orElseThrow(() -> new EntityNotFoundException("Customer not found"));
 		customer.setSurname(lastName);
-		saveCustomer(customer);
+		return customerDTOMapper.toDTO(customerDAO.save(customer));
 	}
 
-	public void updateEmail(Long customerId, String email) {
-		Customer customer = findCustomerById(customerId);
-		if (customer == null) {
-			throw new IllegalStateException("Customer not found");
-		}
+	public CustomerDTO updateEmail(Long customerId, String email) {
+		Customer customer = customerDAO.findById(customerId)
+				.orElseThrow(() -> new EntityNotFoundException("Customer not found"));
 		customer.setEmail(email);
-		saveCustomer(customer);
+		return customerDTOMapper.toDTO(customerDAO.save(customer));
 	}
 
-	public void updatePhone(Long customerId, String newPhone) {
+	public CustomerDTO updatePhone(Long customerId, String newPhone) {
 		Customer customer = customerDAO.findById(customerId)
 				.orElseThrow(() -> new EntityNotFoundException("Customer not found"));
 		customer.setPhoneNumber(newPhone);
-		customerDAO.save(customer);
+		return customerDTOMapper.toDTO(customerDAO.save(customer));
 	}
 
-	public void updateDateOfBirth(Long customerId, Date newDateOfBirth) {
+	public CustomerDTO updateDateOfBirth(Long customerId, Date newDateOfBirth) {
 		Customer customer = customerDAO.findById(customerId)
 				.orElseThrow(() -> new EntityNotFoundException("Customer not found"));
 		customer.setDateOfBirth(newDateOfBirth);
-		customerDAO.save(customer);
+		return customerDTOMapper.toDTO(customerDAO.save(customer));
 	}
 
-	private Customer findCustomerById(Long customerId) {
-		return null;
-	}
-
-	private void saveCustomer(Customer customer) {
-	}
-
-	public void markCustomerHasDeleted(Long customerId) {
+	public CustomerDTO markCustomerHasDeleted(Long customerId) {
 		Customer customer = customerDAO.findById(customerId)
 				.orElseThrow(() -> new EntityNotFoundException("Customer not found"));
 		customer.setStatus(Customer.Status.AUTO_DELETE);
-		customerDAO.save(customer);
+		return customerDTOMapper.toDTO(customerDAO.save(customer));
 	}
 
     public CustomerStatisticsDTO getCustomerStatistics(Long customerId) {
@@ -306,7 +295,5 @@ public class CustomerService {
 		Page<Allergy> allergiesPage = customerDAO.findCustomerAllergies(customer, pageRequest);
 		return allergiesPage.map(AllergyDTO::new);
 	}
-
-
 
 }

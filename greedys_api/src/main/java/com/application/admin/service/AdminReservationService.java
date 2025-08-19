@@ -14,9 +14,9 @@ import com.application.common.persistence.model.reservation.Reservation.Status;
 import com.application.common.persistence.model.reservation.Slot;
 import com.application.common.service.reservation.ReservationService;
 import com.application.common.web.dto.reservations.ReservationDTO;
+import com.application.customer.persistence.dao.CustomerDAO;
 import com.application.customer.persistence.dao.ReservationDAO;
 import com.application.customer.persistence.model.Customer;
-import com.application.customer.service.CustomerService;
 import com.application.restaurant.persistence.dao.RestaurantDAO;
 import com.application.restaurant.persistence.dao.SlotDAO;
 import com.application.restaurant.persistence.model.Restaurant;
@@ -33,7 +33,7 @@ public class AdminReservationService {
     private final ReservationDAO reservationDAO;
     private final ReservationService reservationService;
     private final ReservationMapper reservationMapper;
-    private final CustomerService customerService;
+    private final CustomerDAO customerDAO;
     private final RestaurantDAO restaurantDAO;
     private final SlotDAO slotDAO;
 
@@ -52,7 +52,7 @@ public class AdminReservationService {
         // Handle customer - can be anonymous or existing customer
         Customer customer = null;
         if (!reservationDto.isAnonymous()) {
-            customer = customerService.getCustomerByID(reservationDto.getUserId())
+            customer = customerDAO.findById(reservationDto.getUserId())
                     .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
         }
         
@@ -69,6 +69,7 @@ public class AdminReservationService {
                 .customer(customer)
                 .restaurant(restaurant)
                 .createdBy(customer) // For anonymous reservations this will be null
+                .createdByUserType(customer != null ? Reservation.UserType.CUSTOMER : Reservation.UserType.ADMIN) // 🔧 FIX: aggiunto campo mancante per auditing
                 .status(reservationStatus)
                 .build();
         
@@ -158,7 +159,7 @@ public class AdminReservationService {
 
         // Update customer if not anonymous
         if (!reservationDto.isAnonymous() && reservationDto.getUserId() != null) {
-            Customer customer = customerService.getCustomerByID(reservationDto.getUserId())
+            Customer customer = customerDAO.findById(reservationDto.getUserId())
                     .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
             reservation.setCustomer(customer);
             reservation.setCreatedBy(customer);

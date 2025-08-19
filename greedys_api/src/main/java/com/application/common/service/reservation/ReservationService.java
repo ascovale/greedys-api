@@ -188,6 +188,7 @@ public class ReservationService {
                 .slot(slot)
                 .restaurant(restaurant)
             //    .customer(customer)
+                .createdByUserType(Reservation.UserType.RESTAURANT_USER) // 🔧 FIX: aggiunto campo mancante per auditing  
                 .status(Reservation.Status.ACCEPTED)
                 .build();
         reservation = reservationDAO.save(reservation);

@@ -25,6 +25,7 @@ import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.WrapperDataType;
 import com.application.common.controller.annotation.WrapperType;
 import com.application.common.web.ResponseWrapper;
+import com.application.common.web.dto.customer.CustomerDTO;
 import com.application.common.web.dto.security.AuthRequestGoogleDTO;
 import com.application.common.web.dto.security.AuthResponseDTO;
 import com.application.customer.persistence.model.Customer;
@@ -54,14 +55,12 @@ public class CustomerRegistrationController extends BaseController {
     private final CustomerAuthenticationService customerAuthenticationService;
 
     @Operation(summary = "Register a new customer", description = "Registers a new customer account and sends a verification email.")
-    @WrapperType(dataClass = String.class, responseCode = "201")
+    @WrapperType(dataClass = CustomerDTO.class, responseCode = "201")
     @PostMapping("/new")
-    
-    public ResponseEntity<ResponseWrapper<String>> registerCustomerAccount(@Valid @RequestBody NewCustomerDTO accountDto,
+    public ResponseEntity<ResponseWrapper<CustomerDTO>> registerCustomerAccount(@Valid @RequestBody NewCustomerDTO accountDto,
             HttpServletRequest request) {
         return executeCreate("Register new customer", "Customer registered successfully", () -> {
-            customerAuthenticationService.registerNewCustomerAccount(accountDto);
-            return "Customer registered successfully";
+            return customerAuthenticationService.registerNewCustomer(accountDto);
         });
     }
 
