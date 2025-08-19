@@ -13,7 +13,7 @@ import com.application.customer.persistence.model.Customer;
 
 import lombok.RequiredArgsConstructor;
 
-@Service
+@Service("securityCustomerService")
 @Transactional
 @RequiredArgsConstructor
 public class CustomerPermissionService {

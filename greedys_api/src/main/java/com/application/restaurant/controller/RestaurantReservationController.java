@@ -57,7 +57,7 @@ public class RestaurantReservationController extends BaseController {
 	//TODO: Aggiungere verifica che lo slot sia del ristorante
 	@Operation(summary = "Create a new reservation", description = "Endpoint to create a new reservation")
 	@PostMapping("/new")
-	@PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_RESERVATION_WRITE')")
+	@PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_RESERVATION_WRITE') && @securityRUserService.isSlotOwnedByAuthenticatedUser(#dto.idSlot)")
 	@WrapperType(dataClass = ReservationDTO.class, type = WrapperDataType.DTO, responseCode = "201")
 	public ResponseEntity<ResponseWrapper<ReservationDTO>> createReservation(@RequestBody RestaurantNewReservationDTO dto,
 			@AuthenticationPrincipal RUser rUser) {

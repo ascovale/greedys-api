@@ -42,12 +42,12 @@ public class CustomerReservationController extends BaseController {
 	private final CustomerReservationService customerReservationService;
 
 	@Operation(summary = "The customer user asks for a reservation", description = "Endpoint for the customer to request a reservation")
-	@WrapperType(dataClass = String.class, responseCode = "201")
+	@WrapperType(dataClass = ReservationDTO.class, responseCode = "201")
 	@PostMapping("/ask")
-	public ResponseEntity<ResponseWrapper<String>> askReservation(@RequestBody CustomerNewReservationDTO DTO, @AuthenticationPrincipal Customer customer) {
+	public ResponseEntity<ResponseWrapper<ReservationDTO>> askReservation(@RequestBody CustomerNewReservationDTO DTO, @AuthenticationPrincipal Customer customer) {
 		return executeCreate("askReservation", "Reservation requested successfully", () -> {
-			customerReservationService.createReservation(DTO, customer);
-			return "Reservation requested successfully";
+			ReservationDTO reservationDTO = customerReservationService.createReservation(DTO, customer);
+			return reservationDTO;
 		});
 	}
 

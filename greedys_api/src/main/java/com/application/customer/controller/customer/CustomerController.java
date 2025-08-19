@@ -58,16 +58,20 @@ public class CustomerController extends BaseController {
     }
     @Operation(summary = "Update customer phone number", description = "Updates the phone number of a specific customer by their ID")
     @PutMapping("/update/phone")
-    public ResponseEntity<ResponseWrapper<String>> updatePhone(@RequestParam String phone,@AuthenticationPrincipal Customer customer) {
-        return executeVoid("updatePhone", "Phone number updated successfully", () -> 
-            customerService.updatePhone(customer.getId(), phone));
+    @WrapperType(dataClass = CustomerDTO.class, type = WrapperDataType.DTO)
+    public ResponseEntity<ResponseWrapper<CustomerDTO>> updatePhone(@RequestParam String phone,@AuthenticationPrincipal Customer customer) {
+        return execute("updatePhone", "Phone number updated successfully", () -> {
+            return customerService.updatePhone(customer.getId(), phone);
+        });
     }
 
     @Operation(summary = "Update customer date of birth", description = "Updates the date of birth of a specific customer by their ID")
     @PutMapping("/update/dateOfBirth")
-    public ResponseEntity<ResponseWrapper<String>> updateDateOfBirth(@RequestParam Date dateOfBirth,@AuthenticationPrincipal Customer customer) {
-        return executeVoid("updateDateOfBirth", "Date of birth updated successfully", () -> 
-            customerService.updateDateOfBirth(customer.getId(), dateOfBirth));
+    @WrapperType(dataClass = CustomerDTO.class, type = WrapperDataType.DTO)
+    public ResponseEntity<ResponseWrapper<CustomerDTO>> updateDateOfBirth(@RequestParam Date dateOfBirth,@AuthenticationPrincipal Customer customer) {
+        return execute("updateDateOfBirth", "Date of birth updated successfully", () -> {
+            return customerService.updateDateOfBirth(customer.getId(), dateOfBirth);
+        });
     }
     // TODO: Notification preferences settings
 
@@ -156,23 +160,31 @@ public class CustomerController extends BaseController {
 
     @Operation(summary = "Update customer first name", description = "Updates the first name of a specific customer by their ID")
     @PutMapping("/update/firstName")
-    public ResponseEntity<ResponseWrapper<String>> updateFirstName(@RequestParam String firstName, @AuthenticationPrincipal Customer customer) {
-        return executeVoid("updateFirstName", "First name updated successfully", () -> 
-            customerService.updateFirstName(customer.getId(), firstName));
+    @WrapperType(dataClass = CustomerDTO.class, type = WrapperDataType.DTO)
+    public ResponseEntity<ResponseWrapper<CustomerDTO>> updateFirstName(@RequestParam String firstName, @AuthenticationPrincipal Customer customer) {
+        return execute("updateFirstName", "First name updated successfully", () -> {
+            CustomerDTO updatedCustomer = customerService.updateFirstName(customer.getId(), firstName);
+            return updatedCustomer;
+        });
     }
 
     @Operation(summary = "Update customer last name", description = "Updates the last name of a specific customer by their ID")
     @PutMapping("/update/lastName")
-    public ResponseEntity<ResponseWrapper<String>> updateLastName(@RequestParam String lastName, @AuthenticationPrincipal Customer customer) {
-        return executeVoid("updateLastName", "Last name updated successfully", () -> 
-            customerService.updateLastName(customer.getId(), lastName));
+    @WrapperType(dataClass = CustomerDTO.class, type = WrapperDataType.DTO)
+    public ResponseEntity<ResponseWrapper<CustomerDTO>> updateLastName(@RequestParam String lastName, @AuthenticationPrincipal Customer customer) {
+        return execute("updateLastName", "Last name updated successfully", () -> {
+            CustomerDTO updatedCustomer = customerService.updateLastName(customer.getId(), lastName);
+            return updatedCustomer;
+        });
     }
 
     @Operation(summary = "Update customer email", description = "Updates the email of a specific customer by their ID")
     @PutMapping("/update/email")
-    public ResponseEntity<ResponseWrapper<String>> updateEmail(@RequestParam String email, @AuthenticationPrincipal Customer customer) {
-        return executeVoid("updateEmail", "Email updated successfully", () -> 
-            customerService.updateEmail(customer.getId(), email));
+    public ResponseEntity<ResponseWrapper<CustomerDTO>> updateEmail(@RequestParam String email, @AuthenticationPrincipal Customer customer) {
+        return execute("updateEmail", "Email updated successfully", () -> {
+            CustomerDTO updatedCustomer = customerService.updateEmail(customer.getId(), email);
+            return updatedCustomer;
+        });
     }
 
 

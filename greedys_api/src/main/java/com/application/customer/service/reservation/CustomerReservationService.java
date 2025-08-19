@@ -31,25 +31,29 @@ public class CustomerReservationService {
     private final ReservationService reservationService;
     private final SlotDAO slotDAO;
 
-    public void createReservation(CustomerNewReservationDTO reservationDto, Customer customer) {
+    public ReservationDTO createReservation(CustomerNewReservationDTO reservationDto, Customer customer) {
         Slot slot = slotDAO.getReferenceById(reservationDto.getIdSlot());
         if (slot == null || slot.getDeleted()) {
             throw new IllegalArgumentException("Slot is either null or deleted");
         }
         
         Reservation reservation = Reservation.builder()
+                .userName(reservationDto.getUserName()) // 🎯 AGGIUNTO: nome utente per la prenotazione
                 .pax(reservationDto.getPax())
                 .kids(reservationDto.getKids())
                 .notes(reservationDto.getNotes())
                 .date(reservationDto.getReservationDay())
                 .slot(slot)
+                .restaurant(slot.getService().getRestaurant()) // 🎯 AGGIUNTO: restaurant dal slot
                 .customer(customer)
                 .createdBy(customer) // TODO : Test this that it works
+                .createdByUserType(Reservation.UserType.CUSTOMER) // 🔧 FIX: aggiunto campo mancante per auditing
                 .status(Reservation.Status.ACCEPTED)
                 .build();
         
         // 🎯 USA IL SERVICE COMUNE CHE PUBBLICA L'EVENTO
-        reservationService.createNewReservation(reservation);
+        Reservation savedReservation = reservationService.createNewReservation(reservation);
+        return new ReservationDTO(savedReservation);
     }
 
     @Transactional
