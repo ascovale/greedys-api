@@ -165,6 +165,31 @@ public class ReservationService {
         reservationRequestDAO.delete(reservationRequest);
     }
 
+    public ReservationDTO AcceptReservatioModifyRequestAndReturnDTO(Long reservationRequestId) {
+        ReservationRequest reservationRequest = reservationRequestDAO.findById(reservationRequestId)
+                .orElseThrow(() -> new NoSuchElementException("Reservation request not found"));
+        Reservation reservation = reservationRequest.getReservation();
+
+        // Update reservation with the details from the request
+        reservation.setPax(reservationRequest.getPax());
+        reservation.setKids(reservationRequest.getKids());
+        reservation.setNotes(reservationRequest.getNotes());
+        reservation.setDate(reservationRequest.getDate());
+        reservation.setSlot(reservationRequest.getSlot());
+
+        // Save the updated reservation
+        Reservation savedReservation = reservationDAO.save(reservation);
+
+        // Notify the customer of the accepted reservation modification
+        //customerNotificationService.createReservationNotification(reservation, Type.ALTERED);
+
+        // Delete the reservation request after accepting it
+        reservationRequestDAO.delete(reservationRequest);
+
+        // Return the updated reservation as DTO
+        return reservationMapper.toDTO(savedReservation);
+    }
+
     
     public ReservationDTO createReservation(RestaurantNewReservationDTO reservationDto, Restaurant restaurant) {
         log.debug("Creating reservation with DTO: {}", reservationDto);

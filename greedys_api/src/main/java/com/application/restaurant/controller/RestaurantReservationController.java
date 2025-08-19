@@ -72,37 +72,37 @@ public class RestaurantReservationController extends BaseController {
 	@PutMapping("/{reservationId}/accept")
 	@Operation(summary = "Accept a reservation", description = "Endpoint to accept a reservation by its ID")
 	@PreAuthorize("@securityRUserService.hasPermissionOnReservation(#reservationId)")
-	public ResponseEntity<ResponseWrapper<String>> acceptReservation(@PathVariable Long reservationId) {
-		return executeVoid("accept reservation", "Reservation accepted successfully",
-				() -> reservationService.setStatus(reservationId, Reservation.Status.ACCEPTED));
+	@WrapperType(dataClass = ReservationDTO.class, type = WrapperDataType.DTO)
+	public ResponseEntity<ResponseWrapper<ReservationDTO>> acceptReservation(@PathVariable Long reservationId) {
+		return execute("accept reservation", () -> reservationService.setStatus(reservationId, Reservation.Status.ACCEPTED));
 	}
 
 	@PutMapping("/{reservationId}/reject")
 	@Operation(summary = "Reject a reservation", description = "Endpoint to reject a reservation by its ID")
-	public ResponseEntity<ResponseWrapper<String>> rejectReservation(@PathVariable Long reservationId) {
-		return executeVoid("reject reservation", "Reservation rejected successfully",
-				() -> reservationService.setStatus(reservationId, Reservation.Status.REJECTED));
+	@WrapperType(dataClass = ReservationDTO.class, type = WrapperDataType.DTO)
+	public ResponseEntity<ResponseWrapper<ReservationDTO>> rejectReservation(@PathVariable Long reservationId) {
+		return execute("reject reservation", () -> reservationService.setStatus(reservationId, Reservation.Status.REJECTED));
 	}
 
 	@PutMapping("/{reservationId}/no_show")
 	@Operation(summary = "Mark a reservation as no show", description = "Endpoint to mark a reservation as no show by its ID")
-	public ResponseEntity<ResponseWrapper<String>> markReservationNoShow(@PathVariable Long reservationId) {
-		return executeVoid("mark reservation no show", "Reservation marked as no show successfully",
-				() -> reservationService.setStatus(reservationId, Reservation.Status.NO_SHOW));
+	@WrapperType(dataClass = ReservationDTO.class, type = WrapperDataType.DTO)
+	public ResponseEntity<ResponseWrapper<ReservationDTO>> markReservationNoShow(@PathVariable Long reservationId) {
+		return execute("mark reservation no show", () -> reservationService.setStatus(reservationId, Reservation.Status.NO_SHOW));
 	}
 
 	@PutMapping("/{reservationId}/seated")
 	@Operation(summary = "Mark a reservation as seated", description = "Endpoint to mark a reservation as seated by its ID")
-	public ResponseEntity<ResponseWrapper<String>> markReservationSeated(@PathVariable Long reservationId) {
-		return executeVoid("mark reservation seated", "Reservation marked as seated successfully",
-				() -> reservationService.setStatus(reservationId, Reservation.Status.SEATED));
+	@WrapperType(dataClass = ReservationDTO.class, type = WrapperDataType.DTO)
+	public ResponseEntity<ResponseWrapper<ReservationDTO>> markReservationSeated(@PathVariable Long reservationId) {
+		return execute("mark reservation seated", () -> reservationService.setStatus(reservationId, Reservation.Status.SEATED));
 	}
 
 	@Operation(summary = "Accept a reservation modification request", description = "Endpoint to accept a reservation modification request by its ID")
 	@PutMapping("/accept_modification/{modId}")
-	public ResponseEntity<ResponseWrapper<String>> acceptReservationModificationRequest(@PathVariable Long modId) {
-		return executeVoid("accept reservation modification", "Reservation modification accepted successfully",
-				() -> reservationService.AcceptReservatioModifyRequest(modId));
+	@WrapperType(dataClass = ReservationDTO.class, type = WrapperDataType.DTO)
+	public ResponseEntity<ResponseWrapper<ReservationDTO>> acceptReservationModificationRequest(@PathVariable Long modId) {
+		return execute("accept reservation modification", () -> reservationService.AcceptReservatioModifyRequestAndReturnDTO(modId));
 	}
 
 	@Operation(summary = "Get all reservations of a restaurant", description = "Retrieve all reservations of a restaurant")

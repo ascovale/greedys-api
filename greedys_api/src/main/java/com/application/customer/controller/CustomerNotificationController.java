@@ -17,8 +17,8 @@ import com.application.common.controller.annotation.WrapperDataType;
 import com.application.common.controller.annotation.WrapperType;
 import com.application.common.web.PageResponseWrapper;
 import com.application.common.web.ResponseWrapper;
+import com.application.common.web.dto.notification.CustomerNotificationDTO;
 import com.application.common.web.dto.shared.FcmTokenDTO;
-import com.application.customer.persistence.model.CustomerNotification;
 import com.application.customer.service.CustomerFcmTokenService;
 import com.application.customer.service.notification.CustomerNotificationService;
 
@@ -67,28 +67,27 @@ public class CustomerNotificationController extends BaseController {
 
     @Operation(summary = "Get unread notifications", description = "Returns a pageable list of unread notifications")
     @GetMapping("/unread/{page}/{size}")
-    @WrapperType(dataClass = CustomerNotification.class, type = WrapperDataType.PAGE)
-    public ResponseEntity<PageResponseWrapper<CustomerNotification>> getUnreadNotifications(@PathVariable int page,
+    @WrapperType(dataClass = CustomerNotificationDTO.class, type = WrapperDataType.PAGE)
+    public ResponseEntity<PageResponseWrapper<CustomerNotificationDTO>> getUnreadNotifications(@PathVariable int page,
             @PathVariable int size) {
         Pageable pageable = PageRequest.of(page, size);
-        return executePaginated("getUnreadNotifications", () -> notificationService.getUnreadNotifications(pageable));
+        return executePaginated("getUnreadNotifications", () -> notificationService.getUnreadNotificationsDTO(pageable));
     }
 
     @Operation(summary = "Get all notifications", description = "Returns a pageable list of all notifications")
     @GetMapping("/all/{page}/{size}")
-    @WrapperType(dataClass = CustomerNotification.class, type = WrapperDataType.PAGE)
-    public ResponseEntity<PageResponseWrapper<CustomerNotification>> getAllNotifications(@PathVariable int page,
+    @WrapperType(dataClass = CustomerNotificationDTO.class, type = WrapperDataType.PAGE)
+    public ResponseEntity<PageResponseWrapper<CustomerNotificationDTO>> getAllNotifications(@PathVariable int page,
             @PathVariable int size) {
         Pageable pageable = PageRequest.of(page, size);
-        return executePaginated("getAllNotifications", () -> notificationService.getAllNotifications(pageable));
+        return executePaginated("getAllNotifications", () -> notificationService.getAllNotificationsDTO(pageable));
     }
 
     @Operation(summary = "Set notification as read", description = "Sets the notification with the given ID as the given read boolean")
     @PutMapping("/read")
-    
-    public ResponseEntity<ResponseWrapper<String>> setNotificationAsRead(@RequestParam Long notificationId, @RequestParam Boolean read) {
-        return executeVoid("setNotificationAsRead", "Notification marked as read", () -> 
-            notificationService.read(notificationId));
+    @WrapperType(dataClass = CustomerNotificationDTO.class, type = WrapperDataType.DTO)
+    public ResponseEntity<ResponseWrapper<CustomerNotificationDTO>> setNotificationAsRead(@RequestParam Long notificationId, @RequestParam Boolean read) {
+        return execute("setNotificationAsRead", () -> notificationService.markAsReadAndReturn(notificationId));
     }
 
     @Operation(summary = "Register a user's FCM token", description = "Registers a user's FCM token")

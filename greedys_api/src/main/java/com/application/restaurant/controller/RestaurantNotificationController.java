@@ -1,5 +1,7 @@
 package com.application.restaurant.controller;
 
+import java.util.List;
+
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +18,7 @@ import com.application.common.controller.annotation.WrapperDataType;
 import com.application.common.controller.annotation.WrapperType;
 import com.application.common.web.PageResponseWrapper;
 import com.application.common.web.ResponseWrapper;
-import com.application.restaurant.persistence.model.RestaurantNotification;
+import com.application.common.web.dto.notification.RestaurantNotificationDTO;
 import com.application.restaurant.persistence.model.user.RUser;
 import com.application.restaurant.service.RestaurantNotificationService;
 
@@ -36,53 +38,52 @@ public class RestaurantNotificationController extends BaseController {
     private final RestaurantNotificationService restaurantNotificationService;
 
     @Operation(summary = "Get unread notifications", description = "Returns a pageable list of unread notifications")
-    @WrapperType(dataClass = RestaurantNotification.class, type = WrapperDataType.PAGE)
+    @WrapperType(dataClass = RestaurantNotificationDTO.class, type = WrapperDataType.PAGE)
     @GetMapping("/unread/{page}/{size}")
-    public ResponseEntity<PageResponseWrapper<RestaurantNotification>> getUnreadNotifications(
+    public ResponseEntity<PageResponseWrapper<RestaurantNotificationDTO>> getUnreadNotifications(
             @PathVariable int page,
             @PathVariable int size) {
         return executePaginated("get unread notifications", () -> {
             Pageable pageable = PageRequest.of(page, size);
-            return restaurantNotificationService.getNotifications(pageable, true);
+            return restaurantNotificationService.getNotificationsDTO(pageable, true);
         });
     }
 
     @Operation(summary = "Set notification as read", description = "Sets the notification with the given ID as the given read boolean")
-    
+    @WrapperType(dataClass = RestaurantNotificationDTO.class, type = WrapperDataType.DTO)
     @PutMapping("/read")
-    public ResponseEntity<ResponseWrapper<String>> setNotificationAsRead(
+    public ResponseEntity<ResponseWrapper<RestaurantNotificationDTO>> setNotificationAsRead(
             @RequestParam Long notificationId, @RequestParam Boolean read) {
-        return executeVoid("set notification as read", "Notification status updated successfully", () -> 
-            restaurantNotificationService.updateNotificationReadStatus(notificationId, read));
+        return execute("set notification as read", () -> 
+            restaurantNotificationService.updateNotificationReadStatusAndReturnDTO(notificationId, read));
     }
 
     @Operation(summary = "Get all notifications", description = "Returns a pageable list of all notifications")
-    @WrapperType(dataClass = RestaurantNotification.class, type = WrapperDataType.PAGE)
+    @WrapperType(dataClass = RestaurantNotificationDTO.class, type = WrapperDataType.PAGE)
     @GetMapping("/all/{page}/{size}")
-    public ResponseEntity<PageResponseWrapper<RestaurantNotification>> getAllNotifications(
+    public ResponseEntity<PageResponseWrapper<RestaurantNotificationDTO>> getAllNotifications(
             @PathVariable int page,
             @PathVariable int size) {
         return executePaginated("get all notifications", () -> {
             Pageable pageable = PageRequest.of(page, size);
-            return restaurantNotificationService.getNotifications(pageable, false);
+            return restaurantNotificationService.getNotificationsDTO(pageable, false);
         });
     }
 
     @Operation(summary = "Get a specific notification", description = "Returns the notification with the given ID")
-    
     @GetMapping("/{notificationId}")
-    @WrapperType(dataClass = RestaurantNotification.class, type = WrapperDataType.DTO)
-    public ResponseEntity<ResponseWrapper<RestaurantNotification>> getRestaurantNotification(
+    @WrapperType(dataClass = RestaurantNotificationDTO.class, type = WrapperDataType.DTO)
+    public ResponseEntity<ResponseWrapper<RestaurantNotificationDTO>> getRestaurantNotification(
             @PathVariable Long notificationId) {
-        return execute("get notification", () -> restaurantNotificationService.getNotificationById(notificationId));
+        return execute("get notification", () -> restaurantNotificationService.getNotificationByIdDTO(notificationId));
     }
 
     @Operation(summary = "Set all notifications as read", description = "Sets all notifications for the given user as read")
-    
+    @WrapperType(dataClass = RestaurantNotificationDTO.class, type = WrapperDataType.LIST)
     @PutMapping("/all-read")
-    public ResponseEntity<ResponseWrapper<String>> setAllNotificationsAsRead(@AuthenticationPrincipal RUser rUser) {
-        return executeVoid("mark all notifications as read", "All notifications marked as read", () -> 
-            restaurantNotificationService.markAllNotificationsAsRead(rUser.getId()));
+    public ResponseEntity<ResponseWrapper<List<RestaurantNotificationDTO>>> setAllNotificationsAsRead(@AuthenticationPrincipal RUser rUser) {
+        return execute("mark all notifications as read", () -> 
+            restaurantNotificationService.markAllNotificationsAsReadAndReturn(rUser.getId()));
     }
 
     @Operation(summary = "Get unread notifications count", description = "Returns the count of unread notifications")

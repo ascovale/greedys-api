@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.application.common.persistence.model.reservation.Reservation;
 import com.application.common.service.EmailService;
 import com.application.common.service.FirebaseService;
+import com.application.common.web.dto.notification.RestaurantNotificationDTO;
 import com.application.restaurant.persistence.dao.RUserDAO;
 import com.application.restaurant.persistence.dao.RestaurantDAO;
 import com.application.restaurant.persistence.dao.RestaurantNotificationDAO;
@@ -49,6 +50,19 @@ public class RestaurantNotificationService {
 
     public Page<RestaurantNotification> getNotifications(Pageable pageable, boolean unreadOnly) {
         return unreadOnly ? restaurantNotificationDAO.findByReadFalse(pageable) : restaurantNotificationDAO.findAll(pageable);
+    }
+
+    public Page<RestaurantNotificationDTO> getNotificationsDTO(Pageable pageable, boolean unreadOnly) {
+        Page<RestaurantNotification> notifications = getNotifications(pageable, unreadOnly);
+        return notifications.map(RestaurantNotificationDTO::toDTO);
+    }
+
+    public RestaurantNotificationDTO updateNotificationReadStatusAndReturnDTO(Long notificationId, Boolean read) {
+        RestaurantNotification notification = restaurantNotificationDAO.findById(notificationId)
+                .orElseThrow(() -> new IllegalArgumentException("Notification not found"));
+        notification.setRead(read);
+        RestaurantNotification savedNotification = restaurantNotificationDAO.save(notification);
+        return RestaurantNotificationDTO.toDTO(savedNotification);
     }
 
     public void updateNotificationReadStatus(Long notificationId, Boolean read) {
@@ -92,5 +106,33 @@ public class RestaurantNotificationService {
     public RestaurantNotification getNotificationById(Long notificationId) {
         return restaurantNotificationDAO.findById(notificationId)
                 .orElseThrow(() -> new IllegalArgumentException("Notification not found"));
+    }
+
+    public RestaurantNotificationDTO getNotificationByIdDTO(Long notificationId) {
+        RestaurantNotification notification = getNotificationById(notificationId);
+        return RestaurantNotificationDTO.toDTO(notification);
+    }
+
+    public List<RestaurantNotificationDTO> markAllNotificationsAsReadAndReturn(Long idRUser) {
+        RUser user = RUserDAO.findById(idRUser).orElseThrow(() -> new IllegalArgumentException("RUser not found"));
+        
+        // Get all notifications for this user and mark unread ones as read
+        List<RestaurantNotification> userNotifications = restaurantNotificationDAO.findAll()
+                .stream()
+                .filter(notification -> notification.getRUser().getId().equals(idRUser) && !notification.getRead())
+                .toList();
+        
+        // Mark them as read
+        userNotifications.forEach(notification -> notification.setRead(true));
+        List<RestaurantNotification> savedNotifications = restaurantNotificationDAO.saveAll(userNotifications);
+        
+        // Update user counter
+        user.setToReadNotification(0);
+        RUserDAO.save(user);
+        
+        // Return DTOs
+        return savedNotifications.stream()
+                .map(RestaurantNotificationDTO::toDTO)
+                .toList();
     }
 }
