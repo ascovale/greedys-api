@@ -51,14 +51,21 @@ public class RestaurantAuthenticationController extends BaseController {
     public ResponseEntity<ResponseWrapper<List<RestaurantDTO>>> restaurants(
             @Parameter(hidden = true) @RequestHeader("Authorization") String authHeader) {
         return executeList("get restaurants for hub user", () -> {
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            try {
+                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-            if (authentication == null || !authentication.isAuthenticated()) {
-                throw new IllegalStateException("No authenticated principal found");
+                if (authentication == null || !authentication.isAuthenticated()) {
+                    throw new IllegalStateException("No authenticated principal found");
+                }
+
+                String hubEmail = extractHubEmail(authentication, authHeader);
+                return restaurantAuthenticationService.getRestaurantsForUserHub(hubEmail);
+            } catch (Exception e) {
+                if (e instanceof RuntimeException) {
+                    throw (RuntimeException) e;
+                }
+                throw new RuntimeException("Failed to get restaurants for hub user", e);
             }
-
-            String hubEmail = extractHubEmail(authentication, authHeader);
-            return restaurantAuthenticationService.getRestaurantsForUserHub(hubEmail);
         });
     }
 

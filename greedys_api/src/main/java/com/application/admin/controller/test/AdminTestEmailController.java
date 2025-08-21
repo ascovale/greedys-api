@@ -73,17 +73,21 @@ public class AdminTestEmailController extends BaseController {
     @PostMapping("/test_smtp_connection")
     public ResponseEntity<ResponseWrapper<String>> testSmtpConnection() {
         return executeCreate("test smtp connection", () -> {
-            log.info("Testing connection to SMTP server...");
-            Object sender = emailService.getMailSender();
-            if (!(sender instanceof JavaMailSenderImpl)) {
-                return "MailSender is not an instance of JavaMailSenderImpl: " + sender.getClass().getName();
+            try {
+                log.info("Testing connection to SMTP server...");
+                Object sender = emailService.getMailSender();
+                if (!(sender instanceof JavaMailSenderImpl)) {
+                    return "MailSender is not an instance of JavaMailSenderImpl: " + sender.getClass().getName();
+                }
+                JavaMailSenderImpl mailSender = (JavaMailSenderImpl) sender;
+                mailSender.getJavaMailProperties().put("mail.smtp.connectiontimeout", "100000");
+                mailSender.getJavaMailProperties().put("mail.smtp.timeout", "100000");
+                mailSender.testConnection();
+                log.info("Connection successful.");
+                return "SMTP connection successful";
+            } catch (Exception e) {
+                throw new RuntimeException("SMTP connection test failed", e);
             }
-            JavaMailSenderImpl mailSender = (JavaMailSenderImpl) sender;
-            mailSender.getJavaMailProperties().put("mail.smtp.connectiontimeout", "100000");
-            mailSender.getJavaMailProperties().put("mail.smtp.timeout", "100000");
-            mailSender.testConnection();
-            log.info("Connection successful.");
-            return "SMTP connection successful";
         });
     }
     public static class NotificationRequest {

@@ -166,7 +166,7 @@ public class BaseController {
      * Exceptions are handled by GlobalExceptionHandler
      */
     @ReadApiResponses
-    protected ResponseEntity<ResponseWrapper<String>> executeVoid(String operationName, String successMessage, VoidOperation operation) throws Exception {
+    protected ResponseEntity<ResponseWrapper<String>> executeVoid(String operationName, String successMessage, VoidOperation operation) {
         operation.execute();
         return ok(successMessage);
     }
@@ -176,7 +176,7 @@ public class BaseController {
      * Exceptions are handled by GlobalExceptionHandler
      */
     @ReadApiResponses
-    protected ResponseEntity<ResponseWrapper<String>> executeVoid(String operationName, VoidOperation operation) throws Exception {
+    protected ResponseEntity<ResponseWrapper<String>> executeVoid(String operationName, VoidOperation operation) {
         operation.execute();
         return ok("Operation " + operationName + " completed successfully");
     }
@@ -186,7 +186,7 @@ public class BaseController {
      * Exceptions are handled by GlobalExceptionHandler
      */
     @ReadApiResponses
-    protected <T> ResponseEntity<ResponseWrapper<T>> execute(String operation, OperationSupplier<T> supplier) throws Exception {
+    protected <T> ResponseEntity<ResponseWrapper<T>> execute(String operation, OperationSupplier<T> supplier) {
         T result = supplier.get();
         return ok(result, "Operation " + operation + " completed successfully");
     }
@@ -196,7 +196,7 @@ public class BaseController {
      * Exceptions are handled by GlobalExceptionHandler
      */
     @ReadApiResponses
-    protected <T> ResponseEntity<ResponseWrapper<T>> execute(String operation, String successMessage, OperationSupplier<T> supplier) throws Exception {
+    protected <T> ResponseEntity<ResponseWrapper<T>> execute(String operation, String successMessage, OperationSupplier<T> supplier) {
         T result = supplier.get();
         return ok(result, successMessage);
     }
@@ -206,7 +206,7 @@ public class BaseController {
      * Exceptions are handled by GlobalExceptionHandler
      */
     @CreateApiResponses
-    protected <T> ResponseEntity<ResponseWrapper<T>> executeCreate(String operation, String successMessage, OperationSupplier<T> supplier) throws Exception {
+    protected <T> ResponseEntity<ResponseWrapper<T>> executeCreate(String operation, String successMessage, OperationSupplier<T> supplier) {
         T result = supplier.get();
         return created(result, successMessage);
     }
@@ -216,7 +216,7 @@ public class BaseController {
      * Exceptions are handled by GlobalExceptionHandler
      */
     @CreateApiResponses
-    protected <T> ResponseEntity<ResponseWrapper<T>> executeCreate(String operation, OperationSupplier<T> supplier) throws Exception {
+    protected <T> ResponseEntity<ResponseWrapper<T>> executeCreate(String operation, OperationSupplier<T> supplier) {
         T result = supplier.get();
         return created(result, "Operation " + operation + " completed successfully");
     }
@@ -226,7 +226,7 @@ public class BaseController {
      * Exceptions are handled by GlobalExceptionHandler
      */
     @ReadApiResponses
-    protected <T> ResponseEntity<ResponseWrapper<List<T>>> executeList(String operation, OperationSupplier<List<T>> supplier) throws Exception {
+    protected <T> ResponseEntity<ResponseWrapper<List<T>>> executeList(String operation, OperationSupplier<List<T>> supplier) {
         List<T> result = supplier.get();
         return okList(result, "Operation " + operation + " completed successfully");
     }
@@ -236,7 +236,7 @@ public class BaseController {
      * Exceptions are handled by GlobalExceptionHandler
      */
     @ReadApiResponses
-    protected <T> ResponseEntity<ResponseWrapper<List<T>>> executeList(String operation, String successMessage, OperationSupplier<List<T>> supplier) throws Exception {
+    protected <T> ResponseEntity<ResponseWrapper<List<T>>> executeList(String operation, String successMessage, OperationSupplier<List<T>> supplier) {
         List<T> result = supplier.get();
         return okList(result, successMessage);
     }
@@ -246,7 +246,7 @@ public class BaseController {
      * Exceptions are handled by GlobalExceptionHandler
      */
     @ReadApiResponses
-    protected <T> ResponseEntity<ResponseWrapper<Page<T>>> executePaginated(String operation, OperationSupplier<Page<T>> supplier) throws Exception {
+    protected <T> ResponseEntity<ResponseWrapper<Page<T>>> executePaginated(String operation, OperationSupplier<Page<T>> supplier) {
         Page<T> page = supplier.get();
         return ResponseEntity.ok(ResponseWrapper.success(page, 
             String.format("Page %d of %d (%d total items)", 
@@ -258,7 +258,7 @@ public class BaseController {
      * Exceptions are handled by GlobalExceptionHandler
      */
     @ReadApiResponses
-    protected <T> ResponseEntity<ResponseWrapper<Page<T>>> executePaginated(String operation, String successMessage, OperationSupplier<Page<T>> supplier) throws Exception {
+    protected <T> ResponseEntity<ResponseWrapper<Page<T>>> executePaginated(String operation, String successMessage, OperationSupplier<Page<T>> supplier) {
         Page<T> page = supplier.get();
         return ResponseEntity.ok(ResponseWrapper.success(page, successMessage));
     }
@@ -268,7 +268,7 @@ public class BaseController {
      */
     @FunctionalInterface
     protected interface OperationSupplier<T> {
-        T get() throws Exception;
+        T get();
     }
 
     /**
@@ -276,6 +276,6 @@ public class BaseController {
      */
     @FunctionalInterface
     protected interface VoidOperation {
-        void execute() throws Exception;
+        void execute();
     }
 }
