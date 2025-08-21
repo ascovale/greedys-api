@@ -1,4 +1,4 @@
-package com.application.common.spring;
+package com.application.common.spring.dev;
 
 import java.util.Optional;
 import java.util.Properties;

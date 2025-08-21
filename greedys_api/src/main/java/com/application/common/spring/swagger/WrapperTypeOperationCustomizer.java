@@ -1,4 +1,4 @@
-package com.application.common.spring;
+package com.application.common.spring.swagger;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
@@ -13,14 +13,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 
-import com.application.common.controller.annotation.WrapperType;
 import com.application.common.web.ResponseWrapper;
 
 import io.swagger.v3.oas.models.Operation;
 
 /**
  * OperationCustomizer that automatically detects wrapper types through reflection
- * of method return types, eliminating the need for @WrapperType annotations
+ * of method return types
  */
 @Component
 public class WrapperTypeOperationCustomizer implements OperationCustomizer {
@@ -28,17 +27,6 @@ public class WrapperTypeOperationCustomizer implements OperationCustomizer {
     @Override
     public Operation customize(Operation operation, HandlerMethod handlerMethod) {
         Method method = handlerMethod.getMethod();
-        
-        // Check for legacy @WrapperType annotation first (for backward compatibility)
-        WrapperType wrapperType = method.getAnnotation(WrapperType.class);
-        if (wrapperType != null) {
-            Map<String, Object> wrapperInfo = new HashMap<>();
-            wrapperInfo.put("dataClass", wrapperType.dataClass().getName());
-            wrapperInfo.put("type", wrapperType.type().name());
-            wrapperInfo.put("description", wrapperType.description());
-            operation.addExtension("x-wrapper-type", wrapperInfo);
-            return operation;
-        }
         
         // Use reflection to automatically detect wrapper type
         WrapperTypeInfo autoDetected = detectWrapperTypeFromMethod(method);

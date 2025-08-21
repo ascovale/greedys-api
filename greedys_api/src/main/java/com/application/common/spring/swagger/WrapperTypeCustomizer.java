@@ -1,4 +1,4 @@
-package com.application.common.spring;
+package com.application.common.spring.swagger;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,7 +20,7 @@ import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 
 /**
- * OpenAPI customizer that processes @WrapperType annotations and generates
+ * OpenAPI customizer that processes wrapper type extensions and generates
  * appropriate schemas for ResponseWrapper with different metadata types
  */
 @Component
@@ -343,7 +343,7 @@ public class WrapperTypeCustomizer implements OpenApiCustomizer {
             return;
         }
 
-        // Look for @WrapperType annotation data in extensions
+        // Look for wrapper type data in extensions
         Object wrapperTypeData = operation.getExtensions().get("x-wrapper-type");
         if (wrapperTypeData instanceof Map) {
             @SuppressWarnings("unchecked")
