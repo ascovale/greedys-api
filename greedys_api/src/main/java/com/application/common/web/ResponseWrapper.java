@@ -156,7 +156,6 @@ public class ResponseWrapper<T> {
                 .success(false)
                 .message(message)
                 .error(ErrorDetails.builder()
-                        .message(message)
                         .build())
                 .build();
     }
@@ -167,7 +166,6 @@ public class ResponseWrapper<T> {
                 .message(message)
                 .error(ErrorDetails.builder()
                         .code(errorCode)
-                        .message(message)
                         .build())
                 .build();
     }
@@ -178,7 +176,6 @@ public class ResponseWrapper<T> {
                 .message(message)
                 .error(ErrorDetails.builder()
                         .code("NOT_FOUND")
-                        .message(message)
                         .build())
                 .build();
     }
@@ -189,7 +186,6 @@ public class ResponseWrapper<T> {
                 .message(message)
                 .error(ErrorDetails.builder()
                         .code("CONFLICT")
-                        .message(message)
                         .build())
                 .build();
     }
@@ -200,7 +196,6 @@ public class ResponseWrapper<T> {
                 .message(message)
                 .error(ErrorDetails.builder()
                         .code("UNAUTHORIZED")
-                        .message(message)
                         .build())
                 .build();
     }
@@ -211,7 +206,6 @@ public class ResponseWrapper<T> {
                 .message(message)
                 .error(ErrorDetails.builder()
                         .code("FORBIDDEN")
-                        .message(message)
                         .build())
                 .build();
     }
@@ -222,7 +216,6 @@ public class ResponseWrapper<T> {
                 .message(message)
                 .error(ErrorDetails.builder()
                         .code("INTERNAL_SERVER_ERROR")
-                        .message(message)
                         .build())
                 .build();
     }
@@ -234,7 +227,6 @@ public class ResponseWrapper<T> {
                 .message(message)
                 .error(ErrorDetails.builder()
                         .code(errorCode)
-                        .message(message)
                         .build())
                 .build();
     }
@@ -245,7 +237,6 @@ public class ResponseWrapper<T> {
                 .message(message)
                 .error(ErrorDetails.builder()
                         .code(code)
-                        .message(message)
                         .build())
                 .build();
     }
@@ -253,7 +244,7 @@ public class ResponseWrapper<T> {
     public static <T> ResponseWrapper<T> error(ErrorDetails error) {
         return ResponseWrapper.<T>builder()
                 .success(false)
-                .message(error.getMessage())
+                .message("An error occurred")  // Messaggio di fallback se non specificato
                 .error(error)
                 .build();
     }
