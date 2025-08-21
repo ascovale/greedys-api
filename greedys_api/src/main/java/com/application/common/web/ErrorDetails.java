@@ -19,24 +19,19 @@ public class ErrorDetails {
     @Schema(description = "Error code", example = "VALIDATION_ERROR")
     private String code;
 
-    @Schema(description = "Error message", example = "Invalid input data")
-    private String message;
-
-    @Schema(description = "Field-specific errors")
+    @Schema(description = "Field-specific errors or additional details")
     private Object details;
 
     // Factory methods for convenience
-    public static ErrorDetails of(String code, String message) {
+    public static ErrorDetails of(String code) {
         return ErrorDetails.builder()
                 .code(code)
-                .message(message)
                 .build();
     }
 
-    public static ErrorDetails of(String code, String message, Object details) {
+    public static ErrorDetails of(String code, Object details) {
         return ErrorDetails.builder()
                 .code(code)
-                .message(message)
                 .details(details)
                 .build();
     }
