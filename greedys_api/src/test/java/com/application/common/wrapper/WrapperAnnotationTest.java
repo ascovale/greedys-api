@@ -27,13 +27,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.annotation.WrapperDataType;
 import com.application.common.controller.annotation.WrapperType;
-import com.application.common.web.ListResponseWrapper;
-import com.application.common.web.PageResponseWrapper;
 import com.application.common.web.ResponseWrapper;
 
 /**
  * Test di reflection per verificare la corrispondenza tra l'annotazione @WrapperType
- * e il tipo generico usato in ResponseWrapper<T>, ListResponseWrapper<T> e PageResponseWrapper<T> nei metodi dei controller.
+ * e il tipo generico usato in ResponseWrapper<T> nei metodi dei controller.
+ * Il test verifica che il dataClass corrisponda al tipo T e che il WrapperDataType
+ * sia appropriato (DTO per oggetti singoli, LIST per List<T>, PAGE per Page<T>).
  */
 public class WrapperAnnotationTest {
 
@@ -103,26 +103,26 @@ public class WrapperAnnotationTest {
     
     @Test
     public void testListAndPageWrapperControllers() {
-        // Test specifico per metodi che usano ListResponseWrapper e PageResponseWrapper
+        // Test specifico per metodi che usano ResponseWrapper<List<T>> e ResponseWrapper<Page<T>>
         try {
-            // Test AdminRestaurantReservationController con ListResponseWrapper
+            // Test AdminRestaurantReservationController con ResponseWrapper<List<T>>
             Class<?> adminRestaurantReservationController = Class.forName("com.application.admin.controller.restaurant.AdminRestaurantReservationController");
             
             Method getReservationsMethod = adminRestaurantReservationController.getDeclaredMethod("getReservations", 
                     Long.class, java.time.LocalDate.class, java.time.LocalDate.class);
             validateMethodSignature(adminRestaurantReservationController, getReservationsMethod);
             
-            // Test metodo con PageResponseWrapper
+            // Test metodo con ResponseWrapper<Page<T>>
             Method getReservationsPageableMethod = adminRestaurantReservationController.getDeclaredMethod("getReservationsPageable", 
                     Long.class, java.time.LocalDate.class, java.time.LocalDate.class, int.class, int.class);
             validateMethodSignature(adminRestaurantReservationController, getReservationsPageableMethod);
             
-            // Test AdminServicesController con ListResponseWrapper
+            // Test AdminServicesController con ResponseWrapper<List<T>>
             Class<?> adminServicesController = Class.forName("com.application.admin.controller.AdminServicesController");
             Method getServiceTypesMethod = adminServicesController.getDeclaredMethod("getServiceTypes");
             validateMethodSignature(adminServicesController, getServiceTypesMethod);
             
-            System.out.println("✅ Controller con ListResponseWrapper e PageResponseWrapper validati con successo");
+            System.out.println("✅ Controller con ResponseWrapper<List<T>> e ResponseWrapper<Page<T>> validati con successo");
             
         } catch (ClassNotFoundException | NoSuchMethodException e) {
             fail("Impossibile trovare la classe o il metodo per il test specifico: " + e.getMessage());
@@ -169,8 +169,7 @@ public class WrapperAnnotationTest {
         
         // Verifica che il tipo di ritorno sia parametrizzato
         if (!(genericReturnType instanceof ParameterizedType)) {
-            // Ignora metodi che non hanno tipi generici (es. void methods)
-            return;
+            return; // Ignora metodi non parametrizzati
         }
         
         ParameterizedType returnType = (ParameterizedType) genericReturnType;
@@ -187,56 +186,84 @@ public class WrapperAnnotationTest {
             return;
         }
         
-        // Verifica che il parametro di ResponseEntity sia un wrapper (ResponseWrapper, ListResponseWrapper, PageResponseWrapper)
+        // Verifica che il parametro di ResponseEntity sia ResponseWrapper
         Type responseBodyType = responseEntityArgs[0];
         if (!(responseBodyType instanceof ParameterizedType)) {
-            return; // Ignora se non è parametrizzato (es. ResponseEntity<String> senza wrapper)
+            return; // Ignora se non è parametrizzato
         }
         
         ParameterizedType wrapperType = (ParameterizedType) responseBodyType;
         Class<?> rawWrapperType = (Class<?>) wrapperType.getRawType();
         
-        // Determina il tipo di wrapper e l'annotazione attesa
-        WrapperDataType expectedWrapperDataType;
-        String wrapperName;
-        
-        if (rawWrapperType == ResponseWrapper.class) {
-            expectedWrapperDataType = WrapperDataType.DTO;
-            wrapperName = "ResponseWrapper";
-        } else if (rawWrapperType == ListResponseWrapper.class) {
-            expectedWrapperDataType = WrapperDataType.LIST;
-            wrapperName = "ListResponseWrapper";
-        } else if (rawWrapperType == PageResponseWrapper.class) {
-            expectedWrapperDataType = WrapperDataType.PAGE;
-            wrapperName = "PageResponseWrapper";
-        } else {
-            return; // Ignora se non è uno dei wrapper supportati
+        // Deve essere ResponseWrapper
+        if (rawWrapperType != ResponseWrapper.class) {
+            return; // Ignora se non è ResponseWrapper
         }
         
-        // Estrai il tipo T dal wrapper<T>
+        // Estrai il tipo T dal ResponseWrapper<T>
         Type[] wrapperArgs = wrapperType.getActualTypeArguments();
         if (wrapperArgs.length != 1) {
-            fail(String.format("%s deve avere esattamente un parametro generico in %s.%s", 
-                    wrapperName, controllerClass.getSimpleName(), method.getName()));
+            fail(String.format("ResponseWrapper deve avere esattamente un parametro generico in %s.%s", 
+                    controllerClass.getSimpleName(), method.getName()));
             return;
         }
         
         Type actualWrapperTypeArg = wrapperArgs[0];
-        Class<?> expectedWrappedClass;
         
-        // Gestisci diversi tipi di Type
+        // Determina il tipo di contenuto e la classe dati
+        WrapperDataType expectedWrapperDataType;
+        Class<?> expectedDataClass;
+        String contentDescription;
+        
         if (actualWrapperTypeArg instanceof Class) {
-            expectedWrappedClass = (Class<?>) actualWrapperTypeArg;
+            // ResponseWrapper<SomeClass> - DTO
+            expectedWrapperDataType = WrapperDataType.DTO;
+            expectedDataClass = (Class<?>) actualWrapperTypeArg;
+            contentDescription = expectedDataClass.getSimpleName();
         } else if (actualWrapperTypeArg instanceof ParameterizedType) {
-            expectedWrappedClass = (Class<?>) ((ParameterizedType) actualWrapperTypeArg).getRawType();
+            ParameterizedType parameterizedArg = (ParameterizedType) actualWrapperTypeArg;
+            Class<?> rawType = (Class<?>) parameterizedArg.getRawType();
+            
+            if (rawType == java.util.List.class) {
+                // ResponseWrapper<List<SomeClass>> - LIST
+                expectedWrapperDataType = WrapperDataType.LIST;
+                Type[] listArgs = parameterizedArg.getActualTypeArguments();
+                if (listArgs.length != 1 || !(listArgs[0] instanceof Class)) {
+                    fail(String.format("List deve avere esattamente un parametro di tipo Class in %s.%s", 
+                            controllerClass.getSimpleName(), method.getName()));
+                    return;
+                }
+                expectedDataClass = (Class<?>) listArgs[0];
+                contentDescription = "List<" + expectedDataClass.getSimpleName() + ">";
+            } else if (rawType.getSimpleName().equals("Page")) {
+                // ResponseWrapper<Page<SomeClass>> - PAGE
+                expectedWrapperDataType = WrapperDataType.PAGE;
+                Type[] pageArgs = parameterizedArg.getActualTypeArguments();
+                if (pageArgs.length != 1 || !(pageArgs[0] instanceof Class)) {
+                    fail(String.format("Page deve avere esattamente un parametro di tipo Class in %s.%s", 
+                            controllerClass.getSimpleName(), method.getName()));
+                    return;
+                }
+                expectedDataClass = (Class<?>) pageArgs[0];
+                contentDescription = "Page<" + expectedDataClass.getSimpleName() + ">";
+            } else {
+                // Altri tipi parametrizzati - tratta come DTO
+                expectedWrapperDataType = WrapperDataType.DTO;
+                expectedDataClass = rawType;
+                contentDescription = rawType.getSimpleName() + "<...>";
+            }
         } else if (actualWrapperTypeArg instanceof WildcardType) {
             // Gestisci wildcard types come ? extends SomeClass
             WildcardType wildcardType = (WildcardType) actualWrapperTypeArg;
             Type[] upperBounds = wildcardType.getUpperBounds();
             if (upperBounds.length > 0 && upperBounds[0] instanceof Class) {
-                expectedWrappedClass = (Class<?>) upperBounds[0];
+                expectedWrapperDataType = WrapperDataType.DTO;
+                expectedDataClass = (Class<?>) upperBounds[0];
+                contentDescription = "? extends " + expectedDataClass.getSimpleName();
             } else {
-                expectedWrappedClass = Object.class;
+                expectedWrapperDataType = WrapperDataType.DTO;
+                expectedDataClass = Object.class;
+                contentDescription = "?";
             }
         } else {
             fail(String.format("Tipo non supportato per il parametro generico in %s.%s: %s", 
@@ -244,63 +271,47 @@ public class WrapperAnnotationTest {
             return;
         }
         
-        // REGOLA SPECIALE: Ignora ResponseWrapper<String> senza annotazione (comportamento di default)
-        // E anche ResponseWrapper<T> senza annotazione, considerando DTO come default
-        if (rawWrapperType == ResponseWrapper.class) {
-            WrapperType annotation = method.getAnnotation(WrapperType.class);
+        // Verifica la presenza dell'annotazione @WrapperType
+        WrapperType annotation = method.getAnnotation(WrapperType.class);
+        
+        // REGOLA SPECIALE: ResponseWrapper<String> senza annotazione è accettabile per metodi void
+        if (expectedDataClass == String.class && expectedWrapperDataType == WrapperDataType.DTO) {
             if (annotation == null) {
-                // ResponseWrapper senza annotazione è accettabile (default = DTO)
-                System.out.printf("⚪ %s.%s - ResponseWrapper<%s> senza annotazione (default DTO OK)%n",
-                        controllerClass.getSimpleName(), method.getName(), expectedWrappedClass.getSimpleName());
-                return;
-            } else if (annotation.dataClass() == String.class && 
-                       annotation.type() == WrapperDataType.DTO && 
-                       "200".equals(annotation.responseCode())) {
-                // Annotazione ridondante ma non errore per ResponseWrapper<String>
-                System.out.printf("⚪ %s.%s - Annotazione ridondante ma valida per ResponseWrapper<String>%n",
+                System.out.printf("⚪ %s.%s - ResponseWrapper<String> senza annotazione (presumibilmente void operation)%n",
                         controllerClass.getSimpleName(), method.getName());
                 return;
             }
-            // Se ha responseCode diverso da "200" o dataClass diversa da quella attesa, continua la validazione normale
         }
         
-        // Verifica la presenza dell'annotazione @WrapperType per tutti gli altri casi
-        WrapperType annotation = method.getAnnotation(WrapperType.class);
         assertNotNull(annotation, String.format(
-                "Il metodo %s.%s che ritorna ResponseEntity<%s<%s>> deve avere l'annotazione @WrapperType",
-                controllerClass.getSimpleName(), method.getName(), wrapperName, expectedWrappedClass.getSimpleName()
+                "Il metodo %s.%s che ritorna ResponseEntity<ResponseWrapper<%s>> deve avere l'annotazione @WrapperType",
+                controllerClass.getSimpleName(), method.getName(), contentDescription
         ));
         
-        // Verifica che il dataClass dell'annotazione corrisponda al tipo T
+        // Verifica che il dataClass dell'annotazione corrisponda alla classe dati estratta
         Class<?> annotatedDataClass = annotation.dataClass();
-        assertEquals(expectedWrappedClass, annotatedDataClass, String.format(
-                "Mismatch in %s.%s: @WrapperType(dataClass=%s) non corrisponde a %s<%s>",
+        assertEquals(expectedDataClass, annotatedDataClass, String.format(
+                "Mismatch in %s.%s: @WrapperType(dataClass=%s) non corrisponde al tipo dati estratto %s da ResponseWrapper<%s>",
                 controllerClass.getSimpleName(), method.getName(),
-                annotatedDataClass.getSimpleName(), wrapperName, expectedWrappedClass.getSimpleName()
+                annotatedDataClass.getSimpleName(), expectedDataClass.getSimpleName(), contentDescription
         ));
         
-        // Verifica che il tipo di wrapper nell'annotazione corrisponda al wrapper utilizzato
-        // NOTA: Per ResponseWrapper, se type non è specificato, assume DTO come default
+        // Verifica che il tipo di wrapper nell'annotazione corrisponda al contenuto
         WrapperDataType annotatedWrapperType = annotation.type();
-        if (rawWrapperType == ResponseWrapper.class && annotatedWrapperType == WrapperDataType.DTO) {
-            // Per ResponseWrapper, DTO è considerato default, quindi non è necessario specificarlo
-            // Ma se è specificato esplicitamente, va bene comunque
-        } else {
-            assertEquals(expectedWrapperDataType, annotatedWrapperType, String.format(
-                    "Mismatch wrapper type in %s.%s: @WrapperType(type=%s) non corrisponde a %s utilizzato",
-                    controllerClass.getSimpleName(), method.getName(),
-                    annotatedWrapperType, wrapperName
-            ));
-        }
-        
-        System.out.printf("✅ %s.%s - Annotazione corretta: @WrapperType(dataClass=%s, type=%s) ↔ %s<%s>%n",
+        assertEquals(expectedWrapperDataType, annotatedWrapperType, String.format(
+                "Mismatch wrapper type in %s.%s: @WrapperType(type=%s) non corrisponde al tipo atteso %s per ResponseWrapper<%s>",
                 controllerClass.getSimpleName(), method.getName(),
-                annotatedDataClass.getSimpleName(), annotatedWrapperType, wrapperName, expectedWrappedClass.getSimpleName());
+                annotatedWrapperType, expectedWrapperDataType, contentDescription
+        ));
+        
+        System.out.printf("✅ %s.%s - Annotazione corretta: @WrapperType(dataClass=%s, type=%s) ↔ ResponseWrapper<%s>%n",
+                controllerClass.getSimpleName(), method.getName(),
+                annotatedDataClass.getSimpleName(), annotatedWrapperType, contentDescription);
     }
     
     @Test
     public void testMethodsWithoutWrapperTypeAnnotation() {
-        // Test per verificare che i metodi senza wrapper non abbiano @WrapperType
+        // Test per verificare che i metodi senza ResponseWrapper non abbiano @WrapperType
         String[] controllerPackages = {
             "com.application.admin.controller",
             "com.application.restaurant.controller", 
@@ -321,10 +332,10 @@ public class WrapperAnnotationTest {
                     continue;
                 }
                 
-                // Se il metodo non ritorna un wrapper, non dovrebbe avere @WrapperType
+                // Se il metodo non ritorna ResponseWrapper, non dovrebbe avere @WrapperType
                 if (!returnsAnyWrapper(method) && method.isAnnotationPresent(WrapperType.class)) {
                     fail(String.format(
-                            "Il metodo %s.%s non ritorna un wrapper ma ha l'annotazione @WrapperType",
+                            "Il metodo %s.%s non ritorna ResponseWrapper ma ha l'annotazione @WrapperType",
                             controllerClass.getSimpleName(), method.getName()
                     ));
                 }
@@ -353,8 +364,6 @@ public class WrapperAnnotationTest {
         ParameterizedType responseBodyType = (ParameterizedType) args[0];
         Class<?> rawType = (Class<?>) responseBodyType.getRawType();
         
-        return rawType == ResponseWrapper.class || 
-               rawType == ListResponseWrapper.class || 
-               rawType == PageResponseWrapper.class;
+        return rawType == ResponseWrapper.class;
     }
 }

@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.WrapperDataType;
 import com.application.common.controller.annotation.WrapperType;
-import com.application.common.web.ListResponseWrapper;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.TableDTO;
 import com.application.restaurant.service.TableService;
@@ -41,7 +40,7 @@ public class RestaurantTableController extends BaseController {
 	@Operation(summary = "Get tables of a room", description = "Retrieve the tables of a specific room")
 	
 	@WrapperType(dataClass = TableDTO.class, type = WrapperDataType.LIST)
-    public ResponseEntity<ListResponseWrapper<TableDTO>> getTables(@PathVariable Long roomId) {
+    public ResponseEntity<ResponseWrapper<List<TableDTO>>> getTables(@PathVariable Long roomId) {
 		return executeList("get tables for room", () -> {
 			log.info("Getting tables for room ID: {}", roomId);
 			Collection<TableDTO> tables = tableService.findByRoom(roomId);

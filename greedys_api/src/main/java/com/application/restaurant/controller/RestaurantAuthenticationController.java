@@ -1,5 +1,7 @@
 package com.application.restaurant.controller;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -16,7 +18,6 @@ import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.WrapperDataType;
 import com.application.common.controller.annotation.WrapperType;
 import com.application.common.security.jwt.JwtUtil;
-import com.application.common.web.ListResponseWrapper;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.RestaurantDTO;
 import com.application.common.web.dto.security.AuthResponseDTO;
@@ -47,7 +48,7 @@ public class RestaurantAuthenticationController extends BaseController {
     @GetMapping(value = "/restaurants", produces = "application/json")
     
     @WrapperType(dataClass = RestaurantDTO.class, type = WrapperDataType.LIST)
-    public ResponseEntity<ListResponseWrapper<RestaurantDTO>> restaurants(
+    public ResponseEntity<ResponseWrapper<List<RestaurantDTO>>> restaurants(
             @Parameter(hidden = true) @RequestHeader("Authorization") String authHeader) {
         return executeList("get restaurants for hub user", () -> {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

@@ -1,5 +1,6 @@
 package com.application.customer.controller;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.WrapperDataType;
 import com.application.common.controller.annotation.WrapperType;
-import com.application.common.web.PageResponseWrapper;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.notification.CustomerNotificationDTO;
 import com.application.common.web.dto.shared.FcmTokenDTO;
@@ -68,7 +68,7 @@ public class CustomerNotificationController extends BaseController {
     @Operation(summary = "Get unread notifications", description = "Returns a pageable list of unread notifications")
     @GetMapping("/unread/{page}/{size}")
     @WrapperType(dataClass = CustomerNotificationDTO.class, type = WrapperDataType.PAGE)
-    public ResponseEntity<PageResponseWrapper<CustomerNotificationDTO>> getUnreadNotifications(@PathVariable int page,
+    public ResponseEntity<ResponseWrapper<Page<CustomerNotificationDTO>>> getUnreadNotifications(@PathVariable int page,
             @PathVariable int size) {
         Pageable pageable = PageRequest.of(page, size);
         return executePaginated("getUnreadNotifications", () -> notificationService.getUnreadNotificationsDTO(pageable));
@@ -77,7 +77,7 @@ public class CustomerNotificationController extends BaseController {
     @Operation(summary = "Get all notifications", description = "Returns a pageable list of all notifications")
     @GetMapping("/all/{page}/{size}")
     @WrapperType(dataClass = CustomerNotificationDTO.class, type = WrapperDataType.PAGE)
-    public ResponseEntity<PageResponseWrapper<CustomerNotificationDTO>> getAllNotifications(@PathVariable int page,
+    public ResponseEntity<ResponseWrapper<Page<CustomerNotificationDTO>>> getAllNotifications(@PathVariable int page,
             @PathVariable int size) {
         Pageable pageable = PageRequest.of(page, size);
         return executePaginated("getAllNotifications", () -> notificationService.getAllNotificationsDTO(pageable));

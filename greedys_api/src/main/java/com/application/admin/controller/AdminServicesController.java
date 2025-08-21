@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.WrapperDataType;
 import com.application.common.controller.annotation.WrapperType;
-import com.application.common.web.ListResponseWrapper;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.ServiceTypeDto;
 import com.application.restaurant.service.ServiceService;
@@ -43,7 +42,7 @@ public class AdminServicesController extends BaseController {
     @GetMapping("/types")
     @Operation(summary = "Get all service types", description = "Retrieve all service types.")
     @WrapperType(dataClass = ServiceTypeDto.class, type = WrapperDataType.LIST)
-    public ResponseEntity<ListResponseWrapper<ServiceTypeDto>> getServiceTypes() {
+    public ResponseEntity<ResponseWrapper<List<ServiceTypeDto>>> getServiceTypes() {
         return executeList("get service types", () -> {
             Collection<ServiceTypeDto> serviceTypes = serviceService.getServiceTypes();
             return serviceTypes instanceof List ? (List<ServiceTypeDto>) serviceTypes : List.copyOf(serviceTypes);

@@ -10,12 +10,12 @@ public enum WrapperDataType {
     DTO,
     
     /**
-     * List of objects - generates ListResponseWrapper<T> schema  
+     * List of objects - generates ResponseWrapper<List<T>> schema with ListMetadata
      */
     LIST,
     
     /**
-     * Paginated objects - generates PageResponseWrapper<T> schema
+     * Paginated objects - generates ResponseWrapper<Page<T>> schema with PageMetadata
      */
     PAGE
 }

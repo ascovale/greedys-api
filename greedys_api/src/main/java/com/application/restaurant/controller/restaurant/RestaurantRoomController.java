@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.WrapperDataType;
 import com.application.common.controller.annotation.WrapperType;
-import com.application.common.web.ListResponseWrapper;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.RoomDTO;
 import com.application.restaurant.persistence.model.user.RUser;
@@ -43,7 +42,7 @@ public class RestaurantRoomController extends BaseController {
 	@Operation(summary = "Get rooms of a restaurant", description = "Retrieve the rooms of a restaurant")
 	
 	@WrapperType(dataClass = RoomDTO.class, type = WrapperDataType.LIST)
-    public ResponseEntity<ListResponseWrapper<RoomDTO>> getRooms(@AuthenticationPrincipal RUser rUser) {
+    public ResponseEntity<ResponseWrapper<List<RoomDTO>>> getRooms(@AuthenticationPrincipal RUser rUser) {
 		return executeList("get restaurant rooms", () -> {
 			log.info("Getting rooms for restaurant: {}", rUser.getRestaurant().getId());
 			Collection<RoomDTO> rooms = roomService.findByRestaurant(rUser.getRestaurant().getId());

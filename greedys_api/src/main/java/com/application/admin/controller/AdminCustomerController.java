@@ -1,5 +1,6 @@
 package com.application.admin.controller;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,7 +16,6 @@ import com.application.admin.service.authentication.AdminCustomerAuthenticationS
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.WrapperDataType;
 import com.application.common.controller.annotation.WrapperType;
-import com.application.common.web.PageResponseWrapper;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.customer.CustomerDTO;
 import com.application.common.web.dto.security.AuthResponseDTO;
@@ -66,7 +66,7 @@ public class AdminCustomerController extends BaseController {
     @Operation(summary = "List customers with pagination", description = "Returns a paginated list of customers")
     @GetMapping("/customers/page")
     @WrapperType(dataClass = CustomerDTO.class, type = WrapperDataType.PAGE)
-    public ResponseEntity<PageResponseWrapper<CustomerDTO>> listCustomersWithPagination(@RequestParam int page, @RequestParam int size) {
+    public ResponseEntity<ResponseWrapper<Page<CustomerDTO>>> listCustomersWithPagination(@RequestParam int page, @RequestParam int size) {
         return executePaginated("list customers", () -> adminCustomerService.findAll(PageRequest.of(page, size)));
         
     }

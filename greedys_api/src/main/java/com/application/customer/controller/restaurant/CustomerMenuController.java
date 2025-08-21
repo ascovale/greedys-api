@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.WrapperDataType;
 import com.application.common.controller.annotation.WrapperType;
-import com.application.common.web.ListResponseWrapper;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.menu.MenuDTO;
 import com.application.common.web.dto.menu.MenuDishDTO;
@@ -39,7 +38,7 @@ public class CustomerMenuController extends BaseController {
     @GetMapping("/{restaurantId}/menus")
     
     @WrapperType(dataClass = MenuDTO.class, type = WrapperDataType.LIST)
-    public ResponseEntity<ListResponseWrapper<MenuDTO>> getMenusByRestaurantId(@PathVariable Long restaurantId) {
+    public ResponseEntity<ResponseWrapper<List<MenuDTO>>> getMenusByRestaurantId(@PathVariable Long restaurantId) {
         return executeList("get menus by restaurant", () -> {
             Collection<MenuDTO> menus = restaurantMenuService.getMenusByRestaurant(restaurantId);
             return menus instanceof List ? (List<MenuDTO>) menus : List.copyOf(menus);
@@ -50,7 +49,7 @@ public class CustomerMenuController extends BaseController {
     @GetMapping("/{restaurantId}/menus/period")
     
     @WrapperType(dataClass = MenuDTO.class, type = WrapperDataType.LIST)
-    public ResponseEntity<ListResponseWrapper<MenuDTO>> getMenusWithServicesValidInPeriod(
+    public ResponseEntity<ResponseWrapper<List<MenuDTO>>> getMenusWithServicesValidInPeriod(
             @PathVariable Long restaurantId,
             @RequestParam("startDate") LocalDate startDate,
             @RequestParam("endDate") LocalDate endDate) {
@@ -64,7 +63,7 @@ public class CustomerMenuController extends BaseController {
     @GetMapping("/menus/{menuId}/dishes")
     
     @WrapperType(dataClass = MenuDishDTO.class, type = WrapperDataType.LIST)
-    public ResponseEntity<ListResponseWrapper<MenuDishDTO>> getDishesByMenuId(@PathVariable Long menuId) {
+    public ResponseEntity<ResponseWrapper<List<MenuDishDTO>>> getDishesByMenuId(@PathVariable Long menuId) {
         return executeList("get dishes by menu", () -> {
             Collection<MenuDishDTO> dishes = restaurantMenuService.getMenuDishesByMenuId(menuId);
             return dishes instanceof List ? (List<MenuDishDTO>) dishes : List.copyOf(dishes);
@@ -83,7 +82,7 @@ public class CustomerMenuController extends BaseController {
     @GetMapping("/service/{serviceId}/menus/active-enabled")
     
     @WrapperType(dataClass = MenuDTO.class, type = WrapperDataType.LIST)
-    public ResponseEntity<ListResponseWrapper<MenuDTO>> getActiveEnabledMenusByServiceId(
+    public ResponseEntity<ResponseWrapper<List<MenuDTO>>> getActiveEnabledMenusByServiceId(
             @PathVariable Long serviceId,
             @RequestParam("date") LocalDate date) {
         return executeList("get active enabled menus by service", () -> {
@@ -96,7 +95,7 @@ public class CustomerMenuController extends BaseController {
     @GetMapping("/service/{serviceId}/menus/active-enabled/period")
     
     @WrapperType(dataClass = MenuDTO.class, type = WrapperDataType.LIST)
-    public ResponseEntity<ListResponseWrapper<MenuDTO>> getActiveEnabledMenusByServiceIdAndPeriod(
+    public ResponseEntity<ResponseWrapper<List<MenuDTO>>> getActiveEnabledMenusByServiceIdAndPeriod(
             @PathVariable Long serviceId,
             @RequestParam("startDate") LocalDate startDate,
             @RequestParam("endDate") LocalDate endDate) {

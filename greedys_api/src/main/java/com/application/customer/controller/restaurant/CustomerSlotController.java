@@ -1,5 +1,7 @@
 package com.application.customer.controller.restaurant;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -9,7 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.WrapperDataType;
 import com.application.common.controller.annotation.WrapperType;
-import com.application.common.web.ListResponseWrapper;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.SlotDTO;
 import com.application.restaurant.service.SlotService;
@@ -32,7 +33,7 @@ public class CustomerSlotController extends BaseController {
 	@Operation(summary = "Get all slots by restaurant ID", description = "Retrieve all available slots for a specific restaurant")
 	
 	@WrapperType(dataClass = SlotDTO.class, type = WrapperDataType.LIST)
-    public ResponseEntity<ListResponseWrapper<SlotDTO>> getAllSlotsByRestaurantId(@PathVariable Long restaurantId) {
+    public ResponseEntity<ResponseWrapper<List<SlotDTO>>> getAllSlotsByRestaurantId(@PathVariable Long restaurantId) {
 		return executeList("get all slots by restaurant", () -> slotService.findSlotsByRestaurantId(restaurantId));
 	}
 

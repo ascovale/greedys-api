@@ -16,7 +16,7 @@ import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.WrapperDataType;
 import com.application.common.controller.annotation.WrapperType;
 import com.application.common.service.RestaurantService;
-import com.application.common.web.ListResponseWrapper;
+import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.RestaurantDTO;
 import com.application.common.web.dto.restaurant.SlotDTO;
 
@@ -38,14 +38,14 @@ public class CustomerRestaurantInfoController extends BaseController {
 	@GetMapping("")
 	
 	@WrapperType(dataClass = RestaurantDTO.class, type = WrapperDataType.LIST)
-    public ResponseEntity<ListResponseWrapper<RestaurantDTO>> getRestaurants() {
+    public ResponseEntity<ResponseWrapper<List<RestaurantDTO>>> getRestaurants() {
 		return executeList("get all restaurants", () -> restaurantService.findAll().stream().map(r -> new RestaurantDTO(r)).toList());
 	}
 
 	@GetMapping("/{restaurantId}/open-days")
 	@Operation(summary = "Get open days of a restaurant", description = "Retrieve the open days of a restaurant")
 	@WrapperType(dataClass = String.class, type = WrapperDataType.LIST)
-	public ResponseEntity<ListResponseWrapper<String>> getOpenDays(
+	public ResponseEntity<ResponseWrapper<List<String>>> getOpenDays(
 			@PathVariable Long restaurantId,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end) {
@@ -59,7 +59,7 @@ public class CustomerRestaurantInfoController extends BaseController {
 	@Operation(summary = "Get closed days of a restaurant", description = "Retrieve the closed days of a restaurant")
 	
 	@WrapperType(dataClass = LocalDate.class, type = WrapperDataType.LIST)
-    public ResponseEntity<ListResponseWrapper<LocalDate>> getClosedDays(
+    public ResponseEntity<ResponseWrapper<List<LocalDate>>> getClosedDays(
 			@PathVariable Long restaurantId,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end) {
@@ -73,7 +73,7 @@ public class CustomerRestaurantInfoController extends BaseController {
 	@Operation(summary = "Get day slots of a restaurant", description = "Retrieve the daily slots of a restaurant")
 	
 	@WrapperType(dataClass = SlotDTO.class, type = WrapperDataType.LIST)
-    public ResponseEntity<ListResponseWrapper<SlotDTO>> getDaySlots(
+    public ResponseEntity<ResponseWrapper<List<SlotDTO>>> getDaySlots(
 			@PathVariable Long restaurantId,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate date) {
 		return executeList("get day slots", () -> {
@@ -86,7 +86,7 @@ public class CustomerRestaurantInfoController extends BaseController {
 	@GetMapping("/search")
 	
 	@WrapperType(dataClass = RestaurantDTO.class, type = WrapperDataType.LIST)
-    public ResponseEntity<ListResponseWrapper<RestaurantDTO>> searchRestaurants(@RequestParam String name) {
+    public ResponseEntity<ResponseWrapper<List<RestaurantDTO>>> searchRestaurants(@RequestParam String name) {
 		return executeList("search restaurants", () -> {
 			Collection<RestaurantDTO> restaurants = restaurantService.findBySearchTerm(name);
 			return restaurants instanceof List ? (List<RestaurantDTO>) restaurants : List.copyOf(restaurants);
@@ -96,7 +96,7 @@ public class CustomerRestaurantInfoController extends BaseController {
 	@GetMapping("/{restaurantId}/types")
 	@Operation(summary = "Get types of a restaurant", description = "Retrieve the types of a restaurant")
 	@WrapperType(dataClass = String.class, type = WrapperDataType.LIST)
-	    public ResponseEntity<ListResponseWrapper<String>> getRestaurantTypesNames(@PathVariable Long restaurantId) {
+	public ResponseEntity<ResponseWrapper<List<String>>> getRestaurantTypesNames(@PathVariable Long restaurantId) {
 		return executeList("get restaurant types", () -> {
 			Collection<String> types = restaurantService.getRestaurantTypesNames(restaurantId);
 			return types instanceof List ? (List<String>) types : List.copyOf(types);

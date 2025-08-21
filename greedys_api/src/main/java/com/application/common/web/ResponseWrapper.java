@@ -1,7 +1,14 @@
 package com.application.common.web;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
+import org.springframework.data.domain.Page;
+
+import com.application.common.web.metadata.BaseMetadata;
+import com.application.common.web.metadata.ListMetadata;
+import com.application.common.web.metadata.PageMetadata;
+import com.application.common.web.metadata.SingleMetadata;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -10,7 +17,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Schema(name = "ResponseWrapper", description = "Standard API response wrapper for single objects")
+@Schema(name = "ResponseWrapper", description = "Standard API response wrapper")
 @Data
 @Builder
 @NoArgsConstructor
@@ -35,12 +42,16 @@ public class ResponseWrapper<T> {
     @Builder.Default
     private LocalDateTime timestamp = LocalDateTime.now();
 
+    @Schema(description = "Response metadata (structure varies by data type)")
+    private BaseMetadata metadata;
+
     // Success responses
     public static <T> ResponseWrapper<T> success(T data) {
         return ResponseWrapper.<T>builder()
                 .success(true)
                 .data(data)
                 .message("Success")
+                .metadata(SingleMetadata.create())
                 .build();
     }
 
@@ -49,6 +60,73 @@ public class ResponseWrapper<T> {
                 .success(true)
                 .data(data)
                 .message(message)
+                .metadata(SingleMetadata.create())
+                .build();
+    }
+
+    public static <T> ResponseWrapper<T> success(T data, String message, BaseMetadata metadata) {
+        return ResponseWrapper.<T>builder()
+                .success(true)
+                .data(data)
+                .message(message)
+                .metadata(metadata)
+                .build();
+    }
+
+    // List success responses
+    public static <T> ResponseWrapper<List<T>> successList(List<T> data) {
+        return ResponseWrapper.<List<T>>builder()
+                .success(true)
+                .data(data)
+                .message("Operation completed successfully")
+                .metadata(ListMetadata.forList(data))
+                .build();
+    }
+
+    public static <T> ResponseWrapper<List<T>> successList(List<T> data, String message) {
+        return ResponseWrapper.<List<T>>builder()
+                .success(true)
+                .data(data)
+                .message(message)
+                .metadata(ListMetadata.forList(data))
+                .build();
+    }
+
+    public static <T> ResponseWrapper<List<T>> successList(List<T> data, String message, String filterDescription) {
+        return ResponseWrapper.<List<T>>builder()
+                .success(true)
+                .data(data)
+                .message(message)
+                .metadata(ListMetadata.forList(data, filterDescription))
+                .build();
+    }
+
+    // Page success responses
+    public static <T> ResponseWrapper<List<T>> successPage(Page<T> page) {
+        return ResponseWrapper.<List<T>>builder()
+                .success(true)
+                .data(page.getContent())
+                .message(String.format("Page %d of %d (%d total items)", 
+                        page.getNumber() + 1, page.getTotalPages(), page.getTotalElements()))
+                .metadata(PageMetadata.forPage(page))
+                .build();
+    }
+
+    public static <T> ResponseWrapper<List<T>> successPage(Page<T> page, String message) {
+        return ResponseWrapper.<List<T>>builder()
+                .success(true)
+                .data(page.getContent())
+                .message(message)
+                .metadata(PageMetadata.forPage(page))
+                .build();
+    }
+
+    public static <T> ResponseWrapper<List<T>> successPage(Page<T> page, String message, String filterDescription) {
+        return ResponseWrapper.<List<T>>builder()
+                .success(true)
+                .data(page.getContent())
+                .message(message)
+                .metadata(PageMetadata.forPage(page, filterDescription))
                 .build();
     }
 
@@ -58,6 +136,17 @@ public class ResponseWrapper<T> {
                 .success(true)
                 .data(data)
                 .message(message)
+                .metadata(SingleMetadata.create())
+                .build();
+    }
+
+    // Created response for lists (201)
+    public static <T> ResponseWrapper<List<T>> createdList(List<T> data, String message) {
+        return ResponseWrapper.<List<T>>builder()
+                .success(true)
+                .data(data)
+                .message(message)
+                .metadata(ListMetadata.forList(data))
                 .build();
     }
 

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.WrapperDataType;
 import com.application.common.controller.annotation.WrapperType;
-import com.application.common.web.ListResponseWrapper;
+import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.RoomDTO;
 import com.application.restaurant.service.RoomService;
 
@@ -34,7 +34,7 @@ public class CustomerRoomController extends BaseController {
 	
 	@Operation(summary = "Get rooms of a restaurant", description = "Retrieve the rooms of a restaurant")
 	@WrapperType(dataClass = RoomDTO.class, type = WrapperDataType.LIST)
-    public ResponseEntity<ListResponseWrapper<RoomDTO>> getRooms(@PathVariable Long restaurantId) {
+    public ResponseEntity<ResponseWrapper<List<RoomDTO>>> getRooms(@PathVariable Long restaurantId) {
 		return executeList("getRooms", () -> {
 			Collection<RoomDTO> rooms = roomService.findByRestaurant(restaurantId);
 			return rooms instanceof List ? (List<RoomDTO>) rooms : List.copyOf(rooms);

@@ -16,7 +16,6 @@ import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.WrapperDataType;
 import com.application.common.controller.annotation.WrapperType;
 import com.application.common.service.RestaurantService;
-import com.application.common.web.ListResponseWrapper;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.SlotDTO;
 import com.application.restaurant.persistence.model.user.RUser;
@@ -43,7 +42,7 @@ public class RestaurantSlotManagementController extends BaseController {
 	@Operation(summary = "Get day slots of the authenticated restaurant", description = "Retrieve the daily slots of the authenticated restaurant")
 	
 	@WrapperType(dataClass = SlotDTO.class, type = WrapperDataType.LIST)
-    public ResponseEntity<ListResponseWrapper<SlotDTO>> getDaySlots(
+    public ResponseEntity<ResponseWrapper<List<SlotDTO>>> getDaySlots(
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate date,
 			@AuthenticationPrincipal RUser rUser) {
 		return executeList("get day slots", () -> {
@@ -58,7 +57,7 @@ public class RestaurantSlotManagementController extends BaseController {
 	@Operation(summary = "Get all slots of the authenticated restaurant", description = "Retrieve all available slots for the authenticated restaurant")
 	
 	@WrapperType(dataClass = SlotDTO.class, type = WrapperDataType.LIST)
-    public ResponseEntity<ListResponseWrapper<SlotDTO>> getAllSlots(@AuthenticationPrincipal RUser rUser) {
+    public ResponseEntity<ResponseWrapper<List<SlotDTO>>> getAllSlots(@AuthenticationPrincipal RUser rUser) {
 		return executeList("get all slots", () -> {
 			Long restaurantId = rUser.getId();
 			log.info("Getting all slots for restaurant ID: {}", restaurantId);

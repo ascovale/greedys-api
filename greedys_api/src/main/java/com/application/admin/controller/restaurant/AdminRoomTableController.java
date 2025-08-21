@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.WrapperDataType;
 import com.application.common.controller.annotation.WrapperType;
-import com.application.common.web.ListResponseWrapper;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.RoomDTO;
 import com.application.common.web.dto.restaurant.TableDTO;
@@ -48,7 +47,7 @@ public class AdminRoomTableController extends BaseController {
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_READ')")
 	
 	@WrapperType(dataClass = RoomDTO.class, type = WrapperDataType.LIST)
-    public ResponseEntity<ListResponseWrapper<RoomDTO>> getRooms(@PathVariable Long restaurantId) {
+    public ResponseEntity<ResponseWrapper<List<RoomDTO>>> getRooms(@PathVariable Long restaurantId) {
 		return executeList("get rooms", () -> {
 			Collection<RoomDTO> rooms = roomService.findByRestaurant(restaurantId);
 			return rooms instanceof List ? (List<RoomDTO>) rooms : new java.util.ArrayList<>(rooms);
@@ -60,7 +59,7 @@ public class AdminRoomTableController extends BaseController {
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_READ')")
 	
 	@WrapperType(dataClass = TableDTO.class, type = WrapperDataType.LIST)
-    public ResponseEntity<ListResponseWrapper<TableDTO>> getTables(@PathVariable Long roomId) {
+    public ResponseEntity<ResponseWrapper<List<TableDTO>>> getTables(@PathVariable Long roomId) {
 		return executeList("get tables", () -> {
 			Collection<TableDTO> tables = tableService.findByRoom(roomId);
 			return tables instanceof List ? (List<TableDTO>) tables : new java.util.ArrayList<>(tables);

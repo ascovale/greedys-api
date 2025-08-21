@@ -1,6 +1,7 @@
 package com.application.admin.controller.restaurant;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,7 +19,6 @@ import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.WrapperDataType;
 import com.application.common.controller.annotation.WrapperType;
 import com.application.common.service.RestaurantService;
-import com.application.common.web.ListResponseWrapper;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.RestaurantDTO;
 import com.application.common.web.dto.restaurant.ServiceDTO;
@@ -44,7 +44,7 @@ public class AdminRestaurantManagementController extends BaseController {
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_READ')")
 	
 	@WrapperType(dataClass = ServiceDTO.class, type = WrapperDataType.LIST)
-    public ResponseEntity<ListResponseWrapper<ServiceDTO>> getServices(@PathVariable Long restaurantId) {
+    public ResponseEntity<ResponseWrapper<List<ServiceDTO>>> getServices(@PathVariable Long restaurantId) {
 		return executeList("get services", () -> {
 			Collection<ServiceDTO> services = restaurantService.getServices(restaurantId);
 			return services instanceof java.util.List ? (java.util.List<ServiceDTO>) services : new java.util.ArrayList<>(services);
