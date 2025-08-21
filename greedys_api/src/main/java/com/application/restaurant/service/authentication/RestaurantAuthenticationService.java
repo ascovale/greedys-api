@@ -5,11 +5,9 @@ import java.util.Locale;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.MessageSource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -30,6 +28,7 @@ import com.application.common.web.dto.restaurant.RestaurantDTO;
 import com.application.common.web.dto.security.AuthRequestDTO;
 import com.application.common.web.dto.security.AuthRequestGoogleDTO;
 import com.application.common.web.dto.security.AuthResponseDTO;
+import com.application.restaurant.RestaurantAuthenticationManager;
 import com.application.restaurant.persistence.dao.RUserDAO;
 import com.application.restaurant.persistence.dao.RUserHubDAO;
 import com.application.restaurant.persistence.dao.RUserPasswordResetTokenDAO;
@@ -44,13 +43,15 @@ import com.application.restaurant.service.security.RUserSecurityService;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Transactional
 @Slf4j
+@RequiredArgsConstructor
 public class RestaurantAuthenticationService {
-    private final AuthenticationManager authenticationManager;
+    private final RestaurantAuthenticationManager authenticationManager;
     private final GoogleAuthService googleAuthService;
     private final RUserService RUserService;
     private final JwtUtil jwtUtil;
@@ -62,33 +63,6 @@ public class RestaurantAuthenticationService {
     private final RUserHubDAO RUserHubDAO;
     private final PasswordEncoder passwordEncoder;
     private final RUserMapper rUserMapper;
-
-    public RestaurantAuthenticationService(
-            @Qualifier("restaurantAuthenticationManager") AuthenticationManager authenticationManager,
-            RUserService RUserService,
-            RUserDAO RUserDAO,
-            JwtUtil jwtUtil,
-            RUserPasswordResetTokenDAO passwordTokenRepository,
-            EmailService mailService,
-            RUserSecurityService securityRUserService,
-            MessageSource messages,
-            RUserHubDAO RUserHubDAO,
-            PasswordEncoder passwordEncoder,
-            GoogleAuthService googleAuthService,
-            RUserMapper rUserMapper) {
-        this.authenticationManager = authenticationManager;
-        this.RUserService = RUserService;
-        this.jwtUtil = jwtUtil;
-        this.passwordTokenRepository = passwordTokenRepository;
-        this.messages = messages;
-        this.mailService = mailService;
-        this.securityRUserService = securityRUserService;
-        this.RUserDAO = RUserDAO;
-        this.RUserHubDAO = RUserHubDAO;
-        this.passwordEncoder = passwordEncoder;
-        this.googleAuthService = googleAuthService;
-        this.rUserMapper = rUserMapper;
-    }
 
 
     public ResponseEntity<String> createPasswordResetTokenForRUser(final RUser ru,
