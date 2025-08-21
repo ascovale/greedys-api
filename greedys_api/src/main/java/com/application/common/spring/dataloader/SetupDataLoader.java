@@ -117,8 +117,8 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
     private void waitForDatabaseReady() {
         List<String> activeProfiles = Arrays.asList(env.getActiveProfiles());
         
-        // Solo per profilo dev (H2)
-        if (!activeProfiles.contains("dev")) {
+        // Solo per profili dev (H2) - include anche dev-minimal
+        if (!activeProfiles.contains("dev") && !activeProfiles.contains("dev-minimal")) {
             return;
         }
         
@@ -131,7 +131,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
                 
                 // Poi verifica che le tabelle critiche esistano (verifiche specifiche per H2 DDL)
                 var stmt = connection.prepareStatement(
-                    "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME IN ('SLOT', 'SERVICE', 'RESTAURANT')"
+                    "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME IN ('SETUP_CONFIG', 'ADMIN', 'CUSTOMER')"
                 );
                 var rs = stmt.executeQuery();
                 rs.next();
@@ -141,12 +141,12 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
                 stmt.close();
                 connection.close();
                 
-                if (tableCount >= 3) {
+                if (tableCount >= 2) { // Ridotto da 3 a 2 per supportare setup minimal
                     log.info("✅ Database H2 e schema Hibernate completamente pronti (trovate {} tabelle critiche).", tableCount);
                     Thread.sleep(500); // Piccola attesa finale per sicurezza
                     break;
                 } else {
-                    throw new RuntimeException("Tabelle non ancora create. Trovate: " + tableCount + "/3");
+                    throw new RuntimeException("Tabelle non ancora create. Trovate: " + tableCount + "/2");
                 }
                 
             } catch (Exception ex) {

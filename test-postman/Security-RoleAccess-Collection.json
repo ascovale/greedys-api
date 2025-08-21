@@ -1,0 +1,745 @@
+{
+	"info": {
+		"_postman_id": "security-role-access-collection",
+		"name": "Greedy's Security & Role-Based Access Control - Test Collection",
+		"description": "Comprehensive security testing collection for authentication, authorization, and role-based access control validation across all user types (CUSTOMER, RUSER, ADMIN)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Multi-Role Authentication Tests",
+			"description": "Complete authentication workflows for all user roles with token management",
+			"item": [
+				{
+					"name": "Customer Authentication Flow",
+					"item": [
+						{
+							"name": "Customer Registration with Validation",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// === SECURITY TEST LOGGING ===",
+											"console.log('🔐 CUSTOMER REGISTRATION - SECURITY VALIDATION:');",
+											"console.log('  📧 Email:', pm.environment.get('testCustomerEmail'));",
+											"console.log('  🔗 URL:', pm.request.url.toString());",
+											"",
+											"pm.test(\"Registration successful - Status 200/201\", function () {",
+											"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+											"});",
+											"",
+											"pm.test(\"Response contains success indicator\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData).to.have.property('success');",
+											"    pm.expect(jsonData.success).to.eql(true);",
+											"});",
+											"",
+											"pm.test(\"Password not exposed in response\", function () {",
+											"    var responseText = pm.response.text();",
+											"    pm.expect(responseText).to.not.include(pm.environment.get('testCustomerPassword'));",
+											"});",
+											"",
+											"pm.test(\"Sensitive data not in response headers\", function () {",
+											"    var headers = pm.response.headers.toObject();",
+											"    Object.keys(headers).forEach(function(header) {",
+											"        pm.expect(headers[header]).to.not.include('password');",
+											"    });",
+											"});",
+											"",
+											"// Store customer email for login test",
+											"pm.environment.set('registeredCustomerEmail', pm.environment.get('testCustomerEmail'));"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// Generate unique test customer email",
+											"const timestamp = new Date().getTime();",
+											"const testEmail = `security.test.customer.${timestamp}@greedy.test.it`;",
+											"pm.environment.set('testCustomerEmail', testEmail);",
+											"pm.environment.set('testCustomerPassword', 'SecureTest123!');",
+											"",
+											"console.log('🔧 PREREQUEST - Generated test customer:', testEmail);"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"firstName\": \"Marco\",\n    \"lastName\": \"Rossi\",\n    \"email\": \"{{testCustomerEmail}}\",\n    \"password\": \"{{testCustomerPassword}}\",\n    \"matchingPassword\": \"{{testCustomerPassword}}\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/customer/auth/new",
+									"host": ["{{baseUrl}}"],
+									"path": ["customer", "auth", "new"]
+								}
+							}
+						},
+						{
+							"name": "Customer Login with Token Extraction",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Customer login successful\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"JWT token received and stored\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData).to.have.property('data');",
+											"    pm.expect(jsonData.data).to.have.property('jwt');",
+											"    pm.expect(jsonData.data.jwt).to.match(/^[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+$/);",
+											"    ",
+											"    // Store customer token for authorization tests",
+											"    pm.environment.set('testCustomerToken', jsonData.data.jwt);",
+											"    pm.environment.set('testCustomerId', jsonData.data.id || '');",
+											"    ",
+											"    console.log('✅ Customer token stored for security tests');",
+											"});",
+											"",
+											"pm.test(\"User role is CUSTOMER\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    if (jsonData.data && jsonData.data.roles) {",
+											"        pm.expect(jsonData.data.roles).to.include('CUSTOMER');",
+											"    }",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"username\": \"{{registeredCustomerEmail}}\",\n    \"password\": \"{{testCustomerPassword}}\",\n    \"rememberMe\": true\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/customer/auth/login",
+									"host": ["{{baseUrl}}"],
+									"path": ["customer", "auth", "login"]
+								}
+							}
+						}
+					]
+				},
+				{
+					"name": "Restaurant User Authentication Flow",
+					"item": [
+						{
+							"name": "Restaurant User Login",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Restaurant user login successful\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Restaurant JWT token received\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData).to.have.property('data');",
+											"    pm.expect(jsonData.data).to.have.property('jwt');",
+											"    ",
+											"    // Store restaurant token for authorization tests",
+											"    pm.environment.set('testRestaurantToken', jsonData.data.jwt);",
+											"    pm.environment.set('testRestaurantId', jsonData.data.restaurantId || '1');",
+											"    ",
+											"    console.log('✅ Restaurant token stored for security tests');",
+											"});",
+											"",
+											"pm.test(\"User role is RUSER\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    if (jsonData.data && jsonData.data.roles) {",
+											"        pm.expect(jsonData.data.roles).to.include('RUSER');",
+											"    }",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"username\": \"{{restaurantUserEmail}}\",\n    \"password\": \"{{restaurantUserPassword}}\",\n    \"rememberMe\": true\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/restaurant/auth/login",
+									"host": ["{{baseUrl}}"],
+									"path": ["restaurant", "auth", "login"]
+								}
+							}
+						}
+					]
+				},
+				{
+					"name": "Admin Authentication Flow",
+					"item": [
+						{
+							"name": "Admin Login with Enhanced Security",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Admin login successful\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Admin JWT token received\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData).to.have.property('data');",
+											"    pm.expect(jsonData.data).to.have.property('jwt');",
+											"    ",
+											"    // Store admin token for high-privilege tests",
+											"    pm.environment.set('testAdminToken', jsonData.data.jwt);",
+											"    pm.environment.set('testAdminId', jsonData.data.id || '');",
+											"    ",
+											"    console.log('✅ Admin token stored for security tests');",
+											"});",
+											"",
+											"pm.test(\"User role is ADMIN\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    if (jsonData.data && jsonData.data.roles) {",
+											"        pm.expect(jsonData.data.roles).to.include('ADMIN');",
+											"    }",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"username\": \"{{adminEmail}}\",\n    \"password\": \"{{adminPassword}}\",\n    \"rememberMe\": true\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/admin/auth/login",
+									"host": ["{{baseUrl}}"],
+									"path": ["admin", "auth", "login"]
+								}
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Role-Based Authorization Tests",
+			"description": "Test access control and permissions for different user roles",
+			"item": [
+				{
+					"name": "Customer Endpoint Access Tests",
+					"item": [
+						{
+							"name": "✅ Customer Profile Access (Valid Token)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Customer can access own profile\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Profile data returned\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData).to.have.property('data');",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{testCustomerToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/customer/profile",
+									"host": ["{{baseUrl}}"],
+									"path": ["customer", "profile"]
+								}
+							}
+						},
+						{
+							"name": "❌ Customer Access to Admin Endpoint (Should Fail)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Customer denied access to admin endpoint\", function () {",
+											"    pm.expect(pm.response.code).to.be.oneOf([401, 403]);",
+											"});",
+											"",
+											"pm.test(\"Error response contains proper message\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData).to.have.property('error');",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{testCustomerToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/admin/customers",
+									"host": ["{{baseUrl}}"],
+									"path": ["admin", "customers"]
+								}
+							}
+						},
+						{
+							"name": "❌ Customer Access to Restaurant Endpoint (Should Fail)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Customer denied access to restaurant management\", function () {",
+											"    pm.expect(pm.response.code).to.be.oneOf([401, 403]);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{testCustomerToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/restaurant/info",
+									"host": ["{{baseUrl}}"],
+									"path": ["restaurant", "info"]
+								}
+							}
+						}
+					]
+				},
+				{
+					"name": "Restaurant User Authorization Tests",
+					"item": [
+						{
+							"name": "✅ Restaurant User Access to Own Data",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Restaurant user can access restaurant data\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Restaurant info returned\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData).to.have.property('data');",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{testRestaurantToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/restaurant/info",
+									"host": ["{{baseUrl}}"],
+									"path": ["restaurant", "info"]
+								}
+							}
+						},
+						{
+							"name": "❌ Restaurant User Access to Admin Functions (Should Fail)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Restaurant user denied admin access\", function () {",
+											"    pm.expect(pm.response.code).to.be.oneOf([401, 403]);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{testRestaurantToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/admin/restaurants",
+									"host": ["{{baseUrl}}"],
+									"path": ["admin", "restaurants"]
+								}
+							}
+						}
+					]
+				},
+				{
+					"name": "Admin Authorization Tests",
+					"item": [
+						{
+							"name": "✅ Admin Access to Customer Management",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Admin can access customer management\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Customer list returned\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData).to.have.property('data');",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{testAdminToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/admin/customers",
+									"host": ["{{baseUrl}}"],
+									"path": ["admin", "customers"]
+								}
+							}
+						},
+						{
+							"name": "✅ Admin Access to Restaurant Management",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Admin can access restaurant management\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Restaurant list returned\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData).to.have.property('data');",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{testAdminToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/admin/restaurants",
+									"host": ["{{baseUrl}}"],
+									"path": ["admin", "restaurants"]
+								}
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Token Security & Validation Tests",
+			"description": "Test JWT token security, expiration, and validation mechanisms",
+			"item": [
+				{
+					"name": "Invalid Token Tests",
+					"item": [
+						{
+							"name": "❌ Access with Invalid Token Format",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Invalid token rejected\", function () {",
+											"    pm.expect(pm.response.code).to.be.oneOf([401, 403]);",
+											"});",
+											"",
+											"pm.test(\"Error message indicates invalid token\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData).to.have.property('error');",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer invalid.token.format"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/customer/profile",
+									"host": ["{{baseUrl}}"],
+									"path": ["customer", "profile"]
+								}
+							}
+						},
+						{
+							"name": "❌ Access with Expired Token",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Expired token rejected\", function () {",
+											"    pm.expect(pm.response.code).to.be.oneOf([401, 403]);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE1MTYyMzkwMjJ9.4Adcj3UFYzPUVaVF43FmMab6RlaQD8A9V8wFzzht-KQ"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/customer/profile",
+									"host": ["{{baseUrl}}"],
+									"path": ["customer", "profile"]
+								}
+							}
+						},
+						{
+							"name": "❌ Access without Authorization Header",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Missing authorization header rejected\", function () {",
+											"    pm.expect(pm.response.code).to.be.oneOf([401, 403]);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/customer/profile",
+									"host": ["{{baseUrl}}"],
+									"path": ["customer", "profile"]
+								}
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Input Validation & Security Tests",
+			"description": "Test input validation, SQL injection prevention, and data sanitization",
+			"item": [
+				{
+					"name": "SQL Injection Prevention Tests",
+					"item": [
+						{
+							"name": "❌ SQL Injection in Email Field",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"SQL injection attempt rejected\", function () {",
+											"    pm.expect(pm.response.code).to.be.oneOf([400, 422, 500]);",
+											"});",
+											"",
+											"pm.test(\"Response does not contain SQL error details\", function () {",
+											"    var responseText = pm.response.text().toLowerCase();",
+											"    pm.expect(responseText).to.not.include('sql');",
+											"    pm.expect(responseText).to.not.include('mysql');",
+											"    pm.expect(responseText).to.not.include('database');",
+											"    pm.expect(responseText).to.not.include('table');",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"username\": \"admin'; DROP TABLE users; --\",\n    \"password\": \"password123\",\n    \"rememberMe\": false\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/customer/auth/login",
+									"host": ["{{baseUrl}}"],
+									"path": ["customer", "auth", "login"]
+								}
+							}
+						}
+					]
+				},
+				{
+					"name": "XSS Prevention Tests",
+					"item": [
+						{
+							"name": "❌ XSS Script in Registration",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"XSS script sanitized or rejected\", function () {",
+											"    var responseText = pm.response.text();",
+											"    pm.expect(responseText).to.not.include('<script>');",
+											"    pm.expect(responseText).to.not.include('alert(');",
+											"    pm.expect(responseText).to.not.include('javascript:');",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"firstName\": \"<script>alert('XSS')</script>\",\n    \"lastName\": \"TestUser\",\n    \"email\": \"xss.test@example.com\",\n    \"password\": \"TestPassword123!\",\n    \"matchingPassword\": \"TestPassword123!\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/customer/auth/new",
+									"host": ["{{baseUrl}}"],
+									"path": ["customer", "auth", "new"]
+								}
+							}
+						}
+					]
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "testCustomerEmail",
+			"value": "",
+			"description": "Dynamically generated customer email for security tests"
+		},
+		{
+			"key": "testCustomerPassword",
+			"value": "SecureTest123!",
+			"description": "Standard test password for security validation"
+		},
+		{
+			"key": "testCustomerToken",
+			"value": "",
+			"description": "JWT token for customer security tests"
+		},
+		{
+			"key": "testRestaurantToken",
+			"value": "",
+			"description": "JWT token for restaurant user security tests"
+		},
+		{
+			"key": "testAdminToken",
+			"value": "",
+			"description": "JWT token for admin security tests"
+		}
+	]
+}

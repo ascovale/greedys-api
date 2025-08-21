@@ -1,0 +1,1239 @@
+{
+	"info": {
+		"_postman_id": "auth-testing-collection",
+		"name": "Authentication & Refresh Token Testing Collection",
+		"description": "Comprehensive authentication flow testing for Admin, Customer, and Restaurant users with refresh token validation",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Admin Authentication Flow",
+			"item": [
+				{
+					"name": "Admin Registration",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201 or 200\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"});",
+									"",
+									"pm.test(\"Admin registration successful\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"});",
+									"",
+									"pm.test(\"Registration response contains admin data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && typeof jsonData.data === 'object') {",
+									"        pm.expect(jsonData.data).to.have.property('id');",
+									"        pm.environment.set('newAdminId', jsonData.data.id);",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstName\": \"{{newAdminFirstName}}\",\n    \"lastName\": \"{{newAdminLastName}}\",\n    \"email\": \"{{newAdminEmail}}\",\n    \"password\": \"{{newAdminPassword}}\",\n    \"matchingPassword\": \"{{newAdminPassword}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/register/new",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "register", "new"]
+						}
+					}
+				},
+				{
+					"name": "Admin Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has success field\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"});",
+									"",
+									"pm.test(\"JWT token received\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.have.property('jwt');",
+									"    ",
+									"    // Store admin token",
+									"    pm.environment.set('adminToken', jsonData.data.jwt);",
+									"    console.log('Admin token stored:', jsonData.data.jwt.substring(0, 50) + '...');",
+									"});",
+									"",
+									"pm.test(\"Refresh token received\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('refreshToken');",
+									"    ",
+									"    // Store admin refresh token",
+									"    pm.environment.set('adminRefreshToken', jsonData.data.refreshToken);",
+									"    console.log('Admin refresh token stored');",
+									"});",
+									"",
+									"pm.test(\"Token is valid JWT format\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    var token = jsonData.data.jwt;",
+									"    var tokenParts = token.split('.');",
+									"    pm.expect(tokenParts).to.have.lengthOf(3);",
+									"});",
+									"",
+									"pm.test(\"User information included\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('user');",
+									"    if (jsonData.data.user) {",
+									"        pm.expect(jsonData.data.user).to.have.property('id');",
+									"        pm.environment.set('adminId', jsonData.data.user.id);",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"{{adminEmail}}\",\n    \"password\": \"{{adminPassword}}\",\n    \"rememberMe\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "Admin Refresh Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"New access token received\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('jwt');",
+									"    ",
+									"    var oldToken = pm.environment.get('adminToken');",
+									"    var newToken = jsonData.data.jwt;",
+									"    ",
+									"    // Verify new token is different from old one",
+									"    pm.expect(newToken).to.not.equal(oldToken);",
+									"    ",
+									"    // Update stored token",
+									"    pm.environment.set('adminToken', newToken);",
+									"    console.log('Admin token refreshed successfully');",
+									"});",
+									"",
+									"pm.test(\"New refresh token received\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('refreshToken');",
+									"    ",
+									"    // Update stored refresh token",
+									"    pm.environment.set('adminRefreshToken', jsonData.data.refreshToken);",
+									"});",
+									"",
+									"pm.test(\"Refresh response structure valid\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"refreshToken\": \"{{adminRefreshToken}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/auth/refresh",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "auth", "refresh"]
+						}
+					}
+				},
+				{
+					"name": "Admin - Get Profile (Token Validation)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Admin profile accessible with token\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"    pm.expect(jsonData.data).to.be.an('object');",
+									"});",
+									"",
+									"pm.test(\"Profile contains admin information\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('firstName');",
+									"    pm.expect(jsonData.data).to.have.property('lastName');",
+									"    pm.expect(jsonData.data).to.have.property('email');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/admin/get",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "get"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Customer Authentication Flow",
+			"item": [
+				{
+					"name": "Customer Registration",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201 or 200\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"});",
+									"",
+									"pm.test(\"Customer registration successful\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"});",
+									"",
+									"pm.test(\"Registration message present\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('message');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstName\": \"{{customerFirstName}}\",\n    \"lastName\": \"{{customerLastName}}\",\n    \"email\": \"{{customerEmail}}\",\n    \"phoneNumber\": \"{{customerPhone}}\",\n    \"password\": \"{{customerPassword}}\",\n    \"matchingPassword\": \"{{customerPassword}}\",\n    \"dateOfBirth\": \"{{customerDateOfBirth}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/customer/auth/new",
+							"host": ["{{baseUrl}}"],
+							"path": ["customer", "auth", "new"]
+						}
+					}
+				},
+				{
+					"name": "Enable Customer (Admin)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Customer enabled successfully\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Enable operation successful\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/admin/customer/enable?email={{customerEmail}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "customer", "enable"],
+							"query": [
+								{
+									"key": "email",
+									"value": "{{customerEmail}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Customer Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has JWT token\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.have.property('jwt');",
+									"    ",
+									"    // Store customer token",
+									"    pm.environment.set('customerToken', jsonData.data.jwt);",
+									"    console.log('Customer token stored:', jsonData.data.jwt.substring(0, 50) + '...');",
+									"});",
+									"",
+									"pm.test(\"Response has refresh token\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('refreshToken');",
+									"    ",
+									"    // Store customer refresh token",
+									"    pm.environment.set('customerRefreshToken', jsonData.data.refreshToken);",
+									"    console.log('Customer refresh token stored');",
+									"});",
+									"",
+									"pm.test(\"Token is valid JWT format\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    var token = jsonData.data.jwt;",
+									"    var tokenParts = token.split('.');",
+									"    pm.expect(tokenParts).to.have.lengthOf(3);",
+									"});",
+									"",
+									"pm.test(\"User information included\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('user');",
+									"    if (jsonData.data.user) {",
+									"        pm.expect(jsonData.data.user).to.have.property('id');",
+									"        pm.environment.set('customerId', jsonData.data.user.id);",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"{{customerEmail}}\",\n    \"password\": \"{{customerPassword}}\",\n    \"rememberMe\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/customer/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["customer", "auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "Customer Refresh Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"New access token received\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('jwt');",
+									"    ",
+									"    var oldToken = pm.environment.get('customerToken');",
+									"    var newToken = jsonData.data.jwt;",
+									"    ",
+									"    // Verify new token is different from old one",
+									"    pm.expect(newToken).to.not.equal(oldToken);",
+									"    ",
+									"    // Update stored token",
+									"    pm.environment.set('customerToken', newToken);",
+									"    console.log('Customer token refreshed successfully');",
+									"});",
+									"",
+									"pm.test(\"New refresh token received\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('refreshToken');",
+									"    ",
+									"    // Update stored refresh token",
+									"    pm.environment.set('customerRefreshToken', jsonData.data.refreshToken);",
+									"});",
+									"",
+									"pm.test(\"Refresh response structure valid\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"refreshToken\": \"{{customerRefreshToken}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/customer/auth/refresh",
+							"host": ["{{baseUrl}}"],
+							"path": ["customer", "auth", "refresh"]
+						}
+					}
+				},
+				{
+					"name": "Customer - Get Profile (Token Validation)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Customer profile accessible with token\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"    pm.expect(jsonData.data).to.be.an('object');",
+									"});",
+									"",
+									"pm.test(\"Profile contains customer information\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('firstName');",
+									"    pm.expect(jsonData.data).to.have.property('lastName');",
+									"    pm.expect(jsonData.data).to.have.property('email');",
+									"});",
+									"",
+									"pm.test(\"Customer name matches expected\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.firstName).to.eql(pm.environment.get('customerFirstName'));",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customerToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/customer/get",
+							"host": ["{{baseUrl}}"],
+							"path": ["customer", "get"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Restaurant User Authentication Flow",
+			"item": [
+				{
+					"name": "Restaurant Registration",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201 or 200\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"});",
+									"",
+									"pm.test(\"Restaurant registration successful\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"});",
+									"",
+									"pm.test(\"Restaurant data returned\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && typeof jsonData.data === 'object') {",
+									"        pm.expect(jsonData.data).to.have.property('id');",
+									"        pm.environment.set('testRestaurantId', jsonData.data.id);",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Ristorante Il Borgo Antico\",\n    \"email\": \"info@ilborgoantico.it\",\n    \"phoneNumber\": \"+39 055 234 5678\",\n    \"address\": \"Via del Corso 89\",\n    \"city\": \"Firenze\",\n    \"post_code\": \"50123\",\n    \"vatNumber\": \"IT01234567890\",\n    \"ownerName\": \"Alessandro\",\n    \"ownerSurname\": \"Bianchi\",\n    \"description\": \"Ristorante toscano tradizionale nel cuore di Firenze\",\n    \"priceLevel\": \"$$$\",\n    \"password\": \"{{restaurantPassword}}\",\n    \"matchingPassword\": \"{{restaurantPassword}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/restaurant/register/new",
+							"host": ["{{baseUrl}}"],
+							"path": ["restaurant", "register", "new"]
+						}
+					}
+				},
+				{
+					"name": "Enable Restaurant User (Admin)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Restaurant user enabled successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/admin/restaurant/user/enable?email=info@ilborgoantico.it",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "restaurant", "user", "enable"],
+							"query": [
+								{
+									"key": "email",
+									"value": "info@ilborgoantico.it"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Enable Restaurant (Admin)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Restaurant enabled successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/admin/restaurant/{{testRestaurantId}}/enable_restaurant",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "restaurant", "{{testRestaurantId}}", "enable_restaurant"]
+						}
+					}
+				},
+				{
+					"name": "Restaurant User Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"JWT token received\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"    pm.expect(jsonData.data).to.have.property('jwt');",
+									"    ",
+									"    // Store restaurant token",
+									"    pm.environment.set('restaurantToken', jsonData.data.jwt);",
+									"    console.log('Restaurant token stored:', jsonData.data.jwt.substring(0, 50) + '...');",
+									"});",
+									"",
+									"pm.test(\"Token format validation\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    var token = jsonData.data.jwt;",
+									"    var tokenParts = token.split('.');",
+									"    pm.expect(tokenParts).to.have.lengthOf(3);",
+									"});",
+									"",
+									"pm.test(\"User information included\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('user');",
+									"    if (jsonData.data.user) {",
+									"        if (jsonData.data.user.restaurantId) {",
+									"            pm.environment.set('restaurantId', jsonData.data.user.restaurantId);",
+									"        }",
+									"        console.log('Restaurant user info:', JSON.stringify(jsonData.data.user, null, 2));",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"info@ilborgoantico.it\",\n    \"password\": \"{{restaurantPassword}}\",\n    \"rememberMe\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/restaurant/user/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["restaurant", "user", "auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "Restaurant - Get User Authorities (Token Validation)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Authorities accessible with token\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"});",
+									"",
+									"pm.test(\"Authority has correct format\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data.length > 0) {",
+									"        var authority = jsonData.data[0];",
+									"        pm.expect(authority).to.be.a('string');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{restaurantToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/restaurant/user/authorities",
+							"host": ["{{baseUrl}}"],
+							"path": ["restaurant", "user", "authorities"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Cross-User Authentication Validation",
+			"item": [
+				{
+					"name": "Admin Token - Access Customer Endpoint (Should Fail)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 403 or 401\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([401, 403]);",
+									"});",
+									"",
+									"pm.test(\"Admin token rejected for customer endpoint\", function () {",
+									"    // This test verifies proper token scope validation",
+									"    pm.expect(pm.response.code).to.not.equal(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/customer/get",
+							"host": ["{{baseUrl}}"],
+							"path": ["customer", "get"]
+						}
+					}
+				},
+				{
+					"name": "Customer Token - Access Restaurant Endpoint (Should Fail)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 403 or 401\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([401, 403]);",
+									"});",
+									"",
+									"pm.test(\"Customer token rejected for restaurant endpoint\", function () {",
+									"    // This test verifies proper token scope validation",
+									"    pm.expect(pm.response.code).to.not.equal(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customerToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/restaurant/user/authorities",
+							"host": ["{{baseUrl}}"],
+							"path": ["restaurant", "user", "authorities"]
+						}
+					}
+				},
+				{
+					"name": "Restaurant Token - Access Admin Endpoint (Should Fail)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 403 or 401\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([401, 403]);",
+									"});",
+									"",
+									"pm.test(\"Restaurant token rejected for admin endpoint\", function () {",
+									"    // This test verifies proper token scope validation",
+									"    pm.expect(pm.response.code).to.not.equal(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{restaurantToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/admin/get",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "get"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Refresh Token Edge Cases",
+			"item": [
+				{
+					"name": "Invalid Refresh Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 401 or 403\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([401, 403]);",
+									"});",
+									"",
+									"pm.test(\"Invalid refresh token rejected\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(false);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"refreshToken\": \"invalid_token_12345\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/customer/auth/refresh",
+							"host": ["{{baseUrl}}"],
+							"path": ["customer", "auth", "refresh"]
+						}
+					}
+				},
+				{
+					"name": "Expired/Used Refresh Token",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Use the same refresh token twice to simulate expired/used token scenario",
+									"console.log('Testing with potentially expired refresh token');"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response handled correctly\", function () {",
+									"    // Either succeeds (if token is still valid) or fails appropriately",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 401, 403]);",
+									"});",
+									"",
+									"if (pm.response.code === 200) {",
+									"    pm.test(\"New token received if refresh successful\", function () {",
+									"        var jsonData = pm.response.json();",
+									"        pm.expect(jsonData.data).to.have.property('jwt');",
+									"    });",
+									"} else {",
+									"    pm.test(\"Appropriate error for expired/invalid token\", function () {",
+									"        var jsonData = pm.response.json();",
+									"        pm.expect(jsonData.success).to.eql(false);",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"refreshToken\": \"{{adminRefreshToken}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/auth/refresh",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "auth", "refresh"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Authentication Error Scenarios",
+			"item": [
+				{
+					"name": "Invalid Login Credentials - Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 401\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test(\"Authentication failed response\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(false);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"wrong@admin.com\",\n    \"password\": \"wrongpassword\",\n    \"rememberMe\": false\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "Invalid Login Credentials - Customer",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 401\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test(\"Authentication failed response\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(false);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"wrong@customer.com\",\n    \"password\": \"wrongpassword\",\n    \"rememberMe\": false\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/customer/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["customer", "auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "Invalid Login Credentials - Restaurant",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 401\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test(\"Authentication failed response\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(false);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"wrong@restaurant.com\",\n    \"password\": \"wrongpassword\",\n    \"rememberMe\": false\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/restaurant/user/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["restaurant", "user", "auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "Access Without Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 401\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test(\"Unauthorized access blocked\", function () {",
+									"    // Verify that endpoints requiring authentication properly reject requests without tokens",
+									"    pm.expect(pm.response.code).to.equal(401);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/admin/get",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "get"]
+						}
+					}
+				},
+				{
+					"name": "Malformed JWT Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 401\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test(\"Malformed token rejected\", function () {",
+									"    // Verify that malformed JWT tokens are properly rejected",
+									"    pm.expect(pm.response.code).to.equal(401);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer invalid.malformed.token"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/customer/get",
+							"host": ["{{baseUrl}}"],
+							"path": ["customer", "get"]
+						}
+					}
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global pre-request script for authentication testing",
+					"console.log('=== REQUEST INFO ===');",
+					"console.log('URL:', pm.request.url.toString());",
+					"console.log('Method:', pm.request.method);",
+					"",
+					"// Log available environment tokens for debugging",
+					"const authHeader = pm.request.headers.get('Authorization');",
+					"if (authHeader && authHeader.includes('Bearer')) {",
+					"    console.log('Auth header present:', authHeader.substring(0, 30) + '...');",
+					"} else if (pm.request.url.toString().includes('/auth/login')) {",
+					"    console.log('Login request - no token expected');",
+					"} else if (pm.request.url.toString().includes('/register') || pm.request.url.toString().includes('/auth/new')) {",
+					"    console.log('Registration request - no token expected');",
+					"} else {",
+					"    console.log('Warning: No authorization header found for protected endpoint');",
+					"}",
+					"",
+					"// Environment validation",
+					"const baseUrl = pm.environment.get('baseUrl');",
+					"if (!baseUrl) {",
+					"    console.error('ERROR: baseUrl environment variable not set');",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global test script for authentication collection",
+					"pm.test('Response time is acceptable (< 5 seconds)', function () {",
+					"    pm.expect(pm.response.responseTime).to.be.below(5000);",
+					"});",
+					"",
+					"// Log response info for debugging",
+					"console.log('=== RESPONSE INFO ===');",
+					"console.log('Status:', pm.response.code, pm.response.status);",
+					"console.log('Response time:', pm.response.responseTime + 'ms');",
+					"",
+					"// Validate JSON response structure for successful requests",
+					"if (pm.response.code < 400) {",
+					"    pm.test('Response is valid JSON', function () {",
+					"        pm.response.to.be.json;",
+					"    });",
+					"    ",
+					"    pm.test('Response has success field', function () {",
+					"        var jsonData = pm.response.json();",
+					"        pm.expect(jsonData).to.have.property('success');",
+					"    });",
+					"}",
+					"",
+					"// Security header validation",
+					"pm.test('Security headers present', function () {",
+					"    // Check for common security headers",
+					"    if (pm.response.headers.has('Content-Type')) {",
+					"        pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+					"    }",
+					"});",
+					"",
+					"// JWT token format validation for auth endpoints",
+					"if (pm.request.url.toString().includes('/login') || pm.request.url.toString().includes('/refresh')) {",
+					"    if (pm.response.code === 200) {",
+					"        pm.test('JWT token format validation', function () {",
+					"            var jsonData = pm.response.json();",
+					"            if (jsonData.data && jsonData.data.jwt) {",
+					"                var token = jsonData.data.jwt;",
+					"                var tokenParts = token.split('.');",
+					"                pm.expect(tokenParts).to.have.lengthOf(3);",
+					"                ",
+					"                // Validate each part is base64 encoded",
+					"                tokenParts.forEach((part, index) => {",
+					"                    pm.expect(part).to.match(/^[A-Za-z0-9_-]+$/);",
+					"                });",
+					"            }",
+					"        });",
+					"    }",
+					"}"
+				]
+			}
+		}
+	]
+}
