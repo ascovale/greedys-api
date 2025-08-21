@@ -1,4 +1,4 @@
-package com.application.common.spring;
+package com.application.common.spring.mock;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;

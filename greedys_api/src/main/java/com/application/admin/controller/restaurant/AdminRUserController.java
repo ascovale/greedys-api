@@ -67,7 +67,6 @@ public class AdminRUserController extends BaseController {
     //@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_SWITCH_TO_RESTAURANT_USER')")
     @GetMapping("/login/{RUserId}")
     @Operation(summary = "Get JWT Token of a restaurant user", description = "Returns the JWT token of a restaurant user")
-    
     public ResponseEntity<ResponseWrapper<AuthResponseDTO>> loginHasRUser(@PathVariable Long RUserId, HttpServletRequest request) {
         return execute("get restaurant user token", () -> adminRUserAuthenticationService.adminLoginToRUser(RUserId, request));
     }

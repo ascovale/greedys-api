@@ -1,4 +1,4 @@
-package com.application.common.spring;
+package com.application.common.spring.mock;
 
 import java.util.Collection;
 import java.util.Map;

@@ -1,8 +1,6 @@
 package com.application.admin.service.authentication;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,24 +13,18 @@ import com.application.common.security.jwt.JwtUtil;
 import com.application.common.web.dto.security.AuthRequestDTO;
 import com.application.common.web.dto.security.AuthResponseDTO;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Transactional
 @Slf4j
+@RequiredArgsConstructor
 public class AdminAuthenticationService {
 
-    private final AuthenticationManager authenticationManager;
+    private final AdminAuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final AdminService adminService;
-
-    public AdminAuthenticationService(@Qualifier("adminAuthenticationManager") AuthenticationManager authenticationManager,
-                                    JwtUtil jwtUtil,
-                                    AdminService adminService) {
-        this.authenticationManager = authenticationManager;
-        this.jwtUtil = jwtUtil;
-        this.adminService = adminService;
-    }
 
     /**
      * Authenticates an admin user and returns a JWT token

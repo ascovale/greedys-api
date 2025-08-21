@@ -185,13 +185,13 @@ public class WrapperTypeCustomizer implements OpenApiCustomizer {
                 Schema<?> newSchema = createSchemaFromClassAnnotations(fullClassName);
                 if (newSchema != null) {
                     schemas.put(simpleClassName, newSchema);
-                    System.out.println("Created schema from annotations: " + simpleClassName + " for class: " + fullClassName);
+                    // Log rimosso per evitare spam nei log Docker
                 } else {
                     // Fallback per tipi primitivi
                     Schema<?> fallbackSchema = createPrimitiveSchema(simpleClassName);
                     if (fallbackSchema != null) {
                         schemas.put(simpleClassName, fallbackSchema);
-                        System.out.println("Created primitive schema: " + simpleClassName);
+                        // Log rimosso per evitare spam nei log Docker
                     }
                 }
             }
@@ -391,7 +391,7 @@ public class WrapperTypeCustomizer implements OpenApiCustomizer {
                 Schema<?> basicSchema = createBasicSchemaForClass(dataClassName);
                 if (basicSchema != null) {
                     schemas.put(simpleClassName, basicSchema);
-                    System.out.println("Auto-created missing schema: " + simpleClassName);
+                    // Log rimosso per evitare spam nei log Docker
                 }
             }
         }

@@ -8,10 +8,8 @@ import java.util.Arrays;
 import java.util.Locale;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.MessageSource;
 import org.springframework.mail.SimpleMailMessage;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -28,6 +26,7 @@ import com.application.common.web.dto.security.AuthRequestDTO;
 import com.application.common.web.dto.security.AuthRequestGoogleDTO;
 import com.application.common.web.dto.security.AuthResponseDTO;
 import com.application.common.web.error.UserAlreadyExistException;
+import com.application.customer.CustomerAuthenticationManager;
 import com.application.customer.persistence.dao.CustomerDAO;
 import com.application.customer.persistence.dao.PasswordResetTokenDAO;
 import com.application.customer.persistence.dao.RoleDAO;
@@ -45,52 +44,26 @@ import com.google.api.client.json.gson.GsonFactory;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Transactional
 @Slf4j
+@RequiredArgsConstructor
 public class CustomerAuthenticationService {
 
 	private final GoogleAuthService googleAuthService;
-
 	private final CustomerDAO customerDAO;
 	private final VerificationTokenDAO tokenDAO;
 	private final PasswordResetTokenDAO passwordTokenRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final RoleDAO roleRepository;
-	private final AuthenticationManager authenticationManager;
+	private final CustomerAuthenticationManager authenticationManager;
 	private final JwtUtil jwtUtil;
 	private final EmailService emailService;
 	private final MessageSource messages;
 	private final CustomerMapper customerMapper;
-
-	public CustomerAuthenticationService(CustomerDAO customerDAO, VerificationTokenDAO tokenDAO,
-			PasswordResetTokenDAO passwordTokenRepository,
-			PasswordEncoder passwordEncoder,
-			RoleDAO roleRepository,
-			@Qualifier("customerAuthenticationManager") AuthenticationManager authenticationManager,
-			JwtUtil jwtUtil,
-			GoogleAuthService googleAuthService,
-			EmailService emailService,
-			MessageSource messages,
-			CustomerMapper customerMapper) {
-		this.customerDAO = customerDAO;
-		this.tokenDAO = tokenDAO;
-		this.passwordTokenRepository = passwordTokenRepository;
-		this.passwordEncoder = passwordEncoder;
-		this.roleRepository = roleRepository;
-		this.authenticationManager = authenticationManager;
-		this.jwtUtil = jwtUtil;
-		this.googleAuthService = googleAuthService;
-		this.emailService = emailService;
-		this.messages = messages;
-		this.customerMapper = customerMapper;
-
-		// Debug: verifichiamo quale AuthenticationManager viene iniettato
-		log.info("CustomerAuthenticationService initialized with AuthenticationManager: {}", 
-			authenticationManager.getClass().getSimpleName());
-	}
 
 	public AuthResponseDTO login(AuthRequestDTO authenticationRequest) {
 		log.debug("Authentication request received for username: {}", authenticationRequest.getUsername());

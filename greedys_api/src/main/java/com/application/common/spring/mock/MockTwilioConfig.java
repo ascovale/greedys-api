@@ -1,8 +1,10 @@
-package com.application.common.spring;
+package com.application.common.spring.mock;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+
+import com.application.common.spring.TwilioConfig;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;

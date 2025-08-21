@@ -5,7 +5,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.stereotype.Component;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.application.restaurant.persistence.dao.RUserDAO;
 import com.application.restaurant.persistence.model.user.RUser;
@@ -13,15 +13,17 @@ import com.application.restaurant.service.security.RUserDetailsService;
 
 import lombok.extern.slf4j.Slf4j;
 
-@Component
 @Slf4j
 public class RUserAuthenticationProvider extends DaoAuthenticationProvider {
     
     private final RUserDAO rUserDAO;
 
-    public RUserAuthenticationProvider(RUserDAO rUserDAO, RUserDetailsService userDetailsService) {
+    public RUserAuthenticationProvider(RUserDAO rUserDAO, 
+                                     RUserDetailsService userDetailsService,
+                                     PasswordEncoder passwordEncoder) {
         super(userDetailsService);
         this.rUserDAO = rUserDAO;
+        super.setPasswordEncoder(passwordEncoder);
     }
 
     @Override

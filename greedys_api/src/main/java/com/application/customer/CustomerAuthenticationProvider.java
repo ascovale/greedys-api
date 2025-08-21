@@ -5,7 +5,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.stereotype.Component;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.application.customer.persistence.dao.CustomerDAO;
 import com.application.customer.persistence.model.Customer;
@@ -13,15 +13,17 @@ import com.application.customer.service.security.CustomerUserDetailsService;
 
 import lombok.extern.slf4j.Slf4j;
 
-@Component
 @Slf4j
 public class CustomerAuthenticationProvider extends DaoAuthenticationProvider {
 
     private final CustomerDAO customerDAO;
 
-    public CustomerAuthenticationProvider(CustomerDAO customerDAO, CustomerUserDetailsService userDetailsService) {
+    public CustomerAuthenticationProvider(CustomerDAO customerDAO, 
+                                        CustomerUserDetailsService userDetailsService,
+                                        PasswordEncoder passwordEncoder) {
         super(userDetailsService);
         this.customerDAO = customerDAO;
+        super.setPasswordEncoder(passwordEncoder);
     }
 
     @Override

@@ -1,13 +1,11 @@
 package com.application.common.spring;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationServiceException;
-import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -46,17 +44,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-        private final RUserDetailsService RUserDetailsService;
-        private final CustomerUserDetailsService customerUserDetailsService;
-        private final AdminUserDetailsService adminUserDetailsService;
         private final RUserRequestFilter restaurantJwtRequestFilter;
         private final CustomerRequestFilter customerJwtRequestFilter;
         private final AdminRequestFilter adminJwtRequestFilter;
         private final TokenTypeValidationFilter tokenTypeValidationFilter;
         private final RUserHubValidationFilter hubValidationFilter;
-        private final RUserDAO rUserDAO;
-        private final CustomerDAO customerDAO;
-        private final AdminDAO adminDAO;
 
         // TODO: make sure the authentication filter is not required for login,
         // registration, and other public operations
@@ -91,8 +83,7 @@ public class SecurityConfig {
          * ============================================================================
          */
         @Bean
-        SecurityFilterChain RUserFilterChain(HttpSecurity http,
-                        @Qualifier("restaurantAuthenticationManager") AuthenticationManager authenticationManager)
+        SecurityFilterChain RUserFilterChain(HttpSecurity http, RUserAuthenticationProvider rUserProvider)
                         throws Exception {
                 http
                                 .securityMatcher("/restaurant/**")
@@ -104,14 +95,15 @@ public class SecurityConfig {
                                                 .requestMatchers("/restaurant/**").authenticated())
                                 .sessionManagement(management -> management
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                                // Configura il provider usando il DSL
+                                .authenticationProvider(rUserProvider)
                                 // SEQUENZA FILTRI (ORDINE IMPORTANTE):
                                 // 1° TokenTypeValidationFilter - Verifica Access vs Refresh Token
                                 .addFilterBefore(tokenTypeValidationFilter, UsernamePasswordAuthenticationFilter.class)
                                 // 2° HubValidationFilter - Limita Hub agli endpoint permessi  
                                 .addFilterAfter(hubValidationFilter, TokenTypeValidationFilter.class)
                                 // 3° RUserRequestFilter - AUTENTICAZIONE finale (SecurityContext)
-                                .addFilterAfter(restaurantJwtRequestFilter, RUserHubValidationFilter.class)
-                                .authenticationManager(authenticationManager);
+                                .addFilterAfter(restaurantJwtRequestFilter, RUserHubValidationFilter.class);
 
                 return http.build();
         }
@@ -125,8 +117,7 @@ public class SecurityConfig {
          * ============================================================================
          */
         @Bean
-        SecurityFilterChain customerFilterChain(HttpSecurity http,
-                        @Qualifier("customerAuthenticationManager") AuthenticationManager authenticationManager)
+        SecurityFilterChain customerFilterChain(HttpSecurity http, CustomerAuthenticationProvider customerProvider)
                         throws Exception {
                 http
                                 .securityMatcher("/customer/**")
@@ -138,13 +129,13 @@ public class SecurityConfig {
                                                 .requestMatchers("/customer/**").authenticated())
                                 .sessionManagement(management -> management
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                                // Configura il provider usando il DSL
+                                .authenticationProvider(customerProvider)
                                 // SEQUENZA FILTRI:
                                 // 1° TokenTypeValidationFilter - Verifica Access vs Refresh Token  
                                 .addFilterBefore(tokenTypeValidationFilter, UsernamePasswordAuthenticationFilter.class)
                                 // 2° CustomerRequestFilter - AUTENTICAZIONE finale (SecurityContext)
-                                .addFilterAfter(customerJwtRequestFilter, TokenTypeValidationFilter.class)
-
-                                .authenticationManager(authenticationManager);
+                                .addFilterAfter(customerJwtRequestFilter, TokenTypeValidationFilter.class);
 
                 return http.build();
         }
@@ -158,8 +149,7 @@ public class SecurityConfig {
          * ============================================================================
          */
         @Bean
-        SecurityFilterChain adminFilterChain(HttpSecurity http,
-                        @Qualifier("adminAuthenticationManager") AuthenticationManager authenticationManager)
+        SecurityFilterChain adminFilterChain(HttpSecurity http, AdminAuthenticationProvider adminProvider)
                         throws Exception {
                 http
                                 .securityMatcher("/admin/**")
@@ -171,12 +161,13 @@ public class SecurityConfig {
                                                 .requestMatchers("/admin/**").authenticated())
                                 .sessionManagement(management -> management
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                                // Configura il provider usando il DSL
+                                .authenticationProvider(adminProvider)
                                 // SEQUENZA FILTRI:
                                 // 1° TokenTypeValidationFilter - Verifica Access vs Refresh Token
                                 .addFilterBefore(tokenTypeValidationFilter, UsernamePasswordAuthenticationFilter.class)
                                 // 2° AdminRequestFilter - AUTENTICAZIONE finale (SecurityContext)
-                                .addFilterAfter(adminJwtRequestFilter, TokenTypeValidationFilter.class)
-                                .authenticationManager(authenticationManager);
+                                .addFilterAfter(adminJwtRequestFilter, TokenTypeValidationFilter.class);
 
                 return http.build();
         }
@@ -186,6 +177,7 @@ public class SecurityConfig {
          * DEFAULT FILTER CHAIN - Per endpoint non coperti dalle altre filter chain
          * ============================================================================
          * Gestisce endpoint come /v3/api-docs/*, /actuator/*, etc.
+         * ✅ RISOLTO: Cambiato da .anyRequest().authenticated() a .anyRequest().permitAll()
          * ============================================================================
          */
         @Bean
@@ -196,7 +188,7 @@ public class SecurityConfig {
                                 .authorizeHttpRequests(authz -> authz
                                                 .requestMatchers(SecurityPatterns.DEFAULT_PUBLIC_PATTERNS)
                                                 .permitAll()
-                                                .anyRequest().authenticated())
+                                                .anyRequest().permitAll()) // ✅ Permetti tutto - controlli veri nelle altre chain
                                 .sessionManagement(management -> management
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
@@ -217,106 +209,57 @@ public class SecurityConfig {
         }
 
         @Bean
-        @Qualifier("restaurantAuthenticationManager")
-        AuthenticationManager restaurantAuthenticationManager() {
-                return new ProviderManager(RUserAuthenticationProvider());
-        }
-
-        @Bean
-        RUserAuthenticationProvider RUserAuthenticationProvider() {
-                RUserAuthenticationProvider provider = new RUserAuthenticationProvider(rUserDAO, RUserDetailsService);
-                provider.setPasswordEncoder(passwordEncoder());
-                return provider;
-        }
-
-        @Bean
-        @Qualifier("customerAuthenticationManager")
-        AuthenticationManager customerAuthenticationManager() {
-                return new ProviderManager(customerAuthenticationProvider());
-        }
-
-        @Bean
-        CustomerAuthenticationProvider customerAuthenticationProvider() {
-                CustomerAuthenticationProvider provider = new CustomerAuthenticationProvider(customerDAO, customerUserDetailsService);
-                provider.setPasswordEncoder(passwordEncoder());
-                return provider;
-        }
-
-        @Bean
-        @Qualifier("adminAuthenticationManager")
-        AuthenticationManager adminAuthenticationManager() {
-                return new ProviderManager(adminAuthenticationProvider());
-        }
-
-        /*
-         * ============================================================================
-         * DEFAULT AUTHENTICATION MANAGER
-         * ============================================================================
-         * 
-         * SCOPO: Fornisce un AuthenticationManager di default per Spring Security quando
-         * nessun manager specifico è configurato per una richiesta.
-         * 
-         * MOTIVAZIONE: 
-         * - Il sistema ha manager specifici per ogni tipo di utente (/restaurant, /customer, /admin)
-         * - Endpoint pubblici come /v3/api-docs, /actuator non richiedono autenticazione
-         * - Se per errore una richiesta arriva qui, significa che c'è un problema di configurazione
-         * - Meglio fallire esplicitamente con un errore chiaro piuttosto che comportamenti inaspettati
-         * 
-         * ANNOTAZIONE @Primary: 
-         * - Spring Security automaticamente usa il bean @Primary quando:
-         *   1. HttpSecurity.build() non trova un AuthenticationManager esplicito
-         *   2. Non c'è un @Qualifier specifico nel punto di injection
-         *   3. Dependency injection richiede un AuthenticationManager generico
-         * 
-         * QUANDO VIENE USATO:
-         * - defaultFilterChain (NON ha .authenticationManager() esplicito)
-         *   → Endpoint pubblici: /v3/api-docs, /actuator che NON dovrebbero autenticare
-         * - Injection points senza @Qualifier specifico
-         * - Situazioni di errore/configurazione sbagliata
-         * 
-         * NON viene usato per LOGIN (hanno AuthenticationManager esplicito):
-         * - restaurantFilterChain → usa @Qualifier("restaurantAuthenticationManager")
-         * - customerFilterChain → usa @Qualifier("customerAuthenticationManager")  
-         * - adminFilterChain → usa @Qualifier("adminAuthenticationManager")
-         * 
-         * IMPORTANTE: Se questo manager viene chiamato durante il login, indica:
-         * 1. ERRORE DI DEPENDENCY INJECTION: @Qualifier non funziona nel service
-         * 2. ERRORE DI CONFIGURAZIONE: Bean AuthenticationManager specifico non trovato
-         * 3. ERRORE DI LOGICA: Service chiama AuthenticationManager sbagliato
-         * 4. CONFLITTO DI BEAN: Due bean con stesso nome o tipo
-         * 
-         * DEBUG SPECIFICO per login con credenziali sbagliate:
-         * - CustomerAuthenticationService usa @Qualifier("customerAuthenticationManager")
-         * - Se arriva qui = Spring non trova il bean giusto o c'è conflitto
-         * - Controlla che customerAuthenticationManager() bean sia correttamente definito
-         * - Verifica che non ci siano bean duplicati con stesso @Qualifier
-         * - Errore di Validazione
-         * 
-         * NOTA: Gli endpoint /customer/auth/login usano il service, NON il filter chain
-         * Il filter chain AuthenticationManager è per JWT, il service è per login!
-         * ============================================================================
-         */
-        @Bean
-        @Primary
-        AuthenticationManager defaultAuthenticationManager() {
-                // Return a manager that always fails with authentication exception
-                return authentication -> {
-                        throw new AuthenticationServiceException(
-                                "No specific AuthenticationManager configured for this request");
-                };
-        }
-
-        @Bean
         PasswordEncoder passwordEncoder() {
                 return new BCryptPasswordEncoder();
         }
 
-	@Bean
-	AdminAuthenticationProvider adminAuthenticationProvider() {
-		AdminAuthenticationProvider provider = new AdminAuthenticationProvider(adminDAO, adminUserDetailsService);
-		provider.setPasswordEncoder(passwordEncoder());
-		return provider;
-	} 
+        /*
+         * ============================================================================
+         * AUTHENTICATION PROVIDERS BEAN
+         * ============================================================================
+         * Questi provider sono usati nelle filter chain per l'autenticazione tramite JWT.
+         * Sono separati dai manager usati per il login.
+         * ============================================================================
+         */
+        @Bean
+        public RUserAuthenticationProvider rUserAuthenticationProvider(
+                        RUserDAO rUserDAO,
+                        RUserDetailsService rUserDetailsService,
+                        PasswordEncoder passwordEncoder) {
+                return new RUserAuthenticationProvider(rUserDAO, rUserDetailsService, passwordEncoder);
+        }
+
+        @Bean
+        public CustomerAuthenticationProvider customerAuthenticationProvider(
+                        CustomerDAO customerDAO,
+                        CustomerUserDetailsService customerDetailsService,
+                        PasswordEncoder passwordEncoder) {
+                return new CustomerAuthenticationProvider(customerDAO, customerDetailsService, passwordEncoder);
+        }
+
+        @Bean
+        public AdminAuthenticationProvider adminAuthenticationProvider(
+                        AdminDAO adminDAO,
+                        AdminUserDetailsService adminDetailsService,
+                        PasswordEncoder passwordEncoder) {
+                return new AdminAuthenticationProvider(adminDAO, adminDetailsService, passwordEncoder);
+        }
+
+        /**
+         * AuthenticationManager di default per Spring Security.
+         * Questo è necessario perché Spring Security richiede un Primary quando
+         * ci sono multiple implementazioni di AuthenticationManager.
+         * Non verrà mai usato per il login (che usa i manager dedicati),
+         * ma serve per evitare conflitti durante la creazione di HttpSecurity.
+         */
+        @Bean
+        @Primary
+        AuthenticationManager defaultAuthenticationManager() {
+                return authentication -> {
+                        throw new AuthenticationServiceException(
+                                "Default AuthenticationManager should not be used. Use dedicated managers.");
+                };
+        }
 
         @Bean
         HttpSessionEventPublisher httpSessionEventPublisher() {
