@@ -14,8 +14,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
-import com.application.common.controller.annotation.WrapperDataType;
-import com.application.common.controller.annotation.WrapperType;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.notification.CustomerNotificationDTO;
 import com.application.common.web.dto.shared.FcmTokenDTO;
@@ -67,7 +65,6 @@ public class CustomerNotificationController extends BaseController {
 
     @Operation(summary = "Get unread notifications", description = "Returns a pageable list of unread notifications")
     @GetMapping("/unread/{page}/{size}")
-    @WrapperType(dataClass = CustomerNotificationDTO.class, type = WrapperDataType.PAGE)
     public ResponseEntity<ResponseWrapper<Page<CustomerNotificationDTO>>> getUnreadNotifications(@PathVariable int page,
             @PathVariable int size) {
         Pageable pageable = PageRequest.of(page, size);
@@ -76,7 +73,6 @@ public class CustomerNotificationController extends BaseController {
 
     @Operation(summary = "Get all notifications", description = "Returns a pageable list of all notifications")
     @GetMapping("/all/{page}/{size}")
-    @WrapperType(dataClass = CustomerNotificationDTO.class, type = WrapperDataType.PAGE)
     public ResponseEntity<ResponseWrapper<Page<CustomerNotificationDTO>>> getAllNotifications(@PathVariable int page,
             @PathVariable int size) {
         Pageable pageable = PageRequest.of(page, size);
@@ -85,13 +81,11 @@ public class CustomerNotificationController extends BaseController {
 
     @Operation(summary = "Set notification as read", description = "Sets the notification with the given ID as the given read boolean")
     @PutMapping("/read")
-    @WrapperType(dataClass = CustomerNotificationDTO.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<CustomerNotificationDTO>> setNotificationAsRead(@RequestParam Long notificationId, @RequestParam Boolean read) {
         return execute("setNotificationAsRead", () -> notificationService.markAsReadAndReturn(notificationId));
     }
 
     @Operation(summary = "Register a user's FCM token", description = "Registers a user's FCM token")
-    @WrapperType(dataClass = String.class, responseCode = "201")
     @PostMapping("/token")
     
     public ResponseEntity<ResponseWrapper<String>> registerUserFcmToken(@RequestBody FcmTokenDTO userFcmToken) {

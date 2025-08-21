@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
-import com.application.common.controller.annotation.WrapperType;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.SlotDTO;
 import com.application.restaurant.persistence.model.user.RUser;
@@ -37,7 +36,6 @@ public class RestaurantSlotController extends BaseController {
     
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SLOT_WRITE')")
     @PostMapping("/new")
-    @WrapperType(dataClass = SlotDTO.class, responseCode = "201")
     public ResponseEntity<ResponseWrapper<SlotDTO>> newSlot(@RequestBody RestaurantNewSlotDTO slotDto,
             @AuthenticationPrincipal RUser rUser) {
         return executeCreate("create new slot", "Slot created successfully", () -> {

@@ -14,8 +14,6 @@ import com.application.admin.service.AdminRegistrationService;
 import com.application.admin.web.dto.admin.AdminDTO;
 import com.application.admin.web.dto.admin.NewAdminDTO;
 import com.application.common.controller.BaseController;
-import com.application.common.controller.annotation.WrapperDataType;
-import com.application.common.controller.annotation.WrapperType;
 import com.application.common.web.ResponseWrapper;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,7 +36,6 @@ public class AdminRegistrationController extends BaseController {
     @Operation(summary = "Register a new admin")
     
     @PostMapping("/")
-    @WrapperType(dataClass = AdminDTO.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<AdminDTO>> registerUserAccount(@Valid @RequestBody NewAdminDTO accountDto, HttpServletRequest request) {
         return executeCreate("register new admin",  () -> {
             return adminRegistrationService.registerNewAdmin(accountDto, request);

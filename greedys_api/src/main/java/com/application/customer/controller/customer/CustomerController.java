@@ -16,8 +16,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
-import com.application.common.controller.annotation.WrapperDataType;
-import com.application.common.controller.annotation.WrapperType;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.customer.CustomerDTO;
 import com.application.common.web.dto.customer.CustomerStatisticsDTO;
@@ -50,7 +48,6 @@ public class CustomerController extends BaseController {
     @Operation(summary = "Get Customer ID", description = "Retrieves the ID of the current customer")
     @GetMapping("/id")
     
-    @WrapperType(dataClass = Long.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<Long>> getCustomerId(@AuthenticationPrincipal Customer customer) {
         return execute("getCustomerId", () -> {
             return customer.getId();
@@ -58,7 +55,6 @@ public class CustomerController extends BaseController {
     }
     @Operation(summary = "Update customer phone number", description = "Updates the phone number of a specific customer by their ID")
     @PutMapping("/update/phone")
-    @WrapperType(dataClass = CustomerDTO.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<CustomerDTO>> updatePhone(@RequestParam String phone,@AuthenticationPrincipal Customer customer) {
         return execute("updatePhone", "Phone number updated successfully", () -> {
             return customerService.updatePhone(customer.getId(), phone);
@@ -67,7 +63,6 @@ public class CustomerController extends BaseController {
 
     @Operation(summary = "Update customer date of birth", description = "Updates the date of birth of a specific customer by their ID")
     @PutMapping("/update/dateOfBirth")
-    @WrapperType(dataClass = CustomerDTO.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<CustomerDTO>> updateDateOfBirth(@RequestParam Date dateOfBirth,@AuthenticationPrincipal Customer customer) {
         return execute("updateDateOfBirth", "Date of birth updated successfully", () -> {
             return customerService.updateDateOfBirth(customer.getId(), dateOfBirth);
@@ -107,7 +102,6 @@ public class CustomerController extends BaseController {
 
     @Operation(summary = "Get current customer statistics", description = "Retrieves statistics for the current authenticated customer including no-show rate, reservations count, etc.")
     @GetMapping("/statistics/current")
-    @WrapperType(dataClass = CustomerStatisticsDTO.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<CustomerStatisticsDTO>> getCurrentCustomerStatistics(@AuthenticationPrincipal Customer customer) {
         return execute("getCurrentCustomerStatistics", () -> {
             return customerService.getCustomerStatistics(customer.getId());
@@ -116,7 +110,6 @@ public class CustomerController extends BaseController {
 
     @Operation(summary = "Get customer statistics", description = "Retrieves statistics for a specific customer by ID including no-show rate, reservations count, etc.")
     @GetMapping("/{customerId}/statistics")
-    @WrapperType(dataClass = CustomerStatisticsDTO.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<CustomerStatisticsDTO>> getCustomerStatistics(
             @Parameter(description = "The ID of the customer to retrieve statistics for", required = true, example = "1")
             @PathVariable Long customerId) {
@@ -127,13 +120,11 @@ public class CustomerController extends BaseController {
 
     @Operation(summary = "Get current customer", description = "Retrieves the current authenticated customer")
     @GetMapping("/get")
-    @WrapperType(dataClass = CustomerDTO.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<CustomerDTO>> getCustomer(@AuthenticationPrincipal Customer customer) {
         return execute("getCustomer", () -> new CustomerDTO(customer));
     }
 
     @Operation(summary = "Generate new token for password change", description = "Changes the user's password after verifying the old password")
-    @WrapperType(dataClass = String.class, responseCode = "200")
     @PostMapping(value = "/password/new_token")
     public ResponseEntity<ResponseWrapper<String>> changeUserPassword(
             @Parameter(description = "Locale for response messages") final Locale locale,
@@ -160,7 +151,6 @@ public class CustomerController extends BaseController {
 
     @Operation(summary = "Update customer first name", description = "Updates the first name of a specific customer by their ID")
     @PutMapping("/update/firstName")
-    @WrapperType(dataClass = CustomerDTO.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<CustomerDTO>> updateFirstName(@RequestParam String firstName, @AuthenticationPrincipal Customer customer) {
         return execute("updateFirstName", "First name updated successfully", () -> {
             CustomerDTO updatedCustomer = customerService.updateFirstName(customer.getId(), firstName);
@@ -170,7 +160,6 @@ public class CustomerController extends BaseController {
 
     @Operation(summary = "Update customer last name", description = "Updates the last name of a specific customer by their ID")
     @PutMapping("/update/lastName")
-    @WrapperType(dataClass = CustomerDTO.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<CustomerDTO>> updateLastName(@RequestParam String lastName, @AuthenticationPrincipal Customer customer) {
         return execute("updateLastName", "Last name updated successfully", () -> {
             CustomerDTO updatedCustomer = customerService.updateLastName(customer.getId(), lastName);
@@ -180,7 +169,6 @@ public class CustomerController extends BaseController {
 
     @Operation(summary = "Update customer email", description = "Updates the email of a specific customer by their ID")
     @PutMapping("/update/email")
-    @WrapperType(dataClass = CustomerDTO.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<CustomerDTO>> updateEmail(@RequestParam String email, @AuthenticationPrincipal Customer customer) {
         return execute("updateEmail", "Email updated successfully", () -> {
             CustomerDTO updatedCustomer = customerService.updateEmail(customer.getId(), email);

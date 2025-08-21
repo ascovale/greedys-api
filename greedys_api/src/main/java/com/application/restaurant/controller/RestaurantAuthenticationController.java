@@ -15,8 +15,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
-import com.application.common.controller.annotation.WrapperDataType;
-import com.application.common.controller.annotation.WrapperType;
 import com.application.common.security.jwt.JwtUtil;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.RestaurantDTO;
@@ -47,7 +45,6 @@ public class RestaurantAuthenticationController extends BaseController {
     @Operation(summary = "Get list of restaurants for hub user", description = "Given a hub JWT, returns the list of restaurants associated with the hub user")
     @GetMapping(value = "/restaurants", produces = "application/json")
     
-    @WrapperType(dataClass = RestaurantDTO.class, type = WrapperDataType.LIST)
     public ResponseEntity<ResponseWrapper<List<RestaurantDTO>>> restaurants(
             @Parameter(hidden = true) @RequestHeader("Authorization") String authHeader) {
         return executeList("get restaurants for hub user", () -> {
@@ -73,7 +70,6 @@ public class RestaurantAuthenticationController extends BaseController {
     @Operation(summary = "Select a restaurant after intermediate login", description = "Given a hub JWT and a restaurantId, returns a JWT for the selected restaurant user")
 
     @GetMapping(value = "/select-restaurant", produces = "application/json")
-    @WrapperType(dataClass = AuthResponseDTO.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<AuthResponseDTO>> selectRestaurant(@RequestParam Long restaurantId) {
         return execute("select restaurant", () -> {
             if (restaurantId == null || restaurantId <= 0) {
@@ -108,7 +104,6 @@ public class RestaurantAuthenticationController extends BaseController {
 
     @Operation(summary = "Refresh hub token", description = "Refresh a hub JWT token using a hub refresh token")
     @PostMapping(value = "/refresh/hub", produces = "application/json")
-    @WrapperType(dataClass = AuthResponseDTO.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<AuthResponseDTO>> refreshHubToken(
             @RequestBody RefreshTokenRequestDTO refreshRequest) {
         return execute("refresh hub token",
@@ -117,7 +112,6 @@ public class RestaurantAuthenticationController extends BaseController {
 
     @Operation(summary = "Refresh restaurant user token", description = "Refresh a restaurant user JWT token using a refresh token")
     @PostMapping(value = "/refresh", produces = "application/json")
-    @WrapperType(dataClass = AuthResponseDTO.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<AuthResponseDTO>> refreshRUserToken(
             @RequestBody RefreshTokenRequestDTO refreshRequest) {
         return execute("refresh restaurant user token",

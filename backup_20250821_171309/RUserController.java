@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.WrapperDataType;
+import com.application.common.controller.annotation.WrapperType;
 import com.application.common.persistence.mapper.RUserMapper;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.RUserDTO;
@@ -56,6 +58,7 @@ public class RUserController extends BaseController {
     @Operation(summary = "Add a role to a restaurant user", description = "Assign a specific role to an existing restaurant user")
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_' + #role.toUpperCase() + '_WRITE')")
     @PostMapping(value = "/add_role")
+    @WrapperType(dataClass = RUserDTO.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<RUserDTO>> addRoleToRUser(
             @RequestParam String role,
             @RequestParam Long RUserId) {
@@ -75,6 +78,7 @@ public class RUserController extends BaseController {
     @Operation(summary = "Remove a role from a restaurant user", description = "Remove a specific role from an existing restaurant user")
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_' + #role.toUpperCase() + '_WRITE')")
     @PostMapping(value = "/remove_role")
+    @WrapperType(dataClass = RUserDTO.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<RUserDTO>> removeRoleFromRUser(
             @RequestParam String role,
             @RequestParam Long RUserId) {
@@ -143,6 +147,7 @@ public class RUserController extends BaseController {
      */
     @PostMapping(value = "/new")
     @Operation(summary = "Add a user to a restaurant", description = "Add a new user to a restaurant")
+    @WrapperType(dataClass = RUserDTO.class, type = WrapperDataType.DTO,responseCode = "201")
     public ResponseEntity<ResponseWrapper<RUserDTO>> addRUserToRestaurant(
             @RequestBody NewRUserDTO RUserDTO,
             @AuthenticationPrincipal RUser rUser) {
@@ -155,6 +160,7 @@ public class RUserController extends BaseController {
      */
     @Operation(summary = "Get restaurant user details", description = "Retrieve details of the current restaurant user")
     @GetMapping("/get")
+    @WrapperType(dataClass = RUserDTO.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<RUserDTO>> getRUserDetails(@AuthenticationPrincipal RUser rUser) {
         return execute("get user details", () -> {
             if (rUser == null) {
@@ -171,6 +177,7 @@ public class RUserController extends BaseController {
      */
     @Operation(summary = "Get user authorities", description = "Restituisce i permessi dell'utente autenticato")
     @GetMapping("/authorities")
+    @WrapperType(dataClass = String.class, type = WrapperDataType.LIST)
     public ResponseEntity<ResponseWrapper<List<String>>> getRUserAuthorities() {
         return executeList("get user authorities", () -> {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

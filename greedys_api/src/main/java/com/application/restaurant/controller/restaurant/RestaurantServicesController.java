@@ -15,8 +15,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
-import com.application.common.controller.annotation.WrapperDataType;
-import com.application.common.controller.annotation.WrapperType;
 import com.application.common.service.RestaurantService;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.ServiceDTO;
@@ -48,7 +46,6 @@ public class RestaurantServicesController extends BaseController {
     @Operation(summary = "Create a new service", description = "This method creates a new service in the system.")
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_WRITE')")
     @PostMapping("/new")
-    @WrapperType(dataClass = ServiceDTO.class, responseCode = "201")
     public ResponseEntity<ResponseWrapper<ServiceDTO>> newService(@RequestBody RestaurantNewServiceDTO servicesDto) {
         return executeCreate("create new service", "Service created successfully", () -> {
             System.out.println("<<<   Controller Service   >>>");
@@ -73,7 +70,6 @@ public class RestaurantServicesController extends BaseController {
     
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_READ')")
     @GetMapping("/{serviceId}")
-        @WrapperType(dataClass = ServiceDTO.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<ServiceDTO>> getServiceById(@PathVariable Long serviceId) {
         return execute("get service by id", () -> serviceService.findById(serviceId));
     }
@@ -82,7 +78,6 @@ public class RestaurantServicesController extends BaseController {
     
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_READ')")
     @GetMapping("/{serviceId}/slots")
-    @WrapperType(dataClass = SlotDTO.class, type = WrapperDataType.LIST)
     public ResponseEntity<ResponseWrapper<List<SlotDTO>>> getSlots(@PathVariable long serviceId) {
         return executeList("get service slots", () -> {
             Collection<SlotDTO> slots = slotService.findByService_Id(serviceId);
@@ -93,7 +88,6 @@ public class RestaurantServicesController extends BaseController {
     @Operation(summary = "Get all service types", description = "Retrieve all service types.")
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_READ')")
     @GetMapping("/types")
-    @WrapperType(dataClass = ServiceTypeDto.class, type = WrapperDataType.LIST)
     public ResponseEntity<ResponseWrapper<List<ServiceTypeDto>>> getServiceTypes() {
         return executeList("get service types", () -> {
             Collection<ServiceTypeDto> types = serviceService.getServiceTypesFromRUser();
@@ -103,7 +97,6 @@ public class RestaurantServicesController extends BaseController {
 
     @Operation(summary = "Get services of a restaurant", description = "Retrieve the services of a restaurant")
     @GetMapping(value = "/services")
-    @WrapperType(dataClass = ServiceDTO.class, type = WrapperDataType.LIST)
     public ResponseEntity<ResponseWrapper<List<ServiceDTO>>> getServices(@AuthenticationPrincipal RUser rUser) {
         return executeList("get restaurant services", () -> {
             Collection<ServiceDTO> services = restaurantService.getServices(rUser.getRestaurant().getId());

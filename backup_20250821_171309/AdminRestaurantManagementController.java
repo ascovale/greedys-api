@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.CreateApiResponses;
+import com.application.common.controller.annotation.WrapperDataType;
+import com.application.common.controller.annotation.WrapperType;
 import com.application.common.service.RestaurantService;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.RestaurantDTO;
@@ -42,6 +44,7 @@ public class AdminRestaurantManagementController extends BaseController {
 	@Operation(summary = "Get services of a restaurant", description = "Retrieve the services of a restaurant")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_READ')")
 	
+	@WrapperType(dataClass = ServiceDTO.class, type = WrapperDataType.LIST)
     public ResponseEntity<ResponseWrapper<List<ServiceDTO>>> getServices(@PathVariable Long restaurantId) {
 		return executeList("get services", () -> {
 			Collection<ServiceDTO> services = restaurantService.getServices(restaurantId);

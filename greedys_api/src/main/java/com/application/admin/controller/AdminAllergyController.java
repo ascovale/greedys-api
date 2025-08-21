@@ -11,8 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
-import com.application.common.controller.annotation.WrapperDataType;
-import com.application.common.controller.annotation.WrapperType;
+import com.application.common.controller.annotation.CreateApiResponses;
 import com.application.common.service.AllergyService;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.customer.AllergyDTO;
@@ -34,7 +33,7 @@ public class AdminAllergyController extends BaseController {
 
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_WRITE')")
     @Operation(summary = "Create allergy", description = "Creates a new allergy for the specified user by their ID")
-    @WrapperType(dataClass = AllergyDTO.class, responseCode = "201")
+    @CreateApiResponses
     @PostMapping("/new")
     public ResponseEntity<ResponseWrapper<AllergyDTO>> createAllergy(@RequestBody NewAllergyDTO allergyDto) {
         return executeCreate("create allergy", "Allergy created successfully", () -> {
@@ -53,7 +52,6 @@ public class AdminAllergyController extends BaseController {
 
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_WRITE')")
     @Operation(summary = "Modify allergy", description = "Modifies an existing allergy")
-    @WrapperType(dataClass = AllergyDTO.class, type = WrapperDataType.DTO)
     @PutMapping("/{allergyId}/modify")
     public ResponseEntity<ResponseWrapper<AllergyDTO>> modifyAllergy(@PathVariable Long allergyId, @RequestBody NewAllergyDTO allergyDto) {
         return execute("modify allergy", () -> {
