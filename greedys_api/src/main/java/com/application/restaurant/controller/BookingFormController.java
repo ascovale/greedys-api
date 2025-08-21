@@ -26,9 +26,13 @@ public class BookingFormController extends BaseController {
     
     public ResponseEntity<ResponseWrapper<String>> getRestaurantIFrameForm(@RequestParam Long idRestaurant) {
         return execute("get restaurant booking form", () -> {
-            ClassPathResource resource = new ClassPathResource("static/restaurant-booking.html");
-            byte[] bytes = Files.readAllBytes(Paths.get(resource.getURI()));
-            return new String(bytes);
+            try {
+                ClassPathResource resource = new ClassPathResource("static/restaurant-booking.html");
+                byte[] bytes = Files.readAllBytes(Paths.get(resource.getURI()));
+                return new String(bytes);
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to read restaurant booking form", e);
+            }
         });
     }
 }
