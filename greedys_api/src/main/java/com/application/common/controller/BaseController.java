@@ -18,19 +18,19 @@ import org.springframework.stereotype.Controller;
 import com.application.common.controller.annotation.CreateApiResponses;
 import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.controller.annotation.StandardApiResponses;
-import com.application.common.web.ListResponseWrapper;
-import com.application.common.web.PageResponseWrapper;
 import com.application.common.web.ResponseWrapper;
 
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Base controller with standardized response methods
+ * Base controller with standardized response methods using unified ResponseWrapper
  */
 @Controller
 @Slf4j
 @StandardApiResponses
 public class BaseController {
+
+    // ===================== SINGLE OBJECT RESPONSES ======================
 
     /**
      * Create a successful response with data
@@ -47,16 +47,6 @@ public class BaseController {
     }
 
     /**
-     * Create a successful response for paginated data
-     */
-    protected <T> ResponseEntity<PageResponseWrapper<T>> okPaginated(Page<T> page) {
-        String message = String.format("Page %d of %d (%d total items)", 
-                page.getNumber() + 1, page.getTotalPages(), page.getTotalElements());
-        
-        return ResponseEntity.ok(PageResponseWrapper.success(page, message));
-    }
-
-    /**
      * Create a successful response with only a message (no data)
      */
     protected ResponseEntity<ResponseWrapper<String>> ok(String message) {
@@ -70,6 +60,48 @@ public class BaseController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ResponseWrapper.success(data, message));
     }
+
+    // ===================== LIST RESPONSES ======================
+
+    /**
+     * Create a successful list response with data
+     */
+    protected <T> ResponseEntity<ResponseWrapper<List<T>>> okList(List<T> data) {
+        return ResponseEntity.ok(ResponseWrapper.successList(data));
+    }
+
+    /**
+     * Create a successful list response with data and custom message
+     */
+    protected <T> ResponseEntity<ResponseWrapper<List<T>>> okList(List<T> data, String message) {
+        return ResponseEntity.ok(ResponseWrapper.successList(data, message));
+    }
+
+    /**
+     * Create a created list response (201)
+     */
+    protected <T> ResponseEntity<ResponseWrapper<List<T>>> createdList(List<T> data, String message) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ResponseWrapper.successList(data, message));
+    }
+
+    // ===================== PAGE RESPONSES ======================
+
+    /**
+     * Create a successful page response with data
+     */
+    protected <T> ResponseEntity<ResponseWrapper<List<T>>> okPage(Page<T> page) {
+        return ResponseEntity.ok(ResponseWrapper.successPage(page));
+    }
+
+    /**
+     * Create a successful page response with data and custom message
+     */
+    protected <T> ResponseEntity<ResponseWrapper<List<T>>> okPage(Page<T> page, String message) {
+        return ResponseEntity.ok(ResponseWrapper.successPage(page, message));
+    }
+
+    // ===================== ERROR RESPONSES ======================
 
     /**
      * Create a bad request response (400)
@@ -135,72 +167,7 @@ public class BaseController {
                 .body(ResponseWrapper.success(null, message));
     }
 
-    /**
-     * Handle exceptions with standardized error response
-     */
-    protected <T> ResponseEntity<ResponseWrapper<T>> handleException(Exception e, String operation) {
-        log.error("Error during {}: {}", operation, e.getMessage(), e);
-        
-        // Map specific exceptions to appropriate responses
-        if (e instanceof IllegalArgumentException) {
-            return badRequest(e.getMessage(), "INVALID_ARGUMENT");                           // 400
-        } else if (e instanceof BadCredentialsException) {
-            return unauthorized("Invalid username or password");                             // 401
-        } else if (e instanceof DisabledException) {
-            return unauthorized("Account is disabled");                                      // 401
-        } else if (e instanceof AccountExpiredException) {
-            return unauthorized("Account has expired");                                      // 401
-        } else if (e instanceof CredentialsExpiredException) {
-            return unauthorized("Credentials have expired");                                 // 401
-        } else if (e instanceof LockedException) {
-            return unauthorized("Account is locked");                                        // 401
-        } else if (e instanceof UsernameNotFoundException) {
-            return unauthorized("Invalid username or password");                             // 401
-        } else if (e instanceof com.application.common.web.error.RestaurantNotFoundException) {
-            return notFound(e.getMessage());                                                // 404
-        } else if (e instanceof com.application.common.web.error.UserNotFoundException) {
-            return notFound(e.getMessage());                                                // 404
-        } else if (e instanceof jakarta.persistence.EntityNotFoundException) {
-            return notFound(e.getMessage());                                                // 404
-        } else if (e instanceof InsufficientAuthenticationException) {
-            return unauthorized("Insufficient authentication");                              // 401
-        } else if (e instanceof AuthenticationCredentialsNotFoundException) {
-            return unauthorized("Authentication required: " + e.getMessage());              // 401
-        } else if (e instanceof org.springframework.security.access.AccessDeniedException) {
-            return forbidden("Access denied: " + e.getMessage());                          // 403
-        } else if (e instanceof java.util.NoSuchElementException) {
-            return notFound("Resource not found: " + e.getMessage());                      // 404
-        } else if (e instanceof org.springframework.web.HttpRequestMethodNotSupportedException) {
-            return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)                    // 405
-                    .body(ResponseWrapper.error("Method not allowed: " + e.getMessage(), "METHOD_NOT_ALLOWED"));
-        } else if (e instanceof org.springframework.dao.DataIntegrityViolationException) {
-            return conflict("Data integrity violation: " + e.getMessage());               // 409
-        } else if (e instanceof com.application.common.web.error.UserAlreadyExistException) {
-            return conflict(e.getMessage());                                              // 409
-        } else if (e instanceof org.springframework.web.bind.MethodArgumentNotValidException) {
-            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)                 // 422
-                    .body(ResponseWrapper.error("Validation failed: " + e.getMessage(), "VALIDATION_ERROR"));
-        } else if (e instanceof java.util.concurrent.TimeoutException) {
-            return ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT)                      // 408
-                    .body(ResponseWrapper.error("Request timeout: " + e.getMessage(), "TIMEOUT"));
-        } else if (e instanceof org.springframework.dao.OptimisticLockingFailureException) {
-            return conflict("Optimistic locking failure: " + e.getMessage());             // 409
-        } else if (e instanceof org.springframework.web.multipart.MaxUploadSizeExceededException) {
-            return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)                    // 413
-                    .body(ResponseWrapper.error("File too large: " + e.getMessage(), "FILE_TOO_LARGE"));
-        } else if (e instanceof org.springframework.web.server.UnsupportedMediaTypeStatusException) {
-            return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)               // 415
-                    .body(ResponseWrapper.error("Unsupported media type: " + e.getMessage(), "UNSUPPORTED_MEDIA_TYPE"));
-        } else if (e instanceof org.springframework.web.server.ServerErrorException) {
-            return ResponseEntity.status(HttpStatus.BAD_GATEWAY)                          // 502
-                    .body(ResponseWrapper.error("Bad gateway: " + e.getMessage(), "BAD_GATEWAY"));
-        } else if (e instanceof java.net.ConnectException) {
-            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)                  // 503
-                    .body(ResponseWrapper.error("Service unavailable: " + e.getMessage(), "SERVICE_UNAVAILABLE"));
-        } else {
-            return internalServerError("An unexpected error occurred during " + operation); // 500
-        }
-    }
+    // ===================== EXECUTION METHODS ======================
 
     /**
      * Execute an operation with void return (for operations like delete, update status)
@@ -215,7 +182,7 @@ public class BaseController {
         }
     }
 
-        /**
+    /**
      * Execute an operation with void return (for operations like delete, update status)
      */
     @ReadApiResponses
@@ -267,7 +234,6 @@ public class BaseController {
         }
     }
 
-    
     /**
      * Execute a CREATE operation with 201 Created response
      */
@@ -282,63 +248,10 @@ public class BaseController {
     }
 
     /**
-     * Execute a paginated read operation with standardized error handling and pagination metadata
-     */
-    @ReadApiResponses
-    protected <T> ResponseEntity<PageResponseWrapper<T>> executePaginated(String operation, OperationSupplier<Page<T>> supplier) {
-        try {
-            Page<T> page = supplier.get();
-            return okPaginated(page);
-        } catch (Exception e) {
-            return handlePageException(e, operation);
-        }
-    }
-
-    // ===================== LIST RESPONSE WRAPPER METHODS ======================
-
-    /**
-     * Create a successful list response with data
-     */
-    protected <T> ResponseEntity<ListResponseWrapper<T>> okList(List<T> data) {
-        return ResponseEntity.ok(ListResponseWrapper.success(data));
-    }
-
-    /**
-     * Create a successful list response with data and custom message
-     */
-    protected <T> ResponseEntity<ListResponseWrapper<T>> okList(List<T> data, String message) {
-        return ResponseEntity.ok(ListResponseWrapper.success(data, message));
-    }
-
-    /**
-     * Create a created list response (201)
-     */
-    protected <T> ResponseEntity<ListResponseWrapper<T>> createdList(List<T> data, String message) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ListResponseWrapper.success(data, message));
-    }
-
-    /**
-     * Create a bad request list response (400)
-     */
-    protected <T> ResponseEntity<ListResponseWrapper<T>> badRequestList(String message) {
-        return ResponseEntity.badRequest()
-                .body(ListResponseWrapper.error(message));
-    }
-
-    /**
-     * Create a not found list response (404)
-     */
-    protected <T> ResponseEntity<ListResponseWrapper<T>> notFoundList(String message) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(ListResponseWrapper.error(message));
-    }
-
-    /**
      * Execute a list operation with standardized error handling
      */
     @ReadApiResponses
-    protected <T> ResponseEntity<ListResponseWrapper<T>> executeList(String operation, OperationSupplier<List<T>> supplier) {
+    protected <T> ResponseEntity<ResponseWrapper<List<T>>> executeList(String operation, OperationSupplier<List<T>> supplier) {
         try {
             List<T> result = supplier.get();
             return okList(result, "Operation " + operation + " completed successfully");
@@ -351,7 +264,7 @@ public class BaseController {
      * Execute a list operation with custom success message
      */
     @ReadApiResponses
-    protected <T> ResponseEntity<ListResponseWrapper<T>> executeList(String operation, String successMessage, OperationSupplier<List<T>> supplier) {
+    protected <T> ResponseEntity<ResponseWrapper<List<T>>> executeList(String operation, String successMessage, OperationSupplier<List<T>> supplier) {
         try {
             List<T> result = supplier.get();
             return okList(result, successMessage);
@@ -360,125 +273,144 @@ public class BaseController {
         }
     }
 
-    // ===================== PAGE RESPONSE WRAPPER METHODS ======================
-
     /**
-     * Create a successful page response with data
-     */
-    protected <T> ResponseEntity<PageResponseWrapper<T>> okPage(Page<T> data) {
-        return ResponseEntity.ok(PageResponseWrapper.success(data));
-    }
-
-    /**
-     * Create a successful page response with data and custom message
-     */
-    protected <T> ResponseEntity<PageResponseWrapper<T>> okPage(Page<T> data, String message) {
-        return ResponseEntity.ok(PageResponseWrapper.success(data, message));
-    }
-
-    /**
-     * Create a bad request page response (400)
-     */
-    protected <T> ResponseEntity<PageResponseWrapper<T>> badRequestPage(String message) {
-        return ResponseEntity.badRequest()
-                .body(PageResponseWrapper.error(message));
-    }
-
-    /**
-     * Create a not found page response (404)
-     */
-    protected <T> ResponseEntity<PageResponseWrapper<T>> notFoundPage(String message) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(PageResponseWrapper.error(message));
-    }
-
-    /**
-     * Execute a page operation with standardized error handling
+     * Execute a paginated read operation with standardized error handling and pagination metadata
      */
     @ReadApiResponses
-    protected <T> ResponseEntity<PageResponseWrapper<T>> executePage(String operation, OperationSupplier<Page<T>> supplier) {
+    protected <T> ResponseEntity<ResponseWrapper<Page<T>>> executePaginated(String operation, OperationSupplier<Page<T>> supplier) {
         try {
-            Page<T> result = supplier.get();
-            return okPage(result, "Operation " + operation + " completed successfully");
+            Page<T> page = supplier.get();
+            return ResponseEntity.ok(ResponseWrapper.success(page, 
+                String.format("Page %d of %d (%d total items)", 
+                    page.getNumber() + 1, page.getTotalPages(), page.getTotalElements())));
         } catch (Exception e) {
             return handlePageException(e, operation);
         }
     }
 
     /**
-     * Execute a page operation with custom success message
+     * Execute a paginated read operation with custom success message
      */
     @ReadApiResponses
-    protected <T> ResponseEntity<PageResponseWrapper<T>> executePage(String operation, String successMessage, OperationSupplier<Page<T>> supplier) {
+    protected <T> ResponseEntity<ResponseWrapper<Page<T>>> executePaginated(String operation, String successMessage, OperationSupplier<Page<T>> supplier) {
         try {
-            Page<T> result = supplier.get();
-            return okPage(result, successMessage);
+            Page<T> page = supplier.get();
+            return ResponseEntity.ok(ResponseWrapper.success(page, successMessage));
         } catch (Exception e) {
             return handlePageException(e, operation);
         }
     }
 
-    // ===================== EXCEPTION HANDLERS FOR NEW WRAPPER TYPES ======================
+    // ===================== EXCEPTION HANDLING ======================
+
+    /**
+     * Handle exceptions with standardized error response
+     */
+    protected <T> ResponseEntity<ResponseWrapper<T>> handleException(Exception e, String operation) {
+        log.error("Error during {}: {}", operation, e.getMessage(), e);
+        
+        // Map specific exceptions to appropriate responses
+        if (e instanceof IllegalArgumentException) {
+            return badRequest(e.getMessage(), "INVALID_ARGUMENT");
+        } else if (e instanceof BadCredentialsException) {
+            return unauthorized("Invalid username or password");
+        } else if (e instanceof DisabledException) {
+            return unauthorized("Account is disabled");
+        } else if (e instanceof AccountExpiredException) {
+            return unauthorized("Account has expired");
+        } else if (e instanceof CredentialsExpiredException) {
+            return unauthorized("Credentials have expired");
+        } else if (e instanceof LockedException) {
+            return unauthorized("Account is locked");
+        } else if (e instanceof UsernameNotFoundException) {
+            return unauthorized("Invalid username or password");
+        } else if (e instanceof jakarta.persistence.EntityNotFoundException) {
+            return notFound(e.getMessage());
+        } else if (e instanceof InsufficientAuthenticationException) {
+            return unauthorized("Insufficient authentication");
+        } else if (e instanceof AuthenticationCredentialsNotFoundException) {
+            return unauthorized("Authentication required: " + e.getMessage());
+        } else if (e instanceof org.springframework.security.access.AccessDeniedException) {
+            return forbidden("Access denied: " + e.getMessage());
+        } else if (e instanceof java.util.NoSuchElementException) {
+            return notFound("Resource not found: " + e.getMessage());
+        } else if (e instanceof org.springframework.web.HttpRequestMethodNotSupportedException) {
+            return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
+                    .body(ResponseWrapper.error("Method not allowed: " + e.getMessage(), "METHOD_NOT_ALLOWED"));
+        } else if (e instanceof org.springframework.dao.DataIntegrityViolationException) {
+            return conflict("Data integrity violation: " + e.getMessage());
+        } else if (e instanceof org.springframework.web.bind.MethodArgumentNotValidException) {
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                    .body(ResponseWrapper.error("Validation failed: " + e.getMessage(), "VALIDATION_ERROR"));
+        } else if (e instanceof java.util.concurrent.TimeoutException) {
+            return ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT)
+                    .body(ResponseWrapper.error("Request timeout: " + e.getMessage(), "TIMEOUT"));
+        } else if (e instanceof org.springframework.dao.OptimisticLockingFailureException) {
+            return conflict("Optimistic locking failure: " + e.getMessage());
+        } else if (e instanceof org.springframework.web.multipart.MaxUploadSizeExceededException) {
+            return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
+                    .body(ResponseWrapper.error("File too large: " + e.getMessage(), "FILE_TOO_LARGE"));
+        } else if (e instanceof org.springframework.web.server.UnsupportedMediaTypeStatusException) {
+            return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
+                    .body(ResponseWrapper.error("Unsupported media type: " + e.getMessage(), "UNSUPPORTED_MEDIA_TYPE"));
+        } else if (e instanceof org.springframework.web.server.ServerErrorException) {
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+                    .body(ResponseWrapper.error("Bad gateway: " + e.getMessage(), "BAD_GATEWAY"));
+        } else if (e instanceof java.net.ConnectException) {
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                    .body(ResponseWrapper.error("Service unavailable: " + e.getMessage(), "SERVICE_UNAVAILABLE"));
+        } else {
+            return internalServerError("An unexpected error occurred during " + operation);
+        }
+    }
 
     /**
      * Handle exceptions for List responses with standardized error response
      */
-    protected <T> ResponseEntity<ListResponseWrapper<T>> handleListException(Exception e, String operation) {
+    protected <T> ResponseEntity<ResponseWrapper<List<T>>> handleListException(Exception e, String operation) {
         log.error("Error during {}: {}", operation, e.getMessage(), e);
         
         // Map specific exceptions to appropriate responses
         if (e instanceof IllegalArgumentException) {
             return ResponseEntity.badRequest()
-                    .body(ListResponseWrapper.error("Invalid argument: " + e.getMessage()));
-        } else if (e instanceof com.application.common.web.error.RestaurantNotFoundException) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(ListResponseWrapper.error(e.getMessage()));
-        } else if (e instanceof com.application.common.web.error.UserNotFoundException) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(ListResponseWrapper.error(e.getMessage()));
+                    .body(ResponseWrapper.error("Invalid argument: " + e.getMessage()));
         } else if (e instanceof jakarta.persistence.EntityNotFoundException) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(ListResponseWrapper.error(e.getMessage()));
+                    .body(ResponseWrapper.error(e.getMessage()));
         } else if (e instanceof org.springframework.security.access.AccessDeniedException) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(ListResponseWrapper.error("Access denied: " + e.getMessage()));
+                    .body(ResponseWrapper.error("Access denied: " + e.getMessage()));
         } else if (e instanceof java.util.NoSuchElementException) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(ListResponseWrapper.error("Resource not found: " + e.getMessage()));
+                    .body(ResponseWrapper.error("Resource not found: " + e.getMessage()));
         } else {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ListResponseWrapper.error("An unexpected error occurred during " + operation));
+                    .body(ResponseWrapper.error("An unexpected error occurred during " + operation));
         }
     }
 
     /**
      * Handle exceptions for Page responses with standardized error response
      */
-    protected <T> ResponseEntity<PageResponseWrapper<T>> handlePageException(Exception e, String operation) {
+    protected <T> ResponseEntity<ResponseWrapper<Page<T>>> handlePageException(Exception e, String operation) {
         log.error("Error during {}: {}", operation, e.getMessage(), e);
         
         // Map specific exceptions to appropriate responses
         if (e instanceof IllegalArgumentException) {
             return ResponseEntity.badRequest()
-                    .body(PageResponseWrapper.error("Invalid argument: " + e.getMessage()));
-        } else if (e instanceof com.application.common.web.error.RestaurantNotFoundException) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(PageResponseWrapper.error(e.getMessage()));
-        } else if (e instanceof com.application.common.web.error.UserNotFoundException) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(PageResponseWrapper.error(e.getMessage()));
+                    .body(ResponseWrapper.error("Invalid argument: " + e.getMessage()));
         } else if (e instanceof jakarta.persistence.EntityNotFoundException) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(PageResponseWrapper.error(e.getMessage()));
+                    .body(ResponseWrapper.error(e.getMessage()));
         } else if (e instanceof org.springframework.security.access.AccessDeniedException) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(PageResponseWrapper.error("Access denied: " + e.getMessage()));
+                    .body(ResponseWrapper.error("Access denied: " + e.getMessage()));
         } else if (e instanceof java.util.NoSuchElementException) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(PageResponseWrapper.error("Resource not found: " + e.getMessage()));
+                    .body(ResponseWrapper.error("Resource not found: " + e.getMessage()));
         } else {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(PageResponseWrapper.error("An unexpected error occurred during " + operation));
+                    .body(ResponseWrapper.error("An unexpected error occurred during " + operation));
         }
     }
 

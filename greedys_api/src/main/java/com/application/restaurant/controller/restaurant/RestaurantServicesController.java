@@ -1,6 +1,7 @@
 package com.application.restaurant.controller.restaurant;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -17,7 +18,6 @@ import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.WrapperDataType;
 import com.application.common.controller.annotation.WrapperType;
 import com.application.common.service.RestaurantService;
-import com.application.common.web.ListResponseWrapper;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.ServiceDTO;
 import com.application.common.web.dto.restaurant.ServiceTypeDto;
@@ -83,7 +83,7 @@ public class RestaurantServicesController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_READ')")
     @GetMapping("/{serviceId}/slots")
     @WrapperType(dataClass = SlotDTO.class, type = WrapperDataType.LIST)
-    public ResponseEntity<ListResponseWrapper<SlotDTO>> getSlots(@PathVariable long serviceId) {
+    public ResponseEntity<ResponseWrapper<List<SlotDTO>>> getSlots(@PathVariable long serviceId) {
         return executeList("get service slots", () -> {
             Collection<SlotDTO> slots = slotService.findByService_Id(serviceId);
             return slots instanceof java.util.List ? (java.util.List<SlotDTO>) slots : new java.util.ArrayList<>(slots);
@@ -94,7 +94,7 @@ public class RestaurantServicesController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_READ')")
     @GetMapping("/types")
     @WrapperType(dataClass = ServiceTypeDto.class, type = WrapperDataType.LIST)
-    public ResponseEntity<ListResponseWrapper<ServiceTypeDto>> getServiceTypes() {
+    public ResponseEntity<ResponseWrapper<List<ServiceTypeDto>>> getServiceTypes() {
         return executeList("get service types", () -> {
             Collection<ServiceTypeDto> types = serviceService.getServiceTypesFromRUser();
             return types instanceof java.util.List ? (java.util.List<ServiceTypeDto>) types : new java.util.ArrayList<>(types);
@@ -104,7 +104,7 @@ public class RestaurantServicesController extends BaseController {
     @Operation(summary = "Get services of a restaurant", description = "Retrieve the services of a restaurant")
     @GetMapping(value = "/services")
     @WrapperType(dataClass = ServiceDTO.class, type = WrapperDataType.LIST)
-    public ResponseEntity<ListResponseWrapper<ServiceDTO>> getServices(@AuthenticationPrincipal RUser rUser) {
+    public ResponseEntity<ResponseWrapper<List<ServiceDTO>>> getServices(@AuthenticationPrincipal RUser rUser) {
         return executeList("get restaurant services", () -> {
             Collection<ServiceDTO> services = restaurantService.getServices(rUser.getRestaurant().getId());
             return services instanceof java.util.List ? (java.util.List<ServiceDTO>) services : new java.util.ArrayList<>(services);

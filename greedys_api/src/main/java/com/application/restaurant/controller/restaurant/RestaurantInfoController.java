@@ -17,7 +17,6 @@ import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.WrapperDataType;
 import com.application.common.controller.annotation.WrapperType;
 import com.application.common.service.RestaurantService;
-import com.application.common.web.ListResponseWrapper;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.ServiceDTO;
 import com.application.restaurant.persistence.model.user.RUser;
@@ -52,7 +51,7 @@ public class RestaurantInfoController extends BaseController {
 	@GetMapping(value = "/types")
 	@Operation(summary = "Get types of a restaurant", description = "Retrieve the types of a restaurant")
 	@WrapperType(dataClass = String.class, type = WrapperDataType.LIST)
-	    public ResponseEntity<ListResponseWrapper<String>> getRestaurantTypesNames() {
+	public ResponseEntity<ResponseWrapper<List<String>>> getRestaurantTypesNames() {
 		return executeList("get restaurant types", () -> {
 			log.info("Getting restaurant types");
 			return restaurantService.getRestaurantTypesNames();
@@ -62,7 +61,7 @@ public class RestaurantInfoController extends BaseController {
 	@GetMapping(value = "/open-days")
 	@Operation(summary = "Get open days of the authenticated restaurant", description = "Retrieve the open days of the authenticated restaurant")
 	@WrapperType(dataClass = String.class, type = WrapperDataType.LIST)
-	    public ResponseEntity<ListResponseWrapper<String>> getOpenDays(
+	public ResponseEntity<ResponseWrapper<List<String>>> getOpenDays(
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate end,
 			@AuthenticationPrincipal RUser rUser) {
@@ -78,7 +77,7 @@ public class RestaurantInfoController extends BaseController {
 	@Operation(summary = "Get closed days of the authenticated restaurant", description = "Retrieve the closed days of the authenticated restaurant")
 	
 	@WrapperType(dataClass = LocalDate.class, type = WrapperDataType.LIST)
-    public ResponseEntity<ListResponseWrapper<LocalDate>> getClosedDays(
+    public ResponseEntity<ResponseWrapper<List<LocalDate>>> getClosedDays(
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate end,
 			@AuthenticationPrincipal RUser rUser) {
@@ -94,7 +93,7 @@ public class RestaurantInfoController extends BaseController {
 	@Operation(summary = "Get active and enabled services of the authenticated restaurant for a specific period", description = "Retrieve the services of the authenticated restaurant that are active and enabled in a given date range")
 	
 	@WrapperType(dataClass = ServiceDTO.class, type = WrapperDataType.LIST)
-    public ResponseEntity<ListResponseWrapper<ServiceDTO>> getActiveEnabledServicesInPeriod(
+    public ResponseEntity<ResponseWrapper<List<ServiceDTO>>> getActiveEnabledServicesInPeriod(
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate end,
 			@AuthenticationPrincipal RUser rUser) {
@@ -110,7 +109,7 @@ public class RestaurantInfoController extends BaseController {
 	@Operation(summary = "Get active and enabled services of the authenticated restaurant for a specific date", description = "Retrieve the services of the authenticated restaurant that are active and enabled on a given date")
 	
 	@WrapperType(dataClass = ServiceDTO.class, type = WrapperDataType.LIST)
-    public ResponseEntity<ListResponseWrapper<ServiceDTO>> getActiveEnabledServicesInDate(
+    public ResponseEntity<ResponseWrapper<List<ServiceDTO>>> getActiveEnabledServicesInDate(
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate date,
 			@AuthenticationPrincipal RUser rUser) {
 		return executeList("get active services in date", () -> {

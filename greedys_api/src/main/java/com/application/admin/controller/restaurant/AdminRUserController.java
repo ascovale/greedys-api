@@ -1,5 +1,7 @@
 package com.application.admin.controller.restaurant;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,7 +14,6 @@ import com.application.admin.service.authentication.AdminRUserAuthenticationServ
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.WrapperDataType;
 import com.application.common.controller.annotation.WrapperType;
-import com.application.common.web.ListResponseWrapper;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.RUserDTO;
 import com.application.common.web.dto.security.AuthResponseDTO;
@@ -80,7 +81,7 @@ public class AdminRUserController extends BaseController {
     @GetMapping("/{restaurantId}/users")
     
     @WrapperType(dataClass = RUserDTO.class, type = WrapperDataType.LIST)
-    public ResponseEntity<ListResponseWrapper<RUserDTO>> getRUsers(@PathVariable Long restaurantId) {
+    public ResponseEntity<ResponseWrapper<List<RUserDTO>>> getRUsers(@PathVariable Long restaurantId) {
         return executeList("get restaurant users", () -> RUserService.getRUsersByRestaurantId(restaurantId));
     }
 
@@ -98,7 +99,7 @@ public class AdminRUserController extends BaseController {
     @GetMapping("/all")
     
     @WrapperType(dataClass = RUserDTO.class, type = WrapperDataType.LIST)
-    public ResponseEntity<ListResponseWrapper<RUserDTO>> getAllRUsers() {
+    public ResponseEntity<ResponseWrapper<List<RUserDTO>>> getAllRUsers() {
         return executeList("get all restaurant users", () -> RUserService.getAllRUsers());
     }
 

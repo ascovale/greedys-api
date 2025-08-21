@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -19,8 +20,7 @@ import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.WrapperDataType;
 import com.application.common.controller.annotation.WrapperType;
 import com.application.common.service.reservation.ReservationService;
-import com.application.common.web.ListResponseWrapper;
-import com.application.common.web.PageResponseWrapper;
+import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.reservations.ReservationDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -44,7 +44,7 @@ public class AdminRestaurantReservationController extends BaseController {
 	@GetMapping(value = "{restaurantId}/reservation")
 	
 	@WrapperType(dataClass = ReservationDTO.class, type = WrapperDataType.LIST)
-    public ResponseEntity<ListResponseWrapper<ReservationDTO>> getReservations(
+    public ResponseEntity<ResponseWrapper<List<ReservationDTO>>> getReservations(
 			@PathVariable Long restaurantId,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end) {
@@ -59,7 +59,7 @@ public class AdminRestaurantReservationController extends BaseController {
 	@GetMapping(value = "{restaurantId}/reservation/accepted")
 	
 	@WrapperType(dataClass = ReservationDTO.class, type = WrapperDataType.LIST)
-    public ResponseEntity<ListResponseWrapper<ReservationDTO>> getAcceptedReservations(
+    public ResponseEntity<ResponseWrapper<List<ReservationDTO>>> getAcceptedReservations(
 			@PathVariable Long restaurantId,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end) {
@@ -73,7 +73,7 @@ public class AdminRestaurantReservationController extends BaseController {
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_RESTAURANT_READ')")
 	@GetMapping(value = "{restaurantId}/reservation/pageable")
 	@WrapperType(dataClass = ReservationDTO.class, type = WrapperDataType.PAGE)
-	public ResponseEntity<PageResponseWrapper<ReservationDTO>> getReservationsPageable(
+	public ResponseEntity<ResponseWrapper<Page<ReservationDTO>>> getReservationsPageable(
 			@PathVariable Long restaurantId,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end,
@@ -88,7 +88,7 @@ public class AdminRestaurantReservationController extends BaseController {
 	@GetMapping(value = "{restaurantId}/reservation/pending")
 	
 	@WrapperType(dataClass = ReservationDTO.class, type = WrapperDataType.LIST)
-    public ResponseEntity<ListResponseWrapper<ReservationDTO>> getPendingReservations(
+    public ResponseEntity<ResponseWrapper<List<ReservationDTO>>> getPendingReservations(
 			@PathVariable Long restaurantId,
 			@RequestParam(required = false) LocalDate start,
 			@RequestParam(required = false) LocalDate end) {
@@ -102,7 +102,7 @@ public class AdminRestaurantReservationController extends BaseController {
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_RESTAURANT_READ')")
 	@GetMapping(value = "{restaurantId}/reservation/pending/pageable")
 	@WrapperType(dataClass = ReservationDTO.class, type = WrapperDataType.PAGE)
-	public ResponseEntity<PageResponseWrapper<ReservationDTO>> getPendingReservationsPageable(
+	public ResponseEntity<ResponseWrapper<Page<ReservationDTO>>> getPendingReservationsPageable(
 		@PathVariable Long restaurantId,
 		@RequestParam(required = false) LocalDate start,
 		@RequestParam(required = false) LocalDate end,

@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -24,8 +25,6 @@ import com.application.common.controller.annotation.WrapperDataType;
 import com.application.common.controller.annotation.WrapperType;
 import com.application.common.persistence.model.reservation.Reservation;
 import com.application.common.service.reservation.ReservationService;
-import com.application.common.web.ListResponseWrapper;
-import com.application.common.web.PageResponseWrapper;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.reservations.ReservationDTO;
 import com.application.restaurant.persistence.model.user.RUser;
@@ -109,7 +108,7 @@ public class RestaurantReservationController extends BaseController {
 	@GetMapping(value = "/reservations")
 	
 	@WrapperType(dataClass = ReservationDTO.class, type = WrapperDataType.LIST)
-	public ResponseEntity<ListResponseWrapper<ReservationDTO>> getReservations(
+	public ResponseEntity<ResponseWrapper<List<ReservationDTO>>> getReservations(
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end,
 			@AuthenticationPrincipal RUser rUser) {
@@ -125,7 +124,7 @@ public class RestaurantReservationController extends BaseController {
 	@GetMapping(value = "/accepted/get")
 	
 	@WrapperType(dataClass = ReservationDTO.class, type = WrapperDataType.LIST)
-	public ResponseEntity<ListResponseWrapper<ReservationDTO>> getAcceptedReservations(
+	public ResponseEntity<ResponseWrapper<List<ReservationDTO>>> getAcceptedReservations(
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end,
 			@AuthenticationPrincipal RUser rUser) {
@@ -141,7 +140,7 @@ public class RestaurantReservationController extends BaseController {
 	@Operation(summary = "Get all reservations of a restaurant with pagination", description = "Retrieve all reservations of a restaurant with pagination")
 	@GetMapping(value = "/pageable")
 	@WrapperType(dataClass = ReservationDTO.class, type = WrapperDataType.PAGE)
-	public ResponseEntity<PageResponseWrapper<ReservationDTO>> getReservationsPageable(
+	public ResponseEntity<ResponseWrapper<Page<ReservationDTO>>> getReservationsPageable(
 			@AuthenticationPrincipal RUser rUser,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end,
@@ -158,7 +157,7 @@ public class RestaurantReservationController extends BaseController {
 	@GetMapping(value = "/pending/get")
 	
 	@WrapperType(dataClass = ReservationDTO.class, type = WrapperDataType.LIST)
-	public ResponseEntity<ListResponseWrapper<ReservationDTO>> getPendingReservations(
+	public ResponseEntity<ResponseWrapper<List<ReservationDTO>>> getPendingReservations(
 			@RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end,
 			@AuthenticationPrincipal RUser rUser) {

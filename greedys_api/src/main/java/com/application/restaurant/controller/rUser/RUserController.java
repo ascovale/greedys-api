@@ -1,5 +1,6 @@
 package com.application.restaurant.controller.rUser;
 
+import java.util.List;
 import java.util.Locale;
 
 import org.springframework.http.ResponseEntity;
@@ -20,7 +21,6 @@ import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.WrapperDataType;
 import com.application.common.controller.annotation.WrapperType;
 import com.application.common.persistence.mapper.RUserMapper;
-import com.application.common.web.ListResponseWrapper;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.RUserDTO;
 import com.application.common.web.error.InvalidOldPasswordException;
@@ -178,7 +178,7 @@ public class RUserController extends BaseController {
     @Operation(summary = "Get user authorities", description = "Restituisce i permessi dell'utente autenticato")
     @GetMapping("/authorities")
     @WrapperType(dataClass = String.class, type = WrapperDataType.LIST)
-    public ResponseEntity<ListResponseWrapper<String>> getRUserAuthorities() {
+    public ResponseEntity<ResponseWrapper<List<String>>> getRUserAuthorities() {
         return executeList("get user authorities", () -> {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             if (authentication == null || authentication.getAuthorities() == null) {

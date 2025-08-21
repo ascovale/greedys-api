@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.WrapperDataType;
 import com.application.common.controller.annotation.WrapperType;
-import com.application.common.web.ListResponseWrapper;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.menu.DishDTO;
 import com.application.common.web.dto.menu.MenuDTO;
@@ -46,7 +45,7 @@ public class RestaurantMenuController extends BaseController {
     
     @GetMapping("/all")
     @WrapperType(dataClass = MenuDTO.class, type = WrapperDataType.LIST)
-    public ResponseEntity<ListResponseWrapper<MenuDTO>> getRestaurantMenus(@AuthenticationPrincipal RUser rUser) {
+    public ResponseEntity<ResponseWrapper<List<MenuDTO>>> getRestaurantMenus(@AuthenticationPrincipal RUser rUser) {
         return executeList("get restaurant menus", () -> {
             Collection<MenuDTO> menus = restaurantMenuService.getMenusByRestaurant(rUser.getRestaurant().getId());
             return menus instanceof List ? (List<MenuDTO>) menus : new java.util.ArrayList<>(menus);
@@ -58,7 +57,7 @@ public class RestaurantMenuController extends BaseController {
     @PreAuthorize("@securityRUserService.isMenuOwnedByAuthenticatedUser(#menuId)")
     @GetMapping("/{menuId}/dishes")
         @WrapperType(dataClass = MenuDishDTO.class, type = WrapperDataType.LIST)
-    public ResponseEntity<ListResponseWrapper<MenuDishDTO>> getMenuDishes(@PathVariable Long menuId) {
+    public ResponseEntity<ResponseWrapper<List<MenuDishDTO>>> getMenuDishes(@PathVariable Long menuId) {
         return executeList("get menu dishes", () -> restaurantMenuService.getMenuDishesByMenuId(menuId));
     }
 
@@ -74,7 +73,7 @@ public class RestaurantMenuController extends BaseController {
     @Operation(summary = "Retrieve all dishes", description = "Retrieve all dishes for the current restaurant")
     @GetMapping("/dishes/all")
         @WrapperType(dataClass = DishDTO.class, type = WrapperDataType.LIST)
-    public ResponseEntity<ListResponseWrapper<DishDTO>> getDishes(@AuthenticationPrincipal RUser rUser) {
+    public ResponseEntity<ResponseWrapper<List<DishDTO>>> getDishes(@AuthenticationPrincipal RUser rUser) {
         return executeList("get restaurant dishes", () -> {
             Collection<DishDTO> dishes = restaurantMenuService.getDishesByRestaurant(rUser.getRestaurant().getId());
             return dishes instanceof List ? (List<DishDTO>) dishes : new java.util.ArrayList<>(dishes);

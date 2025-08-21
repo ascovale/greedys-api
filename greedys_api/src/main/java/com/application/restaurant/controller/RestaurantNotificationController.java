@@ -2,6 +2,7 @@ package com.application.restaurant.controller;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.WrapperDataType;
 import com.application.common.controller.annotation.WrapperType;
-import com.application.common.web.PageResponseWrapper;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.notification.RestaurantNotificationDTO;
 import com.application.restaurant.persistence.model.user.RUser;
@@ -40,7 +40,7 @@ public class RestaurantNotificationController extends BaseController {
     @Operation(summary = "Get unread notifications", description = "Returns a pageable list of unread notifications")
     @WrapperType(dataClass = RestaurantNotificationDTO.class, type = WrapperDataType.PAGE)
     @GetMapping("/unread/{page}/{size}")
-    public ResponseEntity<PageResponseWrapper<RestaurantNotificationDTO>> getUnreadNotifications(
+    public ResponseEntity<ResponseWrapper<Page<RestaurantNotificationDTO>>> getUnreadNotifications(
             @PathVariable int page,
             @PathVariable int size) {
         return executePaginated("get unread notifications", () -> {
@@ -61,7 +61,7 @@ public class RestaurantNotificationController extends BaseController {
     @Operation(summary = "Get all notifications", description = "Returns a pageable list of all notifications")
     @WrapperType(dataClass = RestaurantNotificationDTO.class, type = WrapperDataType.PAGE)
     @GetMapping("/all/{page}/{size}")
-    public ResponseEntity<PageResponseWrapper<RestaurantNotificationDTO>> getAllNotifications(
+    public ResponseEntity<ResponseWrapper<Page<RestaurantNotificationDTO>>> getAllNotifications(
             @PathVariable int page,
             @PathVariable int size) {
         return executePaginated("get all notifications", () -> {

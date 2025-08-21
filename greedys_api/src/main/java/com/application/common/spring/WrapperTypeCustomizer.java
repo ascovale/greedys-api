@@ -21,7 +21,7 @@ import io.swagger.v3.oas.models.responses.ApiResponse;
 
 /**
  * OpenAPI customizer that processes @WrapperType annotations and generates
- * appropriate schemas for ResponseWrapper, ListResponseWrapper, and PageResponseWrapper
+ * appropriate schemas for ResponseWrapper with different metadata types
  */
 @Component
 public class WrapperTypeCustomizer implements OpenApiCustomizer {
@@ -40,6 +40,9 @@ public class WrapperTypeCustomizer implements OpenApiCustomizer {
             openApi.getComponents().setSchemas(new HashMap<>());
         }
 
+        // Aggiungi sempre gli schemi per i metadata e altri tipi di supporto
+        addRequiredSchemas(openApi);
+
         // Raccogli tutti i className referenziati negli x-wrapper-type
         Set<String> referencedClasses = collectReferencedClasses(openApi);
         
@@ -50,6 +53,97 @@ public class WrapperTypeCustomizer implements OpenApiCustomizer {
         openApi.getPaths().forEach((path, pathItem) -> {
             processPathItem(pathItem, openApi);
         });
+    }
+    
+    private void addRequiredSchemas(OpenAPI openApi) {
+        @SuppressWarnings("rawtypes")
+        Map<String, Schema> schemas = openApi.getComponents().getSchemas();
+        
+        // BaseMetadata schema
+        if (!schemas.containsKey("BaseMetadata")) {
+            ObjectSchema baseMetadata = new ObjectSchema();
+            baseMetadata.setName("BaseMetadata");
+            baseMetadata.setDescription("Base metadata for API responses");
+            baseMetadata.addProperty("dataType", new Schema<>().type("string").description("Type of data returned"));
+            baseMetadata.addProperty("additional", new Schema<>().type("object").description("Additional metadata"));
+            schemas.put("BaseMetadata", baseMetadata);
+        }
+        
+        // SingleMetadata schema
+        if (!schemas.containsKey("SingleMetadata")) {
+            ObjectSchema singleMetadata = new ObjectSchema();
+            singleMetadata.setName("SingleMetadata");
+            singleMetadata.setDescription("Metadata for single object responses");
+            singleMetadata.addProperty("dataType", new Schema<>().type("string").example("single"));
+            singleMetadata.addProperty("additional", new Schema<>().type("object").description("Additional metadata"));
+            schemas.put("SingleMetadata", singleMetadata);
+        }
+        
+        // ListMetadata schema
+        if (!schemas.containsKey("ListMetadata")) {
+            ObjectSchema listMetadata = new ObjectSchema();
+            listMetadata.setName("ListMetadata");
+            listMetadata.setDescription("Metadata for list responses");
+            listMetadata.addProperty("dataType", new Schema<>().type("string").example("list"));
+            listMetadata.addProperty("totalCount", new Schema<>().type("integer").format("int64").description("Total number of items"));
+            listMetadata.addProperty("count", new Schema<>().type("integer").description("Number of items in response"));
+            listMetadata.addProperty("filtered", new Schema<>().type("boolean").description("Whether the list is filtered"));
+            listMetadata.addProperty("filterDescription", new Schema<>().type("string").description("Applied filters description"));
+            listMetadata.addProperty("additional", new Schema<>().type("object").description("Additional metadata"));
+            schemas.put("ListMetadata", listMetadata);
+        }
+        
+        // PageMetadata schema
+        if (!schemas.containsKey("PageMetadata")) {
+            ObjectSchema pageMetadata = new ObjectSchema();
+            pageMetadata.setName("PageMetadata");
+            pageMetadata.setDescription("Metadata for paginated responses");
+            pageMetadata.addProperty("dataType", new Schema<>().type("string").example("page"));
+            pageMetadata.addProperty("totalCount", new Schema<>().type("integer").format("int64").description("Total number of items"));
+            pageMetadata.addProperty("count", new Schema<>().type("integer").description("Number of items in current page"));
+            pageMetadata.addProperty("pageNumber", new Schema<>().type("integer").description("Current page number"));
+            pageMetadata.addProperty("pageSize", new Schema<>().type("integer").description("Items per page"));
+            pageMetadata.addProperty("totalPages", new Schema<>().type("integer").description("Total number of pages"));
+            pageMetadata.addProperty("isFirst", new Schema<>().type("boolean").description("Whether this is the first page"));
+            pageMetadata.addProperty("isLast", new Schema<>().type("boolean").description("Whether this is the last page"));
+            pageMetadata.addProperty("hasNext", new Schema<>().type("boolean").description("Whether there is a next page"));
+            pageMetadata.addProperty("hasPrevious", new Schema<>().type("boolean").description("Whether there is a previous page"));
+            pageMetadata.addProperty("additional", new Schema<>().type("object").description("Additional metadata"));
+            schemas.put("PageMetadata", pageMetadata);
+        }
+        
+        // ErrorDetails schema
+        if (!schemas.containsKey("ErrorDetails")) {
+            ObjectSchema errorDetails = new ObjectSchema();
+            errorDetails.setName("ErrorDetails");
+            errorDetails.setDescription("Error details for failed responses");
+            errorDetails.addProperty("code", new Schema<>().type("string").description("Error code"));
+            errorDetails.addProperty("details", new Schema<>().type("string").description("Detailed error message"));
+            errorDetails.addProperty("field", new Schema<>().type("string").description("Field that caused the error"));
+            schemas.put("ErrorDetails", errorDetails);
+        }
+        
+        // Pageable schema
+        if (!schemas.containsKey("Pageable")) {
+            ObjectSchema pageable = new ObjectSchema();
+            pageable.setName("Pageable");
+            pageable.setDescription("Pagination information");
+            pageable.addProperty("page", new Schema<>().type("integer").description("Page number"));
+            pageable.addProperty("size", new Schema<>().type("integer").description("Page size"));
+            pageable.addProperty("sort", new ArraySchema().items(new Schema<>().type("string")).description("Sort criteria"));
+            schemas.put("Pageable", pageable);
+        }
+        
+        // Sort schema
+        if (!schemas.containsKey("Sort")) {
+            ObjectSchema sort = new ObjectSchema();
+            sort.setName("Sort");
+            sort.setDescription("Sort information");
+            sort.addProperty("sorted", new Schema<>().type("boolean").description("Whether sorting is applied"));
+            sort.addProperty("unsorted", new Schema<>().type("boolean").description("Whether sorting is not applied"));
+            sort.addProperty("empty", new Schema<>().type("boolean").description("Whether sort is empty"));
+            schemas.put("Sort", sort);
+        }
     }
 
     private Set<String> collectReferencedClasses(OpenAPI openApi) {
@@ -270,23 +364,94 @@ public class WrapperTypeCustomizer implements OpenApiCustomizer {
     private Schema<?> createWrapperSchema(String dataClassName, String wrapperType, OpenAPI openApi) {
         Schema<?> dataSchema = createDataSchema(dataClassName);
         
+        // Assicurati che il componente sia registrato nell'OpenAPI
+        ensureSchemaInComponents(dataClassName, openApi);
+        
         switch (wrapperType) {
             case "DTO":
                 return createResponseWrapperSchema(dataSchema);
             case "LIST":
-                return createListResponseWrapperSchema(dataSchema);
+                return createResponseWrapperWithListSchema(dataSchema);
             case "PAGE":
-                return createPageResponseWrapperSchema(dataSchema);
+                return createResponseWrapperWithPageSchema(dataSchema);
             default:
                 return createResponseWrapperSchema(dataSchema);
         }
     }
+    
+    private void ensureSchemaInComponents(String dataClassName, OpenAPI openApi) {
+        String simpleClassName = dataClassName.substring(dataClassName.lastIndexOf('.') + 1);
+        
+        if (openApi.getComponents() != null && openApi.getComponents().getSchemas() != null) {
+            @SuppressWarnings("rawtypes")
+            Map<String, Schema> schemas = openApi.getComponents().getSchemas();
+            
+            if (!schemas.containsKey(simpleClassName)) {
+                // Crea uno schema di base se non esiste
+                Schema<?> basicSchema = createBasicSchemaForClass(dataClassName);
+                if (basicSchema != null) {
+                    schemas.put(simpleClassName, basicSchema);
+                    System.out.println("Auto-created missing schema: " + simpleClassName);
+                }
+            }
+        }
+    }
+    
+    private Schema<?> createBasicSchemaForClass(String dataClassName) {
+        try {
+            String simpleClassName = dataClassName.substring(dataClassName.lastIndexOf('.') + 1);
+            
+            // Per tipi primitivi
+            if (dataClassName.equals("java.lang.String")) {
+                return new Schema<>().type("string");
+            } else if (dataClassName.equals("java.lang.Long")) {
+                return new Schema<>().type("integer").format("int64");
+            } else if (dataClassName.equals("java.lang.Integer")) {
+                return new Schema<>().type("integer").format("int32");
+            } else if (dataClassName.equals("java.lang.Boolean")) {
+                return new Schema<>().type("boolean");
+            }
+            
+            // Per altri tipi, crea un schema object generico
+            ObjectSchema schema = new ObjectSchema();
+            schema.setTitle(simpleClassName);
+            schema.setDescription("Auto-generated schema for " + simpleClassName);
+            return schema;
+            
+        } catch (Exception e) {
+            System.err.println("Error creating basic schema for " + dataClassName + ": " + e.getMessage());
+            return null;
+        }
+    }
 
     private Schema<?> createDataSchema(String className) {
-        // Extract simple class name for schema reference
-        String simpleClassName = className.substring(className.lastIndexOf('.') + 1);
+        if (className == null || className.isEmpty()) {
+            return new Schema<>().type("object");
+        }
         
-        // Always use schema reference - the schema should be defined in components
+        // Gestisci i tipi primitivi
+        if (className.equals("java.lang.String")) {
+            return new Schema<>().type("string");
+        } else if (className.equals("java.lang.Long")) {
+            return new Schema<>().type("integer").format("int64");
+        } else if (className.equals("java.lang.Integer")) {
+            return new Schema<>().type("integer").format("int32");
+        } else if (className.equals("java.lang.Boolean")) {
+            return new Schema<>().type("boolean");
+        } else if (className.equals("java.lang.Double")) {
+            return new Schema<>().type("number").format("double");
+        } else if (className.equals("java.lang.Float")) {
+            return new Schema<>().type("number").format("float");
+        } else if (className.equals("java.math.BigDecimal")) {
+            return new Schema<>().type("number");
+        } else if (className.equals("java.time.LocalDateTime")) {
+            return new Schema<>().type("string").format("date-time");
+        } else if (className.equals("java.time.LocalDate")) {
+            return new Schema<>().type("string").format("date");
+        }
+        
+        // Per i tipi custom, crea un riferimento
+        String simpleClassName = className.substring(className.lastIndexOf('.') + 1);
         Schema<?> schema = new Schema<>();
         schema.set$ref("#/components/schemas/" + simpleClassName);
         return schema;
@@ -297,38 +462,61 @@ public class WrapperTypeCustomizer implements OpenApiCustomizer {
         wrapper.addProperty("success", new Schema<>().type("boolean").description("Indicates if the operation was successful"));
         wrapper.addProperty("message", new Schema<>().type("string").description("Response message"));
         wrapper.addProperty("data", dataSchema);
-        wrapper.addProperty("errors", new ArraySchema().items(new Schema<>().type("string")));
+        wrapper.addProperty("timestamp", new Schema<>().type("string").format("date-time").description("Response timestamp"));
+        wrapper.addProperty("error", new ObjectSchema().$ref("#/components/schemas/ErrorDetails"));
+        
+        // Single metadata
+        Schema<?> metadataSchema = new Schema<>();
+        metadataSchema.set$ref("#/components/schemas/SingleMetadata");
+        wrapper.addProperty("metadata", metadataSchema);
+        
         return wrapper;
     }
 
-    private Schema<?> createListResponseWrapperSchema(Schema<?> dataSchema) {
+    private Schema<?> createResponseWrapperWithListSchema(Schema<?> dataSchema) {
         ObjectSchema wrapper = new ObjectSchema();
         wrapper.addProperty("success", new Schema<>().type("boolean").description("Indicates if the operation was successful"));
         wrapper.addProperty("message", new Schema<>().type("string").description("Response message"));
         wrapper.addProperty("data", new ArraySchema().items(dataSchema));
-        wrapper.addProperty("errors", new ArraySchema().items(new Schema<>().type("string")));
+        wrapper.addProperty("timestamp", new Schema<>().type("string").format("date-time").description("Response timestamp"));
+        wrapper.addProperty("error", new ObjectSchema().$ref("#/components/schemas/ErrorDetails"));
+        
+        // List metadata
+        Schema<?> metadataSchema = new Schema<>();
+        metadataSchema.set$ref("#/components/schemas/ListMetadata");
+        wrapper.addProperty("metadata", metadataSchema);
+        
         return wrapper;
     }
 
-    private Schema<?> createPageResponseWrapperSchema(Schema<?> dataSchema) {
+    private Schema<?> createResponseWrapperWithPageSchema(Schema<?> dataSchema) {
         ObjectSchema wrapper = new ObjectSchema();
         wrapper.addProperty("success", new Schema<>().type("boolean").description("Indicates if the operation was successful"));
         wrapper.addProperty("message", new Schema<>().type("string").description("Response message"));
         
-        // Create page data structure
-        ObjectSchema pageData = new ObjectSchema();
-        pageData.addProperty("content", new ArraySchema().items(dataSchema));
-        pageData.addProperty("totalElements", new Schema<>().type("integer").format("int64"));
-        pageData.addProperty("totalPages", new Schema<>().type("integer").format("int32"));
-        pageData.addProperty("size", new Schema<>().type("integer").format("int32"));
-        pageData.addProperty("number", new Schema<>().type("integer").format("int32"));
-        pageData.addProperty("first", new Schema<>().type("boolean"));
-        pageData.addProperty("last", new Schema<>().type("boolean"));
-        pageData.addProperty("numberOfElements", new Schema<>().type("integer").format("int32"));
-        pageData.addProperty("empty", new Schema<>().type("boolean"));
+        // For PAGE, the data is a Page<T> object, not just an array
+        ObjectSchema pageSchema = new ObjectSchema();
+        pageSchema.addProperty("content", new ArraySchema().items(dataSchema));
+        pageSchema.addProperty("pageable", new ObjectSchema().$ref("#/components/schemas/Pageable"));
+        pageSchema.addProperty("totalPages", new Schema<>().type("integer"));
+        pageSchema.addProperty("totalElements", new Schema<>().type("integer").format("int64"));
+        pageSchema.addProperty("last", new Schema<>().type("boolean"));
+        pageSchema.addProperty("first", new Schema<>().type("boolean"));
+        pageSchema.addProperty("numberOfElements", new Schema<>().type("integer"));
+        pageSchema.addProperty("size", new Schema<>().type("integer"));
+        pageSchema.addProperty("number", new Schema<>().type("integer"));
+        pageSchema.addProperty("sort", new ObjectSchema().$ref("#/components/schemas/Sort"));
+        pageSchema.addProperty("empty", new Schema<>().type("boolean"));
         
-        wrapper.addProperty("data", pageData);
-        wrapper.addProperty("errors", new ArraySchema().items(new Schema<>().type("string")));
+        wrapper.addProperty("data", pageSchema);
+        wrapper.addProperty("timestamp", new Schema<>().type("string").format("date-time").description("Response timestamp"));
+        wrapper.addProperty("error", new ObjectSchema().$ref("#/components/schemas/ErrorDetails"));
+        
+        // Page metadata
+        Schema<?> metadataSchema = new Schema<>();
+        metadataSchema.set$ref("#/components/schemas/PageMetadata");
+        wrapper.addProperty("metadata", metadataSchema);
+        
         return wrapper;
     }
 
@@ -343,6 +531,20 @@ public class WrapperTypeCustomizer implements OpenApiCustomizer {
             operation.responses(new io.swagger.v3.oas.models.responses.ApiResponses());
         }
         
+        // Sostituisce completamente la risposta esistente per questo response code
         operation.getResponses().addApiResponse(responseCode, response);
+        
+        // Rimuove eventuali risposte generiche che potrebbero confondere i generatori
+        if ("200".equals(responseCode)) {
+            // Mantieni solo le risposte di errore standard
+            operation.getResponses().entrySet().removeIf(entry -> 
+                !entry.getKey().equals("200") && 
+                !entry.getKey().equals("400") && 
+                !entry.getKey().equals("401") && 
+                !entry.getKey().equals("403") && 
+                !entry.getKey().equals("404") && 
+                !entry.getKey().equals("500")
+            );
+        }
     }
 }

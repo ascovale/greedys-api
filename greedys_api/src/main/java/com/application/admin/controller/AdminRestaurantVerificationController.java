@@ -1,5 +1,7 @@
 package com.application.admin.controller;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,7 +17,6 @@ import com.application.admin.web.dto.verification.UserRestaurantAssociation;
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.WrapperDataType;
 import com.application.common.controller.annotation.WrapperType;
-import com.application.common.web.ListResponseWrapper;
 import com.application.common.web.ResponseWrapper;
 import com.application.restaurant.service.google.RestaurantDataValidationService;
 import com.application.restaurant.service.google.RestaurantGooglePlacesService;
@@ -158,7 +159,7 @@ public class AdminRestaurantVerificationController extends BaseController {
     )
     @GetMapping("/pending")
     @WrapperType(dataClass = UserRestaurantAssociation.class , type = WrapperDataType.LIST)
-    public ResponseEntity<ListResponseWrapper<UserRestaurantAssociation>> getPendingVerifications() {
+    public ResponseEntity<ResponseWrapper<List<UserRestaurantAssociation>>> getPendingVerifications() {
         
         return executeList("get pending verifications", () -> googlePlacesService.getPendingVerifications());
     }

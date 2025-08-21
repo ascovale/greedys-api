@@ -1,5 +1,8 @@
 package com.application.customer.controller.customer;
 
+import java.util.List;
+
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,8 +17,6 @@ import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.WrapperDataType;
 import com.application.common.controller.annotation.WrapperType;
 import com.application.common.service.AllergyService;
-import com.application.common.web.ListResponseWrapper;
-import com.application.common.web.PageResponseWrapper;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.customer.AllergyDTO;
 import com.application.customer.persistence.model.Customer;
@@ -57,14 +58,14 @@ public class CustomerAllergyController extends BaseController {
     @GetMapping("/allergies")
     
     @WrapperType(dataClass = AllergyDTO.class, type = WrapperDataType.LIST)
-    public ResponseEntity<ListResponseWrapper<AllergyDTO>> getAllergiesOfCustomer(@AuthenticationPrincipal Customer customer) {
+    public ResponseEntity<ResponseWrapper<List<AllergyDTO>>> getAllergiesOfCustomer(@AuthenticationPrincipal Customer customer) {
         return executeList("getAllergiesOfCustomer", () -> customerService.getAllergies(customer.getId()));
     }
 
     @Operation(summary = "Get paginated allergies of customer", description = "Returns paginated allergies of the currently authenticated customer")
     @GetMapping("/paginated")
     @WrapperType(dataClass = AllergyDTO.class, type = WrapperDataType.PAGE)
-    public ResponseEntity<PageResponseWrapper<AllergyDTO>> getPaginatedAllergiesOfCustomer(@RequestParam int page, @RequestParam int size) {
+    public ResponseEntity<ResponseWrapper<Page<AllergyDTO>>> getPaginatedAllergiesOfCustomer(@RequestParam int page, @RequestParam int size) {
         return executePaginated("getPaginatedAllergiesOfCustomer", () -> customerService.getPaginatedAllergies(page, size));
     }
 

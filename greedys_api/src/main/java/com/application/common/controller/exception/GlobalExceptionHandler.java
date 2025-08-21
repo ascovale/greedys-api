@@ -1,8 +1,6 @@
 package com.application.common.controller.exception;
 
-import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -17,16 +15,12 @@ import org.springframework.security.authentication.InternalAuthenticationService
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
-import com.application.common.controller.annotation.WrapperType;
-import com.application.common.web.ErrorDetails;
-import com.application.common.web.ListResponseWrapper;
 import com.application.common.web.ResponseWrapper;
 
 import jakarta.validation.ConstraintViolationException;
@@ -190,33 +184,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(ResponseWrapper.<String>error("Resource not found", "RESOURCE_NOT_FOUND"));
     }
-
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    @WrapperType(dataClass = ErrorDetails.class)
-    public ResponseEntity<ListResponseWrapper<ErrorDetails>> handleValidationException(MethodArgumentNotValidException ex, WebRequest request) {
-        logPotentialBaseControllerMiss("MethodArgumentNotValidException", ex, request);
-        
-        List<ErrorDetails> fieldErrors = ex.getBindingResult().getFieldErrors().stream()
-                .map(error -> ErrorDetails.builder()
-                        .code("VALIDATION_ERROR")
-                        .message(error.getField() + ": " + error.getDefaultMessage())
-                        .details(error.getRejectedValue())
-                        .build())
-                .collect(Collectors.toList());
-
-        String mainMessage = fieldErrors.isEmpty() ? "Validation error" : fieldErrors.get(0).getMessage();
-        
-        log.warn("Validation error: {}", mainMessage, ex);
-        
-        ListResponseWrapper<ErrorDetails> response = ListResponseWrapper.error("Validation failed", ErrorDetails.builder()
-                .code("VALIDATION_ERROR")
-                .message(mainMessage)
-                .details(fieldErrors)
-                .build());
-        response.setData(fieldErrors);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-    }
-
+    
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ResponseWrapper<String>> handleGenericException(Exception ex, WebRequest request) {
         log.error("🔴 UNHANDLED EXCEPTION in GlobalExceptionHandler - This should potentially be handled by BaseController: {} - Request: {}", 
