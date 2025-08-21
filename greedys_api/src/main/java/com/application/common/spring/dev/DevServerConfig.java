@@ -1,4 +1,4 @@
-package com.application.common.spring;
+package com.application.common.spring.dev;
 
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;

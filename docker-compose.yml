@@ -20,9 +20,10 @@ services:
       - db_password
       - email_password
       - service_account
+      - jwt_secret
 
   db:
-    image: mysql:latest
+    image: mysql:8.0
     environment:
       MYSQL_DATABASE: greedys_v1
       MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_password
@@ -57,5 +58,7 @@ secrets:
   email_password:
     external: true
   service_account:
+    external: true
+  jwt_secret:
     external: true
 

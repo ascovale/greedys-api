@@ -1,5 +1,8 @@
 package com.application.common.security.jwt;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.Clock;
 import java.util.Date;
 import java.util.HashMap;
@@ -23,8 +26,10 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
+@Slf4j
 public class JwtUtil {
 
     @Value("${jwt.secret}")
@@ -41,11 +46,35 @@ public class JwtUtil {
 
     @PostConstruct
     public void init() {
-        byte[] keyBytes = Decoders.BASE64.decode(secret);
-        if (keyBytes.length < 32) {
-            throw new IllegalArgumentException("JWT secret key is too short, must be at least 256 bits");
+        try {
+            String secretValue = resolveSecretValue();
+            log.info("🔐 JWT Secret risolto con successo (lunghezza: {} caratteri)", secretValue.length());
+            
+            byte[] keyBytes = Decoders.BASE64.decode(secretValue);
+            if (keyBytes.length < 32) {
+                throw new IllegalArgumentException("JWT secret key is too short, must be at least 256 bits");
+            }
+            this.key = Keys.hmacShaKeyFor(keyBytes);
+            log.info("✅ JWT Key inizializzata correttamente");
+        } catch (Exception e) {
+            log.error("❌ Errore nell'inizializzazione del JWT secret: {}", e.getMessage());
+            throw new RuntimeException("Failed to initialize JWT secret", e);
         }
-        this.key = Keys.hmacShaKeyFor(keyBytes);
+    }
+    
+    private String resolveSecretValue() throws IOException {
+        if (secret.startsWith("file:")) {
+            // Rimuovi il prefisso file: e leggi il contenuto del file
+            String filePath = secret.substring(5); // Rimuove "file:"
+            log.info("🔍 Lettura JWT secret da file: {}", filePath);
+            String fileContent = Files.readString(Paths.get(filePath)).trim();
+            log.info("📄 JWT secret letto da file (lunghezza: {} caratteri)", fileContent.length());
+            return fileContent;
+        } else {
+            // Usa il valore diretto dalla proprietà
+            log.info("🔧 Utilizzo JWT secret diretto dalla configurazione");
+            return secret;
+        }
     }
 
     public String extractUsername(String token) {

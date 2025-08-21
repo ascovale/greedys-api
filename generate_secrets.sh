@@ -8,6 +8,7 @@ set -e
 declare -a secrets=(
   "db_password"
   "email_password"
+  "jwt_secret"
 )
 
 echo "--- Creazione segreti Docker Swarm ---"
