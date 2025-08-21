@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
-import com.application.common.controller.annotation.CreateApiResponses;
 import com.application.common.service.RestaurantCategoryService;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.RestaurantCategoryDTO;
@@ -48,7 +47,6 @@ public class AdminCategoryController extends BaseController {
 
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
 	@Operation(summary = "Create category", description = "Create a new category for the specified restaurant")
-@CreateApiResponses
 	@PostMapping("/category/new")
 	public ResponseEntity<ResponseWrapper<String>> createCategory(@RequestBody RestaurantCategoryDTO restaurantCategoryDto) {
 		return executeCreate("create category", "Category created successfully", () -> {

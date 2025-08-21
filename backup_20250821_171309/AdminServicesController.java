@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.CreateApiResponses;
+import com.application.common.controller.annotation.WrapperDataType;
+import com.application.common.controller.annotation.WrapperType;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.ServiceTypeDto;
 import com.application.restaurant.service.ServiceService;
@@ -60,6 +62,7 @@ public class AdminServicesController extends BaseController {
 
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
     @Operation(summary = "Update a service type", description = "This method updates an existing service type.")
+    @WrapperType(dataClass = ServiceTypeDto.class, type = WrapperDataType.DTO)
     @PutMapping("/type/{typeId}/update")
     public ResponseEntity<ResponseWrapper<ServiceTypeDto>> updateServiceType(@PathVariable Long typeId, @RequestBody String serviceTypeString) {
         return execute("update service type", () -> {

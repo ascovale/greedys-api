@@ -7,8 +7,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
-import com.application.common.controller.annotation.WrapperDataType;
-import com.application.common.controller.annotation.WrapperType;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.customer.CustomerStatisticsDTO;
 import com.application.customer.service.CustomerService;
@@ -33,7 +31,6 @@ public class RestaurantCustomerController extends BaseController {
     @Operation(summary = "Get customer statistics", description = "Retrieves statistics for a specific customer including no-show rate, reservations count, etc.")
     @GetMapping("/{idCustomer}/statistics")
     
-    @WrapperType(dataClass = CustomerStatisticsDTO.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<CustomerStatisticsDTO>> getCustomerStatistics(
             @Parameter(description = "Customer ID", required = true, example = "1")
             @PathVariable Long idCustomer) {

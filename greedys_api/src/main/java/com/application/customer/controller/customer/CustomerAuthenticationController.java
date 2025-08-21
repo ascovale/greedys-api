@@ -8,8 +8,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
-import com.application.common.controller.annotation.WrapperDataType;
-import com.application.common.controller.annotation.WrapperType;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.security.AuthRequestDTO;
 import com.application.common.web.dto.security.AuthResponseDTO;
@@ -33,7 +31,6 @@ public class CustomerAuthenticationController extends BaseController {
     @Operation(summary = "Generate an authentication token", description = "Authenticates a customer and returns a JWT token")
     @PostMapping(value = "/login", produces = "application/json")
     
-    @WrapperType(dataClass = AuthResponseDTO.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<AuthResponseDTO>> createAuthenticationToken(
             @RequestBody AuthRequestDTO authenticationRequest) {
         return execute("customer login", () -> customerAuthenticationService.login(authenticationRequest));
@@ -41,7 +38,6 @@ public class CustomerAuthenticationController extends BaseController {
 
     @Operation(summary = "Refresh authentication token", description = "Uses refresh token to get new access and refresh tokens")
     @PostMapping(value = "/refresh", produces = "application/json")
-    @WrapperType(dataClass = AuthResponseDTO.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<AuthResponseDTO>> refreshAuthenticationToken(
             @RequestBody RefreshTokenRequestDTO refreshRequest) {
         return execute("customer refresh token", () -> 

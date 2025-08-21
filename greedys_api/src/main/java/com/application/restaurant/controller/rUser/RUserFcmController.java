@@ -9,8 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
-import com.application.common.controller.annotation.WrapperDataType;
-import com.application.common.controller.annotation.WrapperType;
+import com.application.common.controller.annotation.CreateApiResponses;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.shared.FcmTokenDTO;
 import com.application.restaurant.persistence.model.user.RUserFcmToken;
@@ -35,7 +34,7 @@ public class RUserFcmController extends BaseController {
 
     @PostMapping("/{deviceId}")
     @Operation(summary = "Register FCM token", description = "Registers a new FCM token for a device of the restaurant user")
-    @WrapperType(dataClass = String.class, type = WrapperDataType.DTO, responseCode = "201")
+    @CreateApiResponses
     public ResponseEntity<ResponseWrapper<String>> registerFcmToken(@PathVariable String deviceId, @RequestBody FcmTokenDTO tokenDTO) {
         return executeCreate("register FCM token", "FCM token registered successfully", () -> {
             tokenService.saveUserFcmToken(tokenDTO);
@@ -45,7 +44,6 @@ public class RUserFcmController extends BaseController {
 
     @GetMapping("/{deviceId}")
     @Operation(summary = "Get FCM token by device ID", description = "Retrieves the FCM token associated with a specific device ID")
-    @WrapperType(dataClass = RUserFcmToken.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<RUserFcmToken>> getFcmTokenByDeviceId(@PathVariable String deviceId) {
         return execute("get FCM token by device ID", () -> {
             RUserFcmToken token = tokenService.getTokenByDeviceId(deviceId);

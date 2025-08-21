@@ -21,8 +21,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
-import com.application.common.controller.annotation.WrapperDataType;
-import com.application.common.controller.annotation.WrapperType;
 import com.application.common.persistence.model.reservation.Reservation;
 import com.application.common.service.reservation.ReservationService;
 import com.application.common.web.ResponseWrapper;
@@ -57,7 +55,6 @@ public class RestaurantReservationController extends BaseController {
 	@Operation(summary = "Create a new reservation", description = "Endpoint to create a new reservation")
 	@PostMapping("/new")
 	@PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_RESERVATION_WRITE') && @securityRUserService.isSlotOwnedByAuthenticatedUser(#dto.idSlot)")
-	@WrapperType(dataClass = ReservationDTO.class, type = WrapperDataType.DTO, responseCode = "201")
 	public ResponseEntity<ResponseWrapper<ReservationDTO>> createReservation(@RequestBody RestaurantNewReservationDTO dto,
 			@AuthenticationPrincipal RUser rUser) {
 		log.debug("Received reservation DTO: {}", dto);
@@ -71,35 +68,30 @@ public class RestaurantReservationController extends BaseController {
 	@PutMapping("/{reservationId}/accept")
 	@Operation(summary = "Accept a reservation", description = "Endpoint to accept a reservation by its ID")
 	@PreAuthorize("@securityRUserService.hasPermissionOnReservation(#reservationId)")
-	@WrapperType(dataClass = ReservationDTO.class, type = WrapperDataType.DTO)
 	public ResponseEntity<ResponseWrapper<ReservationDTO>> acceptReservation(@PathVariable Long reservationId) {
 		return execute("accept reservation", () -> reservationService.setStatus(reservationId, Reservation.Status.ACCEPTED));
 	}
 
 	@PutMapping("/{reservationId}/reject")
 	@Operation(summary = "Reject a reservation", description = "Endpoint to reject a reservation by its ID")
-	@WrapperType(dataClass = ReservationDTO.class, type = WrapperDataType.DTO)
 	public ResponseEntity<ResponseWrapper<ReservationDTO>> rejectReservation(@PathVariable Long reservationId) {
 		return execute("reject reservation", () -> reservationService.setStatus(reservationId, Reservation.Status.REJECTED));
 	}
 
 	@PutMapping("/{reservationId}/no_show")
 	@Operation(summary = "Mark a reservation as no show", description = "Endpoint to mark a reservation as no show by its ID")
-	@WrapperType(dataClass = ReservationDTO.class, type = WrapperDataType.DTO)
 	public ResponseEntity<ResponseWrapper<ReservationDTO>> markReservationNoShow(@PathVariable Long reservationId) {
 		return execute("mark reservation no show", () -> reservationService.setStatus(reservationId, Reservation.Status.NO_SHOW));
 	}
 
 	@PutMapping("/{reservationId}/seated")
 	@Operation(summary = "Mark a reservation as seated", description = "Endpoint to mark a reservation as seated by its ID")
-	@WrapperType(dataClass = ReservationDTO.class, type = WrapperDataType.DTO)
 	public ResponseEntity<ResponseWrapper<ReservationDTO>> markReservationSeated(@PathVariable Long reservationId) {
 		return execute("mark reservation seated", () -> reservationService.setStatus(reservationId, Reservation.Status.SEATED));
 	}
 
 	@Operation(summary = "Accept a reservation modification request", description = "Endpoint to accept a reservation modification request by its ID")
 	@PutMapping("/accept_modification/{modId}")
-	@WrapperType(dataClass = ReservationDTO.class, type = WrapperDataType.DTO)
 	public ResponseEntity<ResponseWrapper<ReservationDTO>> acceptReservationModificationRequest(@PathVariable Long modId) {
 		return execute("accept reservation modification", () -> reservationService.AcceptReservatioModifyRequestAndReturnDTO(modId));
 	}
@@ -107,7 +99,6 @@ public class RestaurantReservationController extends BaseController {
 	@Operation(summary = "Get all reservations of a restaurant", description = "Retrieve all reservations of a restaurant")
 	@GetMapping(value = "/reservations")
 	
-	@WrapperType(dataClass = ReservationDTO.class, type = WrapperDataType.LIST)
 	public ResponseEntity<ResponseWrapper<List<ReservationDTO>>> getReservations(
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end,
@@ -123,7 +114,6 @@ public class RestaurantReservationController extends BaseController {
 	@Operation(summary = "Get all accepted reservations of a restaurant", description = "Retrieve all accepted reservations of a restaurant")
 	@GetMapping(value = "/accepted/get")
 	
-	@WrapperType(dataClass = ReservationDTO.class, type = WrapperDataType.LIST)
 	public ResponseEntity<ResponseWrapper<List<ReservationDTO>>> getAcceptedReservations(
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end,
@@ -139,7 +129,6 @@ public class RestaurantReservationController extends BaseController {
 
 	@Operation(summary = "Get all reservations of a restaurant with pagination", description = "Retrieve all reservations of a restaurant with pagination")
 	@GetMapping(value = "/pageable")
-	@WrapperType(dataClass = ReservationDTO.class, type = WrapperDataType.PAGE)
 	public ResponseEntity<ResponseWrapper<Page<ReservationDTO>>> getReservationsPageable(
 			@AuthenticationPrincipal RUser rUser,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
@@ -156,7 +145,6 @@ public class RestaurantReservationController extends BaseController {
 	@Operation(summary = "Get all pending reservations of a restaurant", description = "Retrieve all pending reservations of a restaurant with optional date filtering")
 	@GetMapping(value = "/pending/get")
 	
-	@WrapperType(dataClass = ReservationDTO.class, type = WrapperDataType.LIST)
 	public ResponseEntity<ResponseWrapper<List<ReservationDTO>>> getPendingReservations(
 			@RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end,

@@ -17,8 +17,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
-import com.application.common.controller.annotation.WrapperDataType;
-import com.application.common.controller.annotation.WrapperType;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.reservations.ReservationDTO;
 import com.application.customer.persistence.model.Customer;
@@ -41,7 +39,6 @@ public class CustomerReservationController extends BaseController {
 	private final CustomerReservationService customerReservationService;
 
 	@Operation(summary = "The customer user asks for a reservation", description = "Endpoint for the customer to request a reservation")
-	@WrapperType(dataClass = ReservationDTO.class, responseCode = "201")
 	@PostMapping("/ask")
 	public ResponseEntity<ResponseWrapper<ReservationDTO>> askReservation(@RequestBody CustomerNewReservationDTO DTO, @AuthenticationPrincipal Customer customer) {
 		return executeCreate("askReservation", "Reservation requested successfully", () -> {
@@ -60,7 +57,6 @@ public class CustomerReservationController extends BaseController {
 
 	@PreAuthorize("@securityCustomerService.hasPermissionOnReservation(#reservationId)")
 	@Operation(summary = "The customer user requests a reservation modification", description = "Endpoint for the customer to request a reservation modification")
-	@WrapperType(dataClass = String.class, responseCode = "200")
 	@PostMapping("/{reservationId}/request_modify")
 	public ResponseEntity<ResponseWrapper<String>> requestModifyReservation(@PathVariable Long reservationId,
 			@RequestBody CustomerNewReservationDTO DTO,
@@ -82,7 +78,6 @@ public class CustomerReservationController extends BaseController {
 	@Operation(summary = "Get user's reservations", description = "Retrieve the list of reservations for the user")
 	@GetMapping("/reservations")
 	
-	@WrapperType(dataClass = ReservationDTO.class, type = WrapperDataType.LIST)
     public ResponseEntity<ResponseWrapper<List<ReservationDTO>>> getCustomerReservations(@AuthenticationPrincipal Customer customer) {
 		return executeList("getCustomerReservations", () -> {
 			Collection<ReservationDTO> reservations = customerReservationService.findAllCustomerReservations(customer.getId());
@@ -94,7 +89,6 @@ public class CustomerReservationController extends BaseController {
 	@Operation(summary = "Get a single reservation by ID", description = "Retrieve a specific reservation for the user by its ID")
 	
 	@GetMapping("/{reservationId}")
-	@WrapperType(dataClass = ReservationDTO.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<ReservationDTO>> getReservationById(@PathVariable Long reservationId) {
 		return execute("getReservationById", () -> customerReservationService.findReservationById(reservationId));
 	}

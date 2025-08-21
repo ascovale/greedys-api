@@ -10,8 +10,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
-import com.application.common.controller.annotation.WrapperDataType;
-import com.application.common.controller.annotation.WrapperType;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.TableDTO;
 import com.application.restaurant.service.TableService;
@@ -33,7 +31,6 @@ public class CustomerTableController extends BaseController {
 	@GetMapping("/room/{roomId}/tables")
 	
 	@Operation(summary = "Get tables of a room", description = "Retrieve the tables of a room")
-	@WrapperType(dataClass = TableDTO.class, type = WrapperDataType.LIST)
     public ResponseEntity<ResponseWrapper<List<TableDTO>>> getTables(@PathVariable Long roomId) {
 		return executeList("get tables for room", () -> {
 			Collection<TableDTO> tables = tableService.findByRoom(roomId);

@@ -22,8 +22,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
-import com.application.common.controller.annotation.WrapperDataType;
-import com.application.common.controller.annotation.WrapperType;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.customer.CustomerDTO;
 import com.application.common.web.dto.security.AuthRequestGoogleDTO;
@@ -55,7 +53,6 @@ public class CustomerRegistrationController extends BaseController {
     private final CustomerAuthenticationService customerAuthenticationService;
 
     @Operation(summary = "Register a new customer", description = "Registers a new customer account and sends a verification email.")
-    @WrapperType(dataClass = CustomerDTO.class, responseCode = "201")
     @PostMapping("/new")
     public ResponseEntity<ResponseWrapper<CustomerDTO>> registerCustomerAccount(@Valid @RequestBody NewCustomerDTO accountDto,
             HttpServletRequest request) {
@@ -65,7 +62,6 @@ public class CustomerRegistrationController extends BaseController {
     }
 
     @Operation(summary = "Send password reset email", description = "Sends an email with a password reset token to the specified customer.")
-    @WrapperType(dataClass = String.class, responseCode = "200")
     @PostMapping("/password/forgot")
     public ResponseEntity<ResponseWrapper<String>> sendPasswordResetEmail(@RequestParam String email, HttpServletRequest request) {
         return execute("Send password reset email", () -> {
@@ -117,7 +113,6 @@ public class CustomerRegistrationController extends BaseController {
     // 4. Google Authentication
     @Operation(summary = "Authenticate with Google", description = "Authenticates or if not exist register a customer using a Google token and returns a JWT token.")
     @PostMapping("/google")
-    @WrapperType(dataClass = AuthResponseDTO.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<AuthResponseDTO>> authenticateWithGoogle(@RequestBody AuthRequestGoogleDTO authRequest) {
         return execute("Authenticate with Google", () -> customerAuthenticationService.authenticateWithGoogle(authRequest.getToken()));
     }

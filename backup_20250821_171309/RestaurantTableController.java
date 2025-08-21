@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.WrapperDataType;
+import com.application.common.controller.annotation.WrapperType;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.TableDTO;
 import com.application.restaurant.service.TableService;
@@ -37,6 +39,7 @@ public class RestaurantTableController extends BaseController {
 	@GetMapping(value = "/room/{roomId}")
 	@Operation(summary = "Get tables of a room", description = "Retrieve the tables of a specific room")
 	
+	@WrapperType(dataClass = TableDTO.class, type = WrapperDataType.LIST)
     public ResponseEntity<ResponseWrapper<List<TableDTO>>> getTables(@PathVariable Long roomId) {
 		return executeList("get tables for room", () -> {
 			log.info("Getting tables for room ID: {}", roomId);
@@ -48,6 +51,7 @@ public class RestaurantTableController extends BaseController {
 	@PostMapping
 	@Operation(summary = "Add a table to a room", description = "Add a new table to a specific room")
 
+	@WrapperType(dataClass = TableDTO.class, type = WrapperDataType.DTO, responseCode = "201")
     public ResponseEntity<ResponseWrapper<TableDTO>> addTable(@RequestBody NewTableDTO tableDto) {
 		return executeCreate("add table", "Table added successfully", () -> {
 			log.info("Adding new table to room");

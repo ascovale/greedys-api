@@ -15,8 +15,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
-import com.application.common.controller.annotation.WrapperDataType;
-import com.application.common.controller.annotation.WrapperType;
 import com.application.common.service.RestaurantService;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.RestaurantDTO;
@@ -45,7 +43,6 @@ public class RestaurantRegistrationController extends BaseController {
 
     @Operation(summary = "Request to register a new restaurant", description = "Request to register a new restaurant")
     @PostMapping(value = "/new")
-    @WrapperType(dataClass = RestaurantDTO.class, type = WrapperDataType.DTO, responseCode = "201")
     public ResponseEntity<ResponseWrapper<RestaurantDTO>> registerRestaurant(@RequestBody NewRestaurantDTO restaurantDto) {
         return executeCreate("register restaurant", "Restaurant registered successfully", () -> {
             log.debug("Registering restaurant with information:", restaurantDto);
@@ -77,7 +74,6 @@ public class RestaurantRegistrationController extends BaseController {
     @Operation(summary = "Change restaurant and get a new JWT", description = "Switches the restaurant and returns a new JWT for the specified restaurant ID")
     @PreAuthorize("@securityRUserService.hasPermissionForRestaurant(#restaurantId)")
     @PostMapping(value = "/change-restaurant", produces = "application/json")
-    @WrapperType(dataClass = AuthResponseDTO.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<AuthResponseDTO>> changeRestaurant(@RequestParam Long restaurantId) {
         return execute("change restaurant", () -> restaurantAuthenticationService.changeRestaurant(restaurantId));
     }
@@ -91,7 +87,6 @@ public class RestaurantRegistrationController extends BaseController {
 
     @Operation(summary = "Confirm password change with token", description = "Confirms the password change using a token")
     @PutMapping(value = "/password/confirm")
-    @WrapperType(dataClass = String.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<String>> confirmPasswordChange(
             @Parameter(description = "Password reset token") @RequestParam final String token) {
         return execute("confirm password change", () -> restaurantAuthenticationService.confirmPasswordChange(token));

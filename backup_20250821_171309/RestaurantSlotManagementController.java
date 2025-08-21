@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.WrapperDataType;
+import com.application.common.controller.annotation.WrapperType;
 import com.application.common.service.RestaurantService;
 import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.SlotDTO;
@@ -39,6 +41,7 @@ public class RestaurantSlotManagementController extends BaseController {
 	@GetMapping(value = "/day-slots")
 	@Operation(summary = "Get day slots of the authenticated restaurant", description = "Retrieve the daily slots of the authenticated restaurant")
 	
+	@WrapperType(dataClass = SlotDTO.class, type = WrapperDataType.LIST)
     public ResponseEntity<ResponseWrapper<List<SlotDTO>>> getDaySlots(
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate date,
 			@AuthenticationPrincipal RUser rUser) {
@@ -53,6 +56,7 @@ public class RestaurantSlotManagementController extends BaseController {
 	@GetMapping(value = "/all")
 	@Operation(summary = "Get all slots of the authenticated restaurant", description = "Retrieve all available slots for the authenticated restaurant")
 	
+	@WrapperType(dataClass = SlotDTO.class, type = WrapperDataType.LIST)
     public ResponseEntity<ResponseWrapper<List<SlotDTO>>> getAllSlots(@AuthenticationPrincipal RUser rUser) {
 		return executeList("get all slots", () -> {
 			Long restaurantId = rUser.getId();
@@ -64,6 +68,7 @@ public class RestaurantSlotManagementController extends BaseController {
 	@GetMapping("/{slotId}")
 	@Operation(summary = "Get slot by id", description = "Retrieve a slot by its ID")
 	
+	@WrapperType(dataClass = SlotDTO.class, type = WrapperDataType.DTO)
     public ResponseEntity<ResponseWrapper<SlotDTO>> getSlotById(@PathVariable Long slotId) {
 		return execute("get slot by id", () -> {
 			log.info("Getting slot by ID: {}", slotId);
