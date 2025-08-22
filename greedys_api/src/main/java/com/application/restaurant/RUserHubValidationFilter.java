@@ -65,7 +65,7 @@ public class RUserHubValidationFilter extends OncePerRequestFilter {
                 log.debug("Hub token detected for path: {}", path);
                 
                 // I token Hub possono accedere solo a endpoint specifici
-                if (!isHubAllowedEndpoint(path, method)) {
+                if (!SecurityPatterns.isHubAllowedPath(path)) {
                     log.warn("Hub token attempted to access forbidden endpoint: {} {}", method, path);
                     response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                     response.setContentType("application/json");
@@ -88,52 +88,5 @@ public class RUserHubValidationFilter extends OncePerRequestFilter {
         }
         
         filterChain.doFilter(request, response);
-    }
-    
-    /**
-     * Endpoint che i token Hub possono accedere.
-     * Hub tokens possono solo cambiare ristorante e fare refresh.
-     */
-    private boolean isHubAllowedEndpoint(String path, String method) {
-        // Endpoint di refresh (sia access che refresh token hub)
-        if (path.contains("/refresh") || path.contains("/auth/refresh")) {
-            return true;
-        }
-        
-        // Endpoint per cambiare/selezionare ristorante
-        if (path.contains("/switch-restaurant") || 
-            path.contains("/change-restaurant") || 
-            path.contains("/select-restaurant")) {
-            return true;
-        }
-        
-        // Endpoint per ottenere lista ristoranti disponibili
-        if ((path.contains("/restaurants") || path.contains("/available-restaurants")) && 
-            "GET".equals(method)) {
-            return true;
-        }
-        
-        // ✅ AGGIUNGI: Endpoint per ottenere ristoranti per hub
-        if (path.equals("/restaurant/user/auth/restaurants") || 
-            path.matches("/restaurant/user/auth/hub/\\d+/restaurants")) {
-            return true;
-        }
-        
-        // ✅ AGGIUNGI: Endpoint per cambiare password (se necessario per Hub)
-        if (path.contains("/change-password") && "POST".equals(method)) {
-            return true;
-        }
-        
-        // Endpoint per logout
-        if (path.contains("/logout") && "POST".equals(method)) {
-            return true;
-        }
-        
-        // Endpoint per ottenere informazioni profilo hub (senza dati sensibili)
-        if (path.matches(".*/profile/hub$") && "GET".equals(method)) {
-            return true;
-        }
-        
-        return false;
     }
 }

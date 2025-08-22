@@ -1,0 +1,57 @@
+:root { 
+  --black: #000000;
+  --dawn-pink: #f1eae2;
+  --eerie-black: #1e1e1e;
+  --paradiso: #30807c;
+  --tosca: #993b3f;
+ 
+  --font-size-l: 24px;
+  --font-size-m: 20px;
+  --font-size-s: 19px;
+  --font-size-xl: 32px;
+  --font-size-xs: 12px;
+  --font-size-xxl: 40.7px;
+ 
+  --font-family-formiga-medium: "Formiga-Medium", Helvetica;
+  --font-family-formiga-regular: "Formiga-Regular", Helvetica;
+  --font-family-formiga-semibold: "Formiga-Semibold", Helvetica;
+}
+.formiga-normal-eerie-black-40-7px {
+  color: var(--eerie-black);
+  font-family: var(--font-family-formiga-semibold);
+  font-size: var(--font-size-xxl);
+  font-style: normal;
+  font-weight: 400;
+}
+
+.formiga-medium-eerie-black-20px {
+  color: var(--eerie-black);
+  font-family: var(--font-family-formiga-medium);
+  font-size: var(--font-size-m);
+  font-style: normal;
+  font-weight: 500;
+}
+
+.formiga-medium-paradiso-20px {
+  color: var(--paradiso);
+  font-family: var(--font-family-formiga-medium);
+  font-size: var(--font-size-m);
+  font-style: normal;
+  font-weight: 500;
+}
+
+.formiga-medium-tosca-20px {
+  color: var(--tosca);
+  font-family: var(--font-family-formiga-medium);
+  font-size: var(--font-size-m);
+  font-style: normal;
+  font-weight: 500;
+}
+
+.formiga-regular-normal-dawn-pink-20px {
+  color: var(--dawn-pink);
+  font-family: var(--font-family-formiga-regular);
+  font-size: var(--font-size-m);
+  font-style: normal;
+  font-weight: 400;
+}
