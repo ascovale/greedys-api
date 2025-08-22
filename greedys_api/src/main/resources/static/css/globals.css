@@ -44,3 +44,12 @@
   font-family: 'Formiga-Medium', Helvetica, Arial, sans-serif;
   color: var(--tosca);
 }
+
+/* Centra il logo nel footer */
+.footer {
+  justify-content: center !important;
+}
+
+.frame-8-1 {
+  justify-content: center !important;
+}
