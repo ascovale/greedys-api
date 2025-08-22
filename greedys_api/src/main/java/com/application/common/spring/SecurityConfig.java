@@ -1,5 +1,6 @@
 package com.application.common.spring;
 
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -264,5 +265,42 @@ public class SecurityConfig {
         @Bean
         HttpSessionEventPublisher httpSessionEventPublisher() {
                 return new HttpSessionEventPublisher();
+        }
+
+        // Disabilita la registrazione automatica dei filtri a livello globale.
+        // Verranno applicati solo nelle rispettive SecurityFilterChain.
+        @Bean
+        FilterRegistrationBean<TokenTypeValidationFilter> disableTokenTypeValidationFilter(TokenTypeValidationFilter f) {
+                FilterRegistrationBean<TokenTypeValidationFilter> reg = new FilterRegistrationBean<>(f);
+                reg.setEnabled(false);
+                return reg;
+        }
+
+        @Bean
+        FilterRegistrationBean<RUserRequestFilter> disableRUserRequestFilter(RUserRequestFilter f) {
+                FilterRegistrationBean<RUserRequestFilter> reg = new FilterRegistrationBean<>(f);
+                reg.setEnabled(false);
+                return reg;
+        }
+
+        @Bean
+        FilterRegistrationBean<RUserHubValidationFilter> disableRUserHubValidationFilter(RUserHubValidationFilter f) {
+                FilterRegistrationBean<RUserHubValidationFilter> reg = new FilterRegistrationBean<>(f);
+                reg.setEnabled(false);
+                return reg;
+        }
+
+        @Bean
+        FilterRegistrationBean<CustomerRequestFilter> disableCustomerRequestFilter(CustomerRequestFilter f) {
+                FilterRegistrationBean<CustomerRequestFilter> reg = new FilterRegistrationBean<>(f);
+                reg.setEnabled(false);
+                return reg;
+        }
+
+        @Bean
+        FilterRegistrationBean<AdminRequestFilter> disableAdminRequestFilter(AdminRequestFilter f) {
+                FilterRegistrationBean<AdminRequestFilter> reg = new FilterRegistrationBean<>(f);
+                reg.setEnabled(false);
+                return reg;
         }
 }

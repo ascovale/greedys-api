@@ -7,6 +7,8 @@ import java.util.List;
 /**
  * Classe che centralizza tutti i pattern di sicurezza per l'applicazione.
  * Utilizzata sia per la configurazione di Spring Security che per i filtri.
+ * 
+ * UNIFIED SECURITY PATTERNS - Unica fonte di verità per tutti i controlli di sicurezza
  */
 public final class SecurityPatterns {
 
@@ -18,6 +20,8 @@ public final class SecurityPatterns {
      * Pattern globali accessibili a tutti senza autenticazione
      */
     public static final String[] GLOBAL_PUBLIC_PATTERNS = {
+        "/",                // Root
+        "/index.html",      // Landing statica
         "/doc**", 
         "/swagger-ui/**", 
         "/register/**", 
@@ -34,6 +38,7 @@ public final class SecurityPatterns {
         "/favicon.ico",
         "/css/**",
         "/js/**",
+        "/img/**",
         "/images/**",
         "/static/**"
     };
@@ -77,11 +82,48 @@ public final class SecurityPatterns {
         "/swagger-groups/**",
         "/actuator/**", 
         "/error*", 
-        "/logo_api.png"
+        "/logo_api.png",
+        "/favicon.ico"
     };
 
     // ============================================================================
-    // METODI UTILITY
+    // PATTERN SPECIALI - Per token refresh e Hub validation
+    // ============================================================================
+    
+    /**
+     * Pattern per endpoint che richiedono refresh token
+     */
+    public static final String[] REFRESH_TOKEN_PATTERNS = {
+        "/customer/auth/refresh",
+        "/admin/auth/refresh", 
+        "/restaurant/user/auth/refresh",
+        "/restaurant/user/auth/refresh/hub"
+    };
+    
+    /**
+     * Pattern per endpoint accessibili ai token Hub
+     */
+    public static final String[] HUB_ALLOWED_PATTERNS = {
+        // Endpoint di autenticazione e refresh
+        "**/auth/refresh",
+        "**/refresh",
+        // Endpoint per gestione ristoranti 
+        "**/switch-restaurant", 
+        "**/change-restaurant",
+        "**/select-restaurant",
+        "**/available-restaurants", 
+        "**/restaurants",
+        "/restaurant/user/auth/restaurants",
+        "/restaurant/user/auth/hub/*/restaurants",
+        // Endpoint profilo e logout
+        "**/logout", 
+        "**/profile/hub",
+        // Gestione password
+        "**/change-password"
+    };
+
+    // ============================================================================
+    // METODI UTILITY - Unificano la logica di SecurityEndpointConfig
     // ============================================================================
     
     /**
@@ -136,6 +178,20 @@ public final class SecurityPatterns {
     }
     
     /**
+     * Verifica se un path richiede refresh token
+     */
+    public static boolean isRefreshTokenPath(String path) {
+        return isPublicPath(path, REFRESH_TOKEN_PATTERNS);
+    }
+    
+    /**
+     * Verifica se un path è accessibile ai token Hub
+     */
+    public static boolean isHubAllowedPath(String path) {
+        return isPublicPath(path, HUB_ALLOWED_PATTERNS);
+    }
+    
+    /**
      * Verifica se un path corrisponde a uno dei pattern pubblici
      */
     public static boolean isPublicPath(String path) {
@@ -161,11 +217,24 @@ public final class SecurityPatterns {
     
     /**
      * Verifica se un path matcha un pattern specifico
-     * Supporta i wildcard ** e *
+     * Supporta i wildcard ** e * (migliorato per essere più robusto)
      */
     private static boolean matchesPattern(String path, String pattern) {
-        // Rimuovi ** e * per il matching semplice
-        if (pattern.endsWith("/**")) {
+        if (path == null || pattern == null) {
+            return false;
+        }
+        
+        // Pattern esatto
+        if (pattern.equals(path)) {
+            return true;
+        }
+        
+        // Pattern con wildcard
+        if (pattern.contains("**")) {
+            String prefix = pattern.substring(0, pattern.indexOf("**"));
+            String suffix = pattern.substring(pattern.indexOf("**") + 2);
+            return path.startsWith(prefix) && path.endsWith(suffix);
+        } else if (pattern.endsWith("/**")) {
             String basePattern = pattern.substring(0, pattern.length() - 3);
             return path.startsWith(basePattern);
         } else if (pattern.endsWith("**")) {
@@ -175,6 +244,7 @@ public final class SecurityPatterns {
             String basePattern = pattern.substring(0, pattern.length() - 1);
             return path.startsWith(basePattern);
         } else {
+            // Pattern normale - controlla anche con slash finale
             return path.equals(pattern) || path.startsWith(pattern + "/");
         }
     }
@@ -187,12 +257,14 @@ public final class SecurityPatterns {
      * Stampa tutti i pattern configurati (per debug)
      */
     public static void printAllPatterns() {
-        System.out.println("=== SECURITY PATTERNS ===");
+        System.out.println("=== UNIFIED SECURITY PATTERNS ===");
         System.out.println("Global Public: " + Arrays.toString(GLOBAL_PUBLIC_PATTERNS));
         System.out.println("Restaurant Auth: " + Arrays.toString(RESTAURANT_AUTH_PATTERNS));
         System.out.println("Customer Auth: " + Arrays.toString(CUSTOMER_AUTH_PATTERNS));
         System.out.println("Admin Auth: " + Arrays.toString(ADMIN_AUTH_PATTERNS));
         System.out.println("Default Public: " + Arrays.toString(DEFAULT_PUBLIC_PATTERNS));
+        System.out.println("Refresh Token: " + Arrays.toString(REFRESH_TOKEN_PATTERNS));
+        System.out.println("Hub Allowed: " + Arrays.toString(HUB_ALLOWED_PATTERNS));
         System.out.println("All Public: " + Arrays.toString(getAllPublicPatterns()));
     }
 

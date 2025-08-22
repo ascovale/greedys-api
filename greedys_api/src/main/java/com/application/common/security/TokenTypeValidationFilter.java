@@ -17,6 +17,8 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Filtro che valida il tipo di token (Access vs Refresh).
  * Responsabilità: Solo validazione del tipo di token.
+ * 
+ * UNIFIED SECURITY: Usa solo SecurityPatterns come fonte di verità
  */
 @Component
 @RequiredArgsConstructor
@@ -28,15 +30,19 @@ public class TokenTypeValidationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getRequestURI();
-        
-        // Non applicare il filtro agli endpoint pubblici
+
+        // Bypass CORS preflight
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            return true;
+        }
+
+        // UNIFIED SECURITY: Usa solo SecurityPatterns come fonte di verità
         boolean isPublic = SecurityPatterns.isPublicPath(path);
-        
+
         if (isPublic) {
             log.debug("Skipping TokenTypeValidationFilter for public endpoint: {}", path);
         }
-        
-        return isPublic; // Se è pubblico, non applicare il filtro
+        return isPublic;
     }
 
     @Override
@@ -61,7 +67,7 @@ public class TokenTypeValidationFilter extends OncePerRequestFilter {
         
         try {
             // 🔄 ENDPOINT DI REFRESH: Validazione specifica per tipo
-            if (isRefreshEndpoint(path)) {
+            if (SecurityPatterns.isRefreshTokenPath(path)) {
                 if (path.equals("/restaurant/user/auth/refresh/hub")) {
                     // Endpoint Hub refresh: solo Hub refresh token
                     if (!jwtUtil.isHubRefreshToken(token)) {
@@ -102,16 +108,6 @@ public class TokenTypeValidationFilter extends OncePerRequestFilter {
         }
         
         filterChain.doFilter(request, response);
-    }
-    
-    /**
-     * Verifica se l'endpoint è un endpoint di refresh che richiede refresh token
-     */
-    private boolean isRefreshEndpoint(String path) {
-        return path.equals("/customer/auth/refresh") || 
-               path.equals("/admin/auth/refresh") ||
-               path.equals("/restaurant/user/auth/refresh") ||
-               path.equals("/restaurant/user/auth/refresh/hub");
     }
     
     /**

@@ -1,0 +1,36 @@
+@font-face {
+  font-family: 'Formiga-Regular';
+  src: url('../fonts/Formiga-Regular-BF6763a034ab201.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Formiga-Medium';
+  src: url('../fonts/Formiga-Medium-BF6763a034aa734.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Formiga-Semibold';
+  src: url('../fonts/Formiga-Semibold-BF6763a034ab835.otf') format('opentype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Fallback per tutti gli elementi che non hanno classi specifiche */
+body {
+  font-family: 'Formiga-Regular', Helvetica, Arial, sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Formiga-Semibold', Helvetica, Arial, sans-serif;
+}
+
+p {
+  font-family: 'Formiga-Regular', Helvetica, Arial, sans-serif;
+}
