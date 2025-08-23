@@ -4,6 +4,39 @@
 
 set -e
 
+# Colori per output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+print_message() {
+    echo -e "${BLUE}[INFO]${NC} $1"
+}
+
+print_success() {
+    echo -e "${GREEN}[SUCCESS]${NC} $1"
+}
+
+print_warning() {
+    echo -e "${YELLOW}[WARNING]${NC} $1"
+}
+
+print_error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+}
+
+echo "========================================="
+echo "  Creazione Segreti Docker Swarm"
+echo "========================================="
+
+# Verifica che Docker Swarm sia attivo
+if ! docker info --format '{{.Swarm.LocalNodeState}}' | grep -q "active"; then
+    print_error "Docker Swarm non è attivo!"
+    exit 1
+fi
+
 # Lista dei segreti da creare
 declare -a secrets=(
   "db_password"
@@ -11,88 +44,47 @@ declare -a secrets=(
   "jwt_secret"
 )
 
-echo "--- Creazione segreti Docker Swarm ---"
+print_message "Creazione segreti base..."
 for secret in "${secrets[@]}"; do
   if docker secret ls --format '{{.Name}}' | grep -q "^$secret$"; then
-    echo "[!] Il segreto '$secret' esiste già. Vuoi sovrascriverlo? (s/N)"
+    print_warning "Il segreto '$secret' esiste già. Vuoi sovrascriverlo? (s/N)"
     read -r overwrite
     if [[ ! "$overwrite" =~ ^[sS]$ ]]; then
-      echo "-> Skipping $secret"
+      print_message "Skipping $secret"
       continue
     fi
     docker secret rm "$secret"
+    print_message "Segreto '$secret' rimosso"
   fi
 
-# Genera una password random di 32 caratteri
-value=$(openssl rand -base64 32)
-echo "Password generata per '$secret': $value"
-echo -n "$value" | docker secret create "$secret" -
-echo "-> Segreto '$secret' creato."
-continue
+  # Genera una password random di 32 caratteri
+  value=$(openssl rand -base64 32)
+  echo -n "$value" | docker secret create "$secret" -
+  print_success "Segreto '$secret' creato"
 done
 
-# Scegli ambiente: localhost o api.greedys.it
-DOMAIN="$1"
-while [[ -z "$DOMAIN" ]]; do
-  echo "Scegli per quale dominio generare il keystore:"
-  select opt in "api.greedys.it" "localhost"; do
-    case $REPLY in
-      1) DOMAIN="api.greedys.it"; break 2;;
-      2) DOMAIN="localhost"; break 2;;
-      *) echo "Scelta non valida";;
-    esac
-  done
-done
-
-DNAME="CN=$DOMAIN, OU=IT, O=Greedys, L=Rome, ST=Rome, C=IT"
-
-# Rimuovo i segreti esistenti (se non esistono, ignoro l'errore)
-echo "Rimuovo i segreti esistenti..."
-docker secret rm keystore 2>/dev/null || true
-docker secret rm keystore_password 2>/dev/null || true
-
-# Genero una nuova password casuale
-echo "Generazione della nuova password..."
-KEYSTORE_PASSWORD=$(openssl rand -hex 12)
-echo "Nuova password generata."
-
-echo "$KEYSTORE_PASSWORD" | docker secret create keystore_password -
-
-# Genero il nuovo certificato keystore in /dev/shm per non scrivere su disco
-KEYSTORE_TMP="/dev/shm/keystore.p12"
-
-
-# Ensure the keystore file is removed before generation
-if [ -f "$KEYSTORE_TMP" ]; then
-    rm -f "$KEYSTORE_TMP"
-fi
-
-keytool -v -genkeypair \
-    -alias "api.greedys.it" \
-    -keyalg RSA \
-    -keysize 2048 \
-    -validity 365 \
-    -keystore "$KEYSTORE_TMP" \
-    -storetype PKCS12 \
-    -storepass "$KEYSTORE_PASSWORD" \
-    -keypass "$KEYSTORE_PASSWORD" \
-    -dname "$DNAME"
-
-# Verify the keystore file
-if [ ! -f "$KEYSTORE_TMP" ]; then
-    echo "Errore: il file keystore non è stato generato correttamente."
-    exit 1
-fi
-
-# Crea i nuovi segreti Docker
-echo "Creazione del segreto 'keystore'..."
-docker secret create keystore "$KEYSTORE_TMP"
-
-# Pulizia dei file temporanei
-rm "$KEYSTORE_TMP"
-
-# rimuovo i segreti esistenti (se non esistono, ignoro l'errore)
+# Gestione service account
+print_message "Creazione segreto service_account..."
 docker secret rm service_account 2>/dev/null || true
-docker secret create service_account ./secured/greedy-69de3-968988eeefce.json 
 
-echo "--- Fine creazione segreti ---"
+if [ -f "./secured/greedy-69de3-968988eeefce.json" ]; then
+    docker secret create service_account ./secured/greedy-69de3-968988eeefce.json
+    print_success "Segreto service_account creato"
+else
+    print_warning "File service account non trovato in ./secured/greedy-69de3-968988eeefce.json"
+fi
+
+print_success "Tutti i segreti sono stati creati con successo!"
+
+print_message "Lista segreti Docker:"
+docker secret ls
+
+echo "========================================="
+echo "📝 Segreti creati:"
+echo "   • db_password (generato)"
+echo "   • email_password (generato)" 
+echo "   • jwt_secret (generato)"
+echo "   • service_account (da file)"
+echo ""
+echo "ℹ️  SSL/HTTPS è gestito da Traefik"
+echo "========================================="

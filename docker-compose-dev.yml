@@ -1,8 +1,10 @@
+version: '3.8'
+
 services:
   spring-app:
     image: registry.gitlab.com/psychoorange/greedys_api:latest
     ports:
-      - "8080:8080"  # HTTP diretto (no più HTTPS interno)
+      - "8080:8080"  # HTTP diretto
     deploy:
       replicas: 1
       update_config:
@@ -18,10 +20,10 @@ services:
     networks:
       - app-network
     environment:
-      SPRING_PROFILES_ACTIVE: "docker"  # Profilo di configurazione attivo per Docker
-      # Override per HTTP interno (non più HTTPS)
+      SPRING_PROFILES_ACTIVE: "dev"  # Profilo development
       SERVER_PORT: 8080
       SERVER_SSL_ENABLED: "false"
+      APP_BASE_URL: "http://localhost:8080"
     secrets:
       - db_password
       - email_password
@@ -34,14 +36,15 @@ services:
       MYSQL_DATABASE: greedys_v1
       MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_password
     ports:
-      - "3309:3306"
+      - "3308:3306"  # Porta diversa da produzione
     volumes:
-      - db_data:/var/lib/mysql
+      - db_data_dev:/var/lib/mysql
+      - ./initdb.d:/docker-entrypoint-initdb.d
     deploy:
       replicas: 1
       placement:
         constraints:
-          - node.role == manager  # Database sempre su manager per persistenza
+          - node.role == manager
       restart_policy:
         condition: on-failure
         delay: 5s
@@ -62,7 +65,7 @@ networks:
     attachable: true
 
 volumes:
-  db_data:
+  db_data_dev:
 
 secrets:
   db_password:
@@ -72,5 +75,4 @@ secrets:
   service_account:
     external: true
   jwt_secret:
-    external: true  
-
+    external: true

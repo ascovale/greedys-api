@@ -47,8 +47,14 @@ public class PersistenceJPAConfig {
         
         String dbPassword = "Minosse100%";
         try {
-            dbPassword = new String(Files.readAllBytes(Paths.get("/run/secrets/db_password"))).trim();
-            System.out.println("✅ Password DB caricata da Docker secrets");
+            // Prova prima il secret di produzione, poi quello di sviluppo
+            String secretPath = "/run/secrets/db_password";
+            if (!Files.exists(Paths.get(secretPath))) {
+                secretPath = "/run/secrets/db_password_dev";
+            }
+            
+            dbPassword = new String(Files.readAllBytes(Paths.get(secretPath))).trim();
+            System.out.println("✅ Password DB caricata da Docker secrets: " + secretPath);
         } catch (IOException e) {
             System.out.println("⚠️ Docker secrets non trovati, uso password di default");
             e.printStackTrace();
