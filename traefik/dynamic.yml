@@ -51,6 +51,19 @@ http:
           - "admin:$2y$10$yourhashpassword"  # Genera con: htpasswd -nb admin yourpassword
 
 tls:
+  certificates:
+    # Certificato self-signed per IP locale
+    - certFile: /certs/localhost.crt
+      keyFile: /certs/localhost.key
+      stores:
+        - default
+  
+  stores:
+    default:
+      defaultCertificate:
+        certFile: /certs/localhost.crt
+        keyFile: /certs/localhost.key
+  
   options:
     default:
       sslProtocols:

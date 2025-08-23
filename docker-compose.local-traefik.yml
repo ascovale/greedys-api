@@ -1,0 +1,120 @@
+version: '3.8'
+
+services:
+  # Traefik - Reverse Proxy per test locale con Swarm
+  traefik:
+    image: traefik:v3.0
+    command:
+      # API and Dashboard
+      - --api.dashboard=true
+      - --api.insecure=true  # Dashboard senza auth per locale
+      # Entry points
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      # Docker Swarm provider
+      - --providers.swarm=true
+      - --providers.swarm.exposedbydefault=false
+      - --providers.swarm.network=app-network
+      # File provider per certificati statici
+      - --providers.file.directory=/certs
+      - --providers.file.watch=true
+      # Logging
+      - --log.level=DEBUG
+      - --accesslog=true
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8090:8080"  # Dashboard
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./certs:/certs:ro
+    networks:
+      - app-network
+    deploy:
+      replicas: 1
+
+  greedys-api:
+    image: registry.gitlab.com/psychoorange/greedys_api:latest
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      labels:
+        # Traefik configuration per locale
+        - "traefik.enable=true"
+        - "traefik.docker.network=greedys_api_app-network"
+        # HTTP Router
+        - "traefik.http.routers.greedys-api-http.rule=Host(`api.local.greedys.test`) || Host(`localhost`) || Host(`172.17.48.81`)"
+        - "traefik.http.routers.greedys-api-http.entrypoints=web"
+        - "traefik.http.routers.greedys-api-http.service=greedys-api-local"
+        # HTTPS Router
+        - "traefik.http.routers.greedys-api-https.rule=Host(`api.local.greedys.test`) || Host(`localhost`) || Host(`172.17.48.81`)"
+        - "traefik.http.routers.greedys-api-https.entrypoints=websecure"
+        - "traefik.http.routers.greedys-api-https.tls=true"
+        - "traefik.http.routers.greedys-api-https.service=greedys-api-local"
+        # Service
+        - "traefik.http.services.greedys-api-local.loadbalancer.server.port=8080"
+    depends_on:
+      - db
+    networks:
+      - app-network
+    environment:
+      SPRING_PROFILES_ACTIVE: "docker"  # Profilo Docker per usare MySQL e secrets
+      SERVER_PORT: 8080
+      SERVER_SSL_ENABLED: "false"
+      APP_BASE_URL: "https://api.local.greedys.test"  # HTTPS con certificati autofirmati
+    secrets:
+      - db_password
+      - email_password
+      - service_account
+      - jwt_secret
+
+  # Database MySQL
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: greedys
+      MYSQL_USER: greedys
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_password
+      MYSQL_PASSWORD_FILE: /run/secrets/db_password
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./initdb.d:/docker-entrypoint-initdb.d:ro
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p\"$$(cat /run/secrets/db_password)\" || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    secrets:
+      - db_password
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  app-network:
+    driver: overlay
+    attachable: true
+
+secrets:
+  db_password:
+    external: true
+  email_password:
+    external: true
+  service_account:
+    external: true
+  jwt_secret:
+    external: true

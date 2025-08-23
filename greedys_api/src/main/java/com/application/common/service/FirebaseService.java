@@ -2,6 +2,8 @@ package com.application.common.service;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Map;
 
@@ -10,9 +12,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.application.customer.service.CustomerFcmTokenService;
-import com.application.restaurant.persistence.dao.RUserDAO;
-import com.application.restaurant.service.RUserFcmTokenService;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
@@ -29,49 +28,64 @@ public class FirebaseService {
 
     public static final String SECURED_CHAT_SPECIFIC_USER = "/secured/user/queue/specific-user";
     private GoogleCredentials googleCredentials;
+    private final SecretManager secretManager;
 
-    public FirebaseService(CustomerFcmTokenService customerFcmTokenService, RUserDAO RUserDAO, 
-                          RUserFcmTokenService restaurantFcmTokenService, Environment environment) {
+    public FirebaseService(Environment environment, SecretManager secretManager) {
         
-        // Controlla il profilo attivo
-        String[] activeProfiles = environment.getActiveProfiles();
-        boolean isDevProfile = java.util.Arrays.asList(activeProfiles).contains("dev");
+        this.secretManager = secretManager;
         
-        if (isDevProfile) {
-            // 🚀 PROFILO DEV: Leggi dalle properties (opzionale)
-            String firebaseCredentialsPath = environment.getProperty("firebase.service.account.path");
-            
-            if (firebaseCredentialsPath == null || firebaseCredentialsPath.trim().isEmpty()) {
-                log.info("🚀 FirebaseService DEV - Nessun path configurato: Firebase disabilitato");
+        // Determina la modalità di esecuzione
+        log.info("🔧 FirebaseService - Modalità rilevata: {}", secretManager.getExecutionMode());
+        
+        switch (secretManager.getExecutionMode()) {
+            case STANDALONE_DEV:
+                initializeStandaloneDev();
+                break;
+            case DOCKER:
+                initializeDockerSecrets();
+                break;
+            default:
+                log.error("❌ FirebaseService - Modalità non riconosciuta: {}", secretManager.getExecutionMode());
                 this.googleCredentials = null;
-            } else {
-                try {
-                    java.io.File credentialsFile = new java.io.File(firebaseCredentialsPath);
-                    if (!credentialsFile.exists()) {
-                        log.warn("🚀 FirebaseService DEV - File non trovato: {} - Firebase disabilitato", firebaseCredentialsPath);
-                        this.googleCredentials = null;
-                    } else {
-                        this.googleCredentials = GoogleCredentials.fromStream(new FileInputStream(firebaseCredentialsPath))
-                                .createScoped("https://www.googleapis.com/auth/cloud-platform");
-                        this.googleCredentials.refreshIfExpired();
-                        log.info("✅ FirebaseService DEV - Credenziali caricate da: {}", firebaseCredentialsPath);
-                    }
-                } catch (IOException e) {
-                    log.error("❌ FirebaseService DEV - Errore caricamento: {} - Firebase disabilitato", e.getMessage());
-                    this.googleCredentials = null;
-                }
-            }
-        } else {
-            // 📦🌐 PROFILO DOCKER/PROD: Usa Docker secrets (path fisso)
+        }
+    }
+
+    /**
+     * Inizializzazione per modalità standalone (senza Docker)
+     */
+    private void initializeStandaloneDev() {
+        String serviceAccountPath = secretManager.getSecretFilePath("service_account", "firebase.service.account.path");
+        
+        if (serviceAccountPath != null && Files.exists(Paths.get(serviceAccountPath))) {
             try {
-                this.googleCredentials = GoogleCredentials.fromStream(new FileInputStream("/run/secrets/service_account"))
+                this.googleCredentials = GoogleCredentials.fromStream(new FileInputStream(serviceAccountPath))
                         .createScoped("https://www.googleapis.com/auth/cloud-platform");
                 this.googleCredentials.refreshIfExpired();
-                log.info("✅ FirebaseService DOCKER/PROD - Credenziali caricate da Docker secrets");
+                log.info("✅ FirebaseService STANDALONE - Credenziali caricate da: {}", serviceAccountPath);
             } catch (IOException e) {
-                log.error("❌ FirebaseService DOCKER/PROD - Errore caricamento secrets: {}", e.getMessage());
-                throw new RuntimeException("Failed to load Google Credentials from Docker secrets: " + e.getMessage(), e);
+                log.error("❌ FirebaseService STANDALONE - Errore caricamento: {} - Firebase disabilitato", e.getMessage());
+                this.googleCredentials = null;
             }
+        } else {
+            log.warn("⚠️ FirebaseService STANDALONE - Service account non configurato, Firebase disabilitato");
+            this.googleCredentials = null;
+        }
+    }
+
+    /**
+     * Inizializzazione per modalità Docker 
+     * (stessi secrets per dev e prod - solo il contenuto cambia)
+     */
+    private void initializeDockerSecrets() {
+        try {
+            String secretPath = secretManager.getSecretFilePath("service_account", null);
+            this.googleCredentials = GoogleCredentials.fromStream(new FileInputStream(secretPath))
+                    .createScoped("https://www.googleapis.com/auth/cloud-platform");
+            this.googleCredentials.refreshIfExpired();
+            log.info("✅ FirebaseService DOCKER - Credenziali caricate da: {}", secretPath);
+        } catch (IOException e) {
+            log.error("❌ FirebaseService DOCKER - Errore caricamento secrets: {}", e.getMessage());
+            throw new RuntimeException("Failed to load Google Credentials from Docker secrets: " + e.getMessage(), e);
         }
     }
 
@@ -106,5 +120,4 @@ public class FirebaseService {
             }
         });
     }
-    
 }

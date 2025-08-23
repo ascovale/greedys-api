@@ -1,8 +1,5 @@
 package com.application.common.security.jwt;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.Clock;
 import java.util.Date;
 import java.util.HashMap;
@@ -17,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import com.application.common.service.SecretManager;
 import com.application.restaurant.persistence.model.user.RUserHub;
 
 import io.jsonwebtoken.Claims;
@@ -32,22 +30,24 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class JwtUtil {
 
-    @Value("${jwt.secret}")
-    private String secret;
-
     @Value("${jwt.expiration}")
     private Long expiration;
 
     @Value("${jwt.refresh.expiration:604800000}") // 7 giorni default per refresh token
     private Long refreshExpiration;
 
+    private final SecretManager secretManager;
     private SecretKey key;
     private Clock clock = Clock.systemDefaultZone();
+
+    public JwtUtil(SecretManager secretManager) {
+        this.secretManager = secretManager;
+    }
 
     @PostConstruct
     public void init() {
         try {
-            String secretValue = resolveSecretValue();
+            String secretValue = secretManager.readSecret("jwt_secret", "jwt.secret");
             log.info("🔐 JWT Secret risolto con successo (lunghezza: {} caratteri)", secretValue.length());
             
             byte[] keyBytes = Decoders.BASE64.decode(secretValue);
@@ -55,28 +55,13 @@ public class JwtUtil {
                 throw new IllegalArgumentException("JWT secret key is too short, must be at least 256 bits");
             }
             this.key = Keys.hmacShaKeyFor(keyBytes);
-            log.info("✅ JWT Key inizializzata correttamente");
+            log.info("✅ JWT Key inizializzata correttamente (modalità: {})", secretManager.getExecutionMode());
         } catch (Exception e) {
             log.error("❌ Errore nell'inizializzazione del JWT secret: {}", e.getMessage());
             throw new RuntimeException("Failed to initialize JWT secret", e);
         }
     }
     
-    private String resolveSecretValue() throws IOException {
-        if (secret.startsWith("file:")) {
-            // Rimuovi il prefisso file: e leggi il contenuto del file
-            String filePath = secret.substring(5); // Rimuove "file:"
-            log.info("🔍 Lettura JWT secret da file: {}", filePath);
-            String fileContent = Files.readString(Paths.get(filePath)).trim();
-            log.info("📄 JWT secret letto da file (lunghezza: {} caratteri)", fileContent.length());
-            return fileContent;
-        } else {
-            // Usa il valore diretto dalla proprietà
-            log.info("🔧 Utilizzo JWT secret diretto dalla configurazione");
-            return secret;
-        }
-    }
-
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
