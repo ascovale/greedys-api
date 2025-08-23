@@ -20,7 +20,7 @@ services:
     networks:
       - app-network
     environment:
-      SPRING_PROFILES_ACTIVE: "dev"  # Profilo development
+      SPRING_PROFILES_ACTIVE: "docker"  # Profilo Docker per usare PostgreSQL e secrets
       SERVER_PORT: 8080
       SERVER_SSL_ENABLED: "false"
       APP_BASE_URL: "http://localhost:8080"
