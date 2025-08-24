@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import com.application.restaurant.persistence.model.Restaurant;
@@ -18,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
  * Simple service for exact restaurant searches using Google Places API
  */
 @Service
+@ConditionalOnProperty(name = "google.maps.enabled", havingValue = "true", matchIfMissing = false)
 @Slf4j
 public class GooglePlacesSearchService {
 

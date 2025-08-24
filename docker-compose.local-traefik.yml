@@ -82,7 +82,7 @@ services:
     ports:
       - "3307:3306"
     volumes:
-      - mysql_data:/var/lib/mysql
+      - db_data:/var/lib/mysql
       - ./initdb.d:/docker-entrypoint-initdb.d:ro
     deploy:
       replicas: 1
@@ -101,7 +101,7 @@ services:
       - db_password
 
 volumes:
-  mysql_data:
+  db_data:
     driver: local
 
 networks:

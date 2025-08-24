@@ -66,10 +66,11 @@ public class CustomerAllergyController extends BaseController {
 
     @Operation(summary = "Get allergy by ID", description = "Returns a specific allergy of the currently authenticated customer using the allergy ID")
     @GetMapping("/{allergyId}")
-    
+    //PRVOa
+    //jdifdj
+    ///PPOEPEWOEWP
     public ResponseEntity<ResponseWrapper<AllergyDTO>> getAllergyById(@PathVariable Long allergyId) {
         return execute("getAllergyById", () -> allergyService.getAllergyById(allergyId));
     }
-
 
 }

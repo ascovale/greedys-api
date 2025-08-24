@@ -1,28 +1,49 @@
-# DEV-SECRETS - Configurazioni per esecuzione senza Docker
+# DEV-SECRETS - File per esecuzione senza Docker
 
-Questa cartella contiene i **valori di sviluppo** utilizzati in due scenari:
+Questa cartella contiene i **file secret di sviluppo** utilizzati in due scenari:
 
 ## 🚫 **Esecuzione SENZA Docker (standalone)**
 Quando esegui l'applicazione direttamente con Java/IDE:
-- `application-secrets.properties` viene caricato da Spring Boot
-- L'applicazione può leggere questi valori tramite `@Value` o `Environment`
+- L'applicazione legge i secret da questi file tramite `file:./dev-secrets/filename`
+- Utilizzato dai profili `application.properties` (normale) e `application-dev.properties`
 
 ## 📁 **Struttura Files**
 
-### Properties per Spring Boot
-- `application-secrets.properties` - Configurazioni complete per Spring
+### File Secret per Spring Boot (standalone)
+- `jwt_secret` → JWT secret per autenticazione
+- `db_password` → Password database MySQL  
+- `email_password` → Password per SMTP email
+- `google_oauth_client_secret` → Google OAuth Client Secret
+- `service_account` → File JSON Service Account Google/Firebase
+- `twilio_account_sid` → Twilio Account SID (NEW)
+- `twilio_auth_token` → Twilio Auth Token (NEW)
+- `twilio_verify_service_sid` → Twilio Verify Service SID (NEW)
 
-### Files per Docker Secrets
+### Files utilizzati anche per Docker Secrets  
+Gli stessi file vengono copiati come Docker secrets per i container:
 - `db_password` → Docker secret `db_password_dev`
 - `email_password` → Docker secret `email_password_dev`  
 - `service_account` → Docker secret `service_account_dev`
-- `jwt.secret` (da properties) → Docker secret `jwt_secret_dev`
+- `jwt_secret` → Docker secret `jwt_secret_dev`
 
 ## 🔄 **Workflow di utilizzo**
-### Senza Docker (standalone)
+
+### Senza Docker (profilo normale)
 ```bash
-# L'applicazione leggerà automaticamente application-secrets.properties
+# Usa MySQL esterno + secret da file
+mvn spring-boot:run
+```
+
+### Con profilo `dev` (TUTTE le dipendenze + MySQL)
+```bash
+# Usa MySQL locale + servizi reali (Firebase, Google, Twilio) + secret da file
 mvn spring-boot:run -Dspring.profiles.active=dev
+```
+
+### Con profilo `dev-minimal` (SOLO dipendenze essenziali + H2)
+```bash
+# Usa H2 + mock services + JWT hardcoded
+mvn spring-boot:run -Dspring.profiles.active=dev-minimal
 ```
 
 ## 🔒 **Sicurezza**

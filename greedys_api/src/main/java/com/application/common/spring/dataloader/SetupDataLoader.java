@@ -117,19 +117,27 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
     private void waitForDatabaseReady() {
         List<String> activeProfiles = Arrays.asList(env.getActiveProfiles());
         
-        // Solo per profili dev (H2) - include anche dev-minimal
-        if (!activeProfiles.contains("dev") && !activeProfiles.contains("dev-minimal")) {
-            return;
+        // Gestione diversa per ogni profilo
+        if (activeProfiles.contains("dev-minimal")) {
+            waitForH2Database();
+        } else if (activeProfiles.contains("dev")) {
+            waitForMySQLDevDatabase();
         }
-        
+        // Per docker/prod non serve attesa, il container assicura che MySQL sia pronto
+    }
+    
+    /**
+     * Attesa specifica per H2 con profilo dev-minimal
+     */
+    private void waitForH2Database() {
         log.info("🔄 Attendo che H2 e Hibernate siano completamente pronti...");
-        int attempts = 15; // Aumentato per H2 + Hibernate DDL
+        int attempts = 15; // Ridotto per H2 che è più veloce
         while (attempts > 0) {
             try {
                 // Prima verifica la connessione al database
                 var connection = dataSource.getConnection();
                 
-                // Poi verifica che le tabelle critiche esistano (verifiche specifiche per H2 DDL)
+                // Verifica semplificata per H2: solo tabelle principali
                 var stmt = connection.prepareStatement(
                     "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME IN ('SETUP_CONFIG', 'ADMIN', 'CUSTOMER')"
                 );
@@ -141,20 +149,20 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
                 stmt.close();
                 connection.close();
                 
-                if (tableCount >= 2) { // Ridotto da 3 a 2 per supportare setup minimal
-                    log.info("✅ Database H2 e schema Hibernate completamente pronti (trovate {} tabelle critiche).", tableCount);
-                    Thread.sleep(500); // Piccola attesa finale per sicurezza
+                if (tableCount >= 3) { // Verifica solo le tabelle principali per H2
+                    log.info("✅ Database H2 e schema Hibernate pronti (tabelle: {}).", tableCount);
+                    Thread.sleep(200); // Piccola attesa finale
                     break;
                 } else {
-                    throw new RuntimeException("Tabelle non ancora create. Trovate: " + tableCount + "/2");
+                    throw new RuntimeException("Tabelle principali non ancora create. Trovate: " + tableCount + "/3");
                 }
                 
             } catch (Exception ex) {
                 attempts--;
-                log.info("⏳ Database/Schema non ancora pronto: {}. Riprovo tra 2 secondi... Tentativi rimasti: {}", 
+                log.info("⏳ Database H2 non ancora pronto: {}. Riprovo tra 1 secondo... Tentativi rimasti: {}", 
                         ex.getMessage(), attempts);
                 try {
-                    Thread.sleep(2000); // Attende 2 secondi prima di riprovare
+                    Thread.sleep(1000); // Attesa ridotta per H2
                 } catch (InterruptedException ie) {
                     Thread.currentThread().interrupt();
                     throw new IllegalStateException("Thread interrotto mentre si attende il DB.", ie);
@@ -163,6 +171,55 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
         }
         if (attempts == 0) {
             throw new IllegalStateException("Database H2 e schema Hibernate non completamente disponibili dopo molteplici tentativi.");
+        }
+    }
+    
+    /**
+     * Attesa specifica per MySQL locale con profilo dev
+     */
+    private void waitForMySQLDevDatabase() {
+        log.info("🔄 Attendo che MySQL locale per sviluppo sia completamente pronto...");
+        int attempts = 10;
+        while (attempts > 0) {
+            try {
+                // Verifica la connessione al database MySQL
+                var connection = dataSource.getConnection();
+                
+                // Verifica che le tabelle critiche esistano per MySQL
+                var stmt = connection.prepareStatement(
+                    "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = ? AND TABLE_NAME IN ('setup_config', 'admin', 'customer', 'slot')"
+                );
+                stmt.setString(1, connection.getCatalog()); // Nome del database corrente
+                var rs = stmt.executeQuery();
+                rs.next();
+                int tableCount = rs.getInt(1);
+                
+                rs.close();
+                stmt.close();
+                connection.close();
+                
+                if (tableCount >= 3) {
+                    log.info("✅ Database MySQL locale per sviluppo completamente pronto (trovate {} tabelle critiche).", tableCount);
+                    Thread.sleep(500);
+                    break;
+                } else {
+                    throw new RuntimeException("Tabelle MySQL non ancora create. Trovate: " + tableCount + "/3");
+                }
+                
+            } catch (Exception ex) {
+                attempts--;
+                log.info("⏳ MySQL locale non ancora pronto: {}. Riprovo tra 1 secondo... Tentativi rimasti: {}", 
+                        ex.getMessage(), attempts);
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw new IllegalStateException("Thread interrotto mentre si attende MySQL.", ie);
+                }
+            }
+        }
+        if (attempts == 0) {
+            throw new IllegalStateException("Database MySQL locale non completamente disponibile dopo molteplici tentativi.");
         }
     }
 

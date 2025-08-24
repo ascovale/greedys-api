@@ -48,14 +48,16 @@ public class JwtUtil {
     public void init() {
         try {
             String secretValue = secretManager.readSecret("jwt_secret", "jwt.secret");
-            log.info("🔐 JWT Secret risolto con successo (lunghezza: {} caratteri)", secretValue.length());
+            log.info("🔐 JWT Secret letto con modalità: {} - Valore inizia con: {}...", 
+                     secretManager.getExecutionMode(), 
+                     secretValue.length() > 10 ? secretValue.substring(0, 10) : secretValue);
             
             byte[] keyBytes = Decoders.BASE64.decode(secretValue);
             if (keyBytes.length < 32) {
                 throw new IllegalArgumentException("JWT secret key is too short, must be at least 256 bits");
             }
             this.key = Keys.hmacShaKeyFor(keyBytes);
-            log.info("✅ JWT Key inizializzata correttamente (modalità: {})", secretManager.getExecutionMode());
+            log.info("✅ JWT Key inizializzata correttamente (lunghezza: {} bytes)", keyBytes.length);
         } catch (Exception e) {
             log.error("❌ Errore nell'inizializzazione del JWT secret: {}", e.getMessage());
             throw new RuntimeException("Failed to initialize JWT secret", e);

@@ -29,7 +29,11 @@ public class SecretManager {
     public SecretManager(Environment environment) {
         this.environment = environment;
         this.executionMode = determineExecutionMode();
-        log.info("🔧 SecretManager inizializzato - Modalità: {}", executionMode);
+        
+        // Log del profilo attivo
+        String[] activeProfiles = environment.getActiveProfiles();
+        String profilesString = activeProfiles.length > 0 ? String.join(", ", activeProfiles) : "default";
+        log.info("🔧 SecretManager inizializzato - Modalità: {} - Profili attivi: [{}]", executionMode, profilesString);
     }
 
     /**
@@ -107,13 +111,38 @@ public class SecretManager {
     /**
      * Legge un secret da Spring properties
      */
-    private String readPropertySecret(String propertyName) {
+    private String readPropertySecret(String propertyName) throws IOException {
         String value = environment.getProperty(propertyName);
-        if (value == null) {
-            throw new IllegalArgumentException("Property non trovata: " + propertyName);
+        
+        // Se il valore è configurato nelle properties
+        if (value != null) {
+            // Se il valore inizia con "file:", legge il contenuto del file
+            if (value.startsWith("file:")) {
+                String filePath = value.substring(5); // Rimuove "file:"
+                if (!Files.exists(Paths.get(filePath))) {
+                    throw new IOException("File secret non trovato: " + filePath);
+                }
+                String fileContent = Files.readString(Paths.get(filePath)).trim();
+                log.debug("🔧 Secret '{}' letto da file '{}' (lunghezza: {} caratteri)", propertyName, filePath, fileContent.length());
+                return fileContent;
+            } else {
+                // Valore diretto dalla property
+                log.debug("🔧 Secret '{}' letto direttamente da properties (lunghezza: {} caratteri)", propertyName, value.length());
+                return value;
+            }
         }
-        log.debug("🔧 Secret '{}' letto da properties (lunghezza: {} caratteri)", propertyName, value.length());
-        return value;
+        
+        // Se non è configurato nelle properties, prova a leggere dal file senza property
+        String secretName = propertyName.replace(".", "_"); // es: jwt.secret -> jwt_secret
+        String fallbackPath = "./dev-secrets/" + secretName;
+        
+        if (Files.exists(Paths.get(fallbackPath))) {
+            String fileContent = Files.readString(Paths.get(fallbackPath)).trim();
+            log.debug("🔧 Secret '{}' letto da fallback file '{}' (lunghezza: {} caratteri)", propertyName, fallbackPath, fileContent.length());
+            return fileContent;
+        }
+        
+        throw new IllegalArgumentException("Property '" + propertyName + "' non trovata né nel file fallback '" + fallbackPath + "'");
     }
 
     /**

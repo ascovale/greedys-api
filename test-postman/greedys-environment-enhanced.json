@@ -4,13 +4,13 @@
 	"values": [
 		{
 			"key": "baseUrl",
-			"value": "https://172.17.48.81:5050",
+			"value": "https://172.17.48.81",
 			"description": "Base URL for all API endpoints",
 			"enabled": true
 		},
 		{
 			"key": "baseUrlDev",
-			"value": "http://localhost:8080",
+			"value": "http://localhost",
 			"description": "Development environment base URL",
 			"enabled": true
 		},

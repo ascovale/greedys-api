@@ -35,8 +35,10 @@ public class Slot {
 	@GeneratedValue(strategy=GenerationType.AUTO)
 	Long id;
 	@Schema(type = "string", format = "time", example = "14:30")
+	@Column(name = "start_time")
 	LocalTime start;
 	@Schema(type = "string", format = "time", example = "15:30")
+	@Column(name = "end_time")
 	LocalTime end;
 	@Column(name="weekday")
 	@Enumerated(EnumType.STRING)

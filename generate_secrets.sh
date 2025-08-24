@@ -37,7 +37,7 @@ if ! docker info --format '{{.Swarm.LocalNodeState}}' | grep -q "active"; then
     exit 1
 fi
 
-# Lista dei segreti da creare
+# Lista dei segreti da creare (generati random)
 declare -a secrets=(
   "db_password"
   "email_password"
@@ -63,6 +63,12 @@ for secret in "${secrets[@]}"; do
   print_success "Segreto '$secret' creato"
 done
 
+# Gestione Google OAuth Client Secret (valore specifico)
+print_message "Creazione google_oauth_client_secret..."
+docker secret rm google_oauth_client_secret 2>/dev/null || true
+echo -n "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" | docker secret create google_oauth_client_secret -
+print_success "Segreto google_oauth_client_secret creato"
+
 # Gestione service account
 print_message "Creazione segreto service_account..."
 docker secret rm service_account 2>/dev/null || true
@@ -84,6 +90,7 @@ echo "📝 Segreti creati:"
 echo "   • db_password (generato)"
 echo "   • email_password (generato)" 
 echo "   • jwt_secret (generato)"
+echo "   • google_oauth_client_secret (valore specifico)"
 echo "   • service_account (da file)"
 echo ""
 echo "ℹ️  SSL/HTTPS è gestito da Traefik"
