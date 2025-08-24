@@ -27,7 +27,7 @@ import jakarta.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;
 
 @Configuration
-@Profile({"docker", "prod"}) // 🔧 Solo per Docker e Produzione
+@Profile({"dev", "docker", "prod"}) // 🔧 Per Dev MySQL, Docker e Produzione
 @EnableJpaRepositories(basePackages = {
     "com.application.admin.persistence.dao",
     "com.application.customer.persistence.dao",
@@ -43,21 +43,36 @@ public class PersistenceJPAConfig {
 
     @Bean
     DataSource dataSource() {
-        System.out.println("⚠️ PersistenceJPAConfig - ATTIVATO! Questo NON dovrebbe accadere in dev mode!");
+        System.out.println("🔧 PersistenceJPAConfig - ATTIVATO! Modalità MySQL per dev/docker/prod");
         
-        String dbPassword = "Minosse100%";
-        try {
-            // Prova prima il secret di produzione, poi quello di sviluppo
-            String secretPath = "/run/secrets/db_password";
-            if (!Files.exists(Paths.get(secretPath))) {
-                secretPath = "/run/secrets/db_password_dev";
+        String dbPassword;
+        String[] activeProfiles = env.getActiveProfiles();
+        boolean isDevProfile = java.util.Arrays.asList(activeProfiles).contains("dev");
+        
+        if (isDevProfile) {
+            // Modalità DEV: legge la password dalle properties
+            dbPassword = env.getProperty("spring.datasource.password");
+            if (dbPassword == null || dbPassword.trim().isEmpty()) {
+                throw new IllegalStateException("❌ ERRORE: Password database non configurata in application-dev.properties per profilo dev");
             }
-            
-            dbPassword = new String(Files.readAllBytes(Paths.get(secretPath))).trim();
-            System.out.println("✅ Password DB caricata da Docker secrets: " + secretPath);
-        } catch (IOException e) {
-            System.out.println("⚠️ Docker secrets non trovati, uso password di default");
-            e.printStackTrace();
+            System.out.println("✅ Password DB caricata da application-dev.properties per profilo dev");
+        } else {
+            // Modalità DOCKER/PROD: legge dai Docker secrets
+            try {
+                String secretPath = "/run/secrets/db_password";
+                if (!Files.exists(Paths.get(secretPath))) {
+                    secretPath = "/run/secrets/db_password_dev";
+                }
+                
+                if (!Files.exists(Paths.get(secretPath))) {
+                    throw new IllegalStateException("❌ ERRORE: Docker secret per password database non trovato in " + secretPath);
+                }
+                
+                dbPassword = new String(Files.readAllBytes(Paths.get(secretPath))).trim();
+                System.out.println("✅ Password DB caricata da Docker secrets: " + secretPath);
+            } catch (IOException e) {
+                throw new IllegalStateException("❌ ERRORE: Impossibile leggere Docker secret per password database", e);
+            }
         }
         
         DataSource dataSource = DataSourceBuilder.create()

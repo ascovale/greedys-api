@@ -13,6 +13,7 @@ public class DevServerConfig {
     @Bean
     WebServerFactoryCustomizer<TomcatServletWebServerFactory> devServletContainerCustomizer() {
         System.out.println("🚀 DevServerConfig ATTIVATO - Modalità sviluppo HTTP");
+        System.out.println("🔑 Segreti integrati direttamente in application-dev.properties");
         return factory -> {
             // Configurazione HTTP semplice per sviluppo
             factory.setPort(8080);

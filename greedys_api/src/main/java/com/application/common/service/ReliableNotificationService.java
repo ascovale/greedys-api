@@ -1,5 +1,6 @@
 package com.application.common.service;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import lombok.extern.slf4j.Slf4j;
@@ -8,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
  * Service with retry capabilities for reliable operations
  */
 @Service
+@ConditionalOnProperty(name = "notifications.enabled", havingValue = "true", matchIfMissing = false)
 @Slf4j
 public class ReliableNotificationService {
 

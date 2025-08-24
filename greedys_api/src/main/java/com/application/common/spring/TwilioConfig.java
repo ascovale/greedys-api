@@ -1,15 +1,19 @@
 package com.application.common.spring;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 
 import com.twilio.Twilio;
 
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 @Configuration
+@ConditionalOnProperty(name = "twilio.enabled", havingValue = "true", matchIfMissing = false)
 @Getter
+@Slf4j
 public class TwilioConfig {
 
     @Value("${twilio.account.sid}")
@@ -32,7 +36,9 @@ public class TwilioConfig {
 
     @PostConstruct
     public void init() {
+        log.info("🔧 TwilioConfig REALE attivato - Modalità servizi reali");
         Twilio.init(accountSid, authToken);
+        log.info("✅ Twilio inizializzato con account: {}", accountSid);
     }
 }
 

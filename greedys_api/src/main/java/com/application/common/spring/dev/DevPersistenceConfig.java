@@ -24,7 +24,7 @@ import jakarta.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;
 
 @Configuration
-@Profile({"dev", "dev-minimal"}) // 🚀 Aggiunto support per profile dev-minimal
+@Profile("dev-minimal") // 🚀 Solo per profilo dev-minimal (H2)
 @EnableJpaRepositories(basePackages = {
     "com.application.admin.persistence.dao",
     "com.application.customer.persistence.dao",

@@ -3,29 +3,41 @@ package com.application.common.spring.mock;
 import java.util.Collection;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
+import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import com.application.common.service.FirebaseService;
+import com.application.common.service.SecretManager;
 import com.google.firebase.auth.FirebaseToken;
 
 import lombok.extern.slf4j.Slf4j;
 
 /**
  * Mock Firebase Service per sviluppo minimal
+ * Estende FirebaseService per compatibilità di tipo
  * Si attiva solo quando firebase.enabled=false
  */
 @Service
 @Primary
 @ConditionalOnProperty(name = "firebase.enabled", havingValue = "false", matchIfMissing = true)
 @Slf4j
-public class MockFirebaseService {
+public class MockFirebaseService extends FirebaseService {
 
-    public MockFirebaseService() {
+    @Autowired
+    public MockFirebaseService(Environment environment, SecretManager secretManager) {
+        super(environment, secretManager); // Usa SecretManager autowired
         log.warn("🔧 MOCK: FirebaseService attivato - modalità sviluppo minimal");
+        log.info("🔧 MOCK: Firebase completamente disabilitato per profilo dev-minimal");
     }
 
+    /**
+     * Mock override of FirebaseService.verifyToken()
+     */
+    @Override
     public FirebaseToken verifyToken(String idToken) {
         log.debug("🔧 MOCK: Firebase verifyToken chiamato per token: {}", 
                   idToken != null ? idToken.substring(0, Math.min(10, idToken.length())) + "..." : "null");
@@ -33,13 +45,17 @@ public class MockFirebaseService {
         // Simula token valido per sviluppo
         if (idToken != null && !idToken.trim().isEmpty()) {
             log.debug("🔧 MOCK: Token considerato valido (mock)");
-            return createMockFirebaseToken(idToken);
+            return null; // Mock token - null indica "valido" in modalità mock
         }
         
         log.debug("🔧 MOCK: Token non valido o vuoto");
         return null;
     }
 
+    /**
+     * Mock override of FirebaseService.sendNotification()
+     */
+    @Override
     @Async
     public void sendNotification(String title, String body, Map<String, String> data, Collection<String> tokens) {
         log.info("🔧 MOCK: Notifica Firebase simulata");
@@ -57,15 +73,5 @@ public class MockFirebaseService {
         }
         
         log.info("✅ MOCK: Notifica Firebase inviata con successo (simulato)");
-    }
-
-    /**
-     * Crea un FirebaseToken mock per testing
-     */
-    private FirebaseToken createMockFirebaseToken(String originalToken) {
-        // Poiché FirebaseToken è una classe finale, usiamo un approccio alternativo
-        // Restituiamo null per ora, ma logghiamo che il token è considerato valido
-        log.debug("🔧 MOCK: FirebaseToken creato (mock) per sviluppo");
-        return null; // In modalità mock, il servizio chiamante deve gestire null come "valido"
     }
 }

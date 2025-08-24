@@ -315,6 +315,13 @@
                     <artifactId>spring-boot-starter-mail</artifactId>
                 </dependency>
                 
+                <!-- Spring Boot DevTools per hot reload durante sviluppo -->
+                <dependency>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-devtools</artifactId>
+                    <scope>runtime</scope>
+                </dependency>
+                
                 <!-- Testing -->
                 <dependency>
                     <groupId>org.springframework.boot</groupId>
@@ -457,6 +464,11 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <fork>true</fork>
+                    <addResources>true</addResources>
+                    <excludeDevtools>false</excludeDevtools>
+                </configuration>
             </plugin>
 
             <!-- Maven Compiler Plugin for Java Release -->

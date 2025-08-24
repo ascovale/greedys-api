@@ -7,6 +7,7 @@ import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Map;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ import com.google.firebase.messaging.Notification;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
+@ConditionalOnProperty(name = "firebase.enabled", havingValue = "true", matchIfMissing = false)
 @Transactional
 @Slf4j
 public class FirebaseService {
