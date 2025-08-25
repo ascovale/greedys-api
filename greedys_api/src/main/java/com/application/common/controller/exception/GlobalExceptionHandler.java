@@ -25,6 +25,7 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.server.ServerErrorException;
 import org.springframework.web.server.UnsupportedMediaTypeStatusException;
@@ -224,6 +225,13 @@ public class GlobalExceptionHandler {
     }
 
     // === ECCEZIONI DI RETE E TIMEOUT ===
+
+    @ExceptionHandler(AsyncRequestNotUsableException.class)
+    public void handleAsyncRequestNotUsable(AsyncRequestNotUsableException ex, WebRequest request) {
+        // Client disconnesso durante la risposta - comportamento normale, non un errore
+        log.debug("Client disconnected during response (normal behavior): {}", ex.getMessage());
+        // Non restituire nessuna response dato che il client si è disconnesso
+    }
 
     @ExceptionHandler(TimeoutException.class)
     public ResponseEntity<ResponseWrapper<String>> handleTimeoutException(TimeoutException ex, WebRequest request) {

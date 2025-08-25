@@ -18,10 +18,17 @@ import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.responses.ApiResponse;
+import io.swagger.v3.core.converter.AnnotatedType;
+import io.swagger.v3.core.converter.ModelConverters;
+import io.swagger.v3.core.converter.ResolvedSchema;
+
 
 /**
  * OpenAPI customizer that processes wrapper type extensions and generates
- * appropriate schemas for ResponseWrapper with different metadata types
+ * appropriate schemas for ResponseWrapper with different metadata types.
+ * 
+ * SOLUZIONE CORRETTA: Usa SpringDoc ModelConverters per generare schemi completi
+ * invece di ricostruzione manuale con reflection.
  */
 @Component
 public class WrapperTypeCustomizer implements OpenApiCustomizer {
@@ -46,8 +53,8 @@ public class WrapperTypeCustomizer implements OpenApiCustomizer {
         // Raccogli tutti i className referenziati negli x-wrapper-type
         Set<String> referencedClasses = collectReferencedClasses(openApi);
         
-        // Crea gli schemi mancanti usando le annotazioni delle classi
-        createMissingSchemasFromAnnotations(referencedClasses, openApi);
+        // Crea gli schemi mancanti usando SpringDoc invece di reflection manuale
+        createSchemasUsingSpringDoc(referencedClasses, openApi);
 
         // Process each path and operation
         openApi.getPaths().forEach((path, pathItem) -> {
@@ -112,15 +119,20 @@ public class WrapperTypeCustomizer implements OpenApiCustomizer {
             schemas.put("PageMetadata", pageMetadata);
         }
         
-        // ErrorDetails schema
+        // ErrorDetails schema - lasciare che SpringDoc lo generi automaticamente dalla classe Java annotata
+        // Rimuoviamo la creazione manuale per evitare conflitti
+        
+        // Forza la creazione dello schema ErrorDetails dalla classe Java
         if (!schemas.containsKey("ErrorDetails")) {
-            ObjectSchema errorDetails = new ObjectSchema();
-            errorDetails.setName("ErrorDetails");
-            errorDetails.setDescription("Error details for failed responses");
-            errorDetails.addProperty("code", new Schema<>().type("string").description("Error code"));
-            errorDetails.addProperty("details", new Schema<>().type("string").description("Detailed error message"));
-            errorDetails.addProperty("field", new Schema<>().type("string").description("Field that caused the error"));
-            schemas.put("ErrorDetails", errorDetails);
+            try {
+                Class<?> errorDetailsClass = Class.forName("com.application.common.web.ErrorDetails");
+                Schema<?> errorDetailsSchema = createSchemaUsingSpringDoc(errorDetailsClass.getName());
+                if (errorDetailsSchema != null) {
+                    schemas.put("ErrorDetails", errorDetailsSchema);
+                }
+            } catch (ClassNotFoundException e) {
+                System.err.println("ErrorDetails class not found: " + e.getMessage());
+            }
         }
         
         // Pageable schema
@@ -174,7 +186,11 @@ public class WrapperTypeCustomizer implements OpenApiCustomizer {
         }
     }
 
-    private void createMissingSchemasFromAnnotations(Set<String> referencedClasses, OpenAPI openApi) {
+    /**
+     * SOLUZIONE CORRETTA: Usa SpringDoc ModelConverters per creare schemi completi
+     * invece di ricostruzione manuale con reflection
+     */
+    private void createSchemasUsingSpringDoc(Set<String> referencedClasses, OpenAPI openApi) {
         @SuppressWarnings("rawtypes")
         Map<String, Schema> schemas = openApi.getComponents().getSchemas();
         
@@ -182,152 +198,134 @@ public class WrapperTypeCustomizer implements OpenApiCustomizer {
             String simpleClassName = fullClassName.substring(fullClassName.lastIndexOf('.') + 1);
             
             if (!schemas.containsKey(simpleClassName)) {
-                Schema<?> newSchema = createSchemaFromClassAnnotations(fullClassName);
-                if (newSchema != null) {
-                    schemas.put(simpleClassName, newSchema);
-                    // Log rimosso per evitare spam nei log Docker
-                } else {
-                    // Fallback per tipi primitivi
-                    Schema<?> fallbackSchema = createPrimitiveSchema(simpleClassName);
-                    if (fallbackSchema != null) {
-                        schemas.put(simpleClassName, fallbackSchema);
-                        // Log rimosso per evitare spam nei log Docker
+                // SOLUZIONE CORRETTA: Usa SpringDoc per creare lo schema completo
+                Schema<?> springDocSchema = createSchemaUsingSpringDoc(fullClassName);
+                
+                if (springDocSchema != null) {
+                    schemas.put(simpleClassName, springDocSchema);
+                    
+                    // SpringDoc restituisce anche tutti gli schemi referenziati
+                    // quindi processali tutti in una volta
+                    Map<String, Schema<?>> additionalSchemas = getAdditionalSchemasFromSpringDoc(fullClassName);
+                    if (additionalSchemas != null) {
+                        for (Map.Entry<String, Schema<?>> entry : additionalSchemas.entrySet()) {
+                            if (!schemas.containsKey(entry.getKey())) {
+                                schemas.put(entry.getKey(), entry.getValue());
+                            }
+                        }
                     }
+                    
+                } else {
+                    // FALLBACK: Non creare componenti schema per i primitivi Java
+                    if (isPrimitiveJavaType(fullClassName)) {
+                        // I tipi primitivi Java sono gestiti automaticamente da OpenAPI
+                        // come tipi inline, non devono essere componenti schema
+                        continue; 
+                    }
+                    
+                    // Per altri tipi non primitivi, crea schema generico
+                    Schema<?> fallbackSchema = new Schema<>();
+                    fallbackSchema.setType("object");
+                    fallbackSchema.setDescription("Auto-generated schema for " + simpleClassName);
+                    schemas.put(simpleClassName, fallbackSchema);
                 }
             }
         }
     }
-
-    private Schema<?> createSchemaFromClassAnnotations(String fullClassName) {
+    
+    /**
+     * SOLUZIONE CORRETTA: Usa SpringDoc per creare schemi completi
+     * invece di ricostruzione manuale con reflection
+     */
+    private Schema<?> createSchemaUsingSpringDoc(String fullClassName) {
         try {
             Class<?> clazz = Class.forName(fullClassName);
             
-            // Verifica se la classe ha l'annotazione @Schema
-            io.swagger.v3.oas.annotations.media.Schema schemaAnnotation = 
-                clazz.getAnnotation(io.swagger.v3.oas.annotations.media.Schema.class);
+            // Usa SpringDoc ModelConverters per ottenere lo schema corretto con tutti i tipi
+            AnnotatedType annotatedType = new AnnotatedType(clazz);
+            ResolvedSchema resolvedSchema = ModelConverters.getInstance().resolveAsResolvedSchema(annotatedType);
             
-            if (schemaAnnotation != null) {
-                ObjectSchema schema = new ObjectSchema();
-                
-                // Usa il nome dall'annotazione se specificato, altrimenti il nome della classe
-                String schemaName = !schemaAnnotation.name().isEmpty() ? 
-                    schemaAnnotation.name() : clazz.getSimpleName();
-                schema.setName(schemaName);
-                
-                // Usa la descrizione dall'annotazione se specificata
-                if (!schemaAnnotation.description().isEmpty()) {
-                    schema.setDescription(schemaAnnotation.description());
-                }
-                
-                // Analizza i campi della classe per le proprietà
-                java.lang.reflect.Field[] fields = clazz.getDeclaredFields();
-                for (java.lang.reflect.Field field : fields) {
-                    io.swagger.v3.oas.annotations.media.Schema fieldSchema = 
-                        field.getAnnotation(io.swagger.v3.oas.annotations.media.Schema.class);
-                    
-                    if (fieldSchema != null) {
-                        Schema<?> propertySchema = createSchemaFromFieldAnnotation(field, fieldSchema);
-                        schema.addProperty(field.getName(), propertySchema);
-                    } else {
-                        // Campo senza annotazione, crea schema di base dal tipo
-                        Schema<?> propertySchema = createSchemaFromFieldType(field);
-                        schema.addProperty(field.getName(), propertySchema);
-                    }
-                }
-                
-                return schema;
+            if (resolvedSchema != null && resolvedSchema.schema != null) {
+                return resolvedSchema.schema;
             }
             
         } catch (ClassNotFoundException e) {
-            System.err.println("Class not found: " + fullClassName + " - " + e.getMessage());
+            System.err.println("Class not found for SpringDoc schema generation: " + fullClassName);
         } catch (Exception e) {
-            System.err.println("Error creating schema for " + fullClassName + ": " + e.getMessage());
+            System.err.println("Error creating SpringDoc schema for " + fullClassName + ": " + e.getMessage());
         }
         
         return null;
     }
-
-    private Schema<?> createSchemaFromFieldAnnotation(java.lang.reflect.Field field, 
-            io.swagger.v3.oas.annotations.media.Schema fieldSchema) {
-        Schema<?> schema = createSchemaFromFieldType(field);
-        
-        // Applica le proprietà dall'annotazione
-        if (!fieldSchema.description().isEmpty()) {
-            schema.setDescription(fieldSchema.description());
-        }
-        if (!fieldSchema.example().isEmpty()) {
-            schema.setExample(fieldSchema.example());
-        }
-        
-        return schema;
-    }
-
-    private Schema<?> createSchemaFromFieldType(java.lang.reflect.Field field) {
-        Class<?> fieldType = field.getType();
-        String typeName = fieldType.getSimpleName();
-        
-        // Gestisce i tipi primitivi e comuni
-        switch (typeName) {
-            case "String":
-                return new Schema<>().type("string");
-            case "Long":
-            case "long":
-                return new Schema<>().type("integer").format("int64");
-            case "Integer":
-            case "int":
-                return new Schema<>().type("integer").format("int32");
-            case "Boolean":
-            case "boolean":
-                return new Schema<>().type("boolean");
-            case "Double":
-            case "double":
-                return new Schema<>().type("number").format("double");
-            case "Float":
-            case "float":
-                return new Schema<>().type("number").format("float");
-            case "LocalDate":
-                return new Schema<>().type("string").format("date");
-            case "LocalDateTime":
-                return new Schema<>().type("string").format("date-time");
-            case "BigDecimal":
-                return new Schema<>().type("number");
-            default:
-                // Per tipi complessi, crea un riferimento
-                if (fieldType.getPackage() != null && 
-                    fieldType.getPackage().getName().startsWith("com.application")) {
-                    Schema<?> refSchema = new Schema<>();
-                    refSchema.set$ref("#/components/schemas/" + typeName);
-                    return refSchema;
-                } else {
-                    // Tipo sconosciuto, usa object generico
-                    return new Schema<>().type("object");
+    
+    /**
+     * Ottiene tutti gli schemi aggiuntivi generati da SpringDoc
+     * (tipi referenziati, nested objects, ecc.)
+     */
+    private Map<String, Schema<?>> getAdditionalSchemasFromSpringDoc(String fullClassName) {
+        try {
+            Class<?> clazz = Class.forName(fullClassName);
+            
+            // Usa SpringDoc ModelConverters per ottenere TUTTI gli schemi correlati
+            AnnotatedType annotatedType = new AnnotatedType(clazz);
+            ResolvedSchema resolvedSchema = ModelConverters.getInstance().resolveAsResolvedSchema(annotatedType);
+            
+            if (resolvedSchema != null && resolvedSchema.referencedSchemas != null) {
+                // Crea una mappa compatibile
+                Map<String, Schema<?>> result = new HashMap<>();
+                for (Map.Entry<String, ?> entry : resolvedSchema.referencedSchemas.entrySet()) {
+                    @SuppressWarnings("unchecked")
+                    Schema<Object> schema = (Schema<Object>) entry.getValue();
+                    result.put(entry.getKey(), schema);
                 }
+                return result;
+            }
+            
+        } catch (ClassNotFoundException e) {
+            System.err.println("Class not found for SpringDoc additional schemas: " + fullClassName);
+        } catch (Exception e) {
+            System.err.println("Error getting additional SpringDoc schemas for " + fullClassName + ": " + e.getMessage());
         }
+        
+        return null;
     }
-
-    private Schema<?> createPrimitiveSchema(String simpleClassName) {
-        switch (simpleClassName) {
-            case "String":
-                return new Schema<>().type("string");
-            case "Long":
-                return new Schema<>().type("integer").format("int64");
-            case "Integer":
-                return new Schema<>().type("integer").format("int32");
-            case "Boolean":
-                return new Schema<>().type("boolean");
-            case "Double":
-                return new Schema<>().type("number").format("double");
-            case "Float":
-                return new Schema<>().type("number").format("float");
-            case "LocalDate":
-                return new Schema<>().type("string").format("date");
-            case "LocalDateTime":
-                return new Schema<>().type("string").format("date-time");
-            case "BigDecimal":
-                return new Schema<>().type("number");
-            default:
-                return null;
-        }
+    
+    private boolean isPrimitiveJavaType(String fullClassName) {
+        // Tipi primitivi Java che non devono diventare componenti schema
+        // OpenAPI li gestisce automaticamente come tipi inline
+        return fullClassName.equals("java.lang.String") ||
+               fullClassName.equals("java.lang.Long") ||
+               fullClassName.equals("java.lang.Integer") ||
+               fullClassName.equals("java.lang.Boolean") ||
+               fullClassName.equals("java.lang.Double") ||
+               fullClassName.equals("java.lang.Float") ||
+               fullClassName.equals("java.math.BigDecimal") ||
+               fullClassName.equals("java.time.LocalDate") ||
+               fullClassName.equals("java.time.LocalDateTime") ||
+               fullClassName.equals("java.time.Instant") ||
+               fullClassName.equals("java.util.Date") ||
+               // Tipi primitivi base
+               fullClassName.equals("long") ||
+               fullClassName.equals("int") ||
+               fullClassName.equals("boolean") ||
+               fullClassName.equals("double") ||
+               fullClassName.equals("float") ||
+               // Pattern generici per pacchetti Java standard che sono sempre primitivi
+               (fullClassName.startsWith("java.lang.") && isPrimitiveWrapper(fullClassName)) ||
+               (fullClassName.startsWith("java.time.") && !fullClassName.contains("$"));
+    }
+    
+    private boolean isPrimitiveWrapper(String className) {
+        String simpleName = className.substring(className.lastIndexOf('.') + 1);
+        return simpleName.equals("String") ||
+               simpleName.equals("Integer") ||
+               simpleName.equals("Long") ||
+               simpleName.equals("Double") ||
+               simpleName.equals("Float") ||
+               simpleName.equals("Boolean") ||
+               simpleName.equals("Byte") ||
+               simpleName.equals("Short") ||
+               simpleName.equals("Character");
     }
 
     private void processPathItem(PathItem pathItem, OpenAPI openApi) {
@@ -367,6 +365,8 @@ public class WrapperTypeCustomizer implements OpenApiCustomizer {
         // Assicurati che il componente sia registrato nell'OpenAPI
         ensureSchemaInComponents(dataClassName, openApi);
         
+        // ✅ FIX: RESTITUISCI DIRETTAMENTE LO SCHEMA WRAPPER (non reference)
+        // Questo forza l'uso dei nostri wrapper con le specifiche di tipo corrette
         switch (wrapperType) {
             case "DTO":
                 return createResponseWrapperSchema(dataSchema);
@@ -387,40 +387,12 @@ public class WrapperTypeCustomizer implements OpenApiCustomizer {
             Map<String, Schema> schemas = openApi.getComponents().getSchemas();
             
             if (!schemas.containsKey(simpleClassName)) {
-                // Crea uno schema di base se non esiste
-                Schema<?> basicSchema = createBasicSchemaForClass(dataClassName);
-                if (basicSchema != null) {
-                    schemas.put(simpleClassName, basicSchema);
-                    // Log rimosso per evitare spam nei log Docker
+                // Usa SpringDoc per creare lo schema se non esiste
+                Schema<?> springDocSchema = createSchemaUsingSpringDoc(dataClassName);
+                if (springDocSchema != null) {
+                    schemas.put(simpleClassName, springDocSchema);
                 }
             }
-        }
-    }
-    
-    private Schema<?> createBasicSchemaForClass(String dataClassName) {
-        try {
-            String simpleClassName = dataClassName.substring(dataClassName.lastIndexOf('.') + 1);
-            
-            // Per tipi primitivi
-            if (dataClassName.equals("java.lang.String")) {
-                return new Schema<>().type("string");
-            } else if (dataClassName.equals("java.lang.Long")) {
-                return new Schema<>().type("integer").format("int64");
-            } else if (dataClassName.equals("java.lang.Integer")) {
-                return new Schema<>().type("integer").format("int32");
-            } else if (dataClassName.equals("java.lang.Boolean")) {
-                return new Schema<>().type("boolean");
-            }
-            
-            // Per altri tipi, crea un schema object generico
-            ObjectSchema schema = new ObjectSchema();
-            schema.setTitle(simpleClassName);
-            schema.setDescription("Auto-generated schema for " + simpleClassName);
-            return schema;
-            
-        } catch (Exception e) {
-            System.err.println("Error creating basic schema for " + dataClassName + ": " + e.getMessage());
-            return null;
         }
     }
 
@@ -463,7 +435,11 @@ public class WrapperTypeCustomizer implements OpenApiCustomizer {
         wrapper.addProperty("message", new Schema<>().type("string").description("Response message"));
         wrapper.addProperty("data", dataSchema);
         wrapper.addProperty("timestamp", new Schema<>().type("string").format("date-time").description("Response timestamp"));
-        wrapper.addProperty("error", new ObjectSchema().$ref("#/components/schemas/ErrorDetails"));
+        
+        // Per ErrorDetails: crea solo il riferimento senza altri attributi
+        Schema<?> errorSchema = new Schema<>();
+        errorSchema.set$ref("#/components/schemas/ErrorDetails");
+        wrapper.addProperty("error", errorSchema);
         
         // Single metadata
         Schema<?> metadataSchema = new Schema<>();
@@ -479,7 +455,11 @@ public class WrapperTypeCustomizer implements OpenApiCustomizer {
         wrapper.addProperty("message", new Schema<>().type("string").description("Response message"));
         wrapper.addProperty("data", new ArraySchema().items(dataSchema));
         wrapper.addProperty("timestamp", new Schema<>().type("string").format("date-time").description("Response timestamp"));
-        wrapper.addProperty("error", new ObjectSchema().$ref("#/components/schemas/ErrorDetails"));
+        
+        // Per ErrorDetails: crea solo il riferimento senza altri attributi
+        Schema<?> errorSchema = new Schema<>();
+        errorSchema.set$ref("#/components/schemas/ErrorDetails");
+        wrapper.addProperty("error", errorSchema);
         
         // List metadata
         Schema<?> metadataSchema = new Schema<>();
@@ -497,7 +477,12 @@ public class WrapperTypeCustomizer implements OpenApiCustomizer {
         // For PAGE, the data is a Page<T> object, not just an array
         ObjectSchema pageSchema = new ObjectSchema();
         pageSchema.addProperty("content", new ArraySchema().items(dataSchema));
-        pageSchema.addProperty("pageable", new ObjectSchema().$ref("#/components/schemas/Pageable"));
+        
+        // Crea riferimenti puliti per Pageable e Sort
+        Schema<?> pageableSchema = new Schema<>();
+        pageableSchema.set$ref("#/components/schemas/Pageable");
+        pageSchema.addProperty("pageable", pageableSchema);
+        
         pageSchema.addProperty("totalPages", new Schema<>().type("integer"));
         pageSchema.addProperty("totalElements", new Schema<>().type("integer").format("int64"));
         pageSchema.addProperty("last", new Schema<>().type("boolean"));
@@ -505,12 +490,20 @@ public class WrapperTypeCustomizer implements OpenApiCustomizer {
         pageSchema.addProperty("numberOfElements", new Schema<>().type("integer"));
         pageSchema.addProperty("size", new Schema<>().type("integer"));
         pageSchema.addProperty("number", new Schema<>().type("integer"));
-        pageSchema.addProperty("sort", new ObjectSchema().$ref("#/components/schemas/Sort"));
+        
+        Schema<?> sortSchema = new Schema<>();
+        sortSchema.set$ref("#/components/schemas/Sort");
+        pageSchema.addProperty("sort", sortSchema);
+        
         pageSchema.addProperty("empty", new Schema<>().type("boolean"));
         
         wrapper.addProperty("data", pageSchema);
         wrapper.addProperty("timestamp", new Schema<>().type("string").format("date-time").description("Response timestamp"));
-        wrapper.addProperty("error", new ObjectSchema().$ref("#/components/schemas/ErrorDetails"));
+        
+        // Per ErrorDetails: crea solo il riferimento senza altri attributi
+        Schema<?> errorSchema = new Schema<>();
+        errorSchema.set$ref("#/components/schemas/ErrorDetails");
+        wrapper.addProperty("error", errorSchema);
         
         // Page metadata
         Schema<?> metadataSchema = new Schema<>();
@@ -521,6 +514,8 @@ public class WrapperTypeCustomizer implements OpenApiCustomizer {
     }
 
     private void updateOperationResponse(Operation operation, Schema<?> schema, String description, String responseCode) {
+        // ✅ FIX: Usa SEMPRE lo schema passato (che è già il wrapper corretto dai metodi create*)
+        // Non creare schemi specifici qui - usa quello che abbiamo già costruito correttamente
         ApiResponse response = new ApiResponse()
                 .description(description)
                 .content(new Content()
@@ -531,20 +526,8 @@ public class WrapperTypeCustomizer implements OpenApiCustomizer {
             operation.responses(new io.swagger.v3.oas.models.responses.ApiResponses());
         }
         
-        // Sostituisce completamente la risposta esistente per questo response code
+        // SOLUZIONE AI DOPPIONI: Sostituisce solo il response specifico
+        // senza interferire con gli altri response codes (200, 201, etc.)
         operation.getResponses().addApiResponse(responseCode, response);
-        
-        // Rimuove eventuali risposte generiche che potrebbero confondere i generatori
-        if ("200".equals(responseCode)) {
-            // Mantieni solo le risposte di errore standard
-            operation.getResponses().entrySet().removeIf(entry -> 
-                !entry.getKey().equals("200") && 
-                !entry.getKey().equals("400") && 
-                !entry.getKey().equals("401") && 
-                !entry.getKey().equals("403") && 
-                !entry.getKey().equals("404") && 
-                !entry.getKey().equals("500")
-            );
-        }
     }
 }

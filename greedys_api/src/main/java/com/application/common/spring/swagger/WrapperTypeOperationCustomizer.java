@@ -84,7 +84,8 @@ public class WrapperTypeOperationCustomizer implements OperationCustomizer {
      */
     private String determineResponseCode(Method method) {
         // Check for @CreateApiResponses annotation (indicates 201 Created)
-        if (method.isAnnotationPresent(com.application.common.controller.annotation.CreateApiResponses.class)) {
+        // Use safe annotation check to handle cases where annotation might be removed
+        if (hasCreateApiResponsesAnnotation(method)) {
             return "201";
         }
         
@@ -95,6 +96,22 @@ public class WrapperTypeOperationCustomizer implements OperationCustomizer {
         
         // Default to 200 OK for all other operations
         return "200";
+    }
+    
+    /**
+     * Safely checks for @CreateApiResponses annotation without causing ClassNotFoundException
+     */
+    private boolean hasCreateApiResponsesAnnotation(Method method) {
+        try {
+            Class<?> createApiResponsesClass = Class.forName("com.application.common.controller.annotation.CreateApiResponses");
+            return method.isAnnotationPresent(createApiResponsesClass.asSubclass(java.lang.annotation.Annotation.class));
+        } catch (ClassNotFoundException e) {
+            // Annotation class doesn't exist, skip this check
+            return false;
+        } catch (Exception e) {
+            // Any other reflection error, skip this check
+            return false;
+        }
     }
     
     /**
