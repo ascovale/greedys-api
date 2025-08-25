@@ -50,7 +50,6 @@ public class PageMetadata extends BaseMetadata {
     
     public static <T> PageMetadata forPage(Page<T> page) {
         return PageMetadata.builder()
-                .dataType("page")
                 .page(page.getNumber())
                 .size(page.getSize())
                 .totalPages(page.getTotalPages())
@@ -65,7 +64,6 @@ public class PageMetadata extends BaseMetadata {
     
     public static <T> PageMetadata forPage(Page<T> page, String filterDescription) {
         return PageMetadata.builder()
-                .dataType("page")
                 .page(page.getNumber())
                 .size(page.getSize())
                 .totalPages(page.getTotalPages())
@@ -81,7 +79,6 @@ public class PageMetadata extends BaseMetadata {
     
     public static <T> PageMetadata forPage(Page<T> page, boolean filtered, String filterDescription) {
         return PageMetadata.builder()
-                .dataType("page")
                 .page(page.getNumber())
                 .size(page.getSize())
                 .totalPages(page.getTotalPages())
@@ -97,7 +94,6 @@ public class PageMetadata extends BaseMetadata {
     
     public static <T> PageMetadata forPage(Page<T> page, String filterDescription, Object additional) {
         return PageMetadata.builder()
-                .dataType("page")
                 .page(page.getNumber())
                 .size(page.getSize())
                 .totalPages(page.getTotalPages())

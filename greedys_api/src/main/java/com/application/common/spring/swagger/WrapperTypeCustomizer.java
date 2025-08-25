@@ -8,6 +8,9 @@ import java.util.Set;
 import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.core.converter.AnnotatedType;
+import io.swagger.v3.core.converter.ModelConverters;
+import io.swagger.v3.core.converter.ResolvedSchema;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
@@ -18,9 +21,6 @@ import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.responses.ApiResponse;
-import io.swagger.v3.core.converter.AnnotatedType;
-import io.swagger.v3.core.converter.ModelConverters;
-import io.swagger.v3.core.converter.ResolvedSchema;
 
 
 /**
@@ -66,58 +66,8 @@ public class WrapperTypeCustomizer implements OpenApiCustomizer {
         @SuppressWarnings("rawtypes")
         Map<String, Schema> schemas = openApi.getComponents().getSchemas();
         
-        // BaseMetadata schema
-        if (!schemas.containsKey("BaseMetadata")) {
-            ObjectSchema baseMetadata = new ObjectSchema();
-            baseMetadata.setName("BaseMetadata");
-            baseMetadata.setDescription("Base metadata for API responses");
-            baseMetadata.addProperty("dataType", new Schema<>().type("string").description("Type of data returned"));
-            baseMetadata.addProperty("additional", new Schema<>().type("object").description("Additional metadata"));
-            schemas.put("BaseMetadata", baseMetadata);
-        }
-        
-        // SingleMetadata schema
-        if (!schemas.containsKey("SingleMetadata")) {
-            ObjectSchema singleMetadata = new ObjectSchema();
-            singleMetadata.setName("SingleMetadata");
-            singleMetadata.setDescription("Metadata for single object responses");
-            singleMetadata.addProperty("dataType", new Schema<>().type("string").example("single"));
-            singleMetadata.addProperty("additional", new Schema<>().type("object").description("Additional metadata"));
-            schemas.put("SingleMetadata", singleMetadata);
-        }
-        
-        // ListMetadata schema
-        if (!schemas.containsKey("ListMetadata")) {
-            ObjectSchema listMetadata = new ObjectSchema();
-            listMetadata.setName("ListMetadata");
-            listMetadata.setDescription("Metadata for list responses");
-            listMetadata.addProperty("dataType", new Schema<>().type("string").example("list"));
-            listMetadata.addProperty("totalCount", new Schema<>().type("integer").format("int64").description("Total number of items"));
-            listMetadata.addProperty("count", new Schema<>().type("integer").description("Number of items in response"));
-            listMetadata.addProperty("filtered", new Schema<>().type("boolean").description("Whether the list is filtered"));
-            listMetadata.addProperty("filterDescription", new Schema<>().type("string").description("Applied filters description"));
-            listMetadata.addProperty("additional", new Schema<>().type("object").description("Additional metadata"));
-            schemas.put("ListMetadata", listMetadata);
-        }
-        
-        // PageMetadata schema
-        if (!schemas.containsKey("PageMetadata")) {
-            ObjectSchema pageMetadata = new ObjectSchema();
-            pageMetadata.setName("PageMetadata");
-            pageMetadata.setDescription("Metadata for paginated responses");
-            pageMetadata.addProperty("dataType", new Schema<>().type("string").example("page"));
-            pageMetadata.addProperty("totalCount", new Schema<>().type("integer").format("int64").description("Total number of items"));
-            pageMetadata.addProperty("count", new Schema<>().type("integer").description("Number of items in current page"));
-            pageMetadata.addProperty("pageNumber", new Schema<>().type("integer").description("Current page number"));
-            pageMetadata.addProperty("pageSize", new Schema<>().type("integer").description("Items per page"));
-            pageMetadata.addProperty("totalPages", new Schema<>().type("integer").description("Total number of pages"));
-            pageMetadata.addProperty("isFirst", new Schema<>().type("boolean").description("Whether this is the first page"));
-            pageMetadata.addProperty("isLast", new Schema<>().type("boolean").description("Whether this is the last page"));
-            pageMetadata.addProperty("hasNext", new Schema<>().type("boolean").description("Whether there is a next page"));
-            pageMetadata.addProperty("hasPrevious", new Schema<>().type("boolean").description("Whether there is a previous page"));
-            pageMetadata.addProperty("additional", new Schema<>().type("object").description("Additional metadata"));
-            schemas.put("PageMetadata", pageMetadata);
-        }
+        // Metadata schemas are handled by MetadataSchemaCustomizer
+        // Only handle ErrorDetails, Pageable, and Sort here
         
         // ErrorDetails schema - lasciare che SpringDoc lo generi automaticamente dalla classe Java annotata
         // Rimuoviamo la creazione manuale per evitare conflitti
