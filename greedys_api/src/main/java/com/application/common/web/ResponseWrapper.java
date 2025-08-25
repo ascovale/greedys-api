@@ -17,7 +17,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Schema(name = "ResponseWrapper", description = "Standard API response wrapper")
+@Schema(name = "ResponseWrapper", description = "Standard API response wrapper", hidden = true)
 @Data
 @Builder
 @NoArgsConstructor

@@ -66,11 +66,6 @@ public class SwaggerConfig {
     }
 
     @Bean
-    MetadataSchemaCustomizer metadataSchemaCustomizer() {
-        return new MetadataSchemaCustomizer();
-    }
-
-    @Bean
     GroupedOpenApi adminApi() {
         return GroupedOpenApi.builder()
                 .group("admin-api")
@@ -83,11 +78,12 @@ public class SwaggerConfig {
                     ALL_DTO_PACKAGES.get(3)  // common.web.dto
                 )
                 .pathsToMatch("/admin/**")
+                // OPERATION CUSTOMIZERS FIRST (populate extension data)
+                .addOperationCustomizer(wrapperTypeOperationCustomizer())
+                // OPENAPI CUSTOMIZERS SECOND (process extension data)
                 .addOpenApiCustomizer(groupCustomizer())
                 .addOpenApiCustomizer(sortSchemasCustomizer())
-                .addOpenApiCustomizer(metadataSchemaCustomizer())
                 .addOpenApiCustomizer(wrapperTypeCustomizer())
-                .addOperationCustomizer(wrapperTypeOperationCustomizer())
                 .build();
     }
 
@@ -102,11 +98,12 @@ public class SwaggerConfig {
                     ALL_DTO_PACKAGES.get(3)  // common.web.dto
                 )
                 .pathsToMatch("/customer/**")
+                // OPERATION CUSTOMIZERS FIRST (populate extension data)
+                .addOperationCustomizer(wrapperTypeOperationCustomizer())
+                // OPENAPI CUSTOMIZERS SECOND (process extension data)
                 .addOpenApiCustomizer(groupCustomizer())
                 .addOpenApiCustomizer(sortSchemasCustomizer())
-                .addOpenApiCustomizer(metadataSchemaCustomizer())
                 .addOpenApiCustomizer(wrapperTypeCustomizer())
-                .addOperationCustomizer(wrapperTypeOperationCustomizer())
                 .build();
     }
 
@@ -121,11 +118,12 @@ public class SwaggerConfig {
                     ALL_DTO_PACKAGES.get(3)  // common.web.dto
                 )
                 .pathsToMatch("/restaurant/**")
+                // OPERATION CUSTOMIZERS FIRST (populate extension data)
+                .addOperationCustomizer(wrapperTypeOperationCustomizer())
+                // OPENAPI CUSTOMIZERS SECOND (process extension data)
                 .addOpenApiCustomizer(groupCustomizer())
                 .addOpenApiCustomizer(sortSchemasCustomizer())
-                .addOpenApiCustomizer(metadataSchemaCustomizer())
                 .addOpenApiCustomizer(wrapperTypeCustomizer())
-                .addOperationCustomizer(wrapperTypeOperationCustomizer())
                 .build();
     }
 

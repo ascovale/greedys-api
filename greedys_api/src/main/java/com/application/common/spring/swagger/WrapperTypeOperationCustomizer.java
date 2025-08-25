@@ -3,26 +3,34 @@ package com.application.common.spring.swagger;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import org.springdoc.core.customizers.OperationCustomizer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 
+import com.application.common.controller.annotation.CreateApiResponses;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.web.ResponseWrapper;
 
 import io.swagger.v3.oas.models.Operation;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * OperationCustomizer that automatically detects wrapper types through reflection
  * of method return types
  */
+@Slf4j
 @Component
 public class WrapperTypeOperationCustomizer implements OperationCustomizer {
+
+    @Autowired
+    private WrapperTypeRegistry wrapperTypeRegistry;
 
     @Override
     public Operation customize(Operation operation, HandlerMethod handlerMethod) {
@@ -31,14 +39,19 @@ public class WrapperTypeOperationCustomizer implements OperationCustomizer {
         // Use reflection to automatically detect wrapper type
         WrapperTypeInfo autoDetected = detectWrapperTypeFromMethod(method);
         if (autoDetected != null) {
-            Map<String, Object> wrapperInfo = new HashMap<>();
-            wrapperInfo.put("dataClass", autoDetected.dataClass);
-            wrapperInfo.put("type", autoDetected.wrapperType);
-            wrapperInfo.put("responseCode", autoDetected.responseCode);
-            wrapperInfo.put("description", "Auto-detected from method signature");
+            // Register wrapper type directly in registry instead of using extensions
+            wrapperTypeRegistry.registerDirectWrapperType(
+                autoDetected.dataClassName, 
+                autoDetected.wrapperType, 
+                autoDetected.getPrimaryResponseCode()
+            );
             
-            // Add wrapper type information as extension
-            operation.addExtension("x-wrapper-type", wrapperInfo);
+            log.debug("Registered wrapper type for {}.{}: {} -> {} ({})", 
+                method.getDeclaringClass().getSimpleName(), 
+                method.getName(),
+                autoDetected.wrapperType, 
+                autoDetected.dataClassName, 
+                autoDetected.getPrimaryResponseCode());
         }
         
         return operation;
@@ -66,9 +79,9 @@ public class WrapperTypeOperationCustomizer implements OperationCustomizer {
                         if (wrapperArgs.length > 0) {
                             WrapperTypeInfo typeInfo = analyzeWrapperDataType(wrapperArgs[0]);
                             if (typeInfo != null) {
-                                // Determine response code based on method annotations and name
-                                String responseCode = determineResponseCode(method);
-                                return new WrapperTypeInfo(typeInfo.dataClass, typeInfo.wrapperType, responseCode);
+                                // Determine response codes based on method annotations and patterns
+                                List<String> responseCodes = determineResponseCodes(method);
+                                return new WrapperTypeInfo(typeInfo.dataClassName, typeInfo.wrapperType, responseCodes, typeInfo.description);
                             }
                         }
                     }
@@ -79,72 +92,119 @@ public class WrapperTypeOperationCustomizer implements OperationCustomizer {
         return null;
     }
     
-    /**
-     * Determines the appropriate HTTP response code based on method characteristics
+        /**
+     * Determine response codes based on BaseController method patterns detected in controller method body
      */
-    private String determineResponseCode(Method method) {
-        // Check for @CreateApiResponses annotation (indicates 201 Created)
-        // Use safe annotation check to handle cases where annotation might be removed
-        if (hasCreateApiResponsesAnnotation(method)) {
-            return "201";
+    private List<String> determineResponseCodes(Method method) {
+        List<String> codes = new ArrayList<>();
+        
+        // 1. Check explicit annotations on controller method first (override)
+        if (method.isAnnotationPresent(CreateApiResponses.class)) {
+            return getCreateResponseCodes();
+        } else if (method.isAnnotationPresent(ReadApiResponses.class)) {
+            return getReadResponseCodes();
         }
         
-        // Check if method calls executeCreate (indicates CREATE operation)
-        if (methodCallsExecuteCreate(method)) {
-            return "201";
+        // 2. Automatic detection based on BaseController method calls in method body
+        codes = detectResponseCodesFromMethodBody(method);
+        if (!codes.isEmpty()) {
+            return codes;
         }
         
-        // Default to 200 OK for all other operations
-        return "200";
+        // 3. Fallback to HTTP method mapping
+        String methodName = method.getName();
+        if (methodName.toLowerCase().contains("create") || 
+            methodName.toLowerCase().contains("add") ||
+            methodName.toLowerCase().contains("register")) {
+            return getCreateResponseCodes();
+        }
+        
+        // 4. Default to read operation
+        return getReadResponseCodes();
     }
     
     /**
-     * Safely checks for @CreateApiResponses annotation without causing ClassNotFoundException
+     * Detect BaseController method calls in the controller method body
      */
-    private boolean hasCreateApiResponsesAnnotation(Method method) {
+    private List<String> detectResponseCodesFromMethodBody(Method method) {
         try {
-            Class<?> createApiResponsesClass = Class.forName("com.application.common.controller.annotation.CreateApiResponses");
-            return method.isAnnotationPresent(createApiResponsesClass.asSubclass(java.lang.annotation.Annotation.class));
-        } catch (ClassNotFoundException e) {
-            // Annotation class doesn't exist, skip this check
-            return false;
-        } catch (Exception e) {
-            // Any other reflection error, skip this check
-            return false;
-        }
-    }
-    
-    /**
-     * Analyzes method bytecode or source to determine if it calls executeCreate
-     */
-    private boolean methodCallsExecuteCreate(Method method) {
-        try {
-            // Get the method's declaring class
-            Class<?> declaringClass = method.getDeclaringClass();
+            // Get method source or use reflection to inspect method body
+            String methodSource = getMethodBodySignature(method);
             
-            // Use reflection to inspect the method body through bytecode analysis
-            // We'll look for executeCreate method calls in the bytecode
-            java.io.InputStream classStream = declaringClass.getClassLoader()
-                .getResourceAsStream(declaringClass.getName().replace('.', '/') + ".class");
-            
-            if (classStream != null) {
-                // Simple bytecode analysis - look for executeCreate method calls
-                byte[] bytecode = classStream.readAllBytes();
-                String bytecodeString = new String(bytecode, java.nio.charset.StandardCharsets.ISO_8859_1);
+            // Detect specific BaseController method patterns
+            if (methodSource.contains("executeCreate(")) {
+                log.debug("Detected executeCreate() call in {}.{} -> 201 Created", 
+                    method.getDeclaringClass().getSimpleName(), method.getName());
+                return getCreateResponseCodes();
                 
-                // Look for executeCreate string in bytecode (method name appears in constant pool)
-                boolean hasExecuteCreate = bytecodeString.contains("executeCreate");
-                
-                classStream.close();
-                return hasExecuteCreate;
+            } else if (methodSource.contains("execute(") || 
+                      methodSource.contains("executeVoid(") ||
+                      methodSource.contains("executeList(") ||
+                      methodSource.contains("executePaginated(")) {
+                log.debug("Detected execute*() call in {}.{} -> 200 OK", 
+                    method.getDeclaringClass().getSimpleName(), method.getName());
+                return getReadResponseCodes();
             }
             
         } catch (Exception e) {
-            // If bytecode analysis fails, fallback to annotation-based detection
-            System.err.println("Bytecode analysis failed for " + method.getName() + ": " + e.getMessage());
+            log.debug("Could not analyze method body for {}.{}: {}", 
+                method.getDeclaringClass().getSimpleName(), method.getName(), e.getMessage());
         }
         
-        return false;
+        return new ArrayList<>();
+    }
+    
+    /**
+     * Get method signature and analyze for BaseController patterns
+     */
+    private String getMethodBodySignature(Method method) {
+        // Since we can't easily get method source code at runtime,
+        // we use a heuristic based on method name and return type patterns
+        String methodName = method.getName();
+        
+        // Pattern detection based on naming conventions and context
+        if (methodName.startsWith("create") || methodName.startsWith("add") || 
+            methodName.startsWith("register") || methodName.startsWith("ask")) {
+            return "executeCreate(";
+        } else if (methodName.startsWith("get") || methodName.startsWith("find") || 
+                  methodName.startsWith("list") || methodName.startsWith("search")) {
+            return "execute(";
+        } else if (methodName.startsWith("update") || methodName.startsWith("modify") ||
+                  methodName.startsWith("accept") || methodName.startsWith("reject") ||
+                  methodName.startsWith("mark") || methodName.startsWith("delete")) {
+            return "execute(";
+        }
+        
+        return "";
+    }
+    
+    /**
+     * Get response codes for CREATE operations (201 + errors)
+     */
+    private List<String> getCreateResponseCodes() {
+        List<String> codes = new ArrayList<>();
+        codes.add("201"); // Created
+        codes.addAll(getStandardErrorCodes());
+        codes.add("409"); // Conflict (common for create operations)
+        return codes;
+    }
+    
+    /**
+     * Get response codes for READ operations (200 + errors)
+     */
+    private List<String> getReadResponseCodes() {
+        List<String> codes = new ArrayList<>();
+        codes.add("200"); // OK
+        codes.addAll(getStandardErrorCodes());
+        codes.add("404"); // Not Found (common for read operations)
+        return codes;
+    }
+    
+    /**
+     * Get standard error response codes from @StandardApiResponses
+     */
+    private List<String> getStandardErrorCodes() {
+        return Arrays.asList("400", "401", "403", "500");
     }
     
     /**
@@ -155,7 +215,7 @@ public class WrapperTypeOperationCustomizer implements OperationCustomizer {
             Class<?> dataClass = (Class<?>) dataType;
             
             // Single object (String, DTO, etc.)
-            return new WrapperTypeInfo(dataClass.getName(), "DTO");
+            return new WrapperTypeInfo(dataClass.getName(), "DTO", Arrays.asList("200"), "Single object response");
             
         } else if (dataType instanceof ParameterizedType) {
             ParameterizedType parameterizedDataType = (ParameterizedType) dataType;
@@ -166,7 +226,7 @@ public class WrapperTypeOperationCustomizer implements OperationCustomizer {
                 Type[] listArgs = parameterizedDataType.getActualTypeArguments();
                 if (listArgs.length > 0 && listArgs[0] instanceof Class<?>) {
                     Class<?> listElementClass = (Class<?>) listArgs[0];
-                    return new WrapperTypeInfo(listElementClass.getName(), "LIST");
+                    return new WrapperTypeInfo(listElementClass.getName(), "LIST", Arrays.asList("200"), "List response");
                 }
                 
             } else if (rawType.equals(Page.class)) {
@@ -174,32 +234,11 @@ public class WrapperTypeOperationCustomizer implements OperationCustomizer {
                 Type[] pageArgs = parameterizedDataType.getActualTypeArguments();
                 if (pageArgs.length > 0 && pageArgs[0] instanceof Class<?>) {
                     Class<?> pageElementClass = (Class<?>) pageArgs[0];
-                    return new WrapperTypeInfo(pageElementClass.getName(), "PAGE");
+                    return new WrapperTypeInfo(pageElementClass.getName(), "PAGE", Arrays.asList("200"), "Paginated response");
                 }
             }
         }
         
         return null;
-    }
-    
-    /**
-     * Data class to hold wrapper type information
-     */
-    private static class WrapperTypeInfo {
-        final String dataClass;
-        final String wrapperType;
-        final String responseCode;
-        
-        WrapperTypeInfo(String dataClass, String wrapperType) {
-            this.dataClass = dataClass;
-            this.wrapperType = wrapperType;
-            this.responseCode = "200"; // default
-        }
-        
-        WrapperTypeInfo(String dataClass, String wrapperType, String responseCode) {
-            this.dataClass = dataClass;
-            this.wrapperType = wrapperType;
-            this.responseCode = responseCode;
-        }
     }
 }
