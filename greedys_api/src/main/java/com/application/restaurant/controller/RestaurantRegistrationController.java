@@ -4,7 +4,6 @@ import java.io.UnsupportedEncodingException;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -80,9 +79,13 @@ public class RestaurantRegistrationController extends BaseController {
 
     @Operation(summary = "Confirm restaurant user registration", description = "Conferma la registrazione")
     @GetMapping(value = "/confirm")
-    public String confirmRUserRegistration(final HttpServletRequest request, final Model model,
+    public ResponseEntity<ResponseWrapper<String>> confirmRUserRegistration(final HttpServletRequest request,
             @RequestParam final String token) throws UnsupportedEncodingException {
-        return restaurantAuthenticationService.confirmRUserRegistration(request, model, token);
+        return execute("confirm registration", () -> {
+            // Esegue la conferma e ritorna un messaggio di successo
+            restaurantAuthenticationService.confirmRUserRegistration(request, null, token);
+            return "Registration confirmed successfully";
+        });
     }
 
     @Operation(summary = "Confirm password change with token", description = "Confirms the password change using a token")

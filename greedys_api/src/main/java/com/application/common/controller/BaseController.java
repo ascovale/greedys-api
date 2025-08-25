@@ -27,6 +27,7 @@ public class BaseController {
     /**
      * Create a successful response with data
      */
+    @ReadApiResponses
     protected <T> ResponseEntity<ResponseWrapper<T>> ok(T data) {
         return ResponseEntity.ok(ResponseWrapper.success(data));
     }
@@ -34,6 +35,7 @@ public class BaseController {
     /**
      * Create a successful response with data and custom message
      */
+    @ReadApiResponses
     protected <T> ResponseEntity<ResponseWrapper<T>> ok(T data, String message) {
         return ResponseEntity.ok(ResponseWrapper.success(data, message));
     }
@@ -41,6 +43,7 @@ public class BaseController {
     /**
      * Create a successful response with only a message (no data)
      */
+    @ReadApiResponses
     protected ResponseEntity<ResponseWrapper<String>> ok(String message) {
         return ResponseEntity.ok(ResponseWrapper.success(message, message));
     }
@@ -48,6 +51,7 @@ public class BaseController {
     /**
      * Create a created response (201)
      */
+    @CreateApiResponses
     protected <T> ResponseEntity<ResponseWrapper<T>> created(T data, String message) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ResponseWrapper.success(data, message));
@@ -58,6 +62,7 @@ public class BaseController {
     /**
      * Create a successful list response with data
      */
+    @ReadApiResponses
     protected <T> ResponseEntity<ResponseWrapper<List<T>>> okList(List<T> data) {
         return ResponseEntity.ok(ResponseWrapper.successList(data));
     }
@@ -65,6 +70,7 @@ public class BaseController {
     /**
      * Create a successful list response with data and custom message
      */
+    @ReadApiResponses
     protected <T> ResponseEntity<ResponseWrapper<List<T>>> okList(List<T> data, String message) {
         return ResponseEntity.ok(ResponseWrapper.successList(data, message));
     }
@@ -72,6 +78,7 @@ public class BaseController {
     /**
      * Create a created list response (201)
      */
+    @CreateApiResponses
     protected <T> ResponseEntity<ResponseWrapper<List<T>>> createdList(List<T> data, String message) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ResponseWrapper.successList(data, message));
@@ -82,6 +89,7 @@ public class BaseController {
     /**
      * Create a successful page response with data
      */
+    @ReadApiResponses
     protected <T> ResponseEntity<ResponseWrapper<List<T>>> okPage(Page<T> page) {
         return ResponseEntity.ok(ResponseWrapper.successPage(page));
     }
@@ -89,6 +97,7 @@ public class BaseController {
     /**
      * Create a successful page response with data and custom message
      */
+    @ReadApiResponses
     protected <T> ResponseEntity<ResponseWrapper<List<T>>> okPage(Page<T> page, String message) {
         return ResponseEntity.ok(ResponseWrapper.successPage(page, message));
     }
