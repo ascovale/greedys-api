@@ -70,9 +70,6 @@ public class SwaggerConfig {
         return new MetadataSchemaCustomizer();
     }
 
-    //TODO Migliorare lo scan leggendo solo dal proprio ma bisogna prima riorganizzare i dto in maniera che siano divisi in maniera corretta
-
-
     @Bean
     GroupedOpenApi adminApi() {
         return GroupedOpenApi.builder()
