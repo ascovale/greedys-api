@@ -42,9 +42,10 @@ public class MetadataSchemaCustomizer implements OpenApiCustomizer {
             ));
             baseMetadata.setDiscriminator(discriminator);
             
-            // Add properties
-            baseMetadata.addProperty("dataType", new Schema<>().type("string").description("Type of data returned"));
+            // Add properties with dataType as required
+            baseMetadata.addProperty("dataType", new Schema<>().type("string").description("Type of data returned").example("single"));
             baseMetadata.addProperty("additional", new Schema<>().type("object").description("Additional metadata"));
+            baseMetadata.addRequiredItem("dataType");
             
             schemas.put("BaseMetadata", baseMetadata);
         }
@@ -58,8 +59,14 @@ public class MetadataSchemaCustomizer implements OpenApiCustomizer {
             // Add allOf reference to BaseMetadata
             Schema<?> baseRef = new Schema<>();
             baseRef.set$ref("#/components/schemas/BaseMetadata");
-            singleMetadata.setAllOf(List.of(baseRef));
             
+            // Add the dataType property as required
+            Schema<?> singleProperties = new Schema<>();
+            singleProperties.setType("object");
+            singleProperties.addProperty("dataType", new Schema<>().type("string").example("single"));
+            singleProperties.addRequiredItem("dataType");
+            
+            singleMetadata.setAllOf(List.of(baseRef, singleProperties));
             schemas.put("SingleMetadata", singleMetadata);
         }
         
@@ -75,10 +82,12 @@ public class MetadataSchemaCustomizer implements OpenApiCustomizer {
             
             Schema<?> listProperties = new Schema<>();
             listProperties.setType("object");
-            listProperties.addProperty("totalCount", new Schema<>().type("integer").format("int64").description("Total number of items"));
-            listProperties.addProperty("count", new Schema<>().type("integer").description("Number of items in response"));
+            listProperties.addProperty("dataType", new Schema<>().type("string").example("list"));
+            listProperties.addProperty("totalCount", new Schema<>().type("integer").format("int64").description("Total number of items in the list"));
+            listProperties.addProperty("count", new Schema<>().type("integer").format("int32").description("Number of items returned in this response"));
             listProperties.addProperty("filtered", new Schema<>().type("boolean").description("Whether the list is filtered"));
             listProperties.addProperty("filterDescription", new Schema<>().type("string").description("Applied filters description"));
+            listProperties.addRequiredItem("dataType");
             
             listMetadata.setAllOf(List.of(baseRef, listProperties));
             schemas.put("ListMetadata", listMetadata);
@@ -96,15 +105,18 @@ public class MetadataSchemaCustomizer implements OpenApiCustomizer {
             
             Schema<?> pageProperties = new Schema<>();
             pageProperties.setType("object");
-            pageProperties.addProperty("totalCount", new Schema<>().type("integer").format("int64").description("Total number of items"));
-            pageProperties.addProperty("count", new Schema<>().type("integer").description("Number of items in current page"));
-            pageProperties.addProperty("pageNumber", new Schema<>().type("integer").description("Current page number"));
-            pageProperties.addProperty("pageSize", new Schema<>().type("integer").description("Items per page"));
-            pageProperties.addProperty("totalPages", new Schema<>().type("integer").description("Total number of pages"));
-            pageProperties.addProperty("isFirst", new Schema<>().type("boolean").description("Whether this is the first page"));
-            pageProperties.addProperty("isLast", new Schema<>().type("boolean").description("Whether this is the last page"));
-            pageProperties.addProperty("hasNext", new Schema<>().type("boolean").description("Whether there is a next page"));
-            pageProperties.addProperty("hasPrevious", new Schema<>().type("boolean").description("Whether there is a previous page"));
+            pageProperties.addProperty("dataType", new Schema<>().type("string").example("page"));
+            pageProperties.addProperty("totalCount", new Schema<>().type("integer").format("int64").description("Total number of items across all pages"));
+            pageProperties.addProperty("count", new Schema<>().type("integer").format("int32").description("Number of items in current page"));
+            pageProperties.addProperty("page", new Schema<>().type("integer").format("int32").description("Current page number (0-based)"));
+            pageProperties.addProperty("size", new Schema<>().type("integer").format("int32").description("Number of items per page"));
+            pageProperties.addProperty("totalPages", new Schema<>().type("integer").format("int32").description("Total number of pages"));
+            pageProperties.addProperty("first", new Schema<>().type("boolean").description("Whether this is the first page"));
+            pageProperties.addProperty("last", new Schema<>().type("boolean").description("Whether this is the last page"));
+            pageProperties.addProperty("numberOfElements", new Schema<>().type("integer").format("int32").description("Number of elements in current page"));
+            pageProperties.addProperty("filtered", new Schema<>().type("boolean").description("Whether the list is filtered"));
+            pageProperties.addProperty("filterDescription", new Schema<>().type("string").description("Applied filters description"));
+            pageProperties.addRequiredItem("dataType");
             
             pageMetadata.setAllOf(List.of(baseRef, pageProperties));
             schemas.put("PageMetadata", pageMetadata);
