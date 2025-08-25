@@ -1,5 +1,7 @@
 package com.application.common.spring.swagger;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -18,6 +20,14 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 
 @Configuration
 public class SwaggerConfig {
+
+    // Package scanning configuration for DTOs - TEMPORARY: all DTOs until proper reorganization
+    private static final List<String> ALL_DTO_PACKAGES = Arrays.asList(
+        "com.application.admin.web.dto",
+        "com.application.customer.web.dto", 
+        "com.application.restaurant.web.dto",
+        "com.application.common.web.dto"
+    );
 
     @Bean
     OpenAPI baseOpenAPI() {
@@ -60,11 +70,21 @@ public class SwaggerConfig {
         return new MetadataSchemaCustomizer();
     }
 
+    //TODO Migliorare lo scan leggendo solo dal proprio ma bisogna prima riorganizzare i dto in maniera che siano divisi in maniera corretta
+
+
     @Bean
     GroupedOpenApi adminApi() {
         return GroupedOpenApi.builder()
                 .group("admin-api")
-                .packagesToScan("com.application.admin","com.application.common", "com.application.restaurant", "com.application.customer")
+                .packagesToScan(
+                    "com.application.admin.controller",
+                    "com.application.common.controller",
+                    ALL_DTO_PACKAGES.get(0), // admin.web.dto
+                    ALL_DTO_PACKAGES.get(1), // customer.web.dto
+                    ALL_DTO_PACKAGES.get(2), // restaurant.web.dto
+                    ALL_DTO_PACKAGES.get(3)  // common.web.dto
+                )
                 .pathsToMatch("/admin/**")
                 .addOpenApiCustomizer(groupCustomizer())
                 .addOpenApiCustomizer(sortSchemasCustomizer())
@@ -78,7 +98,12 @@ public class SwaggerConfig {
     GroupedOpenApi customerApi() {
         return GroupedOpenApi.builder()
                 .group("customer-api")
-                .packagesToScan("com.application.admin","com.application.common", "com.application.restaurant", "com.application.customer")
+                .packagesToScan(
+                    "com.application.customer.controller",
+                    "com.application.common.controller",
+                    ALL_DTO_PACKAGES.get(1), // customer.web.dto
+                    ALL_DTO_PACKAGES.get(3)  // common.web.dto
+                )
                 .pathsToMatch("/customer/**")
                 .addOpenApiCustomizer(groupCustomizer())
                 .addOpenApiCustomizer(sortSchemasCustomizer())
@@ -92,7 +117,12 @@ public class SwaggerConfig {
     GroupedOpenApi restaurantApi() {
         return GroupedOpenApi.builder()
                 .group("restaurant-api")
-                .packagesToScan("com.application.admin","com.application.common", "com.application.restaurant", "com.application.customer")
+                .packagesToScan(
+                    "com.application.restaurant.controller",
+                    "com.application.common.controller",
+                    ALL_DTO_PACKAGES.get(2), // restaurant.web.dto
+                    ALL_DTO_PACKAGES.get(3)  // common.web.dto
+                )
                 .pathsToMatch("/restaurant/**")
                 .addOpenApiCustomizer(groupCustomizer())
                 .addOpenApiCustomizer(sortSchemasCustomizer())

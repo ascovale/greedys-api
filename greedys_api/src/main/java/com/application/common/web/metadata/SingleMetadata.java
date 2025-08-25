@@ -18,13 +18,11 @@ public class SingleMetadata extends BaseMetadata {
     
     public static SingleMetadata create() {
         return SingleMetadata.builder()
-                .dataType("single")
                 .build();
     }
     
     public static SingleMetadata create(Object additional) {
         return SingleMetadata.builder()
-                .dataType("single")
                 .additional(additional)
                 .build();
     }

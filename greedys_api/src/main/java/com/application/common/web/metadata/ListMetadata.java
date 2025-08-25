@@ -32,7 +32,6 @@ public class ListMetadata extends BaseMetadata {
     
     public static ListMetadata forList(List<?> list) {
         return ListMetadata.builder()
-                .dataType("list")
                 .count(list != null ? list.size() : 0)
                 .totalCount(list != null ? (long) list.size() : 0L)
                 .filtered(false)
@@ -41,7 +40,6 @@ public class ListMetadata extends BaseMetadata {
     
     public static ListMetadata forList(List<?> list, String filterDescription) {
         return ListMetadata.builder()
-                .dataType("list")
                 .count(list != null ? list.size() : 0)
                 .totalCount(list != null ? (long) list.size() : 0L)
                 .filtered(filterDescription != null && !filterDescription.trim().isEmpty())
@@ -51,7 +49,6 @@ public class ListMetadata extends BaseMetadata {
     
     public static ListMetadata forList(List<?> list, boolean filtered, String filterDescription) {
         return ListMetadata.builder()
-                .dataType("list")
                 .count(list != null ? list.size() : 0)
                 .totalCount(list != null ? (long) list.size() : 0L)
                 .filtered(filtered)
@@ -61,7 +58,6 @@ public class ListMetadata extends BaseMetadata {
     
     public static ListMetadata forList(List<?> list, String filterDescription, Object additional) {
         return ListMetadata.builder()
-                .dataType("list")
                 .count(list != null ? list.size() : 0)
                 .totalCount(list != null ? (long) list.size() : 0L)
                 .filtered(filterDescription != null && !filterDescription.trim().isEmpty())
