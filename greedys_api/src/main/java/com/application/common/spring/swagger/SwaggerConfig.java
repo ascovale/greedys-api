@@ -55,14 +55,58 @@ public class SwaggerConfig {
         };
     }
 
+    // =========================================
+    // ADMIN API BEANS
+    // =========================================
     @Bean
-    WrapperTypeOperationCustomizer wrapperTypeOperationCustomizer() {
-        return new WrapperTypeOperationCustomizer();
+    WrapperTypeRegistry adminWrapperTypeRegistry() {
+        return new WrapperTypeRegistry("admin-api");
     }
 
     @Bean
-    WrapperTypeCustomizer wrapperTypeCustomizer() {
-        return new WrapperTypeCustomizer();
+    WrapperTypeOperationCustomizer adminWrapperTypeOperationCustomizer() {
+        return new WrapperTypeOperationCustomizer(adminWrapperTypeRegistry());
+    }
+
+    @Bean
+    WrapperTypeCustomizer adminWrapperTypeCustomizer() {
+        return new WrapperTypeCustomizer("admin-api", adminWrapperTypeRegistry());
+    }
+
+    // =========================================
+    // CUSTOMER API BEANS  
+    // =========================================
+    @Bean
+    WrapperTypeRegistry customerWrapperTypeRegistry() {
+        return new WrapperTypeRegistry("customer-api");
+    }
+
+    @Bean
+    WrapperTypeOperationCustomizer customerWrapperTypeOperationCustomizer() {
+        return new WrapperTypeOperationCustomizer(customerWrapperTypeRegistry());
+    }
+
+    @Bean
+    WrapperTypeCustomizer customerWrapperTypeCustomizer() {
+        return new WrapperTypeCustomizer("customer-api", customerWrapperTypeRegistry());
+    }
+
+    // =========================================
+    // RESTAURANT API BEANS
+    // =========================================
+    @Bean
+    WrapperTypeRegistry restaurantWrapperTypeRegistry() {
+        return new WrapperTypeRegistry("restaurant-api");
+    }
+
+    @Bean
+    WrapperTypeOperationCustomizer restaurantWrapperTypeOperationCustomizer() {
+        return new WrapperTypeOperationCustomizer(restaurantWrapperTypeRegistry());
+    }
+
+    @Bean
+    WrapperTypeCustomizer restaurantWrapperTypeCustomizer() {
+        return new WrapperTypeCustomizer("restaurant-api", restaurantWrapperTypeRegistry());
     }
 
     @Bean
@@ -79,11 +123,11 @@ public class SwaggerConfig {
                 )
                 .pathsToMatch("/admin/**")
                 // OPERATION CUSTOMIZERS FIRST (populate extension data)
-                .addOperationCustomizer(wrapperTypeOperationCustomizer())
+                .addOperationCustomizer(adminWrapperTypeOperationCustomizer())
                 // OPENAPI CUSTOMIZERS SECOND (process extension data)
                 .addOpenApiCustomizer(groupCustomizer())
                 .addOpenApiCustomizer(sortSchemasCustomizer())
-                .addOpenApiCustomizer(wrapperTypeCustomizer())
+                .addOpenApiCustomizer(adminWrapperTypeCustomizer())
                 .build();
     }
 
@@ -99,11 +143,11 @@ public class SwaggerConfig {
                 )
                 .pathsToMatch("/customer/**")
                 // OPERATION CUSTOMIZERS FIRST (populate extension data)
-                .addOperationCustomizer(wrapperTypeOperationCustomizer())
+                .addOperationCustomizer(customerWrapperTypeOperationCustomizer())
                 // OPENAPI CUSTOMIZERS SECOND (process extension data)
                 .addOpenApiCustomizer(groupCustomizer())
                 .addOpenApiCustomizer(sortSchemasCustomizer())
-                .addOpenApiCustomizer(wrapperTypeCustomizer())
+                .addOpenApiCustomizer(customerWrapperTypeCustomizer())
                 .build();
     }
 
@@ -119,11 +163,11 @@ public class SwaggerConfig {
                 )
                 .pathsToMatch("/restaurant/**")
                 // OPERATION CUSTOMIZERS FIRST (populate extension data)
-                .addOperationCustomizer(wrapperTypeOperationCustomizer())
+                .addOperationCustomizer(restaurantWrapperTypeOperationCustomizer())
                 // OPENAPI CUSTOMIZERS SECOND (process extension data)
                 .addOpenApiCustomizer(groupCustomizer())
                 .addOpenApiCustomizer(sortSchemasCustomizer())
-                .addOpenApiCustomizer(wrapperTypeCustomizer())
+                .addOpenApiCustomizer(restaurantWrapperTypeCustomizer())
                 .build();
     }
 

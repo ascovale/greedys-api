@@ -2,8 +2,6 @@ package com.application.common.spring.swagger;
 
 import java.util.Map;
 
-import org.springframework.stereotype.Component;
-
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.Schema;
@@ -15,7 +13,6 @@ import lombok.extern.slf4j.Slf4j;
  * e della configurazione dei componenti necessari per il processo di customizzazione.
  */
 @Slf4j
-@Component
 public class BaseMetadataSchemaProvider {
 
     /**

@@ -1,16 +1,14 @@
 package com.application.common.spring.swagger;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.springframework.stereotype.Component;
-
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Registry for collecting and managing all unique wrapper types discovered from API operations.
@@ -19,8 +17,10 @@ import io.swagger.v3.oas.models.PathItem;
  * wrapper type information that was previously added by WrapperTypeOperationCustomizer.
  * It maintains registries of processed types and their schema names to prevent duplicates.
  */
-@Component
+@Slf4j
 public class WrapperTypeRegistry {
+    
+    private final String apiGroup;
     
     // Registry of data types that have been processed (T in wrapper<T>)
     private final Set<String> registeredDataTypes = new HashSet<>();
@@ -30,6 +30,17 @@ public class WrapperTypeRegistry {
     
     // Direct storage for wrapper type information (instead of using extensions)
     private final Set<WrapperTypeInfo> directWrapperTypes = new HashSet<>();
+    
+    // Optimized: Direct mapping from "dataClass:wrapperType" to complete schema reference
+    private final Map<String, String> wrapperSchemaReferences = new HashMap<>();
+    
+    /**
+     * Constructor with API group name for logging and identification
+     */
+    public WrapperTypeRegistry(String apiGroup) {
+        this.apiGroup = apiGroup;
+        log.warn("🔍 REGISTRY LIFECYCLE: Created WrapperTypeRegistry for API group: {}, hashCode={}", apiGroup, this.hashCode());
+    }
 
     /**
      * Clear all registries for fresh processing
@@ -37,10 +48,22 @@ public class WrapperTypeRegistry {
      * Called at the beginning of customization to ensure clean state
      */
     public void clearRegistries() {
+        log.warn("🔍 REGISTRY LIFECYCLE: clearRegistries() CALLED! - before: size={}, hashCode={}", 
+            directWrapperTypes.size(), this.hashCode());
+        
+        // Stampo lo stack trace per vedere CHI sta chiamando clearRegistries
+        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+        log.warn("🔍 REGISTRY LIFECYCLE: clearRegistries() called from:");
+        for (int i = 1; i < Math.min(stackTrace.length, 6); i++) {
+            log.warn("🔍   at {}", stackTrace[i]);
+        }
+        
         registeredDataTypes.clear();
         wrapperSchemaNames.clear();
         directWrapperTypes.clear();
-        System.out.println("WrapperTypeRegistry: Cleared all registries for fresh processing");
+        wrapperSchemaReferences.clear();
+        
+        log.warn("🔍 REGISTRY LIFECYCLE: clearRegistries() COMPLETED! - after: size={}", directWrapperTypes.size());
     }
 
     /**
@@ -48,15 +71,24 @@ public class WrapperTypeRegistry {
      * 
      * @param dataClass Full class name of the data type
      * @param wrapperType Type of wrapper (DTO, LIST, PAGE)
-     * @param responseCode HTTP response code (200, 201, etc.)
      */
-    public void registerDirectWrapperType(String dataClass, String wrapperType, String responseCode) {
-        WrapperTypeInfo typeInfo = new WrapperTypeInfo(dataClass, wrapperType, Arrays.asList(responseCode), "Auto-detected");
+    public void registerDirectWrapperType(String dataClass, String wrapperType) {
+        WrapperTypeInfo typeInfo = new WrapperTypeInfo(dataClass, wrapperType, "Auto-detected");
         boolean isNew = directWrapperTypes.add(typeInfo);
         
+        // Aggiungo logging per tracciare le registrazioni
+        log.warn("🔍 REGISTRY LIFECYCLE: registerDirectWrapperType() - {}, isNew={}, size={}, hashCode={}", 
+            typeInfo.getWrapperSchemaName(), isNew, directWrapperTypes.size(), this.hashCode());
+        
         if (isNew) {
-            System.out.println("WrapperTypeRegistry: Registered direct wrapper type " + wrapperType + "<" + 
-                             getSimpleClassName(dataClass) + "> for response " + responseCode);
+            // Store the complete schema reference for fast FASE 5 lookup
+            String key = dataClass + ":" + wrapperType;
+            String schemaReference = typeInfo.getWrapperSchemaReference();
+            wrapperSchemaReferences.put(key, schemaReference);
+            
+            // log.warn("⚠️ REGISTRY: Registrato {} -> {}", typeInfo.getWrapperSchemaName(), schemaReference);
+        } else {
+            // log.warn("⚠️ REGISTRY: Già esistente {}", typeInfo.getWrapperSchemaName());
         }
     }
 
@@ -71,18 +103,26 @@ public class WrapperTypeRegistry {
         
         // First, add all directly registered wrapper types
         wrapperTypes.addAll(directWrapperTypes);
-        System.out.println("WrapperTypeRegistry: Using " + directWrapperTypes.size() + " directly registered wrapper types");
+        // log.warn("⚠️ REGISTRY: Trovati {} wrapper types registrati (directWrapperTypes.size={})", 
+        //     directWrapperTypes.size(), directWrapperTypes.size());
+        
+        // Aggiungo logging per tracciare il ciclo di vita del Registry
+        log.warn("🔍 REGISTRY LIFECYCLE: collectAllWrapperTypes() - directWrapperTypes.size={}, hashCode={}", 
+            directWrapperTypes.size(), this.hashCode());
+        
+        // for (WrapperTypeInfo info : directWrapperTypes) {
+        //     log.warn("⚠️ REGISTRY: - {} ({})", info.getWrapperSchemaName(), info.wrapperType);
+        // }
         
         // Fallback: scan for extension-based wrapper types if no direct registrations
         if (directWrapperTypes.isEmpty() && openApi.getPaths() != null) {
-            System.out.println("WrapperTypeRegistry: No direct registrations found, scanning " + openApi.getPaths().size() + " paths for extensions");
-            
+            // log.warn("⚠️ REGISTRY: directWrapperTypes è vuoto, fallback scan...");
             openApi.getPaths().forEach((path, pathItem) -> {
                 collectWrapperTypesFromPathItem(path, pathItem, wrapperTypes);
             });
         }
         
-        System.out.println("WrapperTypeRegistry: Total wrapper types collected: " + wrapperTypes.size());
+        System.out.println("WrapperTypeRegistry: Total wrapper types collected: " + wrapperTypes.size() + " (direct: " + directWrapperTypes.size() + ")");
         return wrapperTypes;
     }
     
@@ -114,57 +154,15 @@ public class WrapperTypeRegistry {
     /**
      * Extract wrapper type information from a single operation's extensions
      * 
-     * This method reads the 'x-wrapper-type' extension data that was previously
-     * added by WrapperTypeOperationCustomizer during the operation customization phase.
+     * NOTA: Questo metodo ora è vuoto perché usiamo direttamente i directWrapperTypes
+     * popolati da WrapperTypeOperationCustomizer in FASE 1. Non servono più le 
+     * extension x-wrapper-type.
      * 
-     * Expected extension format:
-     * {
-     *   "x-wrapper-type": {
-     *     "dataClass": "com.example.UserDto",
-     *     "type": "ResponseWrapper",
-     *     "responseCode": "200", 
-     *     "description": "User retrieved successfully"
-     *   }
-     * }
-     * 
-     * @param operation HTTP operation to examine
+     * @param operation HTTP operation to examine  
      * @param wrapperTypes Collection to add discovered wrapper types to
      */
     private void collectWrapperTypesFromOperation(Operation operation, Set<WrapperTypeInfo> wrapperTypes) {
-        if (operation == null || operation.getExtensions() == null) {
-            return;
-        }
-
-        // Look for wrapper type metadata added by OperationCustomizer
-        Object wrapperTypeData = operation.getExtensions().get("x-wrapper-type");
-        if (wrapperTypeData instanceof Map) {
-            try {
-                @SuppressWarnings("unchecked")
-                Map<String, Object> wrapperInfo = (Map<String, Object>) wrapperTypeData;
-                
-                // Extract wrapper type information
-                String dataClassName = (String) wrapperInfo.get("dataClass");
-                String wrapperType = (String) wrapperInfo.get("type");
-                String description = (String) wrapperInfo.getOrDefault("description", "Successful operation");
-                String responseCode = (String) wrapperInfo.getOrDefault("responseCode", "200");
-
-                // Validate required fields and create wrapper type info
-                if (dataClassName != null && wrapperType != null) {
-                    WrapperTypeInfo typeInfo = new WrapperTypeInfo(dataClassName, wrapperType, Arrays.asList(responseCode), description);
-                    boolean isNew = wrapperTypes.add(typeInfo);
-                    
-                    if (isNew) {
-                        System.out.println("WrapperTypeRegistry: Discovered " + wrapperType + "<" + 
-                                         getSimpleClassName(dataClassName) + "> for response " + responseCode);
-                    }
-                } else {
-                    System.err.println("WrapperTypeRegistry: Invalid wrapper type data - missing dataClass or type: " + wrapperInfo);
-                }
-                
-            } catch (ClassCastException e) {
-                System.err.println("WrapperTypeRegistry: Invalid wrapper type extension format: " + wrapperTypeData);
-            }
-        }
+        // Non più necessario - usiamo directWrapperTypes popolati in FASE 1
     }
 
     /**
@@ -211,6 +209,19 @@ public class WrapperTypeRegistry {
     public String getWrapperSchemaName(String dataClassName, String wrapperType) {
         String key = dataClassName + ":" + wrapperType;
         return wrapperSchemaNames.get(key);
+    }
+    
+    /**
+     * Get the complete schema reference for a specific wrapper type combination
+     * This is optimized for FASE 5 - eliminates need for x-wrapper-type extensions
+     * 
+     * @param dataClassName Full class name of the data type
+     * @param wrapperType Type of wrapper (DTO, LIST, PAGE)
+     * @return Complete schema reference like "#/components/schemas/ResponseWrapperUserDto", or null if not found
+     */
+    public String getWrapperSchemaReference(String dataClassName, String wrapperType) {
+        String key = dataClassName + ":" + wrapperType;
+        return wrapperSchemaReferences.get(key);
     }
 
     /**

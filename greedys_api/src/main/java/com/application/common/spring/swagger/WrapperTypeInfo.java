@@ -1,7 +1,5 @@
 package com.application.common.spring.swagger;
 
-import java.util.List;
-
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -9,7 +7,7 @@ import lombok.ToString;
 
 /**
  * Immutable data class that holds complete information about a wrapper type discovered from API operations.
- * This represents a unique combination of data type + wrapper type + response metadata.
+ * This represents a unique combination of data type + wrapper type.
  * 
  * Examples:
  * - ResponseWrapper<UserDto> -> dataClassName="com.app.UserDto", wrapperType="DTO"
@@ -25,7 +23,6 @@ public class WrapperTypeInfo {
     public final String dataClassName;    // Full class name (e.g., "com.application.admin.web.dto.UserDto")
     @EqualsAndHashCode.Include
     public final String wrapperType;      // Type of wrapper: "DTO", "LIST", or "PAGE"
-    public final List<String> responseCodes; // HTTP response codes (e.g., ["200", "201"])
     public final String description;      // Human-readable description for API docs
     
     /**
@@ -74,16 +71,13 @@ public class WrapperTypeInfo {
     }
     
     /**
-     * Get the primary response code (first in the list) for backward compatibility
+     * Generate the complete OpenAPI schema reference for the wrapper type
+     * Examples:
+     * - DTO: "#/components/schemas/ResponseWrapperUserDto"
+     * - LIST: "#/components/schemas/ResponseWrapperListUserDto" 
+     * - PAGE: "#/components/schemas/ResponseWrapperPageUserDto"
      */
-    public String getPrimaryResponseCode() {
-        return responseCodes.isEmpty() ? "200" : responseCodes.get(0);
-    }
-    
-    /**
-     * Check if this wrapper info applies to a specific response code
-     */
-    public boolean appliesToResponseCode(String responseCode) {
-        return responseCodes.contains(responseCode);
+    public String getWrapperSchemaReference() {
+        return "#/components/schemas/" + getWrapperSchemaName();
     }
 }

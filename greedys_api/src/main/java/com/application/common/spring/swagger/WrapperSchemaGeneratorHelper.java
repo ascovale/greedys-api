@@ -3,8 +3,6 @@ package com.application.common.spring.swagger;
 import java.util.Map;
 import java.util.Set;
 
-import org.springframework.stereotype.Component;
-
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.Schema;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +13,6 @@ import lombok.extern.slf4j.Slf4j;
  * che avvolgono i dati reali e utilizzano riferimenti ($ref) invece di definizioni inline.
  */
 @Slf4j
-@Component
 public class WrapperSchemaGeneratorHelper {
 
     /**
@@ -29,8 +26,6 @@ public class WrapperSchemaGeneratorHelper {
         @SuppressWarnings("rawtypes")
         Map<String, Schema> schemas = openApi.getComponents().getSchemas();
         
-        log.info("WrapperSchemaGeneratorHelper: Generazione schemi wrapper per {} tipi", wrapperTypes.size());
-        
         for (WrapperTypeInfo wrapperInfo : wrapperTypes) {
             generateSingleWrapperSchema(wrapperInfo, schemas, registry);
         }
@@ -42,13 +37,20 @@ public class WrapperSchemaGeneratorHelper {
     private void generateSingleWrapperSchema(WrapperTypeInfo wrapperInfo, @SuppressWarnings("rawtypes") Map<String, Schema> schemas, WrapperTypeRegistry registry) {
         String wrapperSchemaName = wrapperInfo.getWrapperSchemaName();
         
+        log.warn("⚠️ GENERATOR: Tentativo generazione {}", wrapperSchemaName);
+        
         // Controlla se lo schema è già stato generato
         if (registry.getWrapperSchemaName(wrapperInfo.dataClassName, wrapperInfo.wrapperType) != null) {
-            log.debug("Schema wrapper {} già generato, saltato", wrapperSchemaName);
+            log.warn("⚠️ GENERATOR: SALTATO {} - già esistente in registry", wrapperSchemaName);
+            return;
+        }
+        
+        if (schemas.containsKey(wrapperSchemaName)) {
+            log.warn("⚠️ GENERATOR: SALTATO {} - già esistente in schemas", wrapperSchemaName);
             return;
         }
 
-        log.debug("Generazione schema wrapper: {} per tipo {}", wrapperSchemaName, wrapperInfo.wrapperType);
+        log.warn("⚠️ GENERATOR: CREANDO {} per tipo {}", wrapperSchemaName, wrapperInfo.wrapperType);
         
         switch (wrapperInfo.wrapperType) {
             case "DTO":
@@ -78,6 +80,10 @@ public class WrapperSchemaGeneratorHelper {
         wrapperSchema.setType("object");
         wrapperSchema.setTitle("Response wrapper for " + dataTypeName);
         
+        // Aggiungi x-class-name per nomi di classe più puliti
+        String cleanClassName = "ResponseWrapper" + dataTypeName;
+        wrapperSchema.addExtension("x-class-name", cleanClassName);
+        
         // Aggiungi proprietà del wrapper
         @SuppressWarnings("rawtypes")
         Schema successProperty = new Schema();
@@ -101,7 +107,7 @@ public class WrapperSchemaGeneratorHelper {
         schemas.put(wrapperSchemaName, wrapperSchema);
         registry.registerWrapperSchema(wrapperInfo.dataClassName, wrapperInfo.wrapperType, wrapperSchemaName);
         
-        log.debug("Schema ResponseWrapper generato: {} -> $ref {}", wrapperSchemaName, dataTypeName);
+        log.warn("⚠️ GENERATOR: CREATO EFFETTIVAMENTE {} -> $ref {}", wrapperSchemaName, dataTypeName);
     }
 
     /**
@@ -118,6 +124,10 @@ public class WrapperSchemaGeneratorHelper {
         listSchema.setType("array");
         listSchema.setTitle("List of " + dataTypeName);
         
+        // Aggiungi x-class-name per nomi di classe più puliti
+        String cleanClassName = "ResponseWrapperList" + dataTypeName;
+        listSchema.addExtension("x-class-name", cleanClassName);
+        
         // Items che referenzia lo schema del tipo T
         @SuppressWarnings("rawtypes")
         Schema itemsSchema = new Schema();
@@ -127,7 +137,7 @@ public class WrapperSchemaGeneratorHelper {
         schemas.put(wrapperSchemaName, listSchema);
         registry.registerWrapperSchema(wrapperInfo.dataClassName, "LIST", wrapperSchemaName);
         
-        log.debug("Schema List generato: {} -> array of $ref {}", wrapperSchemaName, dataTypeName);
+        log.warn("⚠️ GENERATOR: CREATO LIST {} -> array of $ref {}", wrapperSchemaName, dataTypeName);
     }
 
     /**
@@ -143,6 +153,10 @@ public class WrapperSchemaGeneratorHelper {
         Schema pageSchema = new Schema();
         pageSchema.setType("object");
         pageSchema.setTitle("Page of " + dataTypeName);
+        
+        // Aggiungi x-class-name per nomi di classe più puliti
+        String cleanClassName = "ResponseWrapperPage" + dataTypeName;
+        pageSchema.addExtension("x-class-name", cleanClassName);
         
         // Proprietà content come array di riferimenti al tipo T
         @SuppressWarnings("rawtypes")
