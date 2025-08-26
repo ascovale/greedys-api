@@ -3,9 +3,7 @@ package com.application.common.spring.swagger;
 import java.util.Set;
 
 import org.springdoc.core.customizers.OpenApiCustomizer;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
-import org.springframework.stereotype.Component;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import lombok.extern.slf4j.Slf4j;
@@ -32,22 +30,28 @@ import lombok.extern.slf4j.Slf4j;
  * genera schemi nominati e chiari come "ResponseWrapperUserDto" che referenziano "UserDto".
  */
 @Slf4j
-@Component
 @Order(1000) // Execute AFTER all default SpringDoc customizers and OperationCustomizer
 public class WrapperTypeCustomizer implements OpenApiCustomizer {
-    
-    // Classi helper per responsabilità specifiche
-    @Autowired
-    private BaseMetadataSchemaProvider baseMetadataProvider;
-    
-    @Autowired 
-    private WrapperTypeRegistry wrapperTypeRegistry;
-    
-    @Autowired
-    private DataTypeSchemaGenerator dataTypeSchemaGenerator;
-    
-    @Autowired
-    private WrapperSchemaGeneratorHelper wrapperSchemaGenerator;
+
+    private final String apiGroup;
+    private final BaseMetadataSchemaProvider baseMetadataProvider;
+    private final WrapperTypeRegistry wrapperTypeRegistry;
+    private final DataTypeSchemaGenerator dataTypeSchemaGenerator;
+    private final WrapperSchemaGeneratorHelper wrapperSchemaGenerator;
+    private final OperationResponseUpdater operationResponseUpdater;
+
+    /**
+     * Constructor with API group name and specific WrapperTypeRegistry
+     */
+    public WrapperTypeCustomizer(String apiGroup, WrapperTypeRegistry wrapperTypeRegistry) {
+        this.apiGroup = apiGroup;
+        this.baseMetadataProvider = new BaseMetadataSchemaProvider();
+        this.wrapperTypeRegistry = wrapperTypeRegistry;
+        this.dataTypeSchemaGenerator = new DataTypeSchemaGenerator();
+        this.wrapperSchemaGenerator = new WrapperSchemaGeneratorHelper();
+        this.operationResponseUpdater = new OperationResponseUpdater();
+        log.debug("Created WrapperTypeCustomizer for API group: {}", apiGroup);
+    }
 
     /**
      * Metodo principale di customizzazione OpenAPI
@@ -55,7 +59,6 @@ public class WrapperTypeCustomizer implements OpenApiCustomizer {
      */
     @Override
     public void customise(OpenAPI openApi) {
-        log.info("=== INIZIO CUSTOMIZZAZIONE WRAPPER TYPES ===");
         
         try {
             // FASE 1: Setup e validazione iniziale
@@ -66,7 +69,7 @@ public class WrapperTypeCustomizer implements OpenApiCustomizer {
             // FASE 2: Raccolta di tutti i wrapper types dalle operations
             Set<WrapperTypeInfo> wrapperTypes = collectAllWrapperTypes(openApi);
             if (wrapperTypes.isEmpty()) {
-                log.info("Nessun wrapper type trovato, customizzazione terminata");
+                log.warn("⚠️ CUSTOMIZER: Nessun wrapper type trovato!");
                 return;
             }
             
@@ -83,10 +86,8 @@ public class WrapperTypeCustomizer implements OpenApiCustomizer {
             validateFinalResult(openApi);
             
         } catch (Exception e) {
-            log.error("Errore durante customizzazione wrapper types: {}", e.getMessage(), e);
+            log.error("⚠️ CUSTOMIZER: Errore durante customizzazione: {}", e.getMessage(), e);
         }
-        
-        log.info("=== FINE CUSTOMIZZAZIONE WRAPPER TYPES ===");
     }
 
     /**
@@ -94,11 +95,9 @@ public class WrapperTypeCustomizer implements OpenApiCustomizer {
      * Configura la struttura base e pulisce i registries per una nuova elaborazione
      */
     private boolean setupInitialConfiguration(OpenAPI openApi) {
-        log.info("FASE 1: Setup iniziale e validazione");
         
         // Valida struttura OpenAPI
         if (!baseMetadataProvider.validateOpenApiStructure(openApi)) {
-            log.error("Struttura OpenAPI non valida, customizzazione annullata");
             return false;
         }
         
@@ -106,10 +105,10 @@ public class WrapperTypeCustomizer implements OpenApiCustomizer {
         baseMetadataProvider.setupBaseMetadata(openApi);
         baseMetadataProvider.addCommonSchemas(openApi);
         
-        // Pulisci registries per fresh processing
-        wrapperTypeRegistry.clearRegistries();
+        // NON pulire i registries! Abbiamo appena raccolto i dati in FASE 1!
+        // wrapperTypeRegistry.clearRegistries(); // RIMOSSO: Cancellava i dati di FASE 1
         
-        log.info("Setup completato: {}", baseMetadataProvider.getOpenApiStats(openApi));
+        log.warn("⚠️ SETUP: Inizializzazione completata, schemi esistenti: {}", openApi.getComponents().getSchemas().size());
         return true;
     }
 
@@ -118,14 +117,8 @@ public class WrapperTypeCustomizer implements OpenApiCustomizer {
      * Scansiona tutte le API operations per trovare wrapper types configurati dall'OperationCustomizer
      */
     private Set<WrapperTypeInfo> collectAllWrapperTypes(OpenAPI openApi) {
-        log.info("FASE 2: Raccolta wrapper types dalle operations");
         
         Set<WrapperTypeInfo> wrapperTypes = wrapperTypeRegistry.collectAllWrapperTypes(openApi);
-        
-        log.info("Raccolti {} wrapper types unici", wrapperTypes.size());
-        for (WrapperTypeInfo wrapper : wrapperTypes) {
-            log.debug("  - {} per {}", wrapper.wrapperType, wrapper.getDataTypeSimpleName());
-        }
         
         return wrapperTypes;
     }
@@ -135,11 +128,9 @@ public class WrapperTypeCustomizer implements OpenApiCustomizer {
      * Crea schemi SpringDoc per tutti i tipi T unici estratti dai wrapper types
      */
     private void generateDataTypeSchemas(Set<WrapperTypeInfo> wrapperTypes, OpenAPI openApi) {
-        log.info("FASE 3: Generazione schemi per tipi dati");
         
         dataTypeSchemaGenerator.generateDataTypeSchemas(wrapperTypes, openApi, wrapperTypeRegistry);
         
-        log.info("Generazione schemi dati completata: {}", wrapperTypeRegistry.getRegistryStats());
     }
 
     /**
@@ -147,11 +138,9 @@ public class WrapperTypeCustomizer implements OpenApiCustomizer {
      * Crea schemi wrapper che utilizzano $ref per referenziare i tipi T
      */
     private void generateWrapperSchemas(Set<WrapperTypeInfo> wrapperTypes, OpenAPI openApi) {
-        log.info("FASE 4: Generazione schemi wrapper con $ref");
         
         wrapperSchemaGenerator.generateWrapperSchemas(wrapperTypes, openApi, wrapperTypeRegistry);
         
-        log.info("Generazione schemi wrapper completata");
     }
 
     /**
@@ -159,11 +148,7 @@ public class WrapperTypeCustomizer implements OpenApiCustomizer {
      * Sostituisce le response inline con riferimenti ai nuovi schemi nominati
      */
     private void updateOperationResponses(Set<WrapperTypeInfo> wrapperTypes, OpenAPI openApi) {
-        log.info("FASE 5: Aggiornamento response operations");
-        
-        // Per ora mantengo la logica nell'operation customizer
-        // Questa fase può essere estratta in una classe helper separata se necessario
-        log.info("Aggiornamento response completato (gestito da OperationCustomizer)");
+        operationResponseUpdater.updateOperationResponses(wrapperTypes, openApi);
     }
 
     /**
@@ -171,26 +156,15 @@ public class WrapperTypeCustomizer implements OpenApiCustomizer {
      * Verifica che tutti gli schemi necessari siano stati creati e registra statistiche
      */
     private void validateFinalResult(OpenAPI openApi) {
-        log.info("FASE 6: Validazione finale e statistiche");
         
-        // Statistiche finali
-        String finalStats = baseMetadataProvider.getOpenApiStats(openApi);
-        String registryStats = wrapperTypeRegistry.getRegistryStats();
+        int finalSchemaCount = openApi.getComponents().getSchemas().size();
+        log.warn("⚠️ FINALE: Processo completato, schemi totali finali: {}", finalSchemaCount);
         
-        log.info("Customizzazione completata con successo:");
-        log.info("  - {}", finalStats);
-        log.info("  - {}", registryStats);
-        
-        // Validazione degli schemi generati
-        int expectedSchemas = wrapperTypeRegistry.getRegisteredDataTypes().size() + 
-                            wrapperTypeRegistry.getWrapperSchemaNames().size();
-        
-        int actualSchemas = openApi.getComponents().getSchemas().size();
-        
-        if (actualSchemas >= expectedSchemas) {
-            log.info("✓ Validazione schemi: {} schemi presenti (almeno {} attesi)", actualSchemas, expectedSchemas);
-        } else {
-            log.warn("⚠ Validazione schemi: {} schemi presenti, {} attesi", actualSchemas, expectedSchemas);
-        }
+        // Lista tutti gli schemi per vedere cosa è stato generato
+        openApi.getComponents().getSchemas().keySet().forEach(schemaName -> {
+            if (schemaName.startsWith("ResponseWrapper")) {
+                log.warn("⚠️ FINALE: Schema wrapper trovato: {}", schemaName);
+            }
+        });
     }
 }

@@ -5,8 +5,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.springframework.stereotype.Component;
-
 import io.swagger.v3.core.converter.AnnotatedType;
 import io.swagger.v3.core.converter.ModelConverters;
 import io.swagger.v3.core.converter.ResolvedSchema;
@@ -21,7 +19,6 @@ import lombok.extern.slf4j.Slf4j;
  * will reference, ensuring complete type information through SpringDoc's ModelConverters.
  */
 @Slf4j
-@Component
 public class DataTypeSchemaGenerator {
 
     /**

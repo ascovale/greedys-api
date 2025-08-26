@@ -4,8 +4,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.springframework.stereotype.Component;
-
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.Schema;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +14,6 @@ import lombok.extern.slf4j.Slf4j;
  * This class creates schemas for ResponseWrapper<T>, List<T>, and Page<T>
  * that use $ref to reference the base T schemas instead of inline definitions.
  */
-@Component  
 @Slf4j
 public class WrapperSchemaGenerator {
 
