@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -68,7 +67,7 @@ public class AdminRestaurantReservationController extends BaseController {
 	@Operation(summary = "Get all reservations of a restaurant with pagination", description = "Retrieve all reservations of a restaurant with pagination")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_RESTAURANT_READ')")
 	@GetMapping(value = "{restaurantId}/reservation/pageable")
-	public ResponseEntity<ResponseWrapper<Page<ReservationDTO>>> getReservationsPageable(
+	public ResponseEntity<ResponseWrapper<List<ReservationDTO>>> getReservationsPageable(
 			@PathVariable Long restaurantId,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end,
@@ -95,7 +94,7 @@ public class AdminRestaurantReservationController extends BaseController {
 	@Operation(summary = "Get all pending reservations of a restaurant with pagination", description = "Retrieve all pending reservations of a restaurant with pagination")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_RESTAURANT_READ')")
 	@GetMapping(value = "{restaurantId}/reservation/pending/pageable")
-	public ResponseEntity<ResponseWrapper<Page<ReservationDTO>>> getPendingReservationsPageable(
+	public ResponseEntity<ResponseWrapper<List<ReservationDTO>>> getPendingReservationsPageable(
 		@PathVariable Long restaurantId,
 		@RequestParam(required = false) LocalDate start,
 		@RequestParam(required = false) LocalDate end,

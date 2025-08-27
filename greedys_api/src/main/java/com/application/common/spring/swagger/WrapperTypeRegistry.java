@@ -2,6 +2,7 @@ package com.application.common.spring.swagger;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -34,6 +35,10 @@ public class WrapperTypeRegistry {
     // Optimized: Direct mapping from "dataClass:wrapperType" to complete schema reference
     private final Map<String, String> wrapperSchemaReferences = new HashMap<>();
     
+    // NEW: Success responses per operation - DOPPIA MAPPA per supportare entrambe le chiavi
+    private final Map<String, List<ResponseInfo>> operationSuccessResponses = new HashMap<>(); // Chiave: methodSignature
+    private final Map<String, List<ResponseInfo>> operationIdSuccessResponses = new HashMap<>(); // Chiave: operationId
+    
     /**
      * Constructor with API group name for logging and identification
      */
@@ -62,6 +67,8 @@ public class WrapperTypeRegistry {
         wrapperSchemaNames.clear();
         directWrapperTypes.clear();
         wrapperSchemaReferences.clear();
+        operationSuccessResponses.clear(); // Clear success responses by methodSignature
+        operationIdSuccessResponses.clear(); // Clear success responses by operationId
         
         log.warn("🔍 REGISTRY LIFECYCLE: clearRegistries() COMPLETED! - after: size={}", directWrapperTypes.size());
     }
@@ -77,8 +84,14 @@ public class WrapperTypeRegistry {
         boolean isNew = directWrapperTypes.add(typeInfo);
         
         // Aggiungo logging per tracciare le registrazioni
-        log.warn("🔍 REGISTRY LIFECYCLE: registerDirectWrapperType() - {}, isNew={}, size={}, hashCode={}", 
-            typeInfo.getWrapperSchemaName(), isNew, directWrapperTypes.size(), this.hashCode());
+        // log.warn("🔍 REGISTRY LIFECYCLE: registerDirectWrapperType() - {}, isNew={}, size={}, hashCode={}", 
+        //     typeInfo.getWrapperSchemaName(), isNew, directWrapperTypes.size(), this.hashCode());
+        
+        // 🎯 TRACE SPECIFICO PER AuthResponseDTO
+        if (dataClass.contains("AuthResponseDTO")) {
+            log.warn("🎯 FASE1-AuthResponseDTO: REGISTERED in registry! schema={}, isNew={}, size={}", 
+                typeInfo.getWrapperSchemaName(), isNew, directWrapperTypes.size());
+        }
         
         if (isNew) {
             // Store the complete schema reference for fast FASE 5 lookup
@@ -106,9 +119,17 @@ public class WrapperTypeRegistry {
         // log.warn("⚠️ REGISTRY: Trovati {} wrapper types registrati (directWrapperTypes.size={})", 
         //     directWrapperTypes.size(), directWrapperTypes.size());
         
+        // 🎯 TRACE SPECIFICO PER AuthResponseDTO
+        for (WrapperTypeInfo info : directWrapperTypes) {
+            if (info.dataClassName.contains("AuthResponseDTO")) {
+                log.warn("🎯 FASE2-AuthResponseDTO: FOUND in directWrapperTypes! schema={}", 
+                    info.getWrapperSchemaName());
+            }
+        }
+        
         // Aggiungo logging per tracciare il ciclo di vita del Registry
-        log.warn("🔍 REGISTRY LIFECYCLE: collectAllWrapperTypes() - directWrapperTypes.size={}, hashCode={}", 
-            directWrapperTypes.size(), this.hashCode());
+        // log.warn("🔍 REGISTRY LIFECYCLE: collectAllWrapperTypes() - directWrapperTypes.size={}, hashCode={}", 
+        //     directWrapperTypes.size(), this.hashCode());
         
         // for (WrapperTypeInfo info : directWrapperTypes) {
         //     log.warn("⚠️ REGISTRY: - {} ({})", info.getWrapperSchemaName(), info.wrapperType);
@@ -211,6 +232,65 @@ public class WrapperTypeRegistry {
         return wrapperSchemaNames.get(key);
     }
     
+    /**
+     * Register success responses for an operation (NEW)
+     * 
+     * @param methodSignature Signature del metodo (es: "UserController.getUser")
+     * @param responses Lista delle success responses (200, 201) per l'operation
+     */
+    public void registerSuccessResponses(String methodSignature, List<ResponseInfo> responses) {
+        if (responses != null && !responses.isEmpty()) {
+            operationSuccessResponses.put(methodSignature, responses);
+            
+            log.debug("🔍 REGISTRY: Registered {} success responses for operation: {}", 
+                responses.size(), methodSignature);
+        }
+    }
+
+    /**
+     * Register success responses for an operation by operationId (NEW)
+     * 
+     * @param operationId ID dell'operazione OpenAPI (es: "getTables")
+     * @param responses Lista delle success responses (200, 201) per l'operation
+     */
+    public void registerSuccessResponsesByOperationId(String operationId, List<ResponseInfo> responses) {
+        if (responses != null && !responses.isEmpty()) {
+            operationIdSuccessResponses.put(operationId, responses);
+            
+            log.debug("🔍 REGISTRY: Registered {} success responses for operationId: {}", 
+                responses.size(), operationId);
+        }
+    }
+
+    /**
+     * Get success responses for an operation (NEW)
+     * 
+     * @param methodSignature Signature del metodo
+     * @return Lista delle success responses registrate, o lista vuota se non trovate
+     */
+    public List<ResponseInfo> getSuccessResponses(String methodSignature) {
+        return operationSuccessResponses.getOrDefault(methodSignature, new java.util.ArrayList<>());
+    }
+
+    /**
+     * Get success responses for an operation by operationId (NEW)
+     * 
+     * @param operationId ID dell'operazione OpenAPI
+     * @return Lista delle success responses registrate, o lista vuota se non trovate
+     */
+    public List<ResponseInfo> getSuccessResponsesByOperationId(String operationId) {
+        return operationIdSuccessResponses.getOrDefault(operationId, new java.util.ArrayList<>());
+    }
+
+    /**
+     * Get all registered operation signatures with success responses (NEW)
+     * 
+     * @return Set di tutte le method signature registrate
+     */
+    public Set<String> getRegisteredOperations() {
+        return new HashSet<>(operationSuccessResponses.keySet());
+    }
+
     /**
      * Get the complete schema reference for a specific wrapper type combination
      * This is optimized for FASE 5 - eliminates need for x-wrapper-type extensions

@@ -255,9 +255,9 @@ public class BaseController {
      * Exceptions are handled by GlobalExceptionHandler
      */
     @ReadApiResponses
-    protected <T> ResponseEntity<ResponseWrapper<Page<T>>> executePaginated(String operation, OperationSupplier<Page<T>> supplier) {
+    protected <T> ResponseEntity<ResponseWrapper<List<T>>> executePaginated(String operation, OperationSupplier<Page<T>> supplier) {
         Page<T> page = supplier.get();
-        return ResponseEntity.ok(ResponseWrapper.success(page, 
+        return ResponseEntity.ok(ResponseWrapper.successPage(page, 
             String.format("Page %d of %d (%d total items)", 
                 page.getNumber() + 1, page.getTotalPages(), page.getTotalElements())));
     }
@@ -267,9 +267,9 @@ public class BaseController {
      * Exceptions are handled by GlobalExceptionHandler
      */
     @ReadApiResponses
-    protected <T> ResponseEntity<ResponseWrapper<Page<T>>> executePaginated(String operation, String successMessage, OperationSupplier<Page<T>> supplier) {
+    protected <T> ResponseEntity<ResponseWrapper<List<T>>> executePaginated(String operation, String successMessage, OperationSupplier<Page<T>> supplier) {
         Page<T> page = supplier.get();
-        return ResponseEntity.ok(ResponseWrapper.success(page, successMessage));
+        return ResponseEntity.ok(ResponseWrapper.successPage(page, successMessage));
     }
 
     /**

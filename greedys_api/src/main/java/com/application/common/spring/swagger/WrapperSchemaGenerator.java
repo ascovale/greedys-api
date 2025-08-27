@@ -1,6 +1,6 @@
+
 package com.application.common.spring.swagger;
 
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -42,11 +42,17 @@ public class WrapperSchemaGenerator {
         String wrapperSchemaName = wrapperInfo.getWrapperSchemaName();
         
         if (registry.getWrapperSchemaName(wrapperInfo.dataClassName, wrapperInfo.wrapperType) != null) {
-            log.debug("Schema wrapper {} già generato, saltato", wrapperSchemaName);
+            //log.debug("Schema wrapper {} già generato, saltato", wrapperSchemaName);
+            if (wrapperInfo.dataClassName.contains("AuthResponseDTO")) {
+                System.out.println("🔴 AuthResponseDTO: Schema wrapper " + wrapperSchemaName + " già generato, saltato");
+            }
             return;
         }
 
-        log.debug("Generazione schema wrapper: {} per tipo {}", wrapperSchemaName, wrapperInfo.wrapperType);
+        //log.debug("Generazione schema wrapper: {} per tipo {}", wrapperSchemaName, wrapperInfo.wrapperType);
+        if (wrapperInfo.dataClassName.contains("AuthResponseDTO")) {
+            System.out.println("🟢 AuthResponseDTO: Generazione schema wrapper: " + wrapperSchemaName + " per tipo " + wrapperInfo.wrapperType);
+        }
         
         switch (wrapperInfo.wrapperType) {
             case "DTO":
@@ -67,7 +73,6 @@ public class WrapperSchemaGenerator {
      * Genera schema per ResponseWrapper<T>
      * Struttura: { success: boolean, message: string, data: $ref<T> }
      */
-    @SuppressWarnings("unchecked")
     private void generateResponseWrapperSchema(WrapperTypeInfo wrapperInfo, @SuppressWarnings("rawtypes") Map<String, Schema> schemas, WrapperTypeRegistry registry) {
         String wrapperSchemaName = wrapperInfo.getWrapperSchemaName();
         String dataTypeName = wrapperInfo.getDataTypeSimpleName();
@@ -242,23 +247,6 @@ public class WrapperSchemaGenerator {
         log.debug("Schema Page generato: {} -> page of $ref {}", wrapperSchemaName, dataTypeName);
     }
 
-    /**
-     * Estrae tutti i tipi T unici dai wrapper types
-     */
-    private Set<String> extractUniqueDataTypes(Set<WrapperTypeInfo> wrapperTypes) {
-        Set<String> uniqueDataTypes = new HashSet<>();
-        
-        for (WrapperTypeInfo wrapperInfo : wrapperTypes) {
-            String dataType = wrapperInfo.dataClassName;
-            if (dataType != null && !dataType.isEmpty()) {
-                uniqueDataTypes.add(dataType);
-                log.debug("Tipo dati estratto: {}", dataType);
-            }
-        }
-        
-        log.info("Estratti {} tipi dati unici", uniqueDataTypes.size());
-        return uniqueDataTypes;
-    }
     
     /**
      * Determina il riferimento metadata specifico per il tipo wrapper

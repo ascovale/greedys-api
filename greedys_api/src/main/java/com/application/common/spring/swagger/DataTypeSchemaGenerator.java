@@ -40,10 +40,21 @@ public class DataTypeSchemaGenerator {
         // Extract all unique T types from wrapper declarations
         Set<String> uniqueDataTypes = extractUniqueDataTypes(wrapperTypes);
         
-        System.out.println("DataTypeSchemaGenerator: Generating schemas for " + uniqueDataTypes.size() + " unique data types");
+        // 🎯 TRACE SPECIFICO PER AuthResponseDTO
+        for (String dataType : uniqueDataTypes) {
+            if (dataType.contains("AuthResponseDTO")) {
+                log.warn("🎯 FASE3-AuthResponseDTO: FOUND in uniqueDataTypes! dataType={}", dataType);
+            }
+        }
+        
+        // System.out.println("DataTypeSchemaGenerator: Generating schemas for " + uniqueDataTypes.size() + " unique data types");
         
         // Generate SpringDoc schema for each unique T type
         for (String dataClassName : uniqueDataTypes) {
+            // 🎯 TRACE SPECIFICO PER AuthResponseDTO  
+            if (dataClassName.contains("AuthResponseDTO")) {
+                log.warn("🎯 FASE3-AuthResponseDTO: PROCESSING dataClass={}", dataClassName);
+            }
             generateSingleDataTypeSchema(dataClassName, schemas, registry);
         }
     }
@@ -74,7 +85,12 @@ public class DataTypeSchemaGenerator {
             if (dataTypeSchema != null) {
                 schemas.put(simpleClassName, dataTypeSchema);
                 registry.registerDataType(dataClassName);
-                System.out.println("DataTypeSchemaGenerator: Generated SpringDoc schema for " + simpleClassName);
+                // System.out.println("DataTypeSchemaGenerator: Generated SpringDoc schema for " + simpleClassName);
+                
+                // 🎯 TRACE SPECIFICO PER AuthResponseDTO
+                if (dataClassName.contains("AuthResponseDTO")) {
+                    log.warn("🎯 FASE3-AuthResponseDTO: SCHEMA GENERATED! simpleClassName={}", simpleClassName);
+                }
                 
                 // SpringDoc may generate additional schemas for nested types
                 addReferencedSchemas(dataClassName, schemas);
