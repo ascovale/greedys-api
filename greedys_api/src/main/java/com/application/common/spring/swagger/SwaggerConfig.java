@@ -9,6 +9,8 @@ import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -19,7 +21,7 @@ import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 
 @Configuration
-public class SwaggerConfig {
+public class SwaggerConfig implements WebMvcConfigurer {
 
     // Package scanning configuration for DTOs - TEMPORARY: all DTOs until proper reorganization
     private static final List<String> ALL_DTO_PACKAGES = Arrays.asList(
@@ -28,6 +30,16 @@ public class SwaggerConfig {
         "com.application.restaurant.web.dto",
         "com.application.common.web.dto"
     );
+
+    /**
+     * Configura il redirect per utilizzare la nostra interfaccia Swagger personalizzata
+     */
+    @Override
+    public void addViewControllers(ViewControllerRegistry registry) {
+        // Redirect da /swagger-ui.html alla nostra interfaccia customizzata
+        registry.addRedirectViewController("/swagger-ui.html", "/swagger-ui/index.html");
+        // Non serve il redirect per /swagger-ui/ perché ora Spring serve direttamente i file statici
+    }
 
     @Bean
     OpenAPI baseOpenAPI() {
