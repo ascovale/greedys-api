@@ -2,7 +2,6 @@ package com.application.restaurant.controller;
 
 import java.util.List;
 
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -37,7 +36,7 @@ public class RestaurantNotificationController extends BaseController {
 
     @Operation(summary = "Get unread notifications", description = "Returns a pageable list of unread notifications")
     @GetMapping("/unread/{page}/{size}")
-    public ResponseEntity<ResponseWrapper<Page<RestaurantNotificationDTO>>> getUnreadNotifications(
+    public ResponseEntity<ResponseWrapper<List<RestaurantNotificationDTO>>> getUnreadNotifications(
             @PathVariable int page,
             @PathVariable int size) {
         return executePaginated("get unread notifications", () -> {
@@ -56,7 +55,7 @@ public class RestaurantNotificationController extends BaseController {
 
     @Operation(summary = "Get all notifications", description = "Returns a pageable list of all notifications")
     @GetMapping("/all/{page}/{size}")
-    public ResponseEntity<ResponseWrapper<Page<RestaurantNotificationDTO>>> getAllNotifications(
+    public ResponseEntity<ResponseWrapper<List<RestaurantNotificationDTO>>> getAllNotifications(
             @PathVariable int page,
             @PathVariable int size) {
         return executePaginated("get all notifications", () -> {

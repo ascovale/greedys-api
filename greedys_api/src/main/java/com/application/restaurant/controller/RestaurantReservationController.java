@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -129,7 +128,7 @@ public class RestaurantReservationController extends BaseController {
 
 	@Operation(summary = "Get all reservations of a restaurant with pagination", description = "Retrieve all reservations of a restaurant with pagination")
 	@GetMapping(value = "/pageable")
-	public ResponseEntity<ResponseWrapper<Page<ReservationDTO>>> getReservationsPageable(
+	public ResponseEntity<ResponseWrapper<List<ReservationDTO>>> getReservationsPageable(
 			@AuthenticationPrincipal RUser rUser,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end,

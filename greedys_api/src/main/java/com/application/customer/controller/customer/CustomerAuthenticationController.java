@@ -33,14 +33,14 @@ public class CustomerAuthenticationController extends BaseController {
     
     public ResponseEntity<ResponseWrapper<AuthResponseDTO>> createAuthenticationToken(
             @RequestBody AuthRequestDTO authenticationRequest) {
-        return execute("customer login", () -> customerAuthenticationService.login(authenticationRequest));
+        return executeCreate("customer login", () -> customerAuthenticationService.login(authenticationRequest));
     }
 
     @Operation(summary = "Refresh authentication token", description = "Uses refresh token to get new access and refresh tokens")
     @PostMapping(value = "/refresh", produces = "application/json")
     public ResponseEntity<ResponseWrapper<AuthResponseDTO>> refreshAuthenticationToken(
             @RequestBody RefreshTokenRequestDTO refreshRequest) {
-        return execute("customer refresh token", () -> 
+        return executeCreate("customer refresh token", () -> 
             customerAuthenticationService.refreshToken(refreshRequest.getRefreshToken()));
     }
 }

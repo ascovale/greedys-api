@@ -53,6 +53,14 @@ public class BaseMetadataSchemaProvider {
         @SuppressWarnings("rawtypes")
         Map<String, Schema> schemas = openApi.getComponents().getSchemas();
         
+        // ✅ NEW: Genera schema per ResponseWrapperError se non esiste
+        if (!schemas.containsKey("ResponseWrapperError")) {
+            generateResponseWrapperErrorSchema(schemas);
+        }
+        
+        // ✅ NEW: Genera schemi per tipi primitivi se non esistono
+        generatePrimitiveTypeSchemas(schemas);
+        
         // Genera schema per ErrorDetails se non esiste
         if (!schemas.containsKey("ErrorDetails")) {
             generateErrorDetailsSchema(schemas);
@@ -281,5 +289,86 @@ public class BaseMetadataSchemaProvider {
         } catch (Exception e) {
             log.warn("Errore generazione schema PageMetadata: {}", e.getMessage());
         }
+    }
+    
+    /**
+     * ✅ NEW: Genera schema per ResponseWrapperError
+     * Schema dedicato per le error responses (400, 401, 403, 404, 409, 500)
+     */
+    @SuppressWarnings("rawtypes")
+    private void generateResponseWrapperErrorSchema(Map<String, Schema> schemas) {
+        io.swagger.v3.oas.models.media.ObjectSchema errorWrapperSchema = new io.swagger.v3.oas.models.media.ObjectSchema();
+        errorWrapperSchema
+            .title("API Error Response")
+            .description("Standard API response wrapper for HTTP 4xx and 5xx error cases")
+            .addProperty("success", new io.swagger.v3.oas.models.media.BooleanSchema()
+                .example(false)
+                .description("Always false for error responses"))
+            .addProperty("data", new io.swagger.v3.oas.models.media.Schema<>()
+                .nullable(true)
+                .description("Always null for error responses")
+                .example(null))
+            .addProperty("message", new io.swagger.v3.oas.models.media.StringSchema()
+                .description("Human-readable error message")
+                .example("Customer not found"))
+            .addProperty("timestamp", new io.swagger.v3.oas.models.media.StringSchema()
+                .format("date-time")
+                .description("Error occurrence timestamp")
+                .example("2023-12-25T10:30:00Z"))
+            .addProperty("error", new io.swagger.v3.oas.models.media.Schema<>()
+                .$ref("#/components/schemas/ErrorDetails")
+                .description("Structured error information"))
+            .addProperty("metadata", new io.swagger.v3.oas.models.media.Schema<>()
+                .$ref("#/components/schemas/SingleMetadata")
+                .description("Additional error context"));
+        
+        errorWrapperSchema.required(java.util.Arrays.asList("success", "timestamp"));
+        
+        schemas.put("ResponseWrapperError", errorWrapperSchema);
+        log.info("✅ GENERATOR: Schema ResponseWrapperError creato per error responses");
+    }
+    
+    /**
+     * ✅ NEW: Genera schemi per tipi primitivi mancanti
+     * Risolve i problemi di generazione per Boolean, String, LocalDate, Long
+     */
+    @SuppressWarnings("rawtypes")
+    private void generatePrimitiveTypeSchemas(Map<String, Schema> schemas) {
+        // Boolean schema
+        if (!schemas.containsKey("Boolean")) {
+            io.swagger.v3.oas.models.media.BooleanSchema booleanSchema = new io.swagger.v3.oas.models.media.BooleanSchema();
+            booleanSchema.description("Boolean value").example(true);
+            schemas.put("Boolean", booleanSchema);
+        }
+        
+        // String schema  
+        if (!schemas.containsKey("String")) {
+            io.swagger.v3.oas.models.media.StringSchema stringSchema = new io.swagger.v3.oas.models.media.StringSchema();
+            stringSchema.description("String value").example("Sample text");
+            schemas.put("String", stringSchema);
+        }
+        
+        // LocalDate schema
+        if (!schemas.containsKey("LocalDate")) {
+            io.swagger.v3.oas.models.media.StringSchema localDateSchema = new io.swagger.v3.oas.models.media.StringSchema();
+            localDateSchema.format("date").description("ISO 8601 date format").example("2023-12-25");
+            schemas.put("LocalDate", localDateSchema);
+        }
+        
+        // Long schema
+        if (!schemas.containsKey("Long")) {
+            io.swagger.v3.oas.models.media.IntegerSchema longSchema = new io.swagger.v3.oas.models.media.IntegerSchema();
+            longSchema.format("int64").description("Long integer value").example(123456789L);
+            schemas.put("Long", longSchema);
+        }
+        
+        // Integer schema
+        if (!schemas.containsKey("Integer")) {
+            io.swagger.v3.oas.models.media.IntegerSchema integerSchema = new io.swagger.v3.oas.models.media.IntegerSchema();
+            integerSchema.format("int32").description("Integer value").example(12345);
+            schemas.put("Integer", integerSchema);
+        }
+        
+        log.debug("✅ GENERATOR: Schemi primitivi verificati/aggiunti (Boolean, String, LocalDate, Long, Integer)");
     }
 }
