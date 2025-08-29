@@ -1,7 +1,6 @@
 package com.application.customer.controller;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -66,7 +65,7 @@ public class CustomerNotificationController extends BaseController {
 
     @Operation(summary = "Get unread notifications", description = "Returns a pageable list of unread notifications")
     @GetMapping("/unread/{page}/{size}")
-    public ResponseEntity<ResponseWrapper<List<CustomerNotificationDTO>>> getUnreadNotifications(@PathVariable int page,
+    public ResponseEntity<ResponseWrapper<Page<CustomerNotificationDTO>>> getUnreadNotifications(@PathVariable int page,
             @PathVariable int size) {
         Pageable pageable = PageRequest.of(page, size);
         return executePaginated("getUnreadNotifications", () -> notificationService.getUnreadNotificationsDTO(pageable));
@@ -74,7 +73,7 @@ public class CustomerNotificationController extends BaseController {
 
     @Operation(summary = "Get all notifications", description = "Returns a pageable list of all notifications")
     @GetMapping("/all/{page}/{size}")
-    public ResponseEntity<ResponseWrapper<List<CustomerNotificationDTO>>> getAllNotifications(@PathVariable int page,
+    public ResponseEntity<ResponseWrapper<Page<CustomerNotificationDTO>>> getAllNotifications(@PathVariable int page,
             @PathVariable int size) {
         Pageable pageable = PageRequest.of(page, size);
         return executePaginated("getAllNotifications", () -> notificationService.getAllNotificationsDTO(pageable));

@@ -2,6 +2,7 @@ package com.application.customer.controller.customer;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -59,7 +60,7 @@ public class CustomerAllergyController extends BaseController {
 
     @Operation(summary = "Get paginated allergies of customer", description = "Returns paginated allergies of the currently authenticated customer")
     @GetMapping("/paginated")
-    public ResponseEntity<ResponseWrapper<List<AllergyDTO>>> getPaginatedAllergiesOfCustomer(@RequestParam int page, @RequestParam int size) {
+    public ResponseEntity<ResponseWrapper<Page<AllergyDTO>>> getPaginatedAllergiesOfCustomer(@RequestParam int page, @RequestParam int size) {
         return executePaginated("getPaginatedAllergiesOfCustomer", () -> customerService.getPaginatedAllergies(page, size));
     }
 

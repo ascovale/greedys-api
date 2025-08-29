@@ -1,7 +1,6 @@
 package com.application.admin.controller;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -64,7 +63,7 @@ public class AdminCustomerController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_READ')")
     @Operation(summary = "List customers with pagination", description = "Returns a paginated list of customers")
     @GetMapping("/customers/page")
-    public ResponseEntity<ResponseWrapper<List<CustomerDTO>>> listCustomersWithPagination(@RequestParam int page, @RequestParam int size) {
+    public ResponseEntity<ResponseWrapper<Page<CustomerDTO>>> listCustomersWithPagination(@RequestParam int page, @RequestParam int size) {
         return executePaginated("list customers", () -> adminCustomerService.findAll(PageRequest.of(page, size)));
         
     }
