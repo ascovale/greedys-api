@@ -220,7 +220,8 @@ public class WrapperSchemaGeneratorHelper {
     }
     
     /**
-     * ✅ NEW: Crea schema specifico per ResponseWrapper<T>
+     * ✅ FIXED: Crea schema specifico per ResponseWrapper<T>
+     * Gestisce correttamente i tipi primitivi usando type invece di $ref
      */
     @SuppressWarnings("unchecked")
     private Schema<?> createResponseWrapperSchema(String simpleClassName, String schemaName) {
@@ -229,9 +230,7 @@ public class WrapperSchemaGeneratorHelper {
             .description("API response containing " + simpleClassName + " data or error details")
             .addProperty("success", new BooleanSchema()
                 .description("Indicates if the operation was successful"))
-            .addProperty("data", new Schema<>()
-                .$ref("#/components/schemas/" + simpleClassName)
-                .description("Response data when success=true"))
+            .addProperty("data", createDataSchemaForType(simpleClassName))
             .addProperty("message", new StringSchema()
                 .description("Response message"))
             .addProperty("timestamp", new StringSchema()
@@ -247,7 +246,8 @@ public class WrapperSchemaGeneratorHelper {
     }
     
     /**
-     * ✅ NEW: Crea schema specifico per ResponseWrapper<List<T>>
+     * ✅ FIXED: Crea schema specifico per ResponseWrapper<List<T>>
+     * Gestisce correttamente i tipi primitivi usando type invece di $ref
      */
     @SuppressWarnings("unchecked")
     private Schema<?> createResponseWrapperListSchema(String simpleClassName, String schemaName) {
@@ -258,7 +258,7 @@ public class WrapperSchemaGeneratorHelper {
                 .description("Indicates if the operation was successful"))
             .addProperty("data", new ArraySchema()
                 .description("List of " + simpleClassName + " when success=true")
-                .items(new Schema<>().$ref("#/components/schemas/" + simpleClassName)))
+                .items(createDataSchemaForType(simpleClassName)))
             .addProperty("message", new StringSchema()
                 .description("Response message"))
             .addProperty("timestamp", new StringSchema()
@@ -274,7 +274,8 @@ public class WrapperSchemaGeneratorHelper {
     }
     
     /**
-     * ✅ NEW: Crea schema specifico per ResponseWrapper<Page<T>>
+     * ✅ FIXED: Crea schema specifico per ResponseWrapper<Page<T>>
+     * Gestisce correttamente i tipi primitivi usando type invece di $ref
      */
     @SuppressWarnings("unchecked")
     private Schema<?> createResponseWrapperPageSchema(String simpleClassName, String schemaName) {
@@ -282,7 +283,7 @@ public class WrapperSchemaGeneratorHelper {
             .description("Page data with content and pagination info")
             .addProperty("content", new ArraySchema()
                 .description("Page content items")
-                .items(new Schema<>().$ref("#/components/schemas/" + simpleClassName)))
+                .items(createDataSchemaForType(simpleClassName)))
             .addProperty("totalElements", new IntegerSchema().format("int64"))
             .addProperty("totalPages", new IntegerSchema().format("int32"))
             .addProperty("size", new IntegerSchema().format("int32"))
@@ -334,6 +335,59 @@ public class WrapperSchemaGeneratorHelper {
                 .$ref("#/components/schemas/SingleMetadata")
                 .description("Response metadata"))
             .required(Arrays.asList("success", "timestamp"));
+    }
+    
+    /**
+     * ✅ NEW: Verifica se un tipo è primitivo (non necessita di $ref)
+     */
+    private boolean isPrimitiveType(String simpleClassName) {
+        return switch (simpleClassName.toLowerCase()) {
+            case "string" -> true;
+            case "long" -> true;
+            case "integer" -> true;
+            case "boolean" -> true;
+            case "localdate" -> true;
+            case "localdatetime" -> true;
+            default -> false;
+        };
+    }
+    
+    /**
+     * ✅ NEW: Crea schema per il campo data basato sul tipo
+     * Se è un tipo primitivo usa type direttamente, altrimenti usa $ref
+     */
+    @SuppressWarnings("unchecked")
+    private Schema<?> createDataSchemaForType(String simpleClassName) {
+        if (isPrimitiveType(simpleClassName)) {
+            // Per tipi primitivi, usa type direttamente
+            return switch (simpleClassName.toLowerCase()) {
+                case "string" -> new StringSchema()
+                    .description("Response data when success=true");
+                case "long" -> new IntegerSchema()
+                    .format("int64")
+                    .description("Response data when success=true");
+                case "integer" -> new IntegerSchema()
+                    .format("int32")
+                    .description("Response data when success=true");
+                case "boolean" -> new BooleanSchema()
+                    .description("Response data when success=true");
+                case "localdate" -> new StringSchema()
+                    .format("date")
+                    .description("Response data when success=true");
+                case "localdatetime" -> new StringSchema()
+                    .format("date-time")
+                    .description("Response data when success=true");
+                default -> {
+                    log.warn("⚠️ Tipo primitivo non gestito: {}, uso String", simpleClassName);
+                    yield new StringSchema().description("Response data when success=true");
+                }
+            };
+        } else {
+            // Per tipi complessi, usa $ref
+            return new Schema<>()
+                .$ref("#/components/schemas/" + simpleClassName)
+                .description("Response data when success=true");
+        }
     }
 
 }

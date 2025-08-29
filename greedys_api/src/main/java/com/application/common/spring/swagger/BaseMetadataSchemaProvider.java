@@ -58,8 +58,8 @@ public class BaseMetadataSchemaProvider {
             generateResponseWrapperErrorSchema(schemas);
         }
         
-        // ✅ NEW: Genera schemi per tipi primitivi se non esistono
-        generatePrimitiveTypeSchemas(schemas);
+        // ✅ FIXED: Genera solo LocalDate come schema custom (non i primitivi)
+        generateCustomTypeSchemas(schemas);
         
         // Genera schema per ErrorDetails se non esiste
         if (!schemas.containsKey("ErrorDetails")) {
@@ -329,46 +329,19 @@ public class BaseMetadataSchemaProvider {
     }
     
     /**
-     * ✅ NEW: Genera schemi per tipi primitivi mancanti
-     * Risolve i problemi di generazione per Boolean, String, LocalDate, Long
+     * ✅ FIXED: Genera solo LocalDate come schema custom
+     * I tipi primitivi (String, Long, Boolean, Integer) NON devono essere schemas separati
+     * ma usati direttamente come type nei ResponseWrapper
      */
     @SuppressWarnings("rawtypes")
-    private void generatePrimitiveTypeSchemas(Map<String, Schema> schemas) {
-        // Boolean schema
-        if (!schemas.containsKey("Boolean")) {
-            io.swagger.v3.oas.models.media.BooleanSchema booleanSchema = new io.swagger.v3.oas.models.media.BooleanSchema();
-            booleanSchema.description("Boolean value").example(true);
-            schemas.put("Boolean", booleanSchema);
-        }
-        
-        // String schema  
-        if (!schemas.containsKey("String")) {
-            io.swagger.v3.oas.models.media.StringSchema stringSchema = new io.swagger.v3.oas.models.media.StringSchema();
-            stringSchema.description("String value").example("Sample text");
-            schemas.put("String", stringSchema);
-        }
-        
-        // LocalDate schema
+    private void generateCustomTypeSchemas(Map<String, Schema> schemas) {
+        // LocalDate schema - è l'unico che serve come schema custom
         if (!schemas.containsKey("LocalDate")) {
             io.swagger.v3.oas.models.media.StringSchema localDateSchema = new io.swagger.v3.oas.models.media.StringSchema();
             localDateSchema.format("date").description("ISO 8601 date format").example("2023-12-25");
             schemas.put("LocalDate", localDateSchema);
         }
         
-        // Long schema
-        if (!schemas.containsKey("Long")) {
-            io.swagger.v3.oas.models.media.IntegerSchema longSchema = new io.swagger.v3.oas.models.media.IntegerSchema();
-            longSchema.format("int64").description("Long integer value").example(123456789L);
-            schemas.put("Long", longSchema);
-        }
-        
-        // Integer schema
-        if (!schemas.containsKey("Integer")) {
-            io.swagger.v3.oas.models.media.IntegerSchema integerSchema = new io.swagger.v3.oas.models.media.IntegerSchema();
-            integerSchema.format("int32").description("Integer value").example(12345);
-            schemas.put("Integer", integerSchema);
-        }
-        
-        log.debug("✅ GENERATOR: Schemi primitivi verificati/aggiunti (Boolean, String, LocalDate, Long, Integer)");
+        log.debug("✅ GENERATOR: Schema LocalDate custom verificato/aggiunto");
     }
 }
