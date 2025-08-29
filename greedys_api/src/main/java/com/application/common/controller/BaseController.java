@@ -90,7 +90,7 @@ public class BaseController {
      * Create a successful page response with data
      */
     @ReadApiResponses
-    protected <T> ResponseEntity<ResponseWrapper<List<T>>> okPage(Page<T> page) {
+    protected <T> ResponseEntity<ResponseWrapper<Page<T>>> okPage(Page<T> page) {
         return ResponseEntity.ok(ResponseWrapper.successPage(page));
     }
 
@@ -98,7 +98,7 @@ public class BaseController {
      * Create a successful page response with data and custom message
      */
     @ReadApiResponses
-    protected <T> ResponseEntity<ResponseWrapper<List<T>>> okPage(Page<T> page, String message) {
+    protected <T> ResponseEntity<ResponseWrapper<Page<T>>> okPage(Page<T> page, String message) {
         return ResponseEntity.ok(ResponseWrapper.successPage(page, message));
     }
 
@@ -250,12 +250,12 @@ public class BaseController {
         return okList(result, successMessage);
     }
 
-    /**
-     * Execute a paginated read operation with standardized error handling and pagination metadata
+        /**
+     * Execute a paginated read operation with automatic message
      * Exceptions are handled by GlobalExceptionHandler
      */
     @ReadApiResponses
-    protected <T> ResponseEntity<ResponseWrapper<List<T>>> executePaginated(String operation, OperationSupplier<Page<T>> supplier) {
+    protected <T> ResponseEntity<ResponseWrapper<Page<T>>> executePaginated(String operation, OperationSupplier<Page<T>> supplier) {
         Page<T> page = supplier.get();
         return ResponseEntity.ok(ResponseWrapper.successPage(page, 
             String.format("Page %d of %d (%d total items)", 
@@ -267,7 +267,7 @@ public class BaseController {
      * Exceptions are handled by GlobalExceptionHandler
      */
     @ReadApiResponses
-    protected <T> ResponseEntity<ResponseWrapper<List<T>>> executePaginated(String operation, String successMessage, OperationSupplier<Page<T>> supplier) {
+    protected <T> ResponseEntity<ResponseWrapper<Page<T>>> executePaginated(String operation, String successMessage, OperationSupplier<Page<T>> supplier) {
         Page<T> page = supplier.get();
         return ResponseEntity.ok(ResponseWrapper.successPage(page, successMessage));
     }

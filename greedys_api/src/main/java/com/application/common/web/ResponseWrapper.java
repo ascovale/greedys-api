@@ -102,20 +102,20 @@ public class ResponseWrapper<T> {
     }
 
     // Page success responses
-    public static <T> ResponseWrapper<List<T>> successPage(Page<T> page) {
-        return ResponseWrapper.<List<T>>builder()
+    public static <T> ResponseWrapper<Page<T>> successPage(Page<T> page) {
+        return ResponseWrapper.<Page<T>>builder()
                 .success(true)
-                .data(page.getContent())
+                .data(page)
                 .message(String.format("Page %d of %d (%d total items)", 
                         page.getNumber() + 1, page.getTotalPages(), page.getTotalElements()))
                 .metadata(PageMetadata.forPage(page))
                 .build();
     }
 
-    public static <T> ResponseWrapper<List<T>> successPage(Page<T> page, String message) {
-        return ResponseWrapper.<List<T>>builder()
+    public static <T> ResponseWrapper<Page<T>> successPage(Page<T> page, String message) {
+        return ResponseWrapper.<Page<T>>builder()
                 .success(true)
-                .data(page.getContent())
+                .data(page)
                 .message(message)
                 .metadata(PageMetadata.forPage(page))
                 .build();
