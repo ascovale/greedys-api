@@ -66,6 +66,11 @@ public class WrapperTypeOperationCustomizer implements OperationCustomizer {
                 autoDetected.wrapperType
             );
             
+            // ✅ NEW: Add x-generic-wrapper extension for ResponseWrapper endpoints
+            operation.addExtension("x-generic-wrapper", "ResponseWrapper");
+            log.debug("✅ Added x-generic-wrapper extension to operation: {}", 
+                operation.getOperationId() != null ? operation.getOperationId() : methodSig);
+            
             // log.warn("✅ FASE1: Registered {} -> {} for {}.{}", 
             //     autoDetected.wrapperType, 
             //     autoDetected.dataClassName,
