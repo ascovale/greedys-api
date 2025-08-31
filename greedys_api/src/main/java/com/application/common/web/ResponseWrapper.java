@@ -35,8 +35,6 @@ public class ResponseWrapper<T> {
     @Schema(description = "Response data")    
     private T data;
 
-    @Schema(description = "Error details (present only if success = false)")
-    private ErrorDetails error;
 
     @Schema(description = "Response timestamp")
     @Builder.Default
@@ -151,102 +149,85 @@ public class ResponseWrapper<T> {
     }
 
     // Error responses
-    public static <T> ResponseWrapper<T> error(String message) {
-        return ResponseWrapper.<T>builder()
-                .success(false)
-                .message(message)
-                .error(ErrorDetails.builder()
-                        .build())
-                .build();
-    }
+        public static ResponseWrapper<ErrorDetails> error(String message) {
+                return ResponseWrapper.<ErrorDetails>builder()
+                                .success(false)
+                                .message(message)
+                                .data(ErrorDetails.builder().build())
+                                .build();
+        }
 
-    public static <T> ResponseWrapper<T> badRequest(String message, String errorCode) {
-        return ResponseWrapper.<T>builder()
-                .success(false)
-                .message(message)
-                .error(ErrorDetails.builder()
-                        .code(errorCode)
-                        .build())
-                .build();
-    }
+        public static ResponseWrapper<ErrorDetails> badRequest(String message, String errorCode) {
+                return ResponseWrapper.<ErrorDetails>builder()
+                                .success(false)
+                                .message(message)
+                                .data(ErrorDetails.builder().code(errorCode).build())
+                                .build();
+        }
 
-    public static <T> ResponseWrapper<T> notFound(String message) {
-        return ResponseWrapper.<T>builder()
-                .success(false)
-                .message(message)
-                .error(ErrorDetails.builder()
-                        .code("NOT_FOUND")
-                        .build())
-                .build();
-    }
+        public static ResponseWrapper<ErrorDetails> notFound(String message) {
+                return ResponseWrapper.<ErrorDetails>builder()
+                                .success(false)
+                                .message(message)
+                                .data(ErrorDetails.builder().code("NOT_FOUND").build())
+                                .build();
+        }
 
-    public static <T> ResponseWrapper<T> conflict(String message) {
-        return ResponseWrapper.<T>builder()
-                .success(false)
-                .message(message)
-                .error(ErrorDetails.builder()
-                        .code("CONFLICT")
-                        .build())
-                .build();
-    }
+        public static ResponseWrapper<ErrorDetails> conflict(String message) {
+                return ResponseWrapper.<ErrorDetails>builder()
+                                .success(false)
+                                .message(message)
+                                .data(ErrorDetails.builder().code("CONFLICT").build())
+                                .build();
+        }
 
-    public static <T> ResponseWrapper<T> unauthorized(String message) {
-        return ResponseWrapper.<T>builder()
-                .success(false)
-                .message(message)
-                .error(ErrorDetails.builder()
-                        .code("UNAUTHORIZED")
-                        .build())
-                .build();
-    }
+        public static ResponseWrapper<ErrorDetails> unauthorized(String message) {
+                return ResponseWrapper.<ErrorDetails>builder()
+                                .success(false)
+                                .message(message)
+                                .data(ErrorDetails.builder().code("UNAUTHORIZED").build())
+                                .build();
+        }
 
-    public static <T> ResponseWrapper<T> forbidden(String message) {
-        return ResponseWrapper.<T>builder()
-                .success(false)
-                .message(message)
-                .error(ErrorDetails.builder()
-                        .code("FORBIDDEN")
-                        .build())
-                .build();
-    }
+        public static ResponseWrapper<ErrorDetails> forbidden(String message) {
+                return ResponseWrapper.<ErrorDetails>builder()
+                                .success(false)
+                                .message(message)
+                                .data(ErrorDetails.builder().code("FORBIDDEN").build())
+                                .build();
+        }
 
-    public static <T> ResponseWrapper<T> internalServerError(String message) {
-        return ResponseWrapper.<T>builder()
-                .success(false)
-                .message(message)
-                .error(ErrorDetails.builder()
-                        .code("INTERNAL_SERVER_ERROR")
-                        .build())
-                .build();
-    }
+        public static ResponseWrapper<ErrorDetails> internalServerError(String message) {
+                return ResponseWrapper.<ErrorDetails>builder()
+                                .success(false)
+                                .message(message)
+                                .data(ErrorDetails.builder().code("INTERNAL_SERVER_ERROR").build())
+                                .build();
+        }
 
     // Error responses with custom status codes
-    public static <T> ResponseWrapper<T> errorWithStatus(int statusCode, String message, String errorCode) {
-        return ResponseWrapper.<T>builder()
-                .success(false)
-                .message(message)
-                .error(ErrorDetails.builder()
-                        .code(errorCode)
-                        .build())
-                .build();
-    }
+        public static ResponseWrapper<ErrorDetails> errorWithStatus(int statusCode, String message, String errorCode) {
+                return ResponseWrapper.<ErrorDetails>builder()
+                                .success(false)
+                                .message(message)
+                                .data(ErrorDetails.builder().code(errorCode).build())
+                                .build();
+        }
 
-    public static <T> ResponseWrapper<T> error(String message, String code) {
-        return ResponseWrapper.<T>builder()
-                .success(false)
-                .message(message)
-                .error(ErrorDetails.builder()
-                        .code(code)
-                        .build())
-                .build();
-    }
+        public static ResponseWrapper<ErrorDetails> error(String message, String code) {
+                return ResponseWrapper.<ErrorDetails>builder()
+                                .success(false)
+                                .message(message)
+                                .data(ErrorDetails.builder().code(code).build())
+                                .build();
+        }
 
-    public static <T> ResponseWrapper<T> error(ErrorDetails error) {
-        return ResponseWrapper.<T>builder()
-                .success(false)
-                .message("An error occurred")  // Messaggio di fallback se non specificato
-                .error(error)
-                .build();
-    }
+        public static ResponseWrapper<ErrorDetails> error(ErrorDetails error) {
+                return ResponseWrapper.<ErrorDetails>builder()
+                                .success(false)
+                                .message("An error occurred")  // Messaggio di fallback se non specificato
+                                .data(error)
+                                .build();
+        }
 
 }

@@ -15,7 +15,15 @@ import com.application.common.web.ResponseWrapper;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Base controller with standardized response methods using unified ResponseWrapper
+ * Base controller with standardized response methods using unified ResponseWrapper.
+ * 
+ * This controller provides only SUCCESS response methods and execution wrappers.
+ * ERROR handling is delegated to GlobalExceptionHandler through thrown exceptions.
+ * 
+ * Controllers should:
+ * - Use the success response methods (ok, created, okList, etc.) for successful operations
+ * - Use the execute methods to wrap business logic that may throw exceptions
+ * - Let exceptions bubble up to GlobalExceptionHandler instead of handling them locally
  */
 @Controller
 @Slf4j
@@ -102,63 +110,7 @@ public class BaseController {
         return ResponseEntity.ok(ResponseWrapper.successPage(page, message));
     }
 
-    // ===================== ERROR RESPONSES ======================
 
-    /**
-     * Create a bad request response (400)
-     */
-    protected <T> ResponseEntity<ResponseWrapper<T>> badRequest(String message) {
-        return ResponseEntity.badRequest()
-                .body(ResponseWrapper.error(message, "BAD_REQUEST"));
-    }
-
-    /**
-     * Create a bad request response with custom error code
-     */
-    protected <T> ResponseEntity<ResponseWrapper<T>> badRequest(String message, String errorCode) {
-        return ResponseEntity.badRequest()
-                .body(ResponseWrapper.error(message, errorCode));
-    }
-
-    /**
-     * Create a not found response (404)
-     */
-    protected <T> ResponseEntity<ResponseWrapper<T>> notFound(String message) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(ResponseWrapper.error(message, "NOT_FOUND"));
-    }
-
-    /**
-     * Create a conflict response (409)
-     */
-    protected <T> ResponseEntity<ResponseWrapper<T>> conflict(String message) {
-        return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(ResponseWrapper.error(message, "CONFLICT"));
-    }
-
-    /**
-     * Create an internal server error response (500)
-     */
-    protected <T> ResponseEntity<ResponseWrapper<T>> internalServerError(String message) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ResponseWrapper.error(message, "INTERNAL_SERVER_ERROR"));
-    }
-
-    /**
-     * Create an unauthorized response (401)
-     */
-    protected <T> ResponseEntity<ResponseWrapper<T>> unauthorized(String message) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ResponseWrapper.error(message, "UNAUTHORIZED"));
-    }
-
-    /**
-     * Create a forbidden response (403)
-     */
-    protected <T> ResponseEntity<ResponseWrapper<T>> forbidden(String message) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(ResponseWrapper.error(message, "FORBIDDEN"));
-    }
 
     /**
      * Create a no content response (204) for successful operations without data

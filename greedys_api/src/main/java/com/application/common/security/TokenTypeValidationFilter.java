@@ -156,7 +156,7 @@ public class TokenTypeValidationFilter extends OncePerRequestFilter {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         
-        com.application.common.web.ResponseWrapper<String> errorResponse = 
+        com.application.common.web.ResponseWrapper<com.application.common.web.ErrorDetails> errorResponse = 
             com.application.common.web.ResponseWrapper.error(message, errorCode);
         
         com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();

@@ -1,8 +1,16 @@
 package com.application.common.spring.swagger;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.springdoc.core.customizers.OperationCustomizer;
@@ -66,10 +74,25 @@ public class WrapperTypeOperationCustomizer implements OperationCustomizer {
                 autoDetected.wrapperType
             );
             
-            // ✅ NEW: Add x-generic-wrapper extension for ResponseWrapper endpoints
+            // ✅ Add x-generic-wrapper and extra hints for client generators
             operation.addExtension("x-generic-wrapper", "ResponseWrapper");
-            log.debug("✅ Added x-generic-wrapper extension to operation: {}", 
-                operation.getOperationId() != null ? operation.getOperationId() : methodSig);
+            // Inner type simple name (e.g., ReservationDTO)
+            String innerSimple = autoDetected.getDataTypeSimpleName();
+            operation.addExtension("x-inner-type", innerSimple);
+            // Compute Dart-ish import hints (e.g., reservation_dto, date when needed)
+            List<String> imports = new ArrayList<>();
+            imports.add(toSnakeCase(innerSimple));
+            try {
+                Class<?> dtoClass = Class.forName(autoDetected.dataClassName);
+                if (dtoRequiresDateImport(dtoClass)) {
+                    imports.add("date");
+                }
+            } catch (ClassNotFoundException e) {
+                log.debug("x-imports: class not found for {}: {}", autoDetected.dataClassName, e.getMessage());
+            }
+            operation.addExtension("x-imports", imports);
+            log.debug("✅ Added x-wrapper extensions to operation: {} -> inner={}, imports={}",
+                operation.getOperationId() != null ? operation.getOperationId() : methodSig, innerSimple, imports);
             
             // log.warn("✅ FASE1: Registered {} -> {} for {}.{}", 
             //     autoDetected.wrapperType, 
@@ -174,5 +197,45 @@ public class WrapperTypeOperationCustomizer implements OperationCustomizer {
         }
         
         return null;
+    }
+
+    // =====================
+    // Helper methods
+    // =====================
+    private String toSnakeCase(String input) {
+        if (input == null || input.isEmpty()) return input;
+        String snake = input
+            .replaceAll("([a-z])([A-Z])", "$1_$2")
+            .replaceAll("([A-Z])([A-Z][a-z])", "$1_$2")
+            .toLowerCase();
+        return snake;
+    }
+
+    private boolean dtoRequiresDateImport(Class<?> dtoClass) {
+        try {
+            // Check declared fields and nested types for java.time / java.util.Date usage
+            for (Field f : dtoClass.getDeclaredFields()) {
+                Class<?> t = f.getType();
+                if (isDateLike(t)) return true;
+                // Collections<List/Set] of date-like?
+                if (Collection.class.isAssignableFrom(t)) {
+                    // Best-effort: we cannot reflect generic at runtime reliably; skip
+                }
+            }
+            return false;
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
+    private boolean isDateLike(Class<?> t) {
+        return t != null && (
+                t.equals(java.util.Date.class) ||
+                t.equals(LocalDate.class) ||
+                t.equals(LocalDateTime.class) ||
+                t.equals(OffsetDateTime.class) ||
+                t.equals(ZonedDateTime.class) ||
+                t.equals(Instant.class)
+        );
     }
 }
