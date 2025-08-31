@@ -98,12 +98,6 @@ public class WrapperSchemaGenerator {
         Schema dataProperty = new Schema();
         dataProperty.set$ref("#/components/schemas/" + dataTypeName);
         
-        // Proprietà error che referenzia ErrorDetails
-        @SuppressWarnings("rawtypes")
-        Schema errorProperty = new Schema();
-        errorProperty.set$ref("#/components/schemas/ErrorDetails");
-        errorProperty.setDescription("Error details (present only if success = false)");
-        
         // Proprietà timestamp che referenzia LocalDateTime
         @SuppressWarnings("rawtypes")
         Schema timestampProperty = new Schema();
@@ -120,7 +114,6 @@ public class WrapperSchemaGenerator {
         wrapperSchema.addProperty("success", successProperty);
         wrapperSchema.addProperty("message", messageProperty);
         wrapperSchema.addProperty("data", dataProperty);
-        wrapperSchema.addProperty("error", errorProperty);
         wrapperSchema.addProperty("timestamp", timestampProperty);
         wrapperSchema.addProperty("metadata", metadataProperty);
         

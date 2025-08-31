@@ -1,6 +1,8 @@
 package com.application.common.spring.swagger;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -14,9 +16,12 @@ import io.swagger.v3.oas.models.media.StringSchema;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Helper class per la generazione di schemi wrapper (ResponseWrapper<T>, List<T>, Page<T>)
- * Questa classe si occupa specificatamente di creare gli schemi per i tipi wrapper
- * che avvolgono i dati reali e utilizzano riferimenti ($ref) invece di definizioni inline.
+ * Helper class per la generazione di schemi wrapper (ResponseWrapper<T>,
+ * List<T>, Page<T>)
+ * Questa classe si occupa specificatamente di creare gli schemi per i tipi
+ * wrapper
+ * che avvolgono i dati reali e utilizzano riferimenti ($ref) invece di
+ * definizioni inline.
  * 
  * ✅ UPDATED: Aggiunto supporto per schemi consolidati per ridurre ridondanza
  */
@@ -24,171 +29,177 @@ import lombok.extern.slf4j.Slf4j;
 public class WrapperSchemaGeneratorHelper {
 
     /**
-     * ✅ UPDATED: Genera solo schemi metadata necessari 
-     * ResponseWrapperError è ora gestito da BaseMetadataSchemaProvider.addCommonSchemas()
+     * ✅ UPDATED: Genera solo schemi metadata necessari
+     * ResponseWrapperError è ora gestito da
+     * BaseMetadataSchemaProvider.addCommonSchemas()
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
     public void generateConsolidatedWrapperSchemas(OpenAPI openApi) {
-        Map<String, Schema> schemas = openApi.getComponents().getSchemas();
-        
+
         // ✅ Genera schemi metadata se non esistono
         generateMetadataSchemas(openApi);
-        
+
         // ✅ ResponseWrapperError è ora generato da BaseMetadataSchemaProvider
-        // Non generiamo più schemi generici qui - solo schemi specifici in generateWrapperSchemas()
-        
-        log.warn("✅ GENERATOR: Metadata schemas verificati - ResponseWrapperError gestito da BaseMetadataSchemaProvider");
+        // Non generiamo più schemi generici qui - solo schemi specifici in
+        // generateWrapperSchemas()
+
+        log.warn(
+                "✅ GENERATOR: Metadata schemas verificati - ResponseWrapperError gestito da BaseMetadataSchemaProvider");
     }
-    
+
     /**
      * ✅ NEW: Genera schemi metadata necessari per i wrapper consolidati
      */
+    @SuppressWarnings({ "rawtypes" })
     private void generateMetadataSchemas(OpenAPI openApi) {
-        @SuppressWarnings("rawtypes")
         Map<String, Schema> schemas = openApi.getComponents().getSchemas();
-        
+
         // Single object metadata
         if (!schemas.containsKey("SingleMetadata")) {
             Schema<?> singleMetadata = new ObjectSchema()
-                .title("Metadata for single object responses")
-                .addProperty("additional", new ObjectSchema()
-                    .description("Additional metadata"));
+                    .title("Metadata for single object responses")
+                    .addProperty("additional", new ObjectSchema()
+                            .description("Additional metadata"));
             schemas.put("SingleMetadata", singleMetadata);
         }
-        
+
         // List metadata
         if (!schemas.containsKey("ListMetadata")) {
             Schema<?> listMetadata = new ObjectSchema()
-                .title("Metadata for list responses")
-                .addProperty("totalCount", new IntegerSchema()
-                    .format("int64")
-                    .description("Total number of items in the list")
-                    .example(25))
-                .addProperty("count", new IntegerSchema()
-                    .format("int32")
-                    .description("Number of items returned in this response")
-                    .example(25))
-                .addProperty("filtered", new BooleanSchema()
-                    .description("Whether the list is filtered")
-                    .example(false))
-                .addProperty("filterDescription", new StringSchema()
-                    .description("Applied filters description")
-                    .example("status=active"))
-                .addProperty("additional", new ObjectSchema()
-                    .description("Additional metadata"));
+                    .title("Metadata for list responses")
+                    .addProperty("totalCount", new IntegerSchema()
+                            .format("int64")
+                            .description("Total number of items in the list")
+                            .example(25))
+                    .addProperty("count", new IntegerSchema()
+                            .format("int32")
+                            .description("Number of items returned in this response")
+                            .example(25))
+                    .addProperty("filtered", new BooleanSchema()
+                            .description("Whether the list is filtered")
+                            .example(false))
+                    .addProperty("filterDescription", new StringSchema()
+                            .description("Applied filters description")
+                            .example("status=active"))
+                    .addProperty("additional", new ObjectSchema()
+                            .description("Additional metadata"));
             schemas.put("ListMetadata", listMetadata);
         }
-        
+
         // Page metadata
         if (!schemas.containsKey("PageMetadata")) {
             Schema<?> pageMetadata = new ObjectSchema()
-                .title("Metadata for paginated responses")
-                .addProperty("totalCount", new IntegerSchema()
-                    .format("int64")
-                    .description("Total number of items across all pages")
-                    .example(150))
-                .addProperty("count", new IntegerSchema()
-                    .format("int32")
-                    .description("Number of items in current page")
-                    .example(20))
-                .addProperty("page", new IntegerSchema()
-                    .format("int32")
-                    .description("Current page number (0-based)")
-                    .example(0))
-                .addProperty("size", new IntegerSchema()
-                    .format("int32")
-                    .description("Number of items per page")
-                    .example(20))
-                .addProperty("totalPages", new IntegerSchema()
-                    .format("int32")
-                    .description("Total number of pages")
-                    .example(8))
-                .addProperty("first", new BooleanSchema()
-                    .description("Whether this is the first page")
-                    .example(true))
-                .addProperty("last", new BooleanSchema()
-                    .description("Whether this is the last page")
-                    .example(false))
-                .addProperty("numberOfElements", new IntegerSchema()
-                    .format("int32")
-                    .description("Number of elements in current page")
-                    .example(20))
-                .addProperty("filtered", new BooleanSchema()
-                    .description("Whether the list is filtered")
-                    .example(false))
-                .addProperty("filterDescription", new StringSchema()
-                    .description("Applied filters description")
-                    .example("status=active"))
-                .addProperty("additional", new ObjectSchema()
-                    .description("Additional metadata"));
+                    .title("Metadata for paginated responses")
+                    .addProperty("totalCount", new IntegerSchema()
+                            .format("int64")
+                            .description("Total number of items across all pages")
+                            .example(150))
+                    .addProperty("count", new IntegerSchema()
+                            .format("int32")
+                            .description("Number of items in current page")
+                            .example(20))
+                    .addProperty("page", new IntegerSchema()
+                            .format("int32")
+                            .description("Current page number (0-based)")
+                            .example(0))
+                    .addProperty("size", new IntegerSchema()
+                            .format("int32")
+                            .description("Number of items per page")
+                            .example(20))
+                    .addProperty("totalPages", new IntegerSchema()
+                            .format("int32")
+                            .description("Total number of pages")
+                            .example(8))
+                    .addProperty("first", new BooleanSchema()
+                            .description("Whether this is the first page")
+                            .example(true))
+                    .addProperty("last", new BooleanSchema()
+                            .description("Whether this is the last page")
+                            .example(false))
+                    .addProperty("numberOfElements", new IntegerSchema()
+                            .format("int32")
+                            .description("Number of elements in current page")
+                            .example(20))
+                    .addProperty("filtered", new BooleanSchema()
+                            .description("Whether the list is filtered")
+                            .example(false))
+                    .addProperty("filterDescription", new StringSchema()
+                            .description("Applied filters description")
+                            .example("status=active"))
+                    .addProperty("additional", new ObjectSchema()
+                            .description("Additional metadata"));
             schemas.put("PageMetadata", pageMetadata);
         }
-        
+
         // Error details schema
         if (!schemas.containsKey("ErrorDetails")) {
             Schema<?> errorDetails = new ObjectSchema()
-                .title("Error details for API responses")
-                .addProperty("code", new StringSchema()
-                    .description("Error code")
-                    .example("VALIDATION_ERROR"))
-                .addProperty("details", new ObjectSchema()
-                    .description("Field-specific errors or additional details"));
+                    .title("Error details for API responses")
+                    .addProperty("code", new StringSchema()
+                            .description("Error code")
+                            .example("VALIDATION_ERROR"))
+                    .addProperty("details", new ObjectSchema()
+                            .description("Field-specific errors or additional details"));
             schemas.put("ErrorDetails", errorDetails);
         }
-        
+
         log.debug("✅ GENERATOR: Metadata schemas verificati/creati");
     }
 
     /**
      * ✅ UPDATED: Genera schemi wrapper specifici FLAT per ogni tipo
-     * Crea un schema dedicato per ogni ResponseWrapper<T> per massima compatibilità con OpenAPI Generator
-     * Approccio: ResponseWrapperAuthResponseDTO, ResponseWrapperMenuDTO, etc. - NO oneOf, NO allOf
+     * Crea un schema dedicato per ogni ResponseWrapper<T> per massima compatibilità
+     * con OpenAPI Generator
+     * Approccio: ResponseWrapperAuthResponseDTO, ResponseWrapperMenuDTO, etc. - NO
+     * oneOf, NO allOf
      */
-    @SuppressWarnings("rawtypes")
-    public void generateWrapperSchemas(Set<WrapperTypeInfo> wrapperTypes, OpenAPI openApi, WrapperTypeRegistry registry) {
-        
+    public void generateWrapperSchemas(Set<WrapperTypeInfo> wrapperTypes, OpenAPI openApi,
+            WrapperTypeRegistry registry) {
+
+        @SuppressWarnings("rawtypes")
         Map<String, Schema> schemas = openApi.getComponents().getSchemas();
-        
+
         // Genera schemi metadata comuni
         generateMetadataSchemas(openApi);
-        
+
         log.warn("🔄 GENERATOR: Generazione schemi wrapper SPECIFICI per {} tipi", wrapperTypes.size());
-        
+
         // ✅ STEP 1: Genera uno schema specifico per ogni wrapper type
         for (WrapperTypeInfo wrapperInfo : wrapperTypes) {
             String dataClassName = wrapperInfo.dataClassName;
             String simpleClassName = dataClassName.substring(dataClassName.lastIndexOf('.') + 1);
             String wrapperType = wrapperInfo.wrapperType;
-            
+
             // Genera il nome dello schema specifico
             String schemaName = generateSpecificSchemaName(simpleClassName, wrapperType);
-            
+
             // 🎯 TRACE SPECIFICO PER AuthResponseDTO
             if (dataClassName.contains("AuthResponseDTO")) {
-                log.warn("🎯 FASE4-AuthResponseDTO: PROCESSING wrapperInfo! dataClass={}, wrapperType={}, schemaName={}", 
-                    dataClassName, wrapperType, schemaName);
+                log.warn(
+                        "🎯 FASE4-AuthResponseDTO: PROCESSING wrapperInfo! dataClass={}, wrapperType={}, schemaName={}",
+                        dataClassName, wrapperType, schemaName);
             }
-            
+
             // Crea lo schema specifico basato sul tipo wrapper
             Schema<?> wrapperSchema = createSpecificWrapperSchema(simpleClassName, wrapperType, schemaName);
-            
+
             // Registra lo schema
             schemas.put(schemaName, wrapperSchema);
             registry.registerWrapperSchema(dataClassName, wrapperType, schemaName);
-            
+
             if (dataClassName.contains("AuthResponseDTO")) {
                 log.warn("🎯 FASE4-AuthResponseDTO: SCHEMA SPECIFICO GENERATO! schema={}", schemaName);
             }
-            
+
             log.debug("✅ GENERATED SPECIFIC: {} -> {}", dataClassName, schemaName);
         }
-        
-        log.warn("✅ GENERATOR: Schemi specifici completati - {} tipi → {} schemi dedicati", 
-            wrapperTypes.size(), wrapperTypes.size());
+
+        log.warn("✅ GENERATOR: Schemi specifici completati - {} tipi → {} schemi dedicati",
+                wrapperTypes.size(), wrapperTypes.size());
     }
-    
+
     /**
-     * ✅ NEW: Genera il nome dello schema specifico basato sul tipo di dato e wrapper
+     * ✅ NEW: Genera il nome dello schema specifico basato sul tipo di dato e
+     * wrapper
      */
     private String generateSpecificSchemaName(String simpleClassName, String wrapperType) {
         return switch (wrapperType) {
@@ -202,12 +213,13 @@ public class WrapperSchemaGeneratorHelper {
             }
         };
     }
-    
+
     /**
-     * ✅ NEW: Crea uno schema wrapper specifico flat per massima compatibilità OpenAPI Generator
+     * ✅ NEW: Crea uno schema wrapper specifico flat per massima compatibilità
+     * OpenAPI Generator
      */
     private Schema<?> createSpecificWrapperSchema(String simpleClassName, String wrapperType, String schemaName) {
-        return switch (wrapperType) {
+        Schema<?> schema = switch (wrapperType) {
             case "DTO" -> createResponseWrapperSchema(simpleClassName, schemaName);
             case "LIST" -> createResponseWrapperListSchema(simpleClassName, schemaName);
             case "PAGE" -> createResponseWrapperPageSchema(simpleClassName, schemaName);
@@ -217,70 +229,65 @@ public class WrapperSchemaGeneratorHelper {
                 yield createResponseWrapperSchema(simpleClassName, schemaName);
             }
         };
+        // Add vendor extensions to help client generators
+        addWrapperExtensions(schema, wrapperType, simpleClassName);
+        return schema;
     }
-    
+
     /**
      * ✅ FIXED: Crea schema specifico per ResponseWrapper<T>
      * Gestisce primitivi con type diretto, DTO complessi con $ref
      */
-    @SuppressWarnings("unchecked")
     private Schema<?> createResponseWrapperSchema(String simpleClassName, String schemaName) {
-        return new ObjectSchema()
-            .title("Response wrapper for " + simpleClassName)
-            .description("API response containing " + simpleClassName + " data or error details")
-            .addProperty("success", new BooleanSchema()
-                .description("Indicates if the operation was successful"))
-            .addProperty("data", createDataSchemaForType(simpleClassName))
-            .addProperty("message", new StringSchema()
-                .description("Response message"))
-            .addProperty("timestamp", new StringSchema()
-                .format("date-time")
-                .description("Response timestamp"))
-            .addProperty("error", new Schema<>()
-                .$ref("#/components/schemas/ErrorDetails")
-                .description("Error details when success=false"))
-            .addProperty("metadata", new Schema<>()
-                .$ref("#/components/schemas/SingleMetadata")
-                .description("Response metadata"))
-            .required(Arrays.asList("success", "timestamp"));
+        ObjectSchema root = new ObjectSchema();
+        root.title("Response wrapper for " + simpleClassName);
+        root.description("API response containing " + simpleClassName + " data or error details");
+        root.addProperty("success", new BooleanSchema().description("Indicates if the operation was successful"));
+        root.addProperty("data", createDataSchemaForType(simpleClassName));
+        root.addProperty("message", new StringSchema().description("Response message"));
+        root.addProperty("timestamp", new StringSchema().format("date-time").description("Response timestamp"));
+        // Use pure $ref without description for maximum compatibility
+        root.addProperty("metadata", refSchema("SingleMetadata"));
+        root.setRequired(Arrays.asList("success", "timestamp"));
+        return root;
     }
-    
+
     /**
      * ✅ NEW: Crea schema per il campo data basato sul tipo
      */
-    @SuppressWarnings("unchecked")
     private Schema<?> createDataSchemaForType(String simpleClassName) {
         if (isPrimitiveType(simpleClassName)) {
             // Per tipi primitivi, usa type direttamente
             return switch (simpleClassName.toLowerCase()) {
                 case "string" -> new StringSchema()
-                    .description("Response data when success=true");
+                        .description("Response data when success=true");
                 case "long" -> new IntegerSchema()
-                    .format("int64")
-                    .description("Response data when success=true");
+                        .format("int64")
+                        .description("Response data when success=true");
                 case "integer" -> new IntegerSchema()
-                    .format("int32")
-                    .description("Response data when success=true");
+                        .format("int32")
+                        .description("Response data when success=true");
                 case "boolean" -> new BooleanSchema()
-                    .description("Response data when success=true");
+                        .description("Response data when success=true");
                 case "localdate" -> new StringSchema()
-                    .format("date")
-                    .description("Response data when success=true");
+                        .format("date")
+                        .description("Response data when success=true");
                 case "localdatetime" -> new StringSchema()
-                    .format("date-time")
-                    .description("Response data when success=true");
+                        .format("date-time")
+                        .description("Response data when success=true");
                 default -> {
                     log.warn("⚠️ Tipo primitivo non gestito: {}, uso String", simpleClassName);
                     yield new StringSchema().description("Response data when success=true");
                 }
             };
         } else {
-            // Per tipi complessi, usa solo $ref (senza description per compatibilità OpenAPI)
-            return new Schema<>()
-                .$ref("#/components/schemas/" + simpleClassName);
+            // Per tipi complessi, usa solo $ref (senza description per compatibilità
+            // OpenAPI)
+            return new Schema<Object>()
+                    .$ref("#/components/schemas/" + simpleClassName);
         }
     }
-    
+
     /**
      * ✅ NEW: Verifica se un tipo è primitivo
      */
@@ -295,96 +302,132 @@ public class WrapperSchemaGeneratorHelper {
             default -> false;
         };
     }
-    
+
     /**
      * ✅ FIXED: Crea schema specifico per ResponseWrapper<List<T>>
      * Gestisce primitivi con type diretto, DTO complessi con $ref
      */
-    @SuppressWarnings("unchecked")
     private Schema<?> createResponseWrapperListSchema(String simpleClassName, String schemaName) {
-        return new ObjectSchema()
-            .title("Response wrapper for List<" + simpleClassName + ">")
-            .description("API response containing list of " + simpleClassName + " or error details")
-            .addProperty("success", new BooleanSchema()
-                .description("Indicates if the operation was successful"))
-            .addProperty("data", new ArraySchema()
-                .items(createDataSchemaForType(simpleClassName)))
-            .addProperty("message", new StringSchema()
-                .description("Response message"))
-            .addProperty("timestamp", new StringSchema()
-                .format("date-time")
-                .description("Response timestamp"))
-            .addProperty("error", new Schema<Object>()
-                .$ref("#/components/schemas/ErrorDetails")
-                .description("Error details when success=false"))
-            .addProperty("metadata", new Schema<Object>()
-                .$ref("#/components/schemas/ListMetadata")
-                .description("List metadata"))
-            .required(Arrays.asList("success", "timestamp"));
+        ObjectSchema root = new ObjectSchema();
+        root.title("Response wrapper for List<" + simpleClassName + ">");
+        root.description("API response containing list of " + simpleClassName + " or error details");
+        root.addProperty("success", new BooleanSchema().description("Indicates if the operation was successful"));
+        ArraySchema array = new ArraySchema();
+        array.setItems(createDataSchemaForType(simpleClassName));
+        root.addProperty("data", array);
+        root.addProperty("message", new StringSchema().description("Response message"));
+        root.addProperty("timestamp", new StringSchema().format("date-time").description("Response timestamp"));
+        // Use pure $ref without description for maximum compatibility
+        root.addProperty("metadata", refSchema("ListMetadata"));
+        root.setRequired(Arrays.asList("success", "timestamp"));
+        return root;
     }
-    
+
     /**
      * ✅ FIXED: Crea schema specifico per ResponseWrapper<Page<T>>
      * Gestisce primitivi con type diretto, DTO complessi con $ref
      */
-    @SuppressWarnings("unchecked")
     private Schema<?> createResponseWrapperPageSchema(String simpleClassName, String schemaName) {
-        Schema<?> pageDataSchema = new ObjectSchema()
-            .description("Page data with content and pagination info")
-            .addProperty("content", new ArraySchema()
-                .description("Page content items")
-                .items(createDataSchemaForType(simpleClassName)))
-            .addProperty("totalElements", new IntegerSchema().format("int64"))
-            .addProperty("totalPages", new IntegerSchema().format("int32"))
-            .addProperty("size", new IntegerSchema().format("int32"))
-            .addProperty("number", new IntegerSchema().format("int32"))
-            .addProperty("numberOfElements", new IntegerSchema().format("int32"))
-            .addProperty("first", new BooleanSchema())
-            .addProperty("last", new BooleanSchema())
-            .addProperty("empty", new BooleanSchema());
-        
-        return new ObjectSchema()
-            .title("Response wrapper for Page<" + simpleClassName + ">")
-            .description("API response containing paginated " + simpleClassName + " data or error details")
-            .addProperty("success", new BooleanSchema()
-                .description("Indicates if the operation was successful"))
-            .addProperty("data", pageDataSchema)
-            .addProperty("message", new StringSchema()
-                .description("Response message"))
-            .addProperty("timestamp", new StringSchema()
-                .format("date-time")
-                .description("Response timestamp"))
-            .addProperty("error", new Schema<>()
-                .$ref("#/components/schemas/ErrorDetails")
-                .description("Error details when success=false"))
-            .addProperty("metadata", new Schema<>()
-                .$ref("#/components/schemas/PageMetadata")
-                .description("Page metadata"))
-            .required(Arrays.asList("success", "timestamp"));
+        ObjectSchema pageData = new ObjectSchema();
+        pageData.description("Page data with content and pagination info");
+        ArraySchema content = new ArraySchema();
+        content.setItems(createDataSchemaForType(simpleClassName));
+        content.description("Page content items");
+        pageData.addProperty("content", content);
+        pageData.addProperty("totalElements", new IntegerSchema().format("int64"));
+        pageData.addProperty("totalPages", new IntegerSchema().format("int32"));
+        pageData.addProperty("size", new IntegerSchema().format("int32"));
+        pageData.addProperty("number", new IntegerSchema().format("int32"));
+        pageData.addProperty("numberOfElements", new IntegerSchema().format("int32"));
+        pageData.addProperty("first", new BooleanSchema());
+        pageData.addProperty("last", new BooleanSchema());
+        pageData.addProperty("empty", new BooleanSchema());
+
+        ObjectSchema root = new ObjectSchema();
+        root.title("Response wrapper for Page<" + simpleClassName + ">");
+        root.description("API response containing paginated " + simpleClassName + " data or error details");
+        root.addProperty("success", new BooleanSchema().description("Indicates if the operation was successful"));
+        root.addProperty("data", pageData);
+        root.addProperty("message", new StringSchema().description("Response message"));
+        root.addProperty("timestamp", new StringSchema().format("date-time").description("Response timestamp"));
+        // Use pure $ref without description for maximum compatibility
+        root.addProperty("metadata", refSchema("PageMetadata"));
+        root.setRequired(Arrays.asList("success", "timestamp"));
+        return root;
     }
-    
+
     /**
      * ✅ NEW: Crea schema specifico per ResponseWrapper<Void>
      */
-    @SuppressWarnings("unchecked")
     private Schema<?> createResponseWrapperVoidSchema(String schemaName) {
-        return new ObjectSchema()
-            .title("Response wrapper for void operations")
-            .description("API response for operations that don't return data")
-            .addProperty("success", new BooleanSchema()
-                .description("Indicates if the operation was successful"))
-            .addProperty("message", new StringSchema()
-                .description("Response message"))
-            .addProperty("timestamp", new StringSchema()
-                .format("date-time")
-                .description("Response timestamp"))
-            .addProperty("error", new Schema<>()
-                .$ref("#/components/schemas/ErrorDetails")
-                .description("Error details when success=false"))
-            .addProperty("metadata", new Schema<>()
-                .$ref("#/components/schemas/SingleMetadata")
-                .description("Response metadata"))
-            .required(Arrays.asList("success", "timestamp"));
+        ObjectSchema root = new ObjectSchema();
+        root.title("Response wrapper for void operations");
+        root.description("API response for operations that don't return data");
+        root.addProperty("success", new BooleanSchema().description("Indicates if the operation was successful"));
+        root.addProperty("message", new StringSchema().description("Response message"));
+        root.addProperty("timestamp", new StringSchema().format("date-time").description("Response timestamp"));
+        // Use pure $ref without description for maximum compatibility
+        root.addProperty("metadata", refSchema("SingleMetadata"));
+        root.setRequired(Arrays.asList("success", "timestamp"));
+        return root;
+    }
+
+    // === Vendor extensions helpers ===
+    private void addWrapperExtensions(Schema<?> schema, String wrapperType, String innerSimpleName) {
+        String inner = "VOID".equals(wrapperType) ? "void" : innerSimpleName;
+        // Always declare the outer generic wrapper class name
+        schema.addExtension("x-generic-wrapper", "ResponseWrapper");
+        // Describe the generic type category: PAGE, LIST, VOID, or DTO/PRIMITIVE for
+        // single wrappers
+        schema.addExtension("x-generic-type", computeGenericType(wrapperType, innerSimpleName));
+        schema.addExtension("x-inner-type", inner);
+        schema.addExtension("x-imports", computeImports(inner));
+    }
+
+    // Helper to build a pure $ref schema without an attached description
+    private Schema<?> refSchema(String componentSchemaName) {
+        Schema<Object> s = new Schema<>();
+        s.$ref("#/components/schemas/" + componentSchemaName);
+        return s;
+    }
+
+    private List<String> computeImports(String innerSimpleName) {
+        List<String> imports = new ArrayList<>();
+        // Dart date library hint for date-like primitives
+        if ("LocalDate".equalsIgnoreCase(innerSimpleName) || "LocalDateTime".equalsIgnoreCase(innerSimpleName)) {
+            imports.add("date");
+        }
+        // For DTOs or other complex types, suggest the snake_case file name
+        if (!isPrimitiveType(innerSimpleName) && !"void".equalsIgnoreCase(innerSimpleName)) {
+            imports.add(toSnakeCase(innerSimpleName));
+        }
+        return imports;
+    }
+
+    private String computeGenericType(String wrapperType, String innerSimpleName) {
+        // Prefer explicit information provided upstream (e.g.,
+        // WrapperTypeOperation/registry)
+        switch (wrapperType) {
+            case "PAGE":
+                return "PAGE";
+            case "LIST":
+                return "LIST";
+            case "VOID":
+                return "VOID";
+            case "PRIMITIVE":
+                return "PRIMITIVE";
+            case "DTO":
+            default:
+                // Fallback inference for single wrappers if registry didn't flag PRIMITIVE
+                // explicitly
+                return isPrimitiveType(innerSimpleName) ? "PRIMITIVE" : "DTO";
+        }
+    }
+
+    private String toSnakeCase(String name) {
+        // Convert CamelCase (e.g., ReservationDTO) to snake_case (reservation_dto)
+        String snake = name.replaceAll("([a-z])([A-Z])", "$1_$2").replaceAll("([A-Z])([A-Z][a-z])", "$1_$2");
+        return snake.toLowerCase();
     }
 
 }
