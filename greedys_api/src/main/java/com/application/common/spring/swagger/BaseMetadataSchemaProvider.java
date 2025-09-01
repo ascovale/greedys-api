@@ -53,9 +53,9 @@ public class BaseMetadataSchemaProvider {
         @SuppressWarnings("rawtypes")
         Map<String, Schema> schemas = openApi.getComponents().getSchemas();
         
-        // ✅ NEW: Genera schema per ResponseWrapperError se non esiste
-        if (!schemas.containsKey("ResponseWrapperError")) {
-            generateResponseWrapperErrorSchema(schemas);
+        // ✅ NEW: Genera schema per ResponseWrapperErrorDetails se non esiste
+        if (!schemas.containsKey("ResponseWrapperErrorDetails")) {
+            generateResponseWrapperErrorDetailsSchema(schemas);
         }
         
         // ✅ FIXED: Genera solo LocalDate come schema custom (non i primitivi)
@@ -292,21 +292,18 @@ public class BaseMetadataSchemaProvider {
     }
     
     /**
-     * ✅ NEW: Genera schema per ResponseWrapperError
+     * ✅ NEW: Genera schema per ResponseWrapperErrorDetails
      * Schema dedicato per le error responses (400, 401, 403, 404, 409, 500)
      */
     @SuppressWarnings("rawtypes")
-    private void generateResponseWrapperErrorSchema(Map<String, Schema> schemas) {
+    private void generateResponseWrapperErrorDetailsSchema(Map<String, Schema> schemas) {
         io.swagger.v3.oas.models.media.ObjectSchema errorWrapperSchema = new io.swagger.v3.oas.models.media.ObjectSchema();
         errorWrapperSchema
             .title("API Error Response")
             .description("Standard API response wrapper for HTTP 4xx and 5xx error cases")
-            .addProperty("success", new io.swagger.v3.oas.models.media.BooleanSchema()
-                .example(false)
-                .description("Always false for error responses"))
             .addProperty("data", new io.swagger.v3.oas.models.media.Schema<>()
                 .$ref("#/components/schemas/ErrorDetails")
-                .description("Error details when success=false"))
+                .description("Error details"))
             .addProperty("message", new io.swagger.v3.oas.models.media.StringSchema()
                 .description("Human-readable error message")
                 .example("Customer not found"))
@@ -318,10 +315,10 @@ public class BaseMetadataSchemaProvider {
                 .$ref("#/components/schemas/SingleMetadata")
                 .description("Additional error context"));
         
-        errorWrapperSchema.required(java.util.Arrays.asList("success", "timestamp"));
+        errorWrapperSchema.required(java.util.Arrays.asList("timestamp"));
         
-        schemas.put("ResponseWrapperError", errorWrapperSchema);
-        log.info("✅ GENERATOR: Schema ResponseWrapperError creato per error responses");
+        schemas.put("ResponseWrapperErrorDetails", errorWrapperSchema);
+        log.info("✅ GENERATOR: Schema ResponseWrapperErrorDetails creato per error responses");
     }
     
     /**
