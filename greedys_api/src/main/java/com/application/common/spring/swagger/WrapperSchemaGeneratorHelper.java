@@ -1,8 +1,6 @@
 package com.application.common.spring.swagger;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -30,7 +28,7 @@ public class WrapperSchemaGeneratorHelper {
 
     /**
      * ✅ UPDATED: Genera solo schemi metadata necessari
-     * ResponseWrapperError è ora gestito da
+     * ResponseWrapperErrorDetails è ora gestito da
      * BaseMetadataSchemaProvider.addCommonSchemas()
      */
     public void generateConsolidatedWrapperSchemas(OpenAPI openApi) {
@@ -38,12 +36,12 @@ public class WrapperSchemaGeneratorHelper {
         // ✅ Genera schemi metadata se non esistono
         generateMetadataSchemas(openApi);
 
-        // ✅ ResponseWrapperError è ora generato da BaseMetadataSchemaProvider
+        // ✅ ResponseWrapperErrorDetails è ora generato da BaseMetadataSchemaProvider
         // Non generiamo più schemi generici qui - solo schemi specifici in
         // generateWrapperSchemas()
 
         log.warn(
-                "✅ GENERATOR: Metadata schemas verificati - ResponseWrapperError gestito da BaseMetadataSchemaProvider");
+                "✅ GENERATOR: Metadata schemas verificati - ResponseWrapperErrorDetails gestito da BaseMetadataSchemaProvider");
     }
 
     /**
@@ -241,14 +239,13 @@ public class WrapperSchemaGeneratorHelper {
     private Schema<?> createResponseWrapperSchema(String simpleClassName, String schemaName) {
         ObjectSchema root = new ObjectSchema();
         root.title("Response wrapper for " + simpleClassName);
-        root.description("API response containing " + simpleClassName + " data or error details");
-        root.addProperty("success", new BooleanSchema().description("Indicates if the operation was successful"));
+        root.description("API response containing " + simpleClassName + " data");
         root.addProperty("data", createDataSchemaForType(simpleClassName));
         root.addProperty("message", new StringSchema().description("Response message"));
         root.addProperty("timestamp", new StringSchema().format("date-time").description("Response timestamp"));
         // Use pure $ref without description for maximum compatibility
         root.addProperty("metadata", refSchema("SingleMetadata"));
-        root.setRequired(Arrays.asList("success", "timestamp"));
+        root.setRequired(Arrays.asList("timestamp"));
         return root;
     }
 
@@ -260,24 +257,24 @@ public class WrapperSchemaGeneratorHelper {
             // Per tipi primitivi, usa type direttamente
             return switch (simpleClassName.toLowerCase()) {
                 case "string" -> new StringSchema()
-                        .description("Response data when success=true");
+                        .description("Response data");
                 case "long" -> new IntegerSchema()
                         .format("int64")
-                        .description("Response data when success=true");
+                        .description("Response data");
                 case "integer" -> new IntegerSchema()
                         .format("int32")
-                        .description("Response data when success=true");
+                        .description("Response data");
                 case "boolean" -> new BooleanSchema()
-                        .description("Response data when success=true");
+                        .description("Response data");
                 case "localdate" -> new StringSchema()
                         .format("date")
-                        .description("Response data when success=true");
+                        .description("Response data");
                 case "localdatetime" -> new StringSchema()
                         .format("date-time")
-                        .description("Response data when success=true");
+                        .description("Response data");
                 default -> {
                     log.warn("⚠️ Tipo primitivo non gestito: {}, uso String", simpleClassName);
-                    yield new StringSchema().description("Response data when success=true");
+                    yield new StringSchema().description("Response data");
                 }
             };
         } else {
@@ -310,8 +307,7 @@ public class WrapperSchemaGeneratorHelper {
     private Schema<?> createResponseWrapperListSchema(String simpleClassName, String schemaName) {
         ObjectSchema root = new ObjectSchema();
         root.title("Response wrapper for List<" + simpleClassName + ">");
-        root.description("API response containing list of " + simpleClassName + " or error details");
-        root.addProperty("success", new BooleanSchema().description("Indicates if the operation was successful"));
+        root.description("API response containing list of " + simpleClassName);
         ArraySchema array = new ArraySchema();
         array.setItems(createDataSchemaForType(simpleClassName));
         root.addProperty("data", array);
@@ -319,7 +315,7 @@ public class WrapperSchemaGeneratorHelper {
         root.addProperty("timestamp", new StringSchema().format("date-time").description("Response timestamp"));
         // Use pure $ref without description for maximum compatibility
         root.addProperty("metadata", refSchema("ListMetadata"));
-        root.setRequired(Arrays.asList("success", "timestamp"));
+        root.setRequired(Arrays.asList("timestamp"));
         return root;
     }
 
@@ -345,14 +341,13 @@ public class WrapperSchemaGeneratorHelper {
 
         ObjectSchema root = new ObjectSchema();
         root.title("Response wrapper for Page<" + simpleClassName + ">");
-        root.description("API response containing paginated " + simpleClassName + " data or error details");
-        root.addProperty("success", new BooleanSchema().description("Indicates if the operation was successful"));
+        root.description("API response containing paginated " + simpleClassName + " data");
         root.addProperty("data", pageData);
         root.addProperty("message", new StringSchema().description("Response message"));
         root.addProperty("timestamp", new StringSchema().format("date-time").description("Response timestamp"));
         // Use pure $ref without description for maximum compatibility
         root.addProperty("metadata", refSchema("PageMetadata"));
-        root.setRequired(Arrays.asList("success", "timestamp"));
+        root.setRequired(Arrays.asList("timestamp"));
         return root;
     }
 
@@ -363,17 +358,19 @@ public class WrapperSchemaGeneratorHelper {
         ObjectSchema root = new ObjectSchema();
         root.title("Response wrapper for void operations");
         root.description("API response for operations that don't return data");
-        root.addProperty("success", new BooleanSchema().description("Indicates if the operation was successful"));
         root.addProperty("message", new StringSchema().description("Response message"));
         root.addProperty("timestamp", new StringSchema().format("date-time").description("Response timestamp"));
         // Use pure $ref without description for maximum compatibility
         root.addProperty("metadata", refSchema("SingleMetadata"));
-        root.setRequired(Arrays.asList("success", "timestamp"));
+        root.setRequired(Arrays.asList("timestamp"));
         return root;
     }
 
     // === Vendor extensions helpers ===
     private void addWrapperExtensions(Schema<?> schema, String wrapperType, String innerSimpleName) {
+        // ⚠️ COMMENTATO: Vendor extensions ora aggiunte solo alle responses delle operations
+        // Non più agli schemas dei components per evitare duplicazioni
+        /*
         String inner = "VOID".equals(wrapperType) ? "void" : innerSimpleName;
         // Always declare the outer generic wrapper class name
         schema.addExtension("x-generic-wrapper", "ResponseWrapper");
@@ -382,6 +379,7 @@ public class WrapperSchemaGeneratorHelper {
         schema.addExtension("x-generic-type", computeGenericType(wrapperType, innerSimpleName));
         schema.addExtension("x-inner-type", inner);
         schema.addExtension("x-imports", computeImports(inner));
+        */
     }
 
     // Helper to build a pure $ref schema without an attached description
@@ -391,6 +389,9 @@ public class WrapperSchemaGeneratorHelper {
         return s;
     }
 
+    // ⚠️ COMMENTATO: Metodi helper per vendor extensions non più utilizzati
+    // Ora i vendor extensions sono aggiunti solo alle responses delle operations
+    /*
     private List<String> computeImports(String innerSimpleName) {
         List<String> imports = new ArrayList<>();
         // Dart date library hint for date-like primitives
@@ -423,11 +424,13 @@ public class WrapperSchemaGeneratorHelper {
                 return isPrimitiveType(innerSimpleName) ? "PRIMITIVE" : "DTO";
         }
     }
+    */
 
-    private String toSnakeCase(String name) {
-        // Convert CamelCase (e.g., ReservationDTO) to snake_case (reservation_dto)
-        String snake = name.replaceAll("([a-z])([A-Z])", "$1_$2").replaceAll("([A-Z])([A-Z][a-z])", "$1_$2");
-        return snake.toLowerCase();
-    }
+    // ⚠️ COMMENTATO: toSnakeCase ora utilizzato solo in OperationResponseUpdater
+    // private String toSnakeCase(String name) {
+    //     // Convert CamelCase (e.g., ReservationDTO) to snake_case (reservation_dto)
+    //     String snake = name.replaceAll("([a-z])([A-Z])", "$1_$2").replaceAll("([A-Z])([A-Z][a-z])", "$1_$2");
+    //     return snake.toLowerCase();
+    // }
 
 }

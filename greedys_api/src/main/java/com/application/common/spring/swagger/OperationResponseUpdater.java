@@ -55,6 +55,24 @@ import lombok.extern.slf4j.Slf4j;
 public class OperationResponseUpdater {
 
     /**
+     * Converte una stringa da CamelCase a snake_case
+     * 
+     * @param camelCase stringa in CamelCase (es. "UserDTO")
+     * @return stringa in snake_case (es. "user_dto")
+     */
+    private String toSnakeCase(String camelCase) {
+        if (camelCase == null || camelCase.isEmpty()) {
+            return camelCase;
+        }
+        
+        return camelCase
+            // Prima inserisce underscore prima delle lettere maiuscole
+            .replaceAll("([a-z])([A-Z])", "$1_$2")
+            // Poi converte tutto in minuscolo
+            .toLowerCase();
+    }
+
+    /**
      * Aggiorna tutte le response delle operations sostituendo riferimenti generici
      * con riferimenti specifici ai wrapper schemas E aggiunge success responses mancanti
      * 
@@ -133,6 +151,10 @@ public class OperationResponseUpdater {
                                             // Sostituisci il riferimento generico con quello specifico
                                             mediaTypeObject.getSchema().set$ref(specificWrapperRef);
                                             updatedResponses.incrementAndGet();
+                                            
+                                            // ✨ NEW: Aggiungi vendor extensions alla response
+                                            WrapperTypeInfo wrapperInfo = wrapperTypes.iterator().next();
+                                            addVendorExtensionsToResponse(apiResponse, wrapperInfo);
                                             
                                             log.warn("✅ RESPONSE_UPDATER: {} {} → sostituito {} con {}", 
                                                 operation.getOperationId() != null ? operation.getOperationId() : "unknown",
@@ -241,6 +263,9 @@ public class OperationResponseUpdater {
                 operation.getResponses().addApiResponse(code, apiResponse);
                 addedCount++;
                 
+                // ✨ NEW: Aggiungi vendor extensions alla success response
+                addVendorExtensionsToSuccessResponse(apiResponse, responseInfo);
+                
                 // 🎯 DEBUG per response 201
                 if ("201".equals(code)) {
                     log.warn("✅ DEBUG-201: Added 201 response to operationId='{}' with description='{}'", 
@@ -268,7 +293,7 @@ public class OperationResponseUpdater {
      */
     private int addStandardErrorResponses(io.swagger.v3.oas.models.Operation operation) {
         AtomicInteger fixedCount = new AtomicInteger(0);
-        String errorSchemaRef = "#/components/schemas/ResponseWrapperError"; // ✅ FIXED: Use dedicated error schema
+        String errorSchemaRef = "#/components/schemas/ResponseWrapperErrorDetails"; // ✅ FIXED: Use dedicated error schema
         
         // Determina il tipo di operation dai success response codes esistenti
         java.util.Map<String, String> errorResponses = determineErrorResponses(operation);
@@ -308,6 +333,9 @@ public class OperationResponseUpdater {
                             mediaTypeObject.getSchema().set$ref(errorSchemaRef);
                             fixedCount.incrementAndGet();
                             
+                            // ✨ NEW: Aggiungi vendor extensions statiche per errori
+                            addVendorExtensionsToErrorResponse(existingResponse);
+                            
                             log.debug("🔧 RESPONSE_UPDATER: Fixed error schema {} {} → {} replaced with {}", 
                                 operation.getOperationId() != null ? operation.getOperationId() : "unknown",
                                 code, currentRef, errorSchemaRef);
@@ -326,6 +354,9 @@ public class OperationResponseUpdater {
                 
                 operation.getResponses().addApiResponse(code, errorResponse);
                 fixedCount.incrementAndGet();
+                
+                // ✨ NEW: Aggiungi vendor extensions statiche per errori
+                addVendorExtensionsToErrorResponse(errorResponse);
                 
                 log.debug("➕ RESPONSE_UPDATER: Added missing error response {} {} with schema {}", 
                     operation.getOperationId() != null ? operation.getOperationId() : "unknown",
@@ -381,6 +412,201 @@ public class OperationResponseUpdater {
                 "403", "Forbidden - Access denied",
                 "500", "Internal Server Error"
             );
+        }
+    }
+
+    /**
+     * ✨ NEW: Aggiunge vendor extensions alla response con conversione snake_case
+     * 
+     * @param response ApiResponse da arricchire con vendor extensions
+     * @param wrapperInfo Informazioni del wrapper type per estrarre i metadati
+     */
+    private void addVendorExtensionsToResponse(ApiResponse response, WrapperTypeInfo wrapperInfo) {
+        try {
+            // Converti x-inner-type in snake_case (usa il nome semplice del tipo dati)
+            String innerType = wrapperInfo.getDataTypeSimpleName(); // Es: "UserDto"
+            String innerTypeSnake = toSnakeCase(innerType);
+            
+            // Converti x-generic-wrapper in snake_case
+            String genericWrapper = "ResponseWrapper"; // Sempre ResponseWrapper
+            String genericWrapperSnake = toSnakeCase(genericWrapper);
+            
+            // ✨ NEW: Usa direttamente il campo wrapperType da WrapperTypeInfo (DTO, LIST, PAGE)
+            String genericType = wrapperInfo.wrapperType;
+            
+            // Aggiungi le vendor extensions alla response
+            response.addExtension("x-inner-type", innerTypeSnake);
+            response.addExtension("x-generic-wrapper", genericWrapperSnake);
+            response.addExtension("x-generic-type", genericType);
+            
+            // Aggiungi anche x-imports se disponibile (come negli schemi)
+            java.util.List<String> imports = new java.util.ArrayList<>();
+            imports.add(innerTypeSnake);
+            if (innerType.toLowerCase().contains("date") || innerType.toLowerCase().contains("time")) {
+                imports.add("date");
+            }
+            response.addExtension("x-imports", imports);
+            
+            log.debug("✨ VENDOR_EXTENSIONS: Added to response - x-inner-type: '{}', x-generic-wrapper: '{}', x-generic-type: '{}', x-imports: {}", 
+                innerTypeSnake, genericWrapperSnake, genericType, imports);
+                
+        } catch (Exception e) {
+            log.warn("⚠️ VENDOR_EXTENSIONS: Error adding vendor extensions to response: {}", e.getMessage());
+        }
+    }
+
+    /**
+     * ✨ NEW: Aggiunge vendor extensions alle success response con conversione snake_case
+     * 
+     * @param response ApiResponse da arricchire con vendor extensions
+     * @param responseInfo Informazioni della response per estrarre i metadati
+     */
+    private void addVendorExtensionsToSuccessResponse(ApiResponse response, ResponseInfo responseInfo) {
+        try {
+            String innerType = extractInnerTypeFromSchemaRef(responseInfo.getWrapperSchemaRef());
+            if (innerType != null) {
+                // Converti x-inner-type in snake_case
+                String innerTypeSnake = toSnakeCase(innerType);
+                
+                // Converti x-generic-wrapper in snake_case
+                String genericWrapperSnake = toSnakeCase("ResponseWrapper");
+                
+                // ✨ NEW: Estrai il tipo generico dal schema reference
+                String genericType = extractGenericTypeFromSchemaRef(responseInfo.getWrapperSchemaRef());
+                
+                // Aggiungi le vendor extensions alla response
+                response.addExtension("x-inner-type", innerTypeSnake);
+                response.addExtension("x-generic-wrapper", genericWrapperSnake);
+                response.addExtension("x-generic-type", genericType);
+                
+                // Aggiungi anche x-imports se disponibile (come negli schemi)
+                java.util.List<String> imports = new java.util.ArrayList<>();
+                imports.add(innerTypeSnake);
+                if (innerType.toLowerCase().contains("date") || innerType.toLowerCase().contains("time")) {
+                    imports.add("date");
+                }
+                response.addExtension("x-imports", imports);
+                
+                log.debug("✨ VENDOR_EXTENSIONS: Added to success response - x-inner-type: '{}', x-generic-wrapper: '{}', x-generic-type: '{}', x-imports: {}", 
+                    innerTypeSnake, genericWrapperSnake, genericType, imports);
+            }
+        } catch (Exception e) {
+            log.warn("⚠️ VENDOR_EXTENSIONS: Error adding vendor extensions to success response: {}", e.getMessage());
+        }
+    }
+
+    /**
+     * Estrae il tipo inner dal riferimento schema
+     * Da "#/components/schemas/ResponseWrapperUserDto" estrae "UserDto"
+     * Da "#/components/schemas/ResponseWrapperListUserDto" estrae "UserDto"  
+     * Da "#/components/schemas/ResponseWrapperPageUserDto" estrae "UserDto"
+     */
+    private String extractInnerTypeFromSchemaRef(String schemaRef) {
+        if (schemaRef == null || !schemaRef.startsWith("#/components/schemas/ResponseWrapper")) {
+            return null;
+        }
+        
+        String schemaName = schemaRef.substring("#/components/schemas/".length());
+        
+        // Rimuovi il prefisso ResponseWrapper
+        if (schemaName.startsWith("ResponseWrapper")) {
+            String remaining = schemaName.substring("ResponseWrapper".length());
+            
+            // Gestisci i casi List e Page
+            if (remaining.startsWith("List")) {
+                return remaining.substring("List".length());
+            } else if (remaining.startsWith("Page")) {
+                return remaining.substring("Page".length());
+            } else {
+                return remaining;
+            }
+        }
+        
+        return null;
+    }
+    
+    /**
+     * ✨ NEW: Estrae il tipo generico dal riferimento schema per x-generic-type
+     * Da "#/components/schemas/ResponseWrapperListUserDto" estrae "LIST"
+     * Da "#/components/schemas/ResponseWrapperPageUserDto" estrae "PAGE"
+     * Da "#/components/schemas/ResponseWrapperUserDto" estrae "DTO"
+     * Da "#/components/schemas/ResponseWrapperString" estrae "PRIMITIVE"
+     */
+    private String extractGenericTypeFromSchemaRef(String schemaRef) {
+        if (schemaRef == null || !schemaRef.startsWith("#/components/schemas/ResponseWrapper")) {
+            return "DTO"; // default
+        }
+        
+        String schemaName = schemaRef.substring("#/components/schemas/".length());
+        
+        // Rimuovi il prefisso ResponseWrapper
+        if (schemaName.startsWith("ResponseWrapper")) {
+            String remaining = schemaName.substring("ResponseWrapper".length());
+            
+            // Analizza il pattern per determinare il tipo generico
+            if (remaining.startsWith("List")) {
+                return "LIST";
+            } else if (remaining.startsWith("Page")) {
+                return "PAGE";
+            } else if (isPrimitiveType(remaining)) {
+                return "PRIMITIVE";
+            } else {
+                return "DTO";
+            }
+        }
+        
+        return "DTO"; // default
+    }
+    
+    /**
+     * ✨ NEW: Determina se un tipo è primitivo (String, Integer, Boolean, etc.)
+     */
+    private boolean isPrimitiveType(String typeName) {
+        if (typeName == null) return false;
+        
+        // Lista dei tipi primitivi comuni
+        String lowerType = typeName.toLowerCase();
+        return lowerType.equals("string") || 
+               lowerType.equals("integer") || 
+               lowerType.equals("int") ||
+               lowerType.equals("long") ||
+               lowerType.equals("double") ||
+               lowerType.equals("float") ||
+               lowerType.equals("boolean") ||
+               lowerType.equals("byte") ||
+               lowerType.equals("short") ||
+               lowerType.equals("char") ||
+               lowerType.equals("uuid") ||
+               lowerType.equals("bigdecimal") ||
+               lowerType.equals("biginteger") ||
+               lowerType.startsWith("localdatetime") ||
+               lowerType.startsWith("localdate") ||
+               lowerType.startsWith("localtime") ||
+               lowerType.startsWith("instant") ||
+               lowerType.startsWith("zoneddatetime") ||
+               lowerType.startsWith("offsetdatetime");
+    }
+    
+    /**
+     * ✨ NEW: Aggiunge vendor extensions statiche per le error responses
+     * 
+     * @param response ApiResponse di errore da arricchire con vendor extensions
+     */
+    private void addVendorExtensionsToErrorResponse(ApiResponse response) {
+        try {
+            // Per gli errori è sempre statico: error_details
+            response.addExtension("x-inner-type", "error_details");
+            response.addExtension("x-generic-wrapper", "response_wrapper");
+            response.addExtension("x-generic-type", "DTO"); // ErrorDetails è sempre un DTO
+            
+            // x-imports per errori
+            java.util.List<String> imports = java.util.List.of("error_details");
+            response.addExtension("x-imports", imports);
+            
+            log.debug("✨ VENDOR_EXTENSIONS: Added to error response - x-inner-type: 'error_details', x-generic-wrapper: 'response_wrapper', x-generic-type: 'DTO'");
+            
+        } catch (Exception e) {
+            log.warn("⚠️ VENDOR_EXTENSIONS: Error adding vendor extensions to error response: {}", e.getMessage());
         }
     }
 }
