@@ -68,7 +68,6 @@ public class RestaurantAuthenticationController extends BaseController {
 
     @PreAuthorize("hasAuthority('PRIVILEGE_HUB')")
     @Operation(summary = "Select a restaurant after intermediate login", description = "Given a hub JWT and a restaurantId, returns a JWT for the selected restaurant user")
-
     @GetMapping(value = "/select-restaurant", produces = "application/json")
     public ResponseEntity<ResponseWrapper<AuthResponseDTO>> selectRestaurant(@RequestParam Long restaurantId) {
         return execute("select restaurant", () -> {
