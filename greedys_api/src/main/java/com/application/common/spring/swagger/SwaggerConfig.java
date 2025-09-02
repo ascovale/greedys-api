@@ -7,21 +7,39 @@ import java.util.TreeMap;
 
 import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springdoc.core.models.GroupedOpenApi;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import com.application.common.spring.swagger.customizer.MetadataCollector;
+import com.application.common.spring.swagger.customizer.SwaggerSpecificationGenerator;
+
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.media.Schema;
-import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 
 @Configuration
 public class SwaggerConfig implements WebMvcConfigurer {
+
+    // =========================================
+    // NUOVA ARCHITETTURA RISTRUTTURATA ATTIVA
+    // =========================================
+    // I nuovi customizer sono attivati tramite @Component:
+    // - MetadataCollector (Order 500) - raccoglie metadati 
+    // - SwaggerSpecificationGenerator (Order 1000) - genera schemi
+    // - MetadataRegistry - registry centralizzato con caching
+    // =========================================
+    
+    @Autowired
+    private MetadataCollector metadataCollector;
+    
+    @Autowired
+    private SwaggerSpecificationGenerator swaggerSpecificationGenerator;
 
     // Package scanning configuration for DTOs - TEMPORARY: all DTOs until proper reorganization
     private static final List<String> ALL_DTO_PACKAGES = Arrays.asList(
@@ -67,60 +85,6 @@ public class SwaggerConfig implements WebMvcConfigurer {
         };
     }
 
-    // =========================================
-    // ADMIN API BEANS
-    // =========================================
-    @Bean
-    WrapperTypeRegistry adminWrapperTypeRegistry() {
-        return new WrapperTypeRegistry("admin-api");
-    }
-
-    @Bean
-    WrapperTypeOperationCustomizer adminWrapperTypeOperationCustomizer() {
-        return new WrapperTypeOperationCustomizer(adminWrapperTypeRegistry());
-    }
-
-    @Bean
-    WrapperTypeCustomizer adminWrapperTypeCustomizer() {
-        return new WrapperTypeCustomizer("admin-api", adminWrapperTypeRegistry());
-    }
-
-    // =========================================
-    // CUSTOMER API BEANS  
-    // =========================================
-    @Bean
-    WrapperTypeRegistry customerWrapperTypeRegistry() {
-        return new WrapperTypeRegistry("customer-api");
-    }
-
-    @Bean
-    WrapperTypeOperationCustomizer customerWrapperTypeOperationCustomizer() {
-        return new WrapperTypeOperationCustomizer(customerWrapperTypeRegistry());
-    }
-
-    @Bean
-    WrapperTypeCustomizer customerWrapperTypeCustomizer() {
-        return new WrapperTypeCustomizer("customer-api", customerWrapperTypeRegistry());
-    }
-
-    // =========================================
-    // RESTAURANT API BEANS
-    // =========================================
-    @Bean
-    WrapperTypeRegistry restaurantWrapperTypeRegistry() {
-        return new WrapperTypeRegistry("restaurant-api");
-    }
-
-    @Bean
-    WrapperTypeOperationCustomizer restaurantWrapperTypeOperationCustomizer() {
-        return new WrapperTypeOperationCustomizer(restaurantWrapperTypeRegistry());
-    }
-
-    @Bean
-    WrapperTypeCustomizer restaurantWrapperTypeCustomizer() {
-        return new WrapperTypeCustomizer("restaurant-api", restaurantWrapperTypeRegistry());
-    }
-
     @Bean
     GroupedOpenApi adminApi() {
         return GroupedOpenApi.builder()
@@ -134,12 +98,12 @@ public class SwaggerConfig implements WebMvcConfigurer {
                     ALL_DTO_PACKAGES.get(3)  // common.web.dto
                 )
                 .pathsToMatch("/admin/**")
-                // OPERATION CUSTOMIZERS FIRST (populate extension data)
-                .addOperationCustomizer(adminWrapperTypeOperationCustomizer())
+                // NUOVA ARCHITETTURA: customizer tramite dependency injection
+                .addOperationCustomizer(metadataCollector)
                 // OPENAPI CUSTOMIZERS SECOND (process extension data)
                 .addOpenApiCustomizer(groupCustomizer())
                 .addOpenApiCustomizer(sortSchemasCustomizer())
-                .addOpenApiCustomizer(adminWrapperTypeCustomizer())
+                .addOpenApiCustomizer(swaggerSpecificationGenerator)
                 .build();
     }
 
@@ -154,12 +118,12 @@ public class SwaggerConfig implements WebMvcConfigurer {
                     ALL_DTO_PACKAGES.get(3)  // common.web.dto
                 )
                 .pathsToMatch("/customer/**")
-                // OPERATION CUSTOMIZERS FIRST (populate extension data)
-                .addOperationCustomizer(customerWrapperTypeOperationCustomizer())
+                // NUOVA ARCHITETTURA: customizer tramite dependency injection
+                .addOperationCustomizer(metadataCollector)
                 // OPENAPI CUSTOMIZERS SECOND (process extension data)
                 .addOpenApiCustomizer(groupCustomizer())
                 .addOpenApiCustomizer(sortSchemasCustomizer())
-                .addOpenApiCustomizer(customerWrapperTypeCustomizer())
+                .addOpenApiCustomizer(swaggerSpecificationGenerator)
                 .build();
     }
 
@@ -174,12 +138,12 @@ public class SwaggerConfig implements WebMvcConfigurer {
                     ALL_DTO_PACKAGES.get(3)  // common.web.dto
                 )
                 .pathsToMatch("/restaurant/**")
-                // OPERATION CUSTOMIZERS FIRST (populate extension data)
-                .addOperationCustomizer(restaurantWrapperTypeOperationCustomizer())
+                // NUOVA ARCHITETTURA: customizer tramite dependency injection
+                .addOperationCustomizer(metadataCollector)
                 // OPENAPI CUSTOMIZERS SECOND (process extension data)
                 .addOpenApiCustomizer(groupCustomizer())
                 .addOpenApiCustomizer(sortSchemasCustomizer())
-                .addOpenApiCustomizer(restaurantWrapperTypeCustomizer())
+                .addOpenApiCustomizer(swaggerSpecificationGenerator)
                 .build();
     }
 
@@ -198,14 +162,9 @@ public class SwaggerConfig implements WebMvcConfigurer {
     }
 
     private Components baseComponents() {
-        Components components = new Components()
-                .addResponses("400", new ApiResponse().description("Bad Request"))
-                .addResponses("401", new ApiResponse().description("Unauthorized"))
-                .addResponses("403", new ApiResponse().description("Forbidden"))
-                .addResponses("404", new ApiResponse().description("Not Found"))
-                .addResponses("500", new ApiResponse().description("Internal Server Error"))
-                .addResponses("405", new ApiResponse().description("Method Not Allowed"));
-                
+        Components components = new Components();
+        // Non definiamo risposte generiche qui perché vengono gestite dal SwaggerSpecificationGenerator
+        // che applica i tipi specifici per ogni operazione
         return components;
     }
 
