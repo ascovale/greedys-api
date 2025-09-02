@@ -168,6 +168,13 @@ public class MethodAnalyzer {
     }
     
     /**
+     * Rileva il metodo HTTP dalle annotations Spring (versione pubblica)
+     */
+    public String detectHttpMethodPublic(Method method) {
+        return detectHttpMethod(method);
+    }
+    
+    /**
      * Rileva il metodo HTTP dalle annotations Spring
      */
     private String detectHttpMethod(Method method) {
