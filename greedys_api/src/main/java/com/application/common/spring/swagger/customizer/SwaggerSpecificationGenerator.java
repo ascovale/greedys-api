@@ -13,6 +13,7 @@ import com.application.common.spring.swagger.generator.WrapperSchemaGenerator;
 import com.application.common.spring.swagger.metadata.OperationDataMetadata;
 import com.application.common.spring.swagger.registry.MetadataRegistry;
 import com.application.common.spring.swagger.utility.SchemaTypeAnalyzer;
+import com.application.common.spring.swagger.vendor.VendorExtensionApplicator;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 public class SwaggerSpecificationGenerator implements OpenApiCustomizer {
     
     private final MetadataRegistry registry;
+    private final VendorExtensionApplicator vendorExtensionApplicator;
     
     @Override
     public void customise(OpenAPI openApi) {
@@ -74,11 +76,37 @@ public class SwaggerSpecificationGenerator implements OpenApiCustomizer {
             // 6. Aggiorna le operazioni con i nuovi schemi
             updateOperations(allOperations, openApi);
             
+            // 7. Applica vendor extensions a tutti i livelli
+            applyVendorExtensions(openApi);
+            
             log.info("Schema generation completed successfully - {} total schemas", 
                 openApi.getComponents().getSchemas().size());
             
         } catch (Exception e) {
             log.error("Error during OpenAPI customization: {}", e.getMessage(), e);
+        }
+    }
+    
+    /**
+     * Applica vendor extensions a tutti i livelli dell'OpenAPI spec
+     */
+    private void applyVendorExtensions(OpenAPI openApi) {
+        try {
+            log.debug("Applying vendor extensions...");
+            
+            // 1. Extensions globali
+            vendorExtensionApplicator.applyGlobalExtensions(openApi);
+            
+            // 2. Extensions alle operazioni
+            vendorExtensionApplicator.applyOperationExtensions(openApi);
+            
+            // 3. Extensions agli schemi wrapper
+            vendorExtensionApplicator.applyWrapperSchemaExtensions(openApi);
+            
+            log.info("Vendor extensions applied successfully");
+            
+        } catch (Exception e) {
+            log.error("Error applying vendor extensions: {}", e.getMessage(), e);
         }
     }
     
