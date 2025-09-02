@@ -7,6 +7,9 @@ import java.lang.reflect.Type;
 import org.springdoc.core.customizers.OperationCustomizer;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.method.HandlerMethod;
 
 import com.application.common.spring.swagger.analysis.MethodAnalysisResult;
@@ -67,14 +70,12 @@ public class MetadataCollector implements OperationCustomizer {
         if (!registry.hasOperation(operationId)) {
             return operationId;
         }
-        
         int counter = 1;
         String candidateId;
         do {
             candidateId = operationId + "_" + counter;
             counter++;
         } while (registry.hasOperation(candidateId));
-        
         return candidateId;
     }
     
@@ -94,8 +95,8 @@ public class MetadataCollector implements OperationCustomizer {
         
         return OperationDataMetadata.builder()
                 .operationId(operation.getOperationId())
-                .httpMethod(extractHttpMethod(operation))
-                .path(extractPath(operation))
+                .httpMethod(extractHttpMethod(operation, handlerMethod))
+                .path(extractPath(operation, handlerMethod))
                 .controllerClass(method.getDeclaringClass().getName())
                 .methodName(method.getName())
                 .description(operation.getDescription())
@@ -105,19 +106,122 @@ public class MetadataCollector implements OperationCustomizer {
                 .build();
     }
     
-    // === HELPER METHODS ===
+    // ================================================================================================
+    // HELPER METHODS - Metodi di supporto organizzati per categoria
+    // ================================================================================================
     
-    private String extractHttpMethod(Operation operation) {
-        // SpringDoc non fornisce direttamente il metodo HTTP nell'Operation
-        // Usiamo un fallback o implementeremo un'analisi più sofisticata se necessario
-        return "GET"; // Placeholder - potrebbe essere migliorato
+    // --- HTTP Method & Path Extraction ---
+    
+    private String extractHttpMethod(Operation operation, HandlerMethod handlerMethod) {
+        try {
+            // Usa il MethodAnalyzer per determinare il metodo HTTP correttamente
+            if (handlerMethod != null && handlerMethod.getMethod() != null) {
+                // Riutilizza la logica già implementata nel MethodAnalyzer
+                Method method = handlerMethod.getMethod();
+                String httpMethod = methodAnalyzer.detectHttpMethodPublic(method);
+                if (httpMethod != null && !httpMethod.trim().isEmpty()) {
+                    return httpMethod;
+                }
+            }
+            
+            // Fallback: prova a dedurre dall'operation toString
+            if (operation != null) {
+                String operationString = operation.toString();
+                if (operationString != null) {
+                    // Cerca pattern comuni nella stringa dell'operation
+                    if (operationString.contains("POST")) return "POST";
+                    if (operationString.contains("PUT")) return "PUT";
+                    if (operationString.contains("DELETE")) return "DELETE";
+                    if (operationString.contains("PATCH")) return "PATCH";
+                }
+            }
+            
+            // Default sicuro
+            return "GET";
+            
+        } catch (Exception e) {
+            log.warn("Failed to extract HTTP method: {}", e.getMessage());
+            return "GET";
+        }
     }
     
-    private String extractPath(Operation operation) {
-        // Il path non è direttamente disponibile nell'Operation
-        // Potrebbe essere estratto dal HandlerMethod se necessario
-        return "/unknown"; // Placeholder
+    private String extractPath(Operation operation, HandlerMethod handlerMethod) {
+        try {
+            // Prova a estrarre il path dal HandlerMethod
+            if (handlerMethod != null && handlerMethod.getMethod() != null) {
+                Method method = handlerMethod.getMethod();
+                
+                // Controlla le annotations Spring mapping per il path
+                String path = extractPathFromAnnotations(method);
+                if (path != null && !path.trim().isEmpty()) {
+                    return path;
+                }
+                
+                // Fallback: usa il nome del metodo come indicatore
+                String methodName = method.getName();
+                if (methodName != null) {
+                    return "/" + methodName.toLowerCase();
+                }
+            }
+            
+            // Fallback: prova a dedurre dall'operation
+            if (operation != null && operation.getOperationId() != null) {
+                return "/" + operation.getOperationId().toLowerCase();
+            }
+            
+            return "/unknown";
+            
+        } catch (Exception e) {
+            log.warn("Failed to extract path: {}", e.getMessage());
+            return "/unknown";
+        }
     }
+    
+    private String extractPathFromAnnotations(Method method) {
+        try {
+            // Controlla @RequestMapping
+            if (method.isAnnotationPresent(RequestMapping.class)) {
+                RequestMapping rm = method.getAnnotation(RequestMapping.class);
+                if (rm.value() != null && rm.value().length > 0 && rm.value()[0] != null) {
+                    return rm.value()[0];
+                }
+                if (rm.path() != null && rm.path().length > 0 && rm.path()[0] != null) {
+                    return rm.path()[0];
+                }
+            }
+            
+            // Controlla @GetMapping
+            if (method.isAnnotationPresent(GetMapping.class)) {
+                GetMapping gm = method.getAnnotation(GetMapping.class);
+                if (gm.value() != null && gm.value().length > 0 && gm.value()[0] != null) {
+                    return gm.value()[0];
+                }
+                if (gm.path() != null && gm.path().length > 0 && gm.path()[0] != null) {
+                    return gm.path()[0];
+                }
+            }
+            
+            // Controlla @PostMapping
+            if (method.isAnnotationPresent(PostMapping.class)) {
+                PostMapping pm = method.getAnnotation(PostMapping.class);
+                if (pm.value() != null && pm.value().length > 0 && pm.value()[0] != null) {
+                    return pm.value()[0];
+                }
+                if (pm.path() != null && pm.path().length > 0 && pm.path()[0] != null) {
+                    return pm.path()[0];
+                }
+            }
+            
+            // Aggiungi altri mapping se necessario (PUT, DELETE, PATCH)
+            
+            return null;
+        } catch (Exception e) {
+            log.warn("Failed to extract path from annotations: {}", e.getMessage());
+            return null;
+        }
+    }
+    
+    // --- Wrapper Category & Data Type Analysis ---
     
     private WrapperCategory determineWrapperCategory(Class<?> type, Method method) {
         // Per ResponseEntity<ResponseWrapper<T>>, analizziamo il tipo T
@@ -199,8 +303,5 @@ public class MetadataCollector implements OperationCustomizer {
         return type.getName();
     }
     
-    private String getSimpleClassName(String fullClassName) {
-        if (fullClassName == null) return null;
-        return fullClassName.substring(fullClassName.lastIndexOf('.') + 1);
-    }
+    // ================================================================================================
 }
