@@ -13,7 +13,8 @@ import com.application.common.spring.swagger.generator.OperationResponseUpdater;
 import com.application.common.spring.swagger.generator.WrapperSchemaGenerator;
 import com.application.common.spring.swagger.metadata.OperationDataMetadata;
 import com.application.common.spring.swagger.registry.MetadataRegistry;
-import com.application.common.spring.swagger.util.StringCaseUtils;
+import com.application.common.spring.swagger.util.VendorExtensionsHelper;
+// ...existing imports...
 import com.application.common.spring.swagger.utility.SchemaTypeAnalyzer;
 
 import io.swagger.v3.oas.models.OpenAPI;
@@ -103,30 +104,8 @@ public class SwaggerSpecificationGenerator implements OpenApiCustomizer {
                     if (operationId.equals(operation.getOperationId())) {
                         OperationResponseUpdater.updateOperationResponses(operation, operationMetadata);
                         
-                        // Aggiungi vendor extension x-generic-type con il class name (solo nome semplice)
-                        String dataClassName = operationMetadata.getDataClassName();
-                        if (dataClassName != null && !dataClassName.trim().isEmpty()) {
-                            String simpleClassName = extractSimpleClassName(dataClassName);
-                            String snakeClassName = StringCaseUtils.toSnakeCase(simpleClassName);
-                            
-                            operation.addExtension("x-generic-type", simpleClassName);
-                            operation.addExtension("x-generic-type-snake", snakeClassName);
-                            
-                            log.debug("Added x-generic-type extensions: {} (camel), {} (snake) for operation: {}", 
-                                simpleClassName, snakeClassName, operationId);
-                        }
-                        
-                        // Aggiungi vendor extension per la categoria del wrapper
-                        if (operationMetadata.getWrapperCategory() != null) {
-                            String wrapperCategory = operationMetadata.getWrapperCategory().name();
-                            String wrapperCategorySnake = StringCaseUtils.toSnakeCase(wrapperCategory.toLowerCase());
-                            
-                            operation.addExtension("x-wrapper-type", wrapperCategory);
-                            operation.addExtension("x-wrapper-type-snake", wrapperCategorySnake);
-                            
-                            log.debug("Added x-wrapper-type extensions: {} (upper), {} (snake) for operation: {}", 
-                                wrapperCategory, wrapperCategorySnake, operationId);
-                        }
+                        // Aggiungi vendor extensions centralizzate per l'operazione
+                        VendorExtensionsHelper.addOperationVendorExtensions(operation, operationMetadata);
                         
                         log.debug("Updated operation responses: {}", operationId);
                     }
@@ -135,21 +114,7 @@ public class SwaggerSpecificationGenerator implements OpenApiCustomizer {
         });
     }
     
-    /**
-     * Estrae il nome semplice della classe dal nome completo (rimuove il package).
-     * 
-     * @param fullClassName il nome completo della classe (es. com.example.dto.UserDto)
-     * @return il nome semplice della classe (es. UserDto)
-     */
-    private String extractSimpleClassName(String fullClassName) {
-        if (fullClassName == null || fullClassName.trim().isEmpty()) {
-            return fullClassName;
-        }
-        
-        return fullClassName.contains(".") 
-            ? fullClassName.substring(fullClassName.lastIndexOf('.') + 1)
-            : fullClassName;
-    }
+    // ...existing code...
     
     // ...existing code...
     
