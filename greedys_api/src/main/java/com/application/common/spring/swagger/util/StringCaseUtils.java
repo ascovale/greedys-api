@@ -13,14 +13,13 @@ public final class StringCaseUtils {
      */
     public static String toSnakeCase(String input) {
         if (input == null || input.trim().isEmpty()) return input;
+    // Prima separiamo gli acronimi seguiti da una parola in Camel (es. "HTMLParser" -> "HTML_Parser").
+    // Questo preserva sequenze di maiuscole come "DTO" senza spezzarle in "D_T_O".
+    String result = input.replaceAll("([A-Z]+)([A-Z][a-z])", "$1_$2");
 
-        // 1) Split tra una maiuscola seguita da una maiuscola+minuscole (es. "HTMLParser" -> "HTML_Parser")
-        String result = input.replaceAll("([A-Z])([A-Z][a-z])", "$1_$2");
-        // 2) Split tra minuscola/cifra e maiuscola (es. "userId" -> "user_Id")
-        result = result.replaceAll("([a-z0-9])([A-Z])", "$1_$2");
-        // 3) Split tra maiuscole consecutive rimanenti (es. "AA" -> "A_A")
-        result = result.replaceAll("([A-Z])([A-Z])", "$1_$2");
+    // Poi split tra minuscola/cifra e maiuscola (es. "userId" -> "user_Id").
+    result = result.replaceAll("([a-z0-9])([A-Z])", "$1_$2");
 
-        return result.toLowerCase();
+    return result.toLowerCase();
     }
 }
