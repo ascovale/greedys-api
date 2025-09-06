@@ -3,6 +3,7 @@ package com.application.common.spring.swagger.generator;
 import com.application.common.spring.swagger.generator.helper.SchemaHelper;
 import com.application.common.spring.swagger.metadata.SchemaMetadata;
 import com.application.common.spring.swagger.metadata.WrapperCategory;
+import com.application.common.spring.swagger.util.StringCaseUtils;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.Schema;
@@ -41,6 +42,71 @@ public class WrapperSchemaGenerator {
         
         openApi.getComponents().getSchemas().put(wrapperSchemaName, wrapperSchema);
         log.debug("Generated simplified wrapper schema: {}", wrapperSchemaName);
+    }
+    
+    /**
+     * Versione che accetta il nome dello schema wrapper e il nome della classe dati.
+     * Aggiunge anche i vendor extensions x-generic-type e x-generic-type-snake.
+     */
+    public static void generateWrapperSchema(String wrapperSchemaName, String dataClassName, OpenAPI openApi) {
+        WrapperCategory category = deduceWrapperCategory(wrapperSchemaName);
+        String dataType = dataClassName != null ? extractSimpleClassName(dataClassName) : 
+                         extractDataTypeFromSchemaName(wrapperSchemaName);
+        
+        Schema<?> wrapperSchema = createBaseWrapperSchemaSimplified(category, dataType);
+        addCategorySpecificPropertiesSimplified(wrapperSchema, category, dataType);
+        
+        // Aggiungi vendor extensions se abbiamo il nome della classe
+        if (dataClassName != null && !dataClassName.trim().isEmpty()) {
+            String simpleClassName = extractSimpleClassName(dataClassName);
+            String snakeClassName = StringCaseUtils.toSnakeCase(simpleClassName);
+            
+            wrapperSchema.addExtension("x-generic-type", simpleClassName);
+            wrapperSchema.addExtension("x-generic-type-snake", snakeClassName);
+            
+            log.debug("Added x-generic-type extensions to wrapper schema {}: {} (camel), {} (snake)", 
+                wrapperSchemaName, simpleClassName, snakeClassName);
+        }
+        
+        openApi.getComponents().getSchemas().put(wrapperSchemaName, wrapperSchema);
+        log.debug("Generated wrapper schema with extensions: {}", wrapperSchemaName);
+    }
+    
+    /**
+     * Versione che accetta nome schema, classe dati e categoria del wrapper.
+     * Aggiunge vendor extensions per tipo e categoria.
+     */
+    public static void generateWrapperSchema(String wrapperSchemaName, String dataClassName, 
+                                           WrapperCategory category, OpenAPI openApi) {
+        String dataType = dataClassName != null ? extractSimpleClassName(dataClassName) : 
+                         extractDataTypeFromSchemaName(wrapperSchemaName);
+        
+        Schema<?> wrapperSchema = createBaseWrapperSchemaSimplified(category, dataType);
+        addCategorySpecificPropertiesSimplified(wrapperSchema, category, dataType);
+        
+        // Aggiungi vendor extensions per il tipo di dato
+        if (dataClassName != null && !dataClassName.trim().isEmpty()) {
+            String simpleClassName = extractSimpleClassName(dataClassName);
+            String snakeClassName = StringCaseUtils.toSnakeCase(simpleClassName);
+            
+            wrapperSchema.addExtension("x-generic-type", simpleClassName);
+            wrapperSchema.addExtension("x-generic-type-snake", snakeClassName);
+        }
+        
+        // Aggiungi vendor extensions per la categoria del wrapper
+        if (category != null) {
+            String wrapperCategoryName = category.name();
+            String wrapperCategorySnake = StringCaseUtils.toSnakeCase(wrapperCategoryName.toLowerCase());
+            
+            wrapperSchema.addExtension("x-wrapper-type", wrapperCategoryName);
+            wrapperSchema.addExtension("x-wrapper-type-snake", wrapperCategorySnake);
+            
+            log.debug("Added x-wrapper-type extensions to schema {}: {} (upper), {} (snake)", 
+                wrapperSchemaName, wrapperCategoryName, wrapperCategorySnake);
+        }
+        
+        openApi.getComponents().getSchemas().put(wrapperSchemaName, wrapperSchema);
+        log.debug("Generated wrapper schema with type and category extensions: {}", wrapperSchemaName);
     }
     
     private static Schema<?> createBaseWrapperSchema(WrapperCategory category) {
@@ -204,5 +270,18 @@ public class WrapperSchemaGenerator {
             case "LocalDateTime" -> "java.time.LocalDateTime";
             default -> dataType; // Assume sia già un nome completo o un DTO
         };
+    }
+    
+    /**
+     * Estrae il nome semplice della classe dal nome completo (rimuove il package).
+     */
+    private static String extractSimpleClassName(String fullClassName) {
+        if (fullClassName == null || fullClassName.trim().isEmpty()) {
+            return fullClassName;
+        }
+        
+        return fullClassName.contains(".") 
+            ? fullClassName.substring(fullClassName.lastIndexOf('.') + 1)
+            : fullClassName;
     }
 }

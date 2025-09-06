@@ -1,6 +1,7 @@
 package com.application.common.spring.swagger.customizer;
 
 import java.util.Collection;
+import java.util.Map;
 
 import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springframework.core.annotation.Order;
@@ -12,8 +13,8 @@ import com.application.common.spring.swagger.generator.OperationResponseUpdater;
 import com.application.common.spring.swagger.generator.WrapperSchemaGenerator;
 import com.application.common.spring.swagger.metadata.OperationDataMetadata;
 import com.application.common.spring.swagger.registry.MetadataRegistry;
+import com.application.common.spring.swagger.util.StringCaseUtils;
 import com.application.common.spring.swagger.utility.SchemaTypeAnalyzer;
-import com.application.common.spring.swagger.vendor.VendorExtensionApplicator;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +36,6 @@ import lombok.extern.slf4j.Slf4j;
 public class SwaggerSpecificationGenerator implements OpenApiCustomizer {
     
     private final MetadataRegistry registry;
-    private final VendorExtensionApplicator vendorExtensionApplicator;
     
     @Override
     public void customise(OpenAPI openApi) {
@@ -68,16 +68,17 @@ public class SwaggerSpecificationGenerator implements OpenApiCustomizer {
                 }
             }
             
-            // 5. Genera schemi wrapper (ResponseWrapperXXX) - versione semplificata
+            // 5. Genera schemi wrapper (ResponseWrapperXXX) - con informazioni sui tipi e categorie
+            Map<String, String> wrapperToClassMapping = schemaAnalysis.getWrapperToDataClassMapping();
             for (String wrapperSchemaName : schemaAnalysis.getWrapperSchemasToGenerate()) {
-                WrapperSchemaGenerator.generateWrapperSchema(wrapperSchemaName, openApi);
+                String dataClassName = wrapperToClassMapping.get(wrapperSchemaName);
+                // Deduce la categoria dal nome dello schema wrapper
+                com.application.common.spring.swagger.metadata.WrapperCategory category = deduceWrapperCategoryFromName(wrapperSchemaName);
+                WrapperSchemaGenerator.generateWrapperSchema(wrapperSchemaName, dataClassName, category, openApi);
             }
             
             // 6. Aggiorna le operazioni con i nuovi schemi
             updateOperations(allOperations, openApi);
-            
-            // 7. Applica vendor extensions a tutti i livelli
-            applyVendorExtensions(openApi);
             
             log.info("Schema generation completed successfully - {} total schemas", 
                 openApi.getComponents().getSchemas().size());
@@ -87,28 +88,7 @@ public class SwaggerSpecificationGenerator implements OpenApiCustomizer {
         }
     }
     
-    /**
-     * Applica vendor extensions a tutti i livelli dell'OpenAPI spec
-     */
-    private void applyVendorExtensions(OpenAPI openApi) {
-        try {
-            log.debug("Applying vendor extensions...");
-            
-            // 1. Extensions globali
-            vendorExtensionApplicator.applyGlobalExtensions(openApi);
-            
-            // 2. Extensions alle operazioni
-            vendorExtensionApplicator.applyOperationExtensions(openApi);
-            
-            // 3. Extensions agli schemi wrapper
-            vendorExtensionApplicator.applyWrapperSchemaExtensions(openApi);
-            
-            log.info("Vendor extensions applied successfully");
-            
-        } catch (Exception e) {
-            log.error("Error applying vendor extensions: {}", e.getMessage(), e);
-        }
-    }
+  
     
     /**
      * Aggiorna le operazioni con i riferimenti agli schemi generati
@@ -122,10 +102,71 @@ public class SwaggerSpecificationGenerator implements OpenApiCustomizer {
                 pathItem.readOperations().forEach(operation -> {
                     if (operationId.equals(operation.getOperationId())) {
                         OperationResponseUpdater.updateOperationResponses(operation, operationMetadata);
+                        
+                        // Aggiungi vendor extension x-generic-type con il class name (solo nome semplice)
+                        String dataClassName = operationMetadata.getDataClassName();
+                        if (dataClassName != null && !dataClassName.trim().isEmpty()) {
+                            String simpleClassName = extractSimpleClassName(dataClassName);
+                            String snakeClassName = StringCaseUtils.toSnakeCase(simpleClassName);
+                            
+                            operation.addExtension("x-generic-type", simpleClassName);
+                            operation.addExtension("x-generic-type-snake", snakeClassName);
+                            
+                            log.debug("Added x-generic-type extensions: {} (camel), {} (snake) for operation: {}", 
+                                simpleClassName, snakeClassName, operationId);
+                        }
+                        
+                        // Aggiungi vendor extension per la categoria del wrapper
+                        if (operationMetadata.getWrapperCategory() != null) {
+                            String wrapperCategory = operationMetadata.getWrapperCategory().name();
+                            String wrapperCategorySnake = StringCaseUtils.toSnakeCase(wrapperCategory.toLowerCase());
+                            
+                            operation.addExtension("x-wrapper-type", wrapperCategory);
+                            operation.addExtension("x-wrapper-type-snake", wrapperCategorySnake);
+                            
+                            log.debug("Added x-wrapper-type extensions: {} (upper), {} (snake) for operation: {}", 
+                                wrapperCategory, wrapperCategorySnake, operationId);
+                        }
+                        
                         log.debug("Updated operation responses: {}", operationId);
                     }
                 });
             });
         });
+    }
+    
+    /**
+     * Estrae il nome semplice della classe dal nome completo (rimuove il package).
+     * 
+     * @param fullClassName il nome completo della classe (es. com.example.dto.UserDto)
+     * @return il nome semplice della classe (es. UserDto)
+     */
+    private String extractSimpleClassName(String fullClassName) {
+        if (fullClassName == null || fullClassName.trim().isEmpty()) {
+            return fullClassName;
+        }
+        
+        return fullClassName.contains(".") 
+            ? fullClassName.substring(fullClassName.lastIndexOf('.') + 1)
+            : fullClassName;
+    }
+    
+    // ...existing code...
+    
+    /**
+     * Deduce la WrapperCategory dal nome dello schema wrapper.
+     * Es: "ResponseWrapperListUserDto" -> LIST
+     */
+    private com.application.common.spring.swagger.metadata.WrapperCategory deduceWrapperCategoryFromName(String wrapperSchemaName) {
+        if (wrapperSchemaName.contains("List")) {
+            return com.application.common.spring.swagger.metadata.WrapperCategory.LIST;
+        }
+        if (wrapperSchemaName.contains("Page")) {
+            return com.application.common.spring.swagger.metadata.WrapperCategory.PAGE;
+        }
+        if (wrapperSchemaName.contains("Void")) {
+            return com.application.common.spring.swagger.metadata.WrapperCategory.VOID;
+        }
+        return com.application.common.spring.swagger.metadata.WrapperCategory.SINGLE;
     }
 }
