@@ -12,3 +12,50 @@ Can you:
 3. Provide guidance or examples on how to restructure or annotate the OpenAPI schema to make it compatible with Dart model generation.
 
 Let me know if you need a sample of the JSON file or a specific endpoint definition.
+
+---
+
+## ✅ VENDOR EXTENSIONS SYSTEM COMPLETED
+
+Ho implementato un sistema completo di **vendor extensions** per personalizzare l'OpenAPI spec, con particolare focus sui wrapper `ResponseWrapper*`:
+
+### 📂 **Componenti Implementati:**
+- **`VendorExtension.java`** - Interface base per extensions
+- **`VendorExtensionLevel.java`** - Enum per livelli (GLOBAL, OPERATION, SCHEMA, etc.)
+- **`VendorExtensionRegistry.java`** - Registry centralizzato con organizzazione per level/target
+- **`VendorExtensionApplicator.java`** - Applicatore per diversi livelli dell'OpenAPI spec
+- **`VendorExtensionBuilder.java`** - Builder fluente con metodi specializzati per wrapper
+- **`VendorExtensionConfig.java`** - Auto-configurazione Spring
+- **`WrapperExtensionExamples.java`** - Esempi pratici completi
+- **`VendorExtensionSystemTest.java`** - Test unitari
+- **`README.md`** - Documentazione completa con esempi
+
+### 🎯 **Funzionalità Principali:**
+1. **Wrapper-specific extensions** - Metodi specializzati per `ResponseWrapper*`
+2. **Multi-level support** - Global, Operation, Response, Schema extensions
+3. **Conditional logic** - Extensions che si applicano solo a determinati schemi
+4. **Fluent API** - Builder pattern per facilità d'uso
+5. **Factory methods** - Metodi rapidi per casi comuni
+6. **Auto-registration** - Configurazione automatica con Spring
+
+### 🔧 **Uso Rapido:**
+```java
+// Extension per tutti i wrapper
+VendorExtension allWrappers = VendorExtensionBuilder.forAllWrappers(
+    "x-wrapper-type", "response-container"
+);
+
+// Extension solo per wrapper String
+VendorExtension stringWrapper = VendorExtensionBuilder.forStringWrapper(
+    "x-primitive-wrapper", Map.of("cacheable", true)
+);
+
+// Extension condizionale
+VendorExtension conditionalExt = VendorExtensionBuilder.create("x-success-wrapper")
+    .mapValue()
+    .addToMap("success", true)
+    .onlyWrappers()  // <-- Solo sui wrapper
+    .build();
+```
+
+Il sistema è pronto per essere utilizzato! 🚀
