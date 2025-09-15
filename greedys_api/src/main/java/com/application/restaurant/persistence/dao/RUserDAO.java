@@ -3,6 +3,8 @@ package com.application.restaurant.persistence.dao;
 import java.util.Collection;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -19,6 +21,8 @@ public interface RUserDAO extends JpaRepository<RUser, Long>{
     void setUserStatus(@Param("id") Long id, @Param("status") RUser.Status status);
 
     Collection<RUser> findByRestaurantId(Long id);
+    
+    Page<RUser> findByRestaurantId(Long id, Pageable pageable);
 
     @Query("SELECT ru FROM RUser ru WHERE ru.RUserHub.email = :email")
     RUser findByEmail(@Param("email") String email);

@@ -4,6 +4,9 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,8 +38,9 @@ public class CustomerRestaurantInfoController extends BaseController {
 	@Operation(summary = "Get all restaurants", description = "Retrieve all restaurants")
 	@GetMapping("")
 	
-    public ResponseEntity<ResponseWrapper<List<RestaurantDTO>>> getRestaurants() {
-		return executeList("get all restaurants", () -> restaurantService.findAll().stream().map(r -> new RestaurantDTO(r)).toList());
+    public ResponseEntity<ResponseWrapper<Page<RestaurantDTO>>> getRestaurants(
+    		@PageableDefault(size = 10, sort = "id") Pageable pageable) {
+		return executePaginated("get all restaurants", () -> restaurantService.findAllPaginated(pageable));
 	}
 
 	@GetMapping("/{restaurantId}/open-days")

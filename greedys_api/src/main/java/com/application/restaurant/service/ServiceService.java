@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -119,6 +121,10 @@ public class ServiceService {
 
 	public List<ServiceTypeDto> getServiceTypes() {
 		return serviceTypeDAO.findAll().stream().map(ServiceTypeDto::new).toList();
+	}
+
+	public Page<ServiceTypeDto> getServiceTypes(Pageable pageable) {
+		return serviceTypeDAO.findAll(pageable).map(ServiceTypeDto::new);
 	}
 
 	public List<ServiceSlotsDto> getServiceSlots(Long idRUser, LocalDate date) {

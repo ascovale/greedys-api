@@ -141,6 +141,16 @@ public class ReservationService {
                 .map(ReservationDTO::new);
     }
 
+    public Page<ReservationDTO> getAcceptedReservationsPageable(Long restaurantId, LocalDate start, LocalDate end,
+            Pageable pageable) {
+        Reservation.Status status = Reservation.Status.ACCEPTED;
+        if (restaurantId == null) {
+            throw new IllegalArgumentException("restaurantId cannot be null");
+        }
+        return reservationDAO.findByRestaurantAndDateBetweenAndStatus(restaurantId, start, end, status, pageable)
+                .map(ReservationDTO::new);
+    }
+
     
     @Transactional
     public void AcceptReservatioModifyRequest(Long reservationRequestId) {

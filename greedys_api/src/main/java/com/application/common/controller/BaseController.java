@@ -3,6 +3,10 @@ package com.application.common.controller;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -21,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
  * ERROR handling is delegated to GlobalExceptionHandler through thrown exceptions.
  * 
  * Controllers should:
- * - Use the success response methods (ok, created, okList, etc.) for successful operations
+ * - Use the success response methods (ok, created, okPage, etc.) for successful operations
  * - Use the execute methods to wrap business logic that may throw exceptions
  * - Let exceptions bubble up to GlobalExceptionHandler instead of handling them locally
  */
@@ -66,31 +70,6 @@ public class BaseController {
     }
 
     // ===================== LIST RESPONSES ======================
-
-    /**
-     * Create a successful list response with data
-     */
-    @ReadApiResponses
-    protected <T> ResponseEntity<ResponseWrapper<List<T>>> okList(List<T> data) {
-        return ResponseEntity.ok(ResponseWrapper.successList(data));
-    }
-
-    /**
-     * Create a successful list response with data and custom message
-     */
-    @ReadApiResponses
-    protected <T> ResponseEntity<ResponseWrapper<List<T>>> okList(List<T> data, String message) {
-        return ResponseEntity.ok(ResponseWrapper.successList(data, message));
-    }
-
-    /**
-     * Create a created list response (201)
-     */
-    @CreateApiResponses
-    protected <T> ResponseEntity<ResponseWrapper<List<T>>> createdList(List<T> data, String message) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ResponseWrapper.successList(data, message));
-    }
 
     // ===================== PAGE RESPONSES ======================
 
@@ -184,23 +163,39 @@ public class BaseController {
 
     /**
      * Execute a list operation with standardized error handling
-     * Exceptions are handled by GlobalExceptionHandler
+     */
+
+    // ===================== LIST OPERATIONS ======================
+
+    /**
+     * Execute operation that returns a List<T>
+     * 
+     * @param operation Description of the operation for logging
+     * @param supplier  Function that returns List<T>
+     * @return ResponseEntity with wrapped List<T>
      */
     @ReadApiResponses
     protected <T> ResponseEntity<ResponseWrapper<List<T>>> executeList(String operation, OperationSupplier<List<T>> supplier) {
         List<T> result = supplier.get();
-        return okList(result, "Operation " + operation + " completed successfully");
+        return ResponseEntity.ok(ResponseWrapper.successList(result));
     }
 
+    // ===================== SLICE OPERATIONS ======================
+
     /**
-     * Execute a list operation with custom success message
-     * Exceptions are handled by GlobalExceptionHandler
+     * Execute operation that returns a Slice<T>
+     * 
+     * @param operation Description of the operation for logging
+     * @param supplier  Function that returns Slice<T>
+     * @return ResponseEntity with wrapped Slice<T>
      */
     @ReadApiResponses
-    protected <T> ResponseEntity<ResponseWrapper<List<T>>> executeList(String operation, String successMessage, OperationSupplier<List<T>> supplier) {
-        List<T> result = supplier.get();
-        return okList(result, successMessage);
+    protected <T> ResponseEntity<ResponseWrapper<Slice<T>>> executeSlice(String operation, OperationSupplier<Slice<T>> supplier) {
+        Slice<T> result = supplier.get();
+        return ResponseEntity.ok(ResponseWrapper.successSlice(result));
     }
+
+    // ===================== PAGINATED OPERATIONS ======================
 
         /**
      * Execute a paginated read operation with automatic message
@@ -238,5 +233,35 @@ public class BaseController {
     @FunctionalInterface
     protected interface VoidOperation {
         void execute();
+    }
+
+    // ===================== UTILITY METHODS ======================
+
+    /**
+     * Convert a List to a single-page Page for consistent API responses
+     */
+    protected <T> Page<T> toPage(List<T> list) {
+        return new PageImpl<>(list, Pageable.unpaged(), list.size());
+    }
+
+    /**
+     * Convert a List to a Pageable-aware Page for consistent API responses
+     */
+    protected <T> Page<T> toPage(List<T> list, Pageable pageable) {
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), list.size());
+        List<T> subList = list.subList(start, end);
+        return new PageImpl<>(subList, pageable, list.size());
+    }
+
+    /**
+     * Convert a List to a Slice for consistent API responses
+     */
+    protected <T> Slice<T> toSlice(List<T> list, Pageable pageable) {
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), list.size());
+        List<T> subList = list.subList(start, end);
+        boolean hasNext = end < list.size();
+        return new SliceImpl<>(subList, pageable, hasNext);
     }
 }

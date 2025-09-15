@@ -1,7 +1,8 @@
 package com.application.admin.controller.restaurant;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -75,8 +76,10 @@ public class AdminRUserController extends BaseController {
     @Operation(summary = "Get restaurant users", description = "Retrieves the list of users for a specific restaurant")
     @GetMapping("/{restaurantId}/users")
     
-    public ResponseEntity<ResponseWrapper<List<RUserDTO>>> getRUsers(@PathVariable Long restaurantId) {
-        return executeList("get restaurant users", () -> RUserService.getRUsersByRestaurantId(restaurantId));
+    public ResponseEntity<ResponseWrapper<Page<RUserDTO>>> getRUsers(
+            @PathVariable Long restaurantId,
+            @PageableDefault(size = 10, sort = "id") Pageable pageable) {
+        return executePaginated("get restaurant users", () -> RUserService.getRUsersByRestaurantId(restaurantId, pageable));
     }
 
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_USER_READ')")
@@ -91,8 +94,9 @@ public class AdminRUserController extends BaseController {
     @Operation(summary = "Get all restaurant users", description = "Retrieves all restaurant users in the system")
     @GetMapping("/all")
     
-    public ResponseEntity<ResponseWrapper<List<RUserDTO>>> getAllRUsers() {
-        return executeList("get all restaurant users", () -> RUserService.getAllRUsers());
+    public ResponseEntity<ResponseWrapper<Page<RUserDTO>>> getAllRUsers(
+            @PageableDefault(size = 10, sort = "id") Pageable pageable) {
+        return executePaginated("get all restaurant users", () -> RUserService.getAllRUsers(pageable));
     }
 
 }

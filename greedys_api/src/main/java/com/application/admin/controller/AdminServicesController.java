@@ -1,9 +1,9 @@
 
 package com.application.admin.controller;
 
-import java.util.Collection;
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -40,11 +40,9 @@ public class AdminServicesController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_READ')")
     @GetMapping("/types")
     @Operation(summary = "Get all service types", description = "Retrieve all service types.")
-    public ResponseEntity<ResponseWrapper<List<ServiceTypeDto>>> getServiceTypes() {
-        return executeList("get service types", () -> {
-            Collection<ServiceTypeDto> serviceTypes = serviceService.getServiceTypes();
-            return serviceTypes instanceof List ? (List<ServiceTypeDto>) serviceTypes : List.copyOf(serviceTypes);
-        });
+    public ResponseEntity<ResponseWrapper<Page<ServiceTypeDto>>> getServiceTypes(
+            @PageableDefault(size = 10, sort = "id") Pageable pageable) {
+        return executePaginated("get service types", () -> serviceService.getServiceTypes(pageable));
     }
 
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")

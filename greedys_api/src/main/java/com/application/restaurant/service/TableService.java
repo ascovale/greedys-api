@@ -3,6 +3,8 @@ package com.application.restaurant.service;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,6 +59,11 @@ public class TableService {
         return tableDAO.findByRoom_Id(idRoom).stream()
                 .map(tableMapper::toDTO)
                 .collect(Collectors.toList());
+    }
+
+    public Page<TableDTO> findByRoom(Long idRoom, Pageable pageable) {
+        return tableDAO.findByRoom_Id(idRoom, pageable)
+                .map(tableMapper::toDTO);
     }
 
     public void deleteTable(Long tableId) {

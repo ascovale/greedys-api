@@ -4,11 +4,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Slice;
 
 import com.application.common.web.metadata.BaseMetadata;
-import com.application.common.web.metadata.ListMetadata;
-import com.application.common.web.metadata.PageMetadata;
-import com.application.common.web.metadata.SingleMetadata;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -43,7 +41,7 @@ public class ResponseWrapper<T> {
         return ResponseWrapper.<T>builder()
                 .data(data)
                 .message("Success")
-                .metadata(SingleMetadata.create())
+                .metadata(BaseMetadata.create())
                 .build();
     }
 
@@ -51,7 +49,7 @@ public class ResponseWrapper<T> {
         return ResponseWrapper.<T>builder()
                 .data(data)
                 .message(message)
-                .metadata(SingleMetadata.create())
+                .metadata(BaseMetadata.create())
                 .build();
     }
 
@@ -64,37 +62,63 @@ public class ResponseWrapper<T> {
     }
 
     // List success responses
-    public static <T> ResponseWrapper<List<T>> successList(List<T> data) {
+    public static <T> ResponseWrapper<List<T>> successList(List<T> list) {
         return ResponseWrapper.<List<T>>builder()
-                .data(data)
-                .message("Operation completed successfully")
-                .metadata(ListMetadata.forList(data))
+                .data(list)
+                .message(String.format("%d items retrieved", list.size()))
+                .metadata(BaseMetadata.create())
                 .build();
     }
 
-    public static <T> ResponseWrapper<List<T>> successList(List<T> data, String message) {
+    public static <T> ResponseWrapper<List<T>> successList(List<T> list, String message) {
         return ResponseWrapper.<List<T>>builder()
-                .data(data)
+                .data(list)
                 .message(message)
-                .metadata(ListMetadata.forList(data))
+                .metadata(BaseMetadata.create())
                 .build();
     }
 
-    public static <T> ResponseWrapper<List<T>> successList(List<T> data, String message, String filterDescription) {
+    public static <T> ResponseWrapper<List<T>> successList(List<T> list, String message, String filterDescription) {
         return ResponseWrapper.<List<T>>builder()
-                .data(data)
+                .data(list)
                 .message(message)
-                .metadata(ListMetadata.forList(data, filterDescription))
+                .metadata(BaseMetadata.create(filterDescription))
                 .build();
     }
 
-    // Page success responses
+    // Slice success responses
+    public static <T> ResponseWrapper<Slice<T>> successSlice(Slice<T> slice) {
+        return ResponseWrapper.<Slice<T>>builder()
+                .data(slice)
+                .message(String.format("Slice %d with %d items (hasNext: %s)", 
+                        slice.getNumber() + 1, slice.getNumberOfElements(), slice.hasNext()))
+                .metadata(BaseMetadata.create())
+                .build();
+    }
+
+    public static <T> ResponseWrapper<Slice<T>> successSlice(Slice<T> slice, String message) {
+        return ResponseWrapper.<Slice<T>>builder()
+                .data(slice)
+                .message(message)
+                .metadata(BaseMetadata.create())
+                .build();
+    }
+
+    public static <T> ResponseWrapper<Slice<T>> successSlice(Slice<T> slice, String message, String filterDescription) {
+        return ResponseWrapper.<Slice<T>>builder()
+                .data(slice)
+                .message(message)
+                .metadata(BaseMetadata.create(filterDescription))
+                .build();
+    }
+
+    // Page success responses - the main method for all collections
     public static <T> ResponseWrapper<Page<T>> successPage(Page<T> page) {
         return ResponseWrapper.<Page<T>>builder()
                 .data(page)
                 .message(String.format("Page %d of %d (%d total items)", 
                         page.getNumber() + 1, page.getTotalPages(), page.getTotalElements()))
-                .metadata(PageMetadata.forPage(page))
+                .metadata(BaseMetadata.create())
                 .build();
     }
 
@@ -102,15 +126,15 @@ public class ResponseWrapper<T> {
         return ResponseWrapper.<Page<T>>builder()
                 .data(page)
                 .message(message)
-                .metadata(PageMetadata.forPage(page))
+                .metadata(BaseMetadata.create())
                 .build();
     }
 
-    public static <T> ResponseWrapper<List<T>> successPage(Page<T> page, String message, String filterDescription) {
-        return ResponseWrapper.<List<T>>builder()
-                .data(page.getContent())
+    public static <T> ResponseWrapper<Page<T>> successPage(Page<T> page, String message, String filterDescription) {
+        return ResponseWrapper.<Page<T>>builder()
+                .data(page)
                 .message(message)
-                .metadata(PageMetadata.forPage(page, filterDescription))
+                .metadata(BaseMetadata.create(filterDescription))
                 .build();
     }
 
@@ -119,16 +143,7 @@ public class ResponseWrapper<T> {
         return ResponseWrapper.<T>builder()
                 .data(data)
                 .message(message)
-                .metadata(SingleMetadata.create())
-                .build();
-    }
-
-    // Created response for lists (201)
-    public static <T> ResponseWrapper<List<T>> createdList(List<T> data, String message) {
-        return ResponseWrapper.<List<T>>builder()
-                .data(data)
-                .message(message)
-                .metadata(ListMetadata.forList(data))
+                .metadata(BaseMetadata.create())
                 .build();
     }
 

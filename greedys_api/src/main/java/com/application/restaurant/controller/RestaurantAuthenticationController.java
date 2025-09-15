@@ -2,6 +2,9 @@ package com.application.restaurant.controller;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -45,9 +48,9 @@ public class RestaurantAuthenticationController extends BaseController {
     @Operation(summary = "Get list of restaurants for hub user", description = "Given a hub JWT, returns the list of restaurants associated with the hub user")
     @GetMapping(value = "/restaurants", produces = "application/json")
     
-    public ResponseEntity<ResponseWrapper<List<RestaurantDTO>>> restaurants(
+    public ResponseEntity<ResponseWrapper<Page<RestaurantDTO>>> restaurants(
             @Parameter(hidden = true) @RequestHeader("Authorization") String authHeader) {
-        return executeList("get restaurants for hub user", () -> {
+        return executePaginated("get restaurants for hub user", () -> {
             try {
                 Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -56,7 +59,9 @@ public class RestaurantAuthenticationController extends BaseController {
                 }
 
                 String hubEmail = extractHubEmail(authentication, authHeader);
-                return restaurantAuthenticationService.getRestaurantsForUserHub(hubEmail);
+                List<RestaurantDTO> restaurants = restaurantAuthenticationService.getRestaurantsForUserHub(hubEmail);
+                // Convert List to Page (single page with all restaurants)
+                return new PageImpl<>(restaurants, Pageable.unpaged(), restaurants.size());
             } catch (Exception e) {
                 if (e instanceof RuntimeException) {
                     throw (RuntimeException) e;

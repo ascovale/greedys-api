@@ -27,6 +27,12 @@ public enum WrapperCategory {
     PAGE,
     
     /**
+     * ResponseWrapper<Slice<T>> - Slice response (paginated without total count)
+     * Esempio: ResponseWrapper<Slice<UserDto>>
+     */
+    SLICE,
+    
+    /**
      * ResponseWrapper<String> - Void operations response
      * Esempio: executeVoid() operations
      */
@@ -50,6 +56,8 @@ public enum WrapperCategory {
                 return LIST;
             case "PAGE":
                 return PAGE;
+            case "SLICE":
+                return SLICE;
             case "VOID":
             case "STRING":
                 return VOID;
@@ -71,6 +79,8 @@ public enum WrapperCategory {
                 return "ResponseWrapperList%s";
             case PAGE:
                 return "ResponseWrapperPage%s";
+            case SLICE:
+                return "ResponseWrapperSlice%s";
             case VOID:
                 return "ResponseWrapperString";
             default:

@@ -12,6 +12,7 @@ import com.application.common.spring.swagger.generator.DtoSchemaGenerator;
 import com.application.common.spring.swagger.generator.OperationResponseUpdater;
 import com.application.common.spring.swagger.generator.WrapperSchemaGenerator;
 import com.application.common.spring.swagger.metadata.OperationDataMetadata;
+import com.application.common.spring.swagger.metadata.WrapperCategory;
 import com.application.common.spring.swagger.registry.MetadataRegistry;
 import com.application.common.spring.swagger.util.VendorExtensionsHelper;
 // ...existing imports...
@@ -71,12 +72,18 @@ public class SwaggerSpecificationGenerator implements OpenApiCustomizer {
             
             // 5. Genera schemi wrapper (ResponseWrapperXXX) - con informazioni sui tipi e categorie
             Map<String, String> wrapperToClassMapping = schemaAnalysis.getWrapperToDataClassMapping();
+            Map<String, WrapperCategory> wrapperToCategory = schemaAnalysis.getWrapperToCategoryMapping();
             for (String wrapperSchemaName : schemaAnalysis.getWrapperSchemasToGenerate()) {
                 String dataClassName = wrapperToClassMapping.get(wrapperSchemaName);
-                // Deduce la categoria dal nome dello schema wrapper
-                com.application.common.spring.swagger.metadata.WrapperCategory category = deduceWrapperCategoryFromName(wrapperSchemaName);
+                // Prende la categoria dalla mappa calcolata; fallback a deduzione dal nome se assente
+                WrapperCategory category = wrapperToCategory.get(wrapperSchemaName);
                 WrapperSchemaGenerator.generateWrapperSchema(wrapperSchemaName, dataClassName, category, openApi);
             }
+
+            // 7. Genera catalogo JSON dei ResponseWrapper prodotti (wrapper -> T, categoria)
+            com.application.common.spring.swagger.catalog.ResponseWrapperCatalogRegistry.generateAndSave(
+                wrapperToClassMapping, wrapperToCategory, schemaAnalysis.getWrapperSchemasToGenerate()
+            );
             
             // 6. Aggiorna le operazioni con i nuovi schemi
             updateOperations(allOperations, openApi);
@@ -113,25 +120,5 @@ public class SwaggerSpecificationGenerator implements OpenApiCustomizer {
             });
         });
     }
-    
-    // ...existing code...
-    
-    // ...existing code...
-    
-    /**
-     * Deduce la WrapperCategory dal nome dello schema wrapper.
-     * Es: "ResponseWrapperListUserDto" -> LIST
-     */
-    private com.application.common.spring.swagger.metadata.WrapperCategory deduceWrapperCategoryFromName(String wrapperSchemaName) {
-        if (wrapperSchemaName.contains("List")) {
-            return com.application.common.spring.swagger.metadata.WrapperCategory.LIST;
-        }
-        if (wrapperSchemaName.contains("Page")) {
-            return com.application.common.spring.swagger.metadata.WrapperCategory.PAGE;
-        }
-        if (wrapperSchemaName.contains("Void")) {
-            return com.application.common.spring.swagger.metadata.WrapperCategory.VOID;
-        }
-        return com.application.common.spring.swagger.metadata.WrapperCategory.SINGLE;
-    }
+  
 }

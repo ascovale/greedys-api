@@ -30,17 +30,20 @@ public class SchemaTypeAnalyzer {
         private final Set<WrapperCategory> usedCategories;
         private final Set<String> dataClassNames;
         private final Map<String, String> wrapperToDataClassMapping;
+    private final Map<String, WrapperCategory> wrapperToCategoryMapping;
         
-        public SchemaAnalysisResult(Set<String> wrapperSchemasToGenerate, 
-                                   Set<String> dtoSchemasToExtract,
-                                   Set<WrapperCategory> usedCategories,
-                                   Set<String> dataClassNames,
-                                   Map<String, String> wrapperToDataClassMapping) {
-            this.wrapperSchemasToGenerate = wrapperSchemasToGenerate;
-            this.dtoSchemasToExtract = dtoSchemasToExtract;
-            this.usedCategories = usedCategories;
-            this.dataClassNames = dataClassNames;
-            this.wrapperToDataClassMapping = wrapperToDataClassMapping;
+    public SchemaAnalysisResult(Set<String> wrapperSchemasToGenerate, 
+                   Set<String> dtoSchemasToExtract,
+                   Set<WrapperCategory> usedCategories,
+                   Set<String> dataClassNames,
+                   Map<String, String> wrapperToDataClassMapping,
+                   Map<String, WrapperCategory> wrapperToCategoryMapping) {
+        this.wrapperSchemasToGenerate = wrapperSchemasToGenerate;
+        this.dtoSchemasToExtract = dtoSchemasToExtract;
+        this.usedCategories = usedCategories;
+        this.dataClassNames = dataClassNames;
+        this.wrapperToDataClassMapping = wrapperToDataClassMapping;
+        this.wrapperToCategoryMapping = wrapperToCategoryMapping;
         }
         
         public Set<String> getWrapperSchemasToGenerate() { return wrapperSchemasToGenerate; }
@@ -48,6 +51,7 @@ public class SchemaTypeAnalyzer {
         public Set<WrapperCategory> getUsedCategories() { return usedCategories; }
         public Set<String> getDataClassNames() { return dataClassNames; }
         public Map<String, String> getWrapperToDataClassMapping() { return wrapperToDataClassMapping; }
+    public Map<String, WrapperCategory> getWrapperToCategoryMapping() { return wrapperToCategoryMapping; }
         
         public int getTotalSchemaCount() {
             return wrapperSchemasToGenerate.size() + dtoSchemasToExtract.size();
@@ -69,16 +73,17 @@ public class SchemaTypeAnalyzer {
         Set<String> dataClassNames = new HashSet<>();
         Map<String, String> wrapperToDataClassMapping = new HashMap<>();
         
+        Map<String, WrapperCategory> wrapperToCategoryMapping = new HashMap<>();
         for (OperationDataMetadata operation : operations) {
             analyzeOperation(operation, wrapperSchemasToGenerate, dtoSchemasToExtract, 
-                           usedCategories, dataClassNames, wrapperToDataClassMapping);
+                           usedCategories, dataClassNames, wrapperToDataClassMapping, wrapperToCategoryMapping);
         }
         
         log.info("Schema analysis completed: {} wrapper schemas, {} DTO schemas, {} categories",
             wrapperSchemasToGenerate.size(), dtoSchemasToExtract.size(), usedCategories.size());
         
-        return new SchemaAnalysisResult(wrapperSchemasToGenerate, dtoSchemasToExtract, 
-                                       usedCategories, dataClassNames, wrapperToDataClassMapping);
+    return new SchemaAnalysisResult(wrapperSchemasToGenerate, dtoSchemasToExtract, 
+                       usedCategories, dataClassNames, wrapperToDataClassMapping, wrapperToCategoryMapping);
     }
     
     /**
@@ -89,7 +94,8 @@ public class SchemaTypeAnalyzer {
                                        Set<String> dtoSchemasToExtract,
                                        Set<WrapperCategory> usedCategories,
                                        Set<String> dataClassNames,
-                                       Map<String, String> wrapperToDataClassMapping) {
+                                       Map<String, String> wrapperToDataClassMapping,
+                                       Map<String, WrapperCategory> wrapperToCategoryMapping) {
         
         // 1. Categoria wrapper
         WrapperCategory category = operation.getWrapperCategory();
@@ -109,6 +115,8 @@ public class SchemaTypeAnalyzer {
                 
                 // 3. Mappa wrapper -> classe dati per efficienza
                 wrapperToDataClassMapping.put(wrapperSchemaName, dataClassName);
+                // 3b. Mappa wrapper -> categoria
+                wrapperToCategoryMapping.put(wrapperSchemaName, category);
                 
                 // 4. DTO da estrarre (se non è primitivo)
                 if (!isPrimitiveType(simpleClassName)) {
@@ -123,6 +131,8 @@ public class SchemaTypeAnalyzer {
                 
                 // 5. Mappa wrapper -> classe dati (null per indicare tipo primitivo default)
                 wrapperToDataClassMapping.put(wrapperSchemaName, "java.lang.String");
+                // 5b. Mappa wrapper -> categoria
+                wrapperToCategoryMapping.put(wrapperSchemaName, category);
                 
                 log.debug("Operation {} has null/empty dataClassName, using String as default", 
                     operation.getOperationId());
