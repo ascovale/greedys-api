@@ -4,6 +4,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.application.admin.web.dto.verification.AdminVerificationResult;
@@ -147,5 +150,13 @@ public class RestaurantGooglePlacesService {
     public List<UserRestaurantAssociation> getPendingVerifications() {
         // TODO: Implement proper pending verifications retrieval or move to dedicated service
         return new ArrayList<>();
+    }
+
+    /**
+     * Temporary implementation with pagination - should be moved to RestaurantVerificationService
+     */
+    public Page<UserRestaurantAssociation> getPendingVerifications(Pageable pageable) {
+        // TODO: Implement proper pending verifications retrieval or move to dedicated service
+        return new PageImpl<>(new ArrayList<>(), pageable, 0);
     }
 }

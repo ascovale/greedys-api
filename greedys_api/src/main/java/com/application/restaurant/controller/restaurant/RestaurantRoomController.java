@@ -1,8 +1,8 @@
 package com.application.restaurant.controller.restaurant;
 
-import java.util.Collection;
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -39,11 +39,12 @@ public class RestaurantRoomController extends BaseController {
 	@GetMapping(value = "/all")
 	@Operation(summary = "Get rooms of a restaurant", description = "Retrieve the rooms of a restaurant")
 	
-    public ResponseEntity<ResponseWrapper<List<RoomDTO>>> getRooms(@AuthenticationPrincipal RUser rUser) {
-		return executeList("get restaurant rooms", () -> {
+    public ResponseEntity<ResponseWrapper<Page<RoomDTO>>> getRooms(
+    		@AuthenticationPrincipal RUser rUser,
+    		@PageableDefault(size = 10, sort = "id") Pageable pageable) {
+		return executePaginated("get restaurant rooms", () -> {
 			log.info("Getting rooms for restaurant: {}", rUser.getRestaurant().getId());
-			Collection<RoomDTO> rooms = roomService.findByRestaurant(rUser.getRestaurant().getId());
-			return List.copyOf(rooms);
+			return roomService.findByRestaurant(rUser.getRestaurant().getId(), pageable);
 		});
 	}
 

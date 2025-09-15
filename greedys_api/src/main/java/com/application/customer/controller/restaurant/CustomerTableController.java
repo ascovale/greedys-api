@@ -1,8 +1,8 @@
 package com.application.customer.controller.restaurant;
 
-import java.util.Collection;
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,10 +31,11 @@ public class CustomerTableController extends BaseController {
 	@GetMapping("/room/{roomId}/tables")
 	
 	@Operation(summary = "Get tables of a room", description = "Retrieve the tables of a room")
-    public ResponseEntity<ResponseWrapper<List<TableDTO>>> getTables(@PathVariable Long roomId) {
-		return executeList("get tables for room", () -> {
-			Collection<TableDTO> tables = tableService.findByRoom(roomId);
-			return tables instanceof List ? (List<TableDTO>) tables : List.copyOf(tables);
+    public ResponseEntity<ResponseWrapper<Page<TableDTO>>> getTables(
+    		@PathVariable Long roomId,
+    		@PageableDefault(size = 10, sort = "id") Pageable pageable) {
+		return executePaginated("get tables for room", () -> {
+			return tableService.findByRoom(roomId, pageable);
 		});
 	}
 }

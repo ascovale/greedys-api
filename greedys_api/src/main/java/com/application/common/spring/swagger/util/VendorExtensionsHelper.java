@@ -15,7 +15,8 @@ import io.swagger.v3.oas.models.media.Schema;
 public final class VendorExtensionsHelper {
 
     private static final Set<String> PRIMITIVES = Set.of(
-        "String", "Integer", "Long", "Boolean", "Double", "Float", "Object", "Void"
+    "String", "Integer", "Long", "Boolean", "Double", "Float", "Object", "Void",
+    "LocalDate", "LocalDateTime"
     );
 
     private static final Map<String, String> DART_TYPE_MAP = Map.of(

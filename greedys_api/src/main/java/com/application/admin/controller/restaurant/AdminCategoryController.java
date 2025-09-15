@@ -1,6 +1,5 @@
 package com.application.admin.controller.restaurant;
 
-import java.util.Collection;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
@@ -40,9 +39,8 @@ public class AdminCategoryController extends BaseController {
 	@Operation(summary = "Get types of a restaurant", description = "Retrieve the types of a restaurant")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
     public ResponseEntity<ResponseWrapper<List<String>>> getRestaurantTypesNames(@PathVariable Long restaurantId) {
-		return executeList("get restaurant types", () -> {
-			Collection<String> types = restaurantCategoryService.getRestaurantTypesNames(restaurantId);
-			return types instanceof java.util.List ? (java.util.List<String>) types : new java.util.ArrayList<>(types);
+		return execute("get restaurant types", () -> {
+			return restaurantCategoryService.getRestaurantTypesNames(restaurantId);
 		});
 	}
 

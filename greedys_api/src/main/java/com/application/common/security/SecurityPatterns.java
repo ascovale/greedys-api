@@ -27,6 +27,8 @@ public final class SecurityPatterns {
         "/register/**", 
         "/v3/api-docs*/**", 
         "/api/**", 
+    // Public internal endpoints (e.g. response wrapper catalog)
+    "/api/internal/response-wrapper-catalog",
         "/auth/**", 
         "/reservation/**", 
         "/error*", 

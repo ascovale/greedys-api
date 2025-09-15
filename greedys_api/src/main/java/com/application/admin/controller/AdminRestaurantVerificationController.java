@@ -1,7 +1,8 @@
 package com.application.admin.controller;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -152,9 +153,10 @@ public class AdminRestaurantVerificationController extends BaseController {
                      "Admins can review these and make approval/rejection decisions."
     )
     @GetMapping("/pending")
-    public ResponseEntity<ResponseWrapper<List<UserRestaurantAssociation>>> getPendingVerifications() {
+    public ResponseEntity<ResponseWrapper<Page<UserRestaurantAssociation>>> getPendingVerifications(
+            @PageableDefault(size = 10, sort = "id") Pageable pageable) {
         
-        return executeList("get pending verifications", () -> googlePlacesService.getPendingVerifications());
+        return executePaginated("get pending verifications", () -> googlePlacesService.getPendingVerifications(pageable));
     }
 
     /**

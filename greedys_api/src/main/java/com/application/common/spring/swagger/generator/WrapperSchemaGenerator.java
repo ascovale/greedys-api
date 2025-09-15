@@ -95,6 +95,7 @@ public class WrapperSchemaGenerator {
             case SINGLE -> addSingleProperties(wrapperSchema, metadata);
             case LIST -> addListProperties(wrapperSchema, metadata);
             case PAGE -> addPageProperties(wrapperSchema, metadata);
+            case SLICE -> addSliceProperties(wrapperSchema, metadata);
             case VOID -> addVoidProperties(wrapperSchema);
         }
     }
@@ -138,6 +139,26 @@ public class WrapperSchemaGenerator {
         wrapperSchema.addProperty("metadata", new Schema<>().$ref("#/components/schemas/PageMetadata"));
     }
     
+    @SuppressWarnings("unchecked")
+    private static void addSliceProperties(Schema<?> wrapperSchema, SchemaMetadata metadata) {
+        Schema<?> arrayItemsSchema = metadata.getDataClassName() != null ? 
+            SchemaHelper.createItemSchema(metadata.getDataClassName()) : 
+            new Schema<>().type("object");
+            
+        Schema<?> sliceSchema = new Schema<>().type("object")
+            .addProperty("content", new Schema<>().type("array").items((Schema<Object>) arrayItemsSchema))
+            .addProperty("size", new Schema<>().type("integer"))
+            .addProperty("number", new Schema<>().type("integer"))
+            .addProperty("numberOfElements", new Schema<>().type("integer"))
+            .addProperty("first", new Schema<>().type("boolean"))
+            .addProperty("last", new Schema<>().type("boolean"))
+            .addProperty("hasNext", new Schema<>().type("boolean"))
+            .addProperty("hasPrevious", new Schema<>().type("boolean"));
+            
+        wrapperSchema.addProperty("data", sliceSchema);
+        wrapperSchema.addProperty("metadata", new Schema<>().$ref("#/components/schemas/BaseMetadata"));
+    }
+    
     private static void addVoidProperties(Schema<?> wrapperSchema) {
         wrapperSchema.addProperty("data", new Schema<>().type("string").example("Operation completed"));
     }
@@ -151,6 +172,7 @@ public class WrapperSchemaGenerator {
     private static WrapperCategory deduceWrapperCategory(String wrapperSchemaName) {
         if (wrapperSchemaName.contains("List")) return WrapperCategory.LIST;
         if (wrapperSchemaName.contains("Page")) return WrapperCategory.PAGE;
+        if (wrapperSchemaName.contains("Slice")) return WrapperCategory.SLICE;
         if (wrapperSchemaName.contains("Void")) return WrapperCategory.VOID;
         return WrapperCategory.SINGLE;
     }
@@ -164,7 +186,7 @@ public class WrapperSchemaGenerator {
         String withoutPrefix = wrapperSchemaName.replace("ResponseWrapper", "");
         
         // Rimuovi categorie
-        withoutPrefix = withoutPrefix.replace("List", "").replace("Page", "").replace("Void", "");
+        withoutPrefix = withoutPrefix.replace("List", "").replace("Page", "").replace("Slice", "").replace("Void", "");
         
         // Se rimane vuoto, default a String
         return withoutPrefix.isEmpty() ? "String" : withoutPrefix;
@@ -202,13 +224,13 @@ public class WrapperSchemaGenerator {
                     wrapperSchema.addProperty("data", dataSchema);
                 }
                 // Aggiungi metadata per tutti i tipi SINGLE
-                wrapperSchema.addProperty("metadata", new Schema<>().$ref("#/components/schemas/SingleMetadata"));
+                wrapperSchema.addProperty("metadata", new Schema<>().$ref("#/components/schemas/BaseMetadata"));
             }
             case LIST -> {
                 String fullClassName = mapToFullClassName(dataType);
                 Schema<?> itemSchema = SchemaHelper.createItemSchema(fullClassName);
                 wrapperSchema.addProperty("data", new Schema<>().type("array").items((Schema<Object>) itemSchema));
-                wrapperSchema.addProperty("metadata", new Schema<>().$ref("#/components/schemas/ListMetadata"));
+                wrapperSchema.addProperty("metadata", new Schema<>().$ref("#/components/schemas/BaseMetadata"));
             }
             case PAGE -> {
                 String fullClassName = mapToFullClassName(dataType);
@@ -220,7 +242,22 @@ public class WrapperSchemaGenerator {
                     .addProperty("size", new Schema<>().type("integer"))
                     .addProperty("number", new Schema<>().type("integer"));
                 wrapperSchema.addProperty("data", pageSchema);
-                wrapperSchema.addProperty("metadata", new Schema<>().$ref("#/components/schemas/PageMetadata"));
+                wrapperSchema.addProperty("metadata", new Schema<>().$ref("#/components/schemas/BaseMetadata"));
+            }
+            case SLICE -> {
+                String fullClassName = mapToFullClassName(dataType);
+                Schema<?> itemSchema = SchemaHelper.createItemSchema(fullClassName);
+                Schema<?> sliceSchema = new Schema<>().type("object")
+                    .addProperty("content", new Schema<>().type("array").items((Schema<Object>) itemSchema))
+                    .addProperty("size", new Schema<>().type("integer"))
+                    .addProperty("number", new Schema<>().type("integer"))
+                    .addProperty("numberOfElements", new Schema<>().type("integer"))
+                    .addProperty("first", new Schema<>().type("boolean"))
+                    .addProperty("last", new Schema<>().type("boolean"))
+                    .addProperty("hasNext", new Schema<>().type("boolean"))
+                    .addProperty("hasPrevious", new Schema<>().type("boolean"));
+                wrapperSchema.addProperty("data", sliceSchema);
+                wrapperSchema.addProperty("metadata", new Schema<>().$ref("#/components/schemas/BaseMetadata"));
             }
             case VOID -> {
                 wrapperSchema.addProperty("data", new Schema<>().type("string").example("Operation completed"));

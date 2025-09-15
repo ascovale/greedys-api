@@ -13,7 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 public class DefaultSchemaGenerator {
     
     private static final Schema<?> TIMESTAMP_PROPERTY = new Schema<>().type("string").format("date-time");
-    private static final Schema<?> ADDITIONAL_PROPERTY = new Schema<>().description("Additional metadata");
+    private static final Schema<?> ADDITIONAL_PROPERTY = new Schema<>().type("object").description("Additional metadata");
     private static final Schema<?> MESSAGE_PROPERTY = new Schema<>().type("string");
     private static final Schema<?> INTEGER_PROPERTY = new Schema<>().type("integer");
     private static final Schema<?> BOOLEAN_PROPERTY = new Schema<>().type("boolean");

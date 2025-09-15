@@ -6,6 +6,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.hibernate.Hibernate;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -302,6 +304,11 @@ public class RUserService {
                 .collect(Collectors.toList());
     }
 
+    public Page<RUserDTO> getAllRUsers(Pageable pageable) {
+        return ruDAO.findAll(pageable)
+                .map(rUserMapper::toDTO);
+    }
+
     public void updateRUserStatus(Long RUserId, RUser.Status newStatus) {
         RUser ru = ruDAO.findById(RUserId)
                 .orElseThrow(() -> new IllegalArgumentException("Restaurant user not found"));
@@ -374,6 +381,11 @@ public class RUserService {
         return ruDAO.findByRestaurantId(restaurantId).stream()
             .map(rUserMapper::toDTO)
             .toList();
+    }
+
+    public Page<RUserDTO> getRUsersByRestaurantId(Long restaurantId, Pageable pageable) {
+        return ruDAO.findByRestaurantId(restaurantId, pageable)
+            .map(rUserMapper::toDTO);
     }
 
     /**

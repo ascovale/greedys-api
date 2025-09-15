@@ -1,12 +1,11 @@
 package com.application.admin.controller.restaurant;
 
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -41,28 +40,24 @@ public class AdminRestaurantReservationController extends BaseController {
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_RESTAURANT_READ')")
 	@GetMapping(value = "{restaurantId}/reservation")
 	
-    public ResponseEntity<ResponseWrapper<List<ReservationDTO>>> getReservations(
+    public ResponseEntity<ResponseWrapper<Page<ReservationDTO>>> getReservations(
 			@PathVariable Long restaurantId,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
-			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end) {
-		return executeList("get reservations", () -> {
-			Collection<ReservationDTO> reservations = reservationService.getReservations(restaurantId, start, end);
-			return reservations instanceof List ? (List<ReservationDTO>) reservations : new java.util.ArrayList<>(reservations);
-		});
+			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end,
+			@PageableDefault(size = 10, sort = "id") Pageable pageable) {
+		return executePaginated("get reservations", () -> reservationService.getReservationsPageable(restaurantId, start, end, pageable));
 	}
 
 	@Operation(summary = "Get all accepted reservations of a restaurant", description = "Retrieve all accepted reservations of a restaurant")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_RESTAURANT_READ')")
 	@GetMapping(value = "{restaurantId}/reservation/accepted")
 	
-    public ResponseEntity<ResponseWrapper<List<ReservationDTO>>> getAcceptedReservations(
+    public ResponseEntity<ResponseWrapper<Page<ReservationDTO>>> getAcceptedReservations(
 			@PathVariable Long restaurantId,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
-			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end) {
-		return executeList("get accepted reservations", () -> {
-			Collection<ReservationDTO> reservations = reservationService.getAcceptedReservations(restaurantId, start, end);
-			return reservations instanceof List ? (List<ReservationDTO>) reservations : new java.util.ArrayList<>(reservations);
-		});
+			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end,
+			@PageableDefault(size = 10, sort = "id") Pageable pageable) {
+		return executePaginated("get accepted reservations", () -> reservationService.getAcceptedReservationsPageable(restaurantId, start, end, pageable));
 	}
 
 	@Operation(summary = "Get all reservations of a restaurant with pagination", description = "Retrieve all reservations of a restaurant with pagination")
@@ -82,14 +77,12 @@ public class AdminRestaurantReservationController extends BaseController {
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_RESTAURANT_READ')")
 	@GetMapping(value = "{restaurantId}/reservation/pending")
 	
-    public ResponseEntity<ResponseWrapper<List<ReservationDTO>>> getPendingReservations(
+    public ResponseEntity<ResponseWrapper<Page<ReservationDTO>>> getPendingReservations(
 			@PathVariable Long restaurantId,
 			@RequestParam(required = false) LocalDate start,
-			@RequestParam(required = false) LocalDate end) {
-		return executeList("get pending reservations", () -> {
-			Collection<ReservationDTO> reservations = reservationService.getPendingReservations(restaurantId, start, end);
-			return reservations instanceof List ? (List<ReservationDTO>) reservations : new java.util.ArrayList<>(reservations);
-		});
+			@RequestParam(required = false) LocalDate end,
+			@PageableDefault(size = 10, sort = "id") Pageable pageable) {
+		return executePaginated("get pending reservations", () -> reservationService.getPendingReservationsPageable(restaurantId, start, end, pageable));
 	}
 
 	@Operation(summary = "Get all pending reservations of a restaurant with pagination", description = "Retrieve all pending reservations of a restaurant with pagination")

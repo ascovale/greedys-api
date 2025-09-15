@@ -1,8 +1,8 @@
 package com.application.admin.controller.restaurant;
 
-import java.util.Collection;
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -44,10 +44,11 @@ public class AdminRoomTableController extends BaseController {
 	@Operation(summary = "Get rooms of a restaurant", description = "Retrieve the rooms of a restaurant")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_READ')")
 	
-    public ResponseEntity<ResponseWrapper<List<RoomDTO>>> getRooms(@PathVariable Long restaurantId) {
-		return executeList("get rooms", () -> {
-			Collection<RoomDTO> rooms = roomService.findByRestaurant(restaurantId);
-			return rooms instanceof List ? (List<RoomDTO>) rooms : new java.util.ArrayList<>(rooms);
+    public ResponseEntity<ResponseWrapper<Page<RoomDTO>>> getRooms(
+			@PathVariable Long restaurantId,
+			@PageableDefault(size = 20) Pageable pageable) {
+		return executePaginated("get rooms", () -> {
+			return roomService.findByRestaurant(restaurantId, pageable);
 		});
 	}
 
@@ -55,10 +56,11 @@ public class AdminRoomTableController extends BaseController {
 	@Operation(summary = "Get tables of a room", description = "Retrieve the tables of a room")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_READ')")
 	
-    public ResponseEntity<ResponseWrapper<List<TableDTO>>> getTables(@PathVariable Long roomId) {
-		return executeList("get tables", () -> {
-			Collection<TableDTO> tables = tableService.findByRoom(roomId);
-			return tables instanceof List ? (List<TableDTO>) tables : new java.util.ArrayList<>(tables);
+    public ResponseEntity<ResponseWrapper<Page<TableDTO>>> getTables(
+			@PathVariable Long roomId,
+			@PageableDefault(size = 20) Pageable pageable) {
+		return executePaginated("get tables", () -> {
+			return tableService.findByRoom(roomId, pageable);
 		});
 	}
 

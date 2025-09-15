@@ -245,6 +245,10 @@ public class MetadataCollector implements OperationCustomizer {
                         if (typeName.contains("Page<") || typeName.contains("org.springframework.data.domain.Page")) {
                             return WrapperCategory.PAGE;
                         }
+                        // Controlla se è una Slice
+                        if (typeName.contains("Slice<") || typeName.contains("org.springframework.data.domain.Slice")) {
+                            return WrapperCategory.SLICE;
+                        }
                         // Controlla se è void
                         if (typeName.equals("java.lang.Void") || typeName.equals("void")) {
                             return WrapperCategory.VOID;
@@ -260,6 +264,7 @@ public class MetadataCollector implements OperationCustomizer {
         String name = type.getSimpleName();
         if (name.contains("List") || name.contains("Collection")) return WrapperCategory.LIST;
         if (name.contains("Page")) return WrapperCategory.PAGE;
+        if (name.contains("Slice")) return WrapperCategory.SLICE;
         if ("void".equals(name) || "Void".equals(name)) return WrapperCategory.VOID;
         return WrapperCategory.SINGLE;
     }
@@ -289,6 +294,13 @@ public class MetadataCollector implements OperationCustomizer {
                         // Se è una Page<SomeDTO>, estraiamo SomeDTO  
                         if (fullClassName.contains("Page<") && fullClassName.endsWith(">")) {
                             int startIndex = fullClassName.indexOf("Page<") + "Page<".length();
+                            String innerType = fullClassName.substring(startIndex, fullClassName.length() - 1);
+                            return innerType;
+                        }
+                        
+                        // Se è una Slice<SomeDTO>, estraiamo SomeDTO  
+                        if (fullClassName.contains("Slice<") && fullClassName.endsWith(">")) {
+                            int startIndex = fullClassName.indexOf("Slice<") + "Slice<".length();
                             String innerType = fullClassName.substring(startIndex, fullClassName.length() - 1);
                             return innerType;
                         }
