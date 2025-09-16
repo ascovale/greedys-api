@@ -103,9 +103,9 @@ public class WrapperSchemaGenerator {
     private static void addSingleProperties(Schema<?> wrapperSchema, SchemaMetadata metadata) {
         if (metadata.getDataClassName() != null) {
             Schema<?> dataSchema = SchemaHelper.createDataSchema(metadata.getDataClassName());
-            wrapperSchema.addProperty("data", dataSchema);
+            wrapperSchema.addProperty("value", dataSchema);
         } else {
-            wrapperSchema.addProperty("data", new Schema<>().type("object"));
+            wrapperSchema.addProperty("value", new Schema<>().type("object"));
         }
         wrapperSchema.addProperty("metadata", new Schema<>().$ref("#/components/schemas/SingleMetadata"));
     }
@@ -118,7 +118,7 @@ public class WrapperSchemaGenerator {
         } else {
             listSchema.items(new Schema<>().type("object"));
         }
-        wrapperSchema.addProperty("data", listSchema);
+        wrapperSchema.addProperty("value", listSchema);
         wrapperSchema.addProperty("metadata", new Schema<>().$ref("#/components/schemas/ListMetadata"));
     }
     
@@ -135,7 +135,7 @@ public class WrapperSchemaGenerator {
             .addProperty("size", new Schema<>().type("integer"))
             .addProperty("number", new Schema<>().type("integer"));
             
-        wrapperSchema.addProperty("data", pageSchema);
+        wrapperSchema.addProperty("value", pageSchema);
         wrapperSchema.addProperty("metadata", new Schema<>().$ref("#/components/schemas/PageMetadata"));
     }
     
@@ -155,12 +155,12 @@ public class WrapperSchemaGenerator {
             .addProperty("hasNext", new Schema<>().type("boolean"))
             .addProperty("hasPrevious", new Schema<>().type("boolean"));
             
-        wrapperSchema.addProperty("data", sliceSchema);
+        wrapperSchema.addProperty("value", sliceSchema);
         wrapperSchema.addProperty("metadata", new Schema<>().$ref("#/components/schemas/BaseMetadata"));
     }
     
     private static void addVoidProperties(Schema<?> wrapperSchema) {
-        wrapperSchema.addProperty("data", new Schema<>().type("string").example("Operation completed"));
+        wrapperSchema.addProperty("value", new Schema<>().type("string").example("Operation completed"));
     }
     
     // === METODI HELPER PER VERSIONE SEMPLIFICATA ===
@@ -216,12 +216,12 @@ public class WrapperSchemaGenerator {
             case SINGLE -> {
                 if ("String".equals(dataType)) {
                     // Per ResponseWrapperString, usa description al posto di $ref per data
-                    wrapperSchema.addProperty("data", new Schema<>().description("Response data"));
+                    wrapperSchema.addProperty("value", new Schema<>().description("Response data"));
                 } else {
                     // Usa SchemaHelper per gli altri tipi
                     String fullClassName = mapToFullClassName(dataType);
                     Schema<?> dataSchema = SchemaHelper.createDataSchema(fullClassName);
-                    wrapperSchema.addProperty("data", dataSchema);
+                    wrapperSchema.addProperty("value", dataSchema);
                 }
                 // Aggiungi metadata per tutti i tipi SINGLE
                 wrapperSchema.addProperty("metadata", new Schema<>().$ref("#/components/schemas/BaseMetadata"));
@@ -229,7 +229,7 @@ public class WrapperSchemaGenerator {
             case LIST -> {
                 String fullClassName = mapToFullClassName(dataType);
                 Schema<?> itemSchema = SchemaHelper.createItemSchema(fullClassName);
-                wrapperSchema.addProperty("data", new Schema<>().type("array").items((Schema<Object>) itemSchema));
+                wrapperSchema.addProperty("value", new Schema<>().type("array").items((Schema<Object>) itemSchema));
                 wrapperSchema.addProperty("metadata", new Schema<>().$ref("#/components/schemas/BaseMetadata"));
             }
             case PAGE -> {
@@ -241,7 +241,7 @@ public class WrapperSchemaGenerator {
                     .addProperty("totalPages", new Schema<>().type("integer"))
                     .addProperty("size", new Schema<>().type("integer"))
                     .addProperty("number", new Schema<>().type("integer"));
-                wrapperSchema.addProperty("data", pageSchema);
+                wrapperSchema.addProperty("value", pageSchema);
                 wrapperSchema.addProperty("metadata", new Schema<>().$ref("#/components/schemas/BaseMetadata"));
             }
             case SLICE -> {
@@ -256,11 +256,11 @@ public class WrapperSchemaGenerator {
                     .addProperty("last", new Schema<>().type("boolean"))
                     .addProperty("hasNext", new Schema<>().type("boolean"))
                     .addProperty("hasPrevious", new Schema<>().type("boolean"));
-                wrapperSchema.addProperty("data", sliceSchema);
+                wrapperSchema.addProperty("value", sliceSchema);
                 wrapperSchema.addProperty("metadata", new Schema<>().$ref("#/components/schemas/BaseMetadata"));
             }
             case VOID -> {
-                wrapperSchema.addProperty("data", new Schema<>().type("string").example("Operation completed"));
+                wrapperSchema.addProperty("value", new Schema<>().type("string").example("Operation completed"));
             }
         }
     }

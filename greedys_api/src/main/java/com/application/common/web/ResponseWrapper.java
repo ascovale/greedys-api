@@ -26,8 +26,8 @@ public class ResponseWrapper<T> {
     @Schema(description = "Response message", example = "Operation completed successfully")
     private String message;
 
-    @Schema(description = "Response data")    
-    private T data;
+    @Schema(description = "Response value")    
+    private T value;
 
     @Schema(description = "Response timestamp")
     @Builder.Default
@@ -37,25 +37,25 @@ public class ResponseWrapper<T> {
     private BaseMetadata metadata;
 
     // Success responses
-    public static <T> ResponseWrapper<T> success(T data) {
+    public static <T> ResponseWrapper<T> success(T value) {
         return ResponseWrapper.<T>builder()
-                .data(data)
+                .value(value)
                 .message("Success")
                 .metadata(BaseMetadata.create())
                 .build();
     }
 
-    public static <T> ResponseWrapper<T> success(T data, String message) {
+    public static <T> ResponseWrapper<T> success(T value, String message) {
         return ResponseWrapper.<T>builder()
-                .data(data)
+                .value(value)
                 .message(message)
                 .metadata(BaseMetadata.create())
                 .build();
     }
 
-    public static <T> ResponseWrapper<T> success(T data, String message, BaseMetadata metadata) {
+    public static <T> ResponseWrapper<T> success(T value, String message, BaseMetadata metadata) {
         return ResponseWrapper.<T>builder()
-                .data(data)
+                .value(value)
                 .message(message)
                 .metadata(metadata)
                 .build();
@@ -64,7 +64,7 @@ public class ResponseWrapper<T> {
     // List success responses
     public static <T> ResponseWrapper<List<T>> successList(List<T> list) {
         return ResponseWrapper.<List<T>>builder()
-                .data(list)
+                .value(list)
                 .message(String.format("%d items retrieved", list.size()))
                 .metadata(BaseMetadata.create())
                 .build();
@@ -72,7 +72,7 @@ public class ResponseWrapper<T> {
 
     public static <T> ResponseWrapper<List<T>> successList(List<T> list, String message) {
         return ResponseWrapper.<List<T>>builder()
-                .data(list)
+                .value(list)
                 .message(message)
                 .metadata(BaseMetadata.create())
                 .build();
@@ -80,7 +80,7 @@ public class ResponseWrapper<T> {
 
     public static <T> ResponseWrapper<List<T>> successList(List<T> list, String message, String filterDescription) {
         return ResponseWrapper.<List<T>>builder()
-                .data(list)
+                .value(list)
                 .message(message)
                 .metadata(BaseMetadata.create(filterDescription))
                 .build();
@@ -89,7 +89,7 @@ public class ResponseWrapper<T> {
     // Slice success responses
     public static <T> ResponseWrapper<Slice<T>> successSlice(Slice<T> slice) {
         return ResponseWrapper.<Slice<T>>builder()
-                .data(slice)
+                .value(slice)
                 .message(String.format("Slice %d with %d items (hasNext: %s)", 
                         slice.getNumber() + 1, slice.getNumberOfElements(), slice.hasNext()))
                 .metadata(BaseMetadata.create())
@@ -98,7 +98,7 @@ public class ResponseWrapper<T> {
 
     public static <T> ResponseWrapper<Slice<T>> successSlice(Slice<T> slice, String message) {
         return ResponseWrapper.<Slice<T>>builder()
-                .data(slice)
+                .value(slice)
                 .message(message)
                 .metadata(BaseMetadata.create())
                 .build();
@@ -106,7 +106,7 @@ public class ResponseWrapper<T> {
 
     public static <T> ResponseWrapper<Slice<T>> successSlice(Slice<T> slice, String message, String filterDescription) {
         return ResponseWrapper.<Slice<T>>builder()
-                .data(slice)
+                .value(slice)
                 .message(message)
                 .metadata(BaseMetadata.create(filterDescription))
                 .build();
@@ -115,7 +115,7 @@ public class ResponseWrapper<T> {
     // Page success responses - the main method for all collections
     public static <T> ResponseWrapper<Page<T>> successPage(Page<T> page) {
         return ResponseWrapper.<Page<T>>builder()
-                .data(page)
+                .value(page)
                 .message(String.format("Page %d of %d (%d total items)", 
                         page.getNumber() + 1, page.getTotalPages(), page.getTotalElements()))
                 .metadata(BaseMetadata.create())
@@ -124,7 +124,7 @@ public class ResponseWrapper<T> {
 
     public static <T> ResponseWrapper<Page<T>> successPage(Page<T> page, String message) {
         return ResponseWrapper.<Page<T>>builder()
-                .data(page)
+                .value(page)
                 .message(message)
                 .metadata(BaseMetadata.create())
                 .build();
@@ -132,16 +132,16 @@ public class ResponseWrapper<T> {
 
     public static <T> ResponseWrapper<Page<T>> successPage(Page<T> page, String message, String filterDescription) {
         return ResponseWrapper.<Page<T>>builder()
-                .data(page)
+                .value(page)
                 .message(message)
                 .metadata(BaseMetadata.create(filterDescription))
                 .build();
     }
 
     // Created response (201)
-    public static <T> ResponseWrapper<T> created(T data, String message) {
+    public static <T> ResponseWrapper<T> created(T value, String message) {
         return ResponseWrapper.<T>builder()
-                .data(data)
+                .value(value)
                 .message(message)
                 .metadata(BaseMetadata.create())
                 .build();
@@ -151,49 +151,49 @@ public class ResponseWrapper<T> {
         public static ResponseWrapper<ErrorDetails> error(String message) {
                 return ResponseWrapper.<ErrorDetails>builder()
                                 .message(message)
-                                .data(ErrorDetails.builder().build())
+                                .value(ErrorDetails.builder().build())
                                 .build();
         }
 
         public static ResponseWrapper<ErrorDetails> badRequest(String message, String errorCode) {
                 return ResponseWrapper.<ErrorDetails>builder()
                                 .message(message)
-                                .data(ErrorDetails.builder().code(errorCode).build())
+                                .value(ErrorDetails.builder().code(errorCode).build())
                                 .build();
         }
 
         public static ResponseWrapper<ErrorDetails> notFound(String message) {
                 return ResponseWrapper.<ErrorDetails>builder()
                                 .message(message)
-                                .data(ErrorDetails.builder().code("NOT_FOUND").build())
+                                .value(ErrorDetails.builder().code("NOT_FOUND").build())
                                 .build();
         }
 
         public static ResponseWrapper<ErrorDetails> conflict(String message) {
                 return ResponseWrapper.<ErrorDetails>builder()
                                 .message(message)
-                                .data(ErrorDetails.builder().code("CONFLICT").build())
+                                .value(ErrorDetails.builder().code("CONFLICT").build())
                                 .build();
         }
 
         public static ResponseWrapper<ErrorDetails> unauthorized(String message) {
                 return ResponseWrapper.<ErrorDetails>builder()
                                 .message(message)
-                                .data(ErrorDetails.builder().code("UNAUTHORIZED").build())
+                                .value(ErrorDetails.builder().code("UNAUTHORIZED").build())
                                 .build();
         }
 
         public static ResponseWrapper<ErrorDetails> forbidden(String message) {
                 return ResponseWrapper.<ErrorDetails>builder()
                                 .message(message)
-                                .data(ErrorDetails.builder().code("FORBIDDEN").build())
+                                .value(ErrorDetails.builder().code("FORBIDDEN").build())
                                 .build();
         }
 
         public static ResponseWrapper<ErrorDetails> internalServerError(String message) {
                 return ResponseWrapper.<ErrorDetails>builder()
                                 .message(message)
-                                .data(ErrorDetails.builder().code("INTERNAL_SERVER_ERROR").build())
+                                .value(ErrorDetails.builder().code("INTERNAL_SERVER_ERROR").build())
                                 .build();
         }
 
@@ -201,21 +201,21 @@ public class ResponseWrapper<T> {
         public static ResponseWrapper<ErrorDetails> errorWithStatus(int statusCode, String message, String errorCode) {
                 return ResponseWrapper.<ErrorDetails>builder()
                                 .message(message)
-                                .data(ErrorDetails.builder().code(errorCode).build())
+                                .value(ErrorDetails.builder().code(errorCode).build())
                                 .build();
         }
 
         public static ResponseWrapper<ErrorDetails> error(String message, String code) {
                 return ResponseWrapper.<ErrorDetails>builder()
                                 .message(message)
-                                .data(ErrorDetails.builder().code(code).build())
+                                .value(ErrorDetails.builder().code(code).build())
                                 .build();
         }
 
         public static ResponseWrapper<ErrorDetails> error(ErrorDetails error) {
                 return ResponseWrapper.<ErrorDetails>builder()
                                 .message("An error occurred")  // Messaggio di fallback se non specificato
-                                .data(error)
+                                .value(error)
                                 .build();
         }
 

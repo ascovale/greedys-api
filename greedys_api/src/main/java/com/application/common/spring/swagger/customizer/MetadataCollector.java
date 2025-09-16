@@ -3,6 +3,7 @@ package com.application.common.spring.swagger.customizer;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.List;
 
 import org.springdoc.core.customizers.OperationCustomizer;
 import org.springframework.core.annotation.Order;
@@ -40,43 +41,160 @@ public class MetadataCollector implements OperationCustomizer {
     @Override
     public Operation customize(Operation operation, HandlerMethod handlerMethod) {
         try {
-            // Gestione intelligente dei duplicati PRIMA della registrazione
+            // Auto-prefix tags based on controller type
+            enhanceOperationTags(operation, handlerMethod);
+            
+            // Auto-prefix operationId to avoid duplicates
             String originalOperationId = operation.getOperationId();
-            String uniqueOperationId = ensureUniqueOperationId(originalOperationId);
+            String prefixedOperationId = addPrefixToOperationId(originalOperationId, handlerMethod);
+            String uniqueOperationId = ensureUniqueOperationId(prefixedOperationId);
             
-            // Aggiorna l'operationId se necessario (previene il _1 automatico di SpringDoc)
-            if (!originalOperationId.equals(uniqueOperationId)) {
-                operation.setOperationId(uniqueOperationId);
-                log.debug("Renamed operation {} -> {} to avoid duplicates", originalOperationId, uniqueOperationId);
-            }
+            operation.setOperationId(uniqueOperationId);
             
-            // Raccoglie tutti i metadati in un'unica operazione
+            log.debug("Operation ID enhanced: {} -> {}", originalOperationId, uniqueOperationId);
+            
+            // Raccoglie i metadati per questa operazione
             OperationDataMetadata metadata = collectMetadata(operation, handlerMethod);
+            
+            // Registra i metadati raccolti
             registry.register(metadata);
             
-            log.debug("Collected metadata for operation: {}", operation.getOperationId());
+            log.debug("Registered metadata for operation: {}", operation.getOperationId());
             
         } catch (Exception e) {
-            log.error("Error collecting metadata for {}: {}", operation.getOperationId(), e.getMessage(), e);
+            log.error("Failed to customize operation: {}", e.getMessage(), e);
         }
         return operation;
     }
     
     /**
-     * Garantisce che l'operationId sia unico aggiungendo suffissi numerici se necessario.
-     * Architettura: previene i conflitti PRIMA che SpringDoc assegni automaticamente i suffissi.
+     * Aggiunge automaticamente prefissi agli operationId per evitare duplicati.
+     * Trasforma "createReservation" in "customerCreateReservation", "adminCreateReservation", etc.
+     */
+    private String addPrefixToOperationId(String operationId, HandlerMethod handlerMethod) {
+        if (operationId == null || operationId.trim().isEmpty()) {
+            return operationId;
+        }
+        
+        String prefix = extractControllerPrefix(handlerMethod);
+        if (prefix == null) {
+            return operationId;
+        }
+        
+        // Converte il prefisso in camelCase per l'operationId
+        String camelCasePrefix = prefix.toLowerCase();
+        
+        // Verifica se il prefisso è già presente
+        if (operationId.toLowerCase().startsWith(camelCasePrefix)) {
+            return operationId;
+        }
+        
+        // Aggiunge il prefisso
+        return camelCasePrefix + capitalizeFirst(operationId);
+    }
+    
+    /**
+     * Assicura che l'operationId sia unico nel registry.
      */
     private String ensureUniqueOperationId(String operationId) {
         if (!registry.hasOperation(operationId)) {
             return operationId;
         }
+        
         int counter = 1;
         String candidateId;
         do {
             candidateId = operationId + "_" + counter;
             counter++;
         } while (registry.hasOperation(candidateId));
+        
         return candidateId;
+    }
+    
+    /**
+     * Capitalizza la prima lettera di una stringa.
+     */
+    private String capitalizeFirst(String str) {
+        if (str == null || str.isEmpty()) {
+            return str;
+        }
+        return str.substring(0, 1).toUpperCase() + str.substring(1);
+    }
+    
+    /**
+     * Migliora automaticamente i tag delle operazioni aggiungendo prefissi basati sul controller.
+     * Admin -> "Admin - [original tag]", Customer -> "Customer - [original tag]", etc.
+     */
+    private void enhanceOperationTags(Operation operation, HandlerMethod handlerMethod) {
+        try {
+            String controllerPrefix = extractControllerPrefix(handlerMethod);
+            if (controllerPrefix != null && operation.getTags() != null && !operation.getTags().isEmpty()) {
+                List<String> enhancedTags = operation.getTags().stream()
+                    .map(tag -> enhanceTag(tag, controllerPrefix))
+                    .toList();
+                operation.setTags(enhancedTags);
+                log.debug("Enhanced tags for {} with prefix '{}': {}", 
+                    operation.getOperationId(), controllerPrefix, enhancedTags);
+            }
+        } catch (Exception e) {
+            log.warn("Failed to enhance tags for {}: {}", operation.getOperationId(), e.getMessage());
+        }
+    }
+    
+    /**
+     * Estrae il prefisso del controller basato sul package e nome classe.
+     */
+    private String extractControllerPrefix(HandlerMethod handlerMethod) {
+        String fullClassName = handlerMethod.getBeanType().getName();
+        
+        // Gestisce sottopacchetti specifici per maggiore granularità
+        if (fullClassName.contains(".restaurant.controller.google.")) {
+            return "Google";
+        }
+        if (fullClassName.contains(".admin.controller.")) {
+            return "Admin";
+        }
+        if (fullClassName.contains(".customer.controller.")) {
+            return "Customer";
+        }
+        if (fullClassName.contains(".restaurant.controller.")) {
+            return "Restaurant";
+        }
+        
+        // Estrae dal nome della classe se contiene indicatori
+        String className = handlerMethod.getBeanType().getSimpleName();
+        if (className.startsWith("Admin")) {
+            return "Admin";
+        }
+        if (className.startsWith("Customer")) {
+            return "Customer";
+        }
+        if (className.startsWith("Restaurant")) {
+            return "Restaurant";
+        }
+        if (className.contains("Google")) {
+            return "Google";
+        }
+        
+        return null; // Nessun prefisso riconosciuto
+    }
+    
+    /**
+     * Migliora un singolo tag aggiungendo il prefisso se non già presente.
+     */
+    private String enhanceTag(String originalTag, String prefix) {
+        // Non aggiungere il prefisso se già presente
+        if (originalTag.startsWith(prefix + " - ")) {
+            return originalTag;
+        }
+        
+        // Non aggiungere il prefisso se il tag già contiene il prefisso
+        if (originalTag.toLowerCase().contains(prefix.toLowerCase())) {
+            return originalTag;
+        }
+        
+        // Aggiungi il prefisso
+        return prefix + " - " + originalTag;
     }
     
     /**
@@ -100,7 +218,7 @@ public class MetadataCollector implements OperationCustomizer {
                 .controllerClass(method.getDeclaringClass().getName())
                 .methodName(method.getName())
                 .description(operation.getDescription())
-                .statusCodes(analysisResult.getStatusCodes()) // <-- USO DEL NUOVO ANALYZER
+                .statusCodes(analysisResult.getStatusCodes())
                 .dataClassName(dataClassName)
                 .wrapperCategory(category)
                 .build();
@@ -116,7 +234,6 @@ public class MetadataCollector implements OperationCustomizer {
         try {
             // Usa il MethodAnalyzer per determinare il metodo HTTP correttamente
             if (handlerMethod != null && handlerMethod.getMethod() != null) {
-                // Riutilizza la logica già implementata nel MethodAnalyzer
                 Method method = handlerMethod.getMethod();
                 String httpMethod = methodAnalyzer.detectHttpMethodPublic(method);
                 if (httpMethod != null && !httpMethod.trim().isEmpty()) {
@@ -211,8 +328,6 @@ public class MetadataCollector implements OperationCustomizer {
                     return pm.path()[0];
                 }
             }
-            
-            // Aggiungi altri mapping se necessario (PUT, DELETE, PATCH)
             
             return null;
         } catch (Exception e) {
@@ -314,6 +429,4 @@ public class MetadataCollector implements OperationCustomizer {
         if (type.isPrimitive() || type.getName().startsWith("java.")) return null;
         return type.getName();
     }
-    
-    // ================================================================================================
 }
