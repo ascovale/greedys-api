@@ -1,6 +1,5 @@
 package com.application.common.security.jwt.task;
 
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -42,7 +41,7 @@ public class TokensPurgeTask {
     @Scheduled(cron = "${purge.cron.expression}")
     public void purgeExpired() {
         log.info("Starting token purge task");
-        LocalDate nowDate = LocalDate.from(Instant.now());
+        LocalDate nowDate = LocalDate.now();
         LocalDateTime nowDateTime = LocalDateTime.now();
         
         // Purge customer tokens (LocalDate)
