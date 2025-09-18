@@ -15,6 +15,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.application.common.spring.swagger.customizer.MetadataCollector;
 import com.application.common.spring.swagger.customizer.SwaggerSpecificationGenerator;
+import com.application.common.spring.swagger.customizer.TagDefinitionCustomizer;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -85,7 +86,7 @@ public class SwaggerConfig implements WebMvcConfigurer {
         };
     }
 
-    @Bean
+        @Bean
     GroupedOpenApi adminApi() {
         return GroupedOpenApi.builder()
                 .group("admin-api")
@@ -101,6 +102,7 @@ public class SwaggerConfig implements WebMvcConfigurer {
                 // NUOVA ARCHITETTURA: customizer tramite dependency injection
                 .addOperationCustomizer(metadataCollector)
                 // OPENAPI CUSTOMIZERS SECOND (process extension data)
+                .addOpenApiCustomizer(new TagDefinitionCustomizer("Admin"))  // Per la modifica delle tag globali
                 .addOpenApiCustomizer(groupCustomizer())
                 .addOpenApiCustomizer(sortSchemasCustomizer())
                 .addOpenApiCustomizer(swaggerSpecificationGenerator)
@@ -121,6 +123,7 @@ public class SwaggerConfig implements WebMvcConfigurer {
                 // NUOVA ARCHITETTURA: customizer tramite dependency injection
                 .addOperationCustomizer(metadataCollector)
                 // OPENAPI CUSTOMIZERS SECOND (process extension data)
+                .addOpenApiCustomizer(new TagDefinitionCustomizer("Customer"))  // Per la modifica delle tag globali
                 .addOpenApiCustomizer(groupCustomizer())
                 .addOpenApiCustomizer(sortSchemasCustomizer())
                 .addOpenApiCustomizer(swaggerSpecificationGenerator)
@@ -141,6 +144,7 @@ public class SwaggerConfig implements WebMvcConfigurer {
                 // NUOVA ARCHITETTURA: customizer tramite dependency injection
                 .addOperationCustomizer(metadataCollector)
                 // OPENAPI CUSTOMIZERS SECOND (process extension data)
+                .addOpenApiCustomizer(new TagDefinitionCustomizer("Restaurant"))  // Per la modifica delle tag globali
                 .addOpenApiCustomizer(groupCustomizer())
                 .addOpenApiCustomizer(sortSchemasCustomizer())
                 .addOpenApiCustomizer(swaggerSpecificationGenerator)

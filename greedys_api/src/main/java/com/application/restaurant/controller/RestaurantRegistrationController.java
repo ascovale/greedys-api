@@ -30,7 +30,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@Tag(name = "Resttaurant Registration", description = "Controller for restaurant registration")
+@Tag(name = "Restaurant Registration", description = "Controller for restaurant registration")
 @RequestMapping("/restaurant/register")
 @SecurityRequirement(name = "bearerAuth")
 @RequiredArgsConstructor

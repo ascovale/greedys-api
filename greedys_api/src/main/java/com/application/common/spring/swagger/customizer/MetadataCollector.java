@@ -41,7 +41,33 @@ public class MetadataCollector implements OperationCustomizer {
     @Override
     public Operation customize(Operation operation, HandlerMethod handlerMethod) {
         try {
-            // Auto-prefix tags based on controller type
+            String controllerName = handlerMethod.getBeanType().getSimpleName();
+            String methodName = handlerMethod.getMethod().getName();
+            
+            // 🚨 LOG SUPER AGGRESSIVO PER TUTTI I CONTROLLER 🚨
+            log.error("🔥 METADATA COLLECTOR CALLED: {} - {} - OperationId: {} - Tags: {}", 
+                controllerName, methodName, operation.getOperationId(), operation.getTags());
+            
+            // ⭐ LOG SPECIALE PER RESTAURANT REGISTRATION ⭐
+            if (controllerName.equals("RestaurantRegistrationController")) {
+                log.error("🎯 TROVATO RESTAURANT REGISTRATION CONTROLLER! Method: {} - OperationId: {}", 
+                    methodName, operation.getOperationId());
+            }
+            
+            // ⭐ LOG SPECIALE PER RESTAURANT RESERVATIONS ⭐
+            if (controllerName.contains("Reservation") || 
+                (operation.getTags() != null && operation.getTags().toString().contains("Restaurant Reservation"))) {
+                log.error("🎯🎯 TROVATO RESTAURANT RESERVATIONS! Controller: {} - Method: {} - OperationId: {} - Tags: {}", 
+                    controllerName, methodName, operation.getOperationId(), operation.getTags());
+            }
+            
+            // Specific logging for Restaurant controllers
+            if (controllerName.contains("Restaurant")) {
+                log.info("PROCESSING Restaurant controller: {} - method: {} - operationId: {} - tags: {}", 
+                    controllerName, methodName, operation.getOperationId(), operation.getTags());
+            }
+            
+            // Auto-prefix tags based on controller type - TUTTI i controller per coerenza
             enhanceOperationTags(operation, handlerMethod);
             
             // Auto-prefix operationId to avoid duplicates
@@ -62,7 +88,16 @@ public class MetadataCollector implements OperationCustomizer {
             log.debug("Registered metadata for operation: {}", operation.getOperationId());
             
         } catch (Exception e) {
-            log.error("Failed to customize operation: {}", e.getMessage(), e);
+            String controllerName = handlerMethod.getBeanType().getSimpleName();
+            String methodName = handlerMethod.getMethod().getName();
+            
+            // Enhanced error logging for Restaurant controllers
+            if (controllerName.contains("Restaurant")) {
+                log.error("FAILED to customize Restaurant controller: {} - method: {} - operationId: {} - Error: {}", 
+                    controllerName, methodName, operation.getOperationId(), e.getMessage(), e);
+            } else {
+                log.error("Failed to customize operation: {}", e.getMessage(), e);
+            }
         }
         return operation;
     }
@@ -123,11 +158,15 @@ public class MetadataCollector implements OperationCustomizer {
     
     /**
      * Migliora automaticamente i tag delle operazioni aggiungendo prefissi basati sul controller.
-     * Admin -> "Admin - [original tag]", Customer -> "Customer - [original tag]", etc.
+     * Admin -> "Admin - [original tag]", Customer -> "Customer - [original tag]", Restaurant -> "Restaurant - [original tag]"
+     * Questo assicura coerenza tra tag usati negli endpoint e tag definiti in Swagger.
      */
+    @SuppressWarnings("unused")
     private void enhanceOperationTags(Operation operation, HandlerMethod handlerMethod) {
         try {
             String controllerPrefix = extractControllerPrefix(handlerMethod);
+            
+            // Aggiungi prefissi per TUTTI i controller per coerenza
             if (controllerPrefix != null && operation.getTags() != null && !operation.getTags().isEmpty()) {
                 List<String> enhancedTags = operation.getTags().stream()
                     .map(tag -> enhanceTag(tag, controllerPrefix))
@@ -181,20 +220,39 @@ public class MetadataCollector implements OperationCustomizer {
     
     /**
      * Migliora un singolo tag aggiungendo il prefisso se non già presente.
+     * Utilizzato per tutti i controller per garantire coerenza.
      */
+    @SuppressWarnings("unused")
     private String enhanceTag(String originalTag, String prefix) {
-        // Non aggiungere il prefisso se già presente
-        if (originalTag.startsWith(prefix + " - ")) {
+        if (originalTag == null || originalTag.trim().isEmpty() || prefix == null) {
             return originalTag;
+        }
+        
+        // Normalizza il tag originale rimuovendo spazi extra
+        String cleanTag = originalTag.trim();
+        
+        // Non aggiungere il prefisso se già presente con il formato corretto
+        if (cleanTag.startsWith(prefix + " - ")) {
+            return cleanTag;
         }
         
         // Non aggiungere il prefisso se il tag già contiene il prefisso
-        if (originalTag.toLowerCase().contains(prefix.toLowerCase())) {
-            return originalTag;
+        if (cleanTag.toLowerCase().contains(prefix.toLowerCase())) {
+            // Se contiene il prefisso ma non nel formato corretto, correggi
+            if (cleanTag.toLowerCase().startsWith(prefix.toLowerCase())) {
+                // Rimuovi il prefisso malformato e riaggiungilo correttamente
+                String withoutPrefix = cleanTag.substring(prefix.length()).trim();
+                // Rimuovi eventuali trattini o spazi iniziali
+                while (withoutPrefix.startsWith("-") || withoutPrefix.startsWith(" ")) {
+                    withoutPrefix = withoutPrefix.substring(1).trim();
+                }
+                return prefix + " - " + withoutPrefix;
+            }
+            return cleanTag;
         }
         
-        // Aggiungi il prefisso
-        return prefix + " - " + originalTag;
+        // Aggiungi il prefisso nel formato corretto
+        return prefix + " - " + cleanTag;
     }
     
     /**
@@ -429,4 +487,6 @@ public class MetadataCollector implements OperationCustomizer {
         if (type.isPrimitive() || type.getName().startsWith("java.")) return null;
         return type.getName();
     }
+    
+
 }
