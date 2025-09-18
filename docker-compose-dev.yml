@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+  spring-app:
+    image: registry.gitlab.com/psychoorange/greedys_api:latest
+    ports:
+      - "8080:8080"  # HTTP diretto
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+    depends_on:
+      - db
+    networks:
+      - app-network
+    environment:
+      SPRING_PROFILES_ACTIVE: "docker"  # Profilo Docker per usare PostgreSQL e secrets
+      SERVER_PORT: 8080
+      SERVER_SSL_ENABLED: "false"
+      APP_BASE_URL: "http://localhost:8080"
+    secrets:
+      - db_password
+      - email_password
+      - service_account
+      - jwt_secret
+
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: greedys_v1
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_password
+    ports:
+      - "3308:3306"  # Porta diversa da produzione
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./initdb.d:/docker-entrypoint-initdb.d
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p\"$$(cat /run/secrets/db_password)\" || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    secrets:
+      - db_password
+
+networks:
+  app-network:
+    driver: overlay
+    attachable: true
+
+volumes:
+  db_data:
+
+secrets:
+  db_password:
+    external: true
+  email_password:
+    external: true
+  service_account:
+    external: true
+  jwt_secret:
+    external: true

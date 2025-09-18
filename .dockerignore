@@ -1,0 +1,26 @@
+# Esclude i file non necessari dal build context
+
+# Directory Maven compilate (inutili, Maven ricompilerà tutto)
+greedys_api/target/
+greedys_api/.mvn/
+
+# Git (non serve nell'immagine Docker)
+.git/
+.gitignore
+
+# File di documentazione (non servono nell'app)
+*.md
+
+# File Docker (non servono dentro l'immagine)
+docker-compose.yml
+Dockerfile
+
+# Script di deployment (non servono nell'app)
+deploy.sh
+local-build.sh
+generate_*.sh
+find-controllers-fixed.ps1
+
+# File di configurazione sensibili (credenziali Google Cloud)
+greedy-69de3-968988eeefce.json
+secured/

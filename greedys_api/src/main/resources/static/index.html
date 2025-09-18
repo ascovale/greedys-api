@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Greedys - Countdown</title>
+    
+    <!-- Favicon configuration -->
+    <link rel="icon" type="image/png" href="/swagger-ui/favicon_v4.png" />
+    <link rel="alternate icon" type="image/x-icon" href="/favicon.ico" />
+    
+    <link rel="stylesheet" type="text/css" href="css/fonts.css" />
+    <link rel="stylesheet" type="text/css" href="css/styleguide.css" />
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--paradiso);
+            font-family: var(--font-family-formiga-semibold);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .countdown-container {
+            text-align: center;
+            position: relative;
+        }
+        
+        .countdown-number {
+            font-size: 150px;
+            font-weight: 400;
+            color: var(--dawn-pink);
+            opacity: 0;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: opacity 0.3s ease-in-out;
+        }
+        
+        .countdown-number.show {
+            opacity: 1;
+        }
+        
+        .logo-container {
+            opacity: 0;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: opacity 0.3s ease-in-out;
+        }
+        
+        .logo-container.show {
+            opacity: 1;
+        }
+        
+        .logo-container img {
+            width: 283px;
+            height: 129px;
+            object-fit: cover;
+        }
+        
+        /* Fallback colors if CSS variables are not loaded */
+        body {
+            background-color: #30807c;
+        }
+        
+        .countdown-number {
+            color: #f1eae2;
+        }
+    </style>
+</head>
+<body>
+    <div class="countdown-container">
+        <div class="countdown-number" id="number3">3</div>
+        <div class="countdown-number" id="number2">2</div>
+        <div class="countdown-number" id="number1">1</div>
+        <div class="logo-container" id="logo">
+            <img src="img/logo-beige-1.png" alt="Greedys Logo" />
+        </div>
+    </div>
+
+    <script>
+        function startCountdown() {
+            const number3 = document.getElementById('number3');
+            const number2 = document.getElementById('number2');
+            const number1 = document.getElementById('number1');
+            const logo = document.getElementById('logo');
+            
+            // Reset all elements
+            number3.classList.remove('show');
+            number2.classList.remove('show');
+            number1.classList.remove('show');
+            logo.classList.remove('show');
+            
+            // Show 3
+            setTimeout(() => {
+                number3.classList.add('show');
+            }, 100);
+            
+            // Hide 3, show 2
+            setTimeout(() => {
+                number3.classList.remove('show');
+                number2.classList.add('show');
+            }, 500);
+            
+            // Hide 2, show 1
+            setTimeout(() => {
+                number2.classList.remove('show');
+                number1.classList.add('show');
+            }, 1000);
+            
+            // Hide 1, show logo
+            setTimeout(() => {
+                number1.classList.remove('show');
+                logo.classList.add('show');
+            }, 1500);
+            
+            // Hide logo and restart cycle
+            setTimeout(() => {
+                logo.classList.remove('show');
+                // Restart the countdown after a brief pause
+                setTimeout(startCountdown, 100);
+            }, 2500);
+        }
+        
+        // Start the countdown when page loads
+        window.addEventListener('load', () => {
+            startCountdown();
+        });
+    </script>
+</body>
+</html>

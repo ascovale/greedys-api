@@ -1,0 +1,47 @@
+package com.application.common.persistence.mapper;
+
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.ReportingPolicy;
+import org.mapstruct.factory.Mappers;
+
+import com.application.common.web.dto.get.NotificationDto;
+// Update the import path below to the correct location of Notification class
+import com.application.customer.persistence.model.Notification;
+
+/**
+ * MapStruct mapper per la conversione tra Notification e NotificationDto
+ */
+@Mapper(
+    componentModel = "spring",
+    nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
+    unmappedTargetPolicy = ReportingPolicy.WARN
+)
+public interface NotificationMapper {
+
+    NotificationMapper INSTANCE = Mappers.getMapper(NotificationMapper.class);
+
+    /**
+     * Converte un'entità Notification in NotificationDto
+     */
+    @Mapping(target = "idUser", source = "user.id")
+    NotificationDto toDTO(Notification notification);
+
+    /**
+     * Converte un NotificationDto in entità Notification
+     */
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "user", ignore = true) // Sarà impostato dal service
+    @Mapping(target = "creationTime", ignore = true) // Sarà impostato dal service
+    Notification toEntity(NotificationDto notificationDto);
+
+    /**
+     * Aggiorna un'entità Notification esistente con i dati dal NotificationDto
+     */
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "user", ignore = true)
+    @Mapping(target = "creationTime", ignore = true)
+    void updateEntityFromDTO(NotificationDto dto, @MappingTarget Notification entity);
+}

@@ -1,0 +1,148 @@
+version: '3.8'
+
+services:
+  # Traefik Reverse Proxy con Let's Encrypt (Swarm Mode)
+  traefik:
+    image: traefik:v3.0
+    ports:
+      - target: 80
+        published: 80
+        mode: host  # ✅ Evita routing mesh per performance
+      - target: 443
+        published: 443
+        mode: host  # ✅ Evita routing mesh per HTTPS
+      - target: 8080
+        published: 8080
+        mode: host  # ✅ Dashboard Traefik
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro
+      - traefik-ssl-certs:/ssl-certs
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager  # ✅ Solo su manager per accesso Docker socket
+      update_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+    labels:
+      - "traefik.enable=true"
+      # Dashboard
+      - "traefik.http.routers.traefik.rule=Host(`traefik.greedys.it`)"  # SOSTITUISCI con il tuo dominio
+      - "traefik.http.routers.traefik.tls=true"
+      - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.traefik.service=api@internal"
+      # Basic Auth per il dashboard
+      - "traefik.http.routers.traefik.middlewares=auth"
+      - "traefik.http.middlewares.auth.basicauth.users=admin:$$2y$$10$$yourhashpassword"
+    networks:
+      - traefik-overlay
+      - greedys-network
+
+  # Database MySQL
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_password
+      MYSQL_DATABASE: greedys_v1
+      MYSQL_USER: greedys
+      MYSQL_PASSWORD_FILE: /run/secrets/db_password
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./initdb.d:/docker-entrypoint-initdb.d
+    secrets:
+      - db_password
+    networks:
+      - greedys-network
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.database == true  # ✅ Solo su nodi dedicati al DB
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Greedys API Application
+  greedys-api:
+    image: registry.gitlab.com/psychoorange/greedys_api:latest  # Immagine da registry per produzione
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/greedys_v1
+      - APP_BASE_URL=https://api.greedys.it  # SOSTITUISCI con il tuo dominio
+      # Override HTTP interno - Traefik gestisce HTTPS
+      - SERVER_PORT=8080
+      - SERVER_SSL_ENABLED=false
+    secrets:
+      - db_password
+      - email_password
+      - service_account
+      - jwt_secret
+    deploy:
+      replicas: 2  # ✅ 2 istanze per alta disponibilità
+      update_config:
+        parallelism: 1
+        delay: 30s
+        failure_action: rollback
+        monitor: 60s
+      rollback_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+    labels:
+      - "traefik.enable=true"
+      # Main API Routes
+      - "traefik.http.routers.greedys-api.rule=Host(`api.greedys.it`)"  
+      - "traefik.http.routers.greedys-api.tls=true"
+      - "traefik.http.routers.greedys-api.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.greedys-api.service=greedys-api"
+      - "traefik.http.services.greedys-api.loadbalancer.server.port=8080"
+      # Middleware per CORS e sicurezza
+      - "traefik.http.routers.greedys-api.middlewares=cors,security"
+      # HTTPS Redirect
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.routers.greedys-api-insecure.rule=Host(`api.greedys.it`)" 
+      - "traefik.http.routers.greedys-api-insecure.middlewares=redirect-to-https"
+    networks:
+      - greedys-network
+      - traefik-overlay
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  traefik-overlay:
+    driver: overlay
+    external: true  # ✅ Network overlay per Swarm
+  greedys-network:
+    driver: overlay  # ✅ Overlay invece di bridge per Swarm
+
+volumes:
+  mysql-data:
+  traefik-ssl-certs:
+
+secrets:
+  db_password:
+    external: true  # ✅ Swarm secret
+  email_password:
+    external: true  # ✅ Swarm secret
+  service_account:
+    external: true  # ✅ Swarm secret
+  jwt_secret:
+    external: true  # ✅ Swarm secret

@@ -1,0 +1,1655 @@
+{
+	"info": {
+		"_postman_id": "restaurant-api-collection",
+		"name": "Greedy's Restaurant API - Test Collection",
+		"description": "Comprehensive test collection for Restaurant API endpoints with Italian restaurant management scenarios",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Customer Registration",
+			"item": [
+				{
+					"name": "Register Test Customer",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response time is acceptable\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(5000);",
+									"});",
+									"",
+									"pm.test(\"Customer registration successful\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstName\": \"{{customer2FirstName}}\",\n    \"lastName\": \"{{customer2LastName}}\",\n    \"email\": \"{{customer2Email}}\",\n    \"phoneNumber\": \"{{customer2Phone}}\",\n    \"password\": \"{{customerPassword}}\",\n    \"matchingPassword\": \"{{customerPassword}}\",\n    \"dateOfBirth\": \"{{customerDateOfBirth}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/customer/auth/new",
+							"host": ["{{baseUrl}}"],
+							"path": ["customer", "auth", "new"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Restaurant Registration & Authentication",
+			"item": [
+				{
+					"name": "Register New Restaurant",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response time is acceptable\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(5000);",
+									"});",
+									"",
+									"pm.test(\"Status code is 201 or 200\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"});",
+									"",
+									"pm.test(\"Restaurant registration successful\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    console.log('Registration response:', JSON.stringify(jsonData, null, 2));",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"});",
+									"",
+									"pm.test(\"Registration response contains restaurant data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && typeof jsonData.data === 'object') {",
+									"        pm.expect(jsonData.data).to.have.property('id');",
+									"        pm.environment.set('newRestaurantId', jsonData.data.id);",
+									"        pm.environment.set('restaurantId', jsonData.data.id);",
+									"        console.log('Restaurant ID saved:', jsonData.data.id);",
+									"        ",
+									"        // Also capture user ID if available",
+									"        if (jsonData.data.userId) {",
+									"            pm.environment.set('newRUserId', jsonData.data.userId);",
+									"        }",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"{{restaurant2Name}}\",\n    \"email\": \"{{restaurant2Email}}\",\n    \"phoneNumber\": \"{{restaurant2Phone}}\",\n    \"address\": \"{{restaurant2Address}}\",\n    \"city\": \"{{restaurant2City}}\",\n    \"post_code\": \"{{restaurant2PostCode}}\",\n    \"vatNumber\": \"IT98765432109\",\n    \"ownerName\": \"Mario\",\n    \"ownerSurname\": \"Rossi\",\n    \"description\": \"Autentica cucina napoletana con vista mare\",\n    \"priceLevel\": \"{{priceLevel}}\",\n    \"password\": \"{{restaurantPassword}}\",\n    \"matchingPassword\": \"{{restaurantPassword}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/restaurant/register/new",
+							"host": ["{{baseUrl}}"],
+							"path": ["restaurant", "register", "new"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Admin Restaurant Enablement",
+			"item": [
+				{
+					"name": "Admin Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response time is acceptable\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(5000);",
+									"});",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Admin token received\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.have.property('jwt');",
+									"    ",
+									"    // Store admin token for next request",
+									"    pm.environment.set('adminToken', jsonData.data.jwt);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"test@test.com\",\n    \"password\": \"Test100%%%\",\n    \"rememberMe\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "Enable Restaurant User by Email",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response time is acceptable\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(5000);",
+									"});",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"User enabled by email successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"});",
+									"",
+									"pm.test(\"Response message indicates email enablement\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('message');",
+									"    pm.expect(jsonData.message).to.include('User enabled successfully');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/admin/restaurant/user/enable?email={{restaurant2Email}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "restaurant", "user", "enable"],
+							"query": [
+								{
+									"key": "email",
+									"value": "{{restaurant2Email}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Enable Restaurant",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response time is acceptable\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(5000);",
+									"});",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Restaurant enabled successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/admin/restaurant/{{newRestaurantId}}/enable_restaurant",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "restaurant", "{{newRestaurantId}}", "enable_restaurant"]
+						}
+					}
+				},
+				{
+					"name": "Restaurant User Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response time is acceptable\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(5000);",
+									"});",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"JWT token received\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    console.log('Login response:', JSON.stringify(jsonData, null, 2));",
+									"    ",
+									"    // Handle jwt/accessToken (they are the same thing)",
+									"    var mainToken = null;",
+									"    if (jsonData.success && jsonData.data) {",
+									"        // jwt and accessToken are the same thing - try both names",
+									"        mainToken = jsonData.data.jwt || jsonData.data.accessToken;",
+									"        ",
+									"        if (mainToken) {",
+									"            pm.environment.set('restaurantToken', mainToken);",
+									"            console.log('Restaurant token saved:', mainToken);",
+									"        }",
+									"        ",
+									"        // Store refresh token separately (different from main token)",
+									"        if (jsonData.data.refreshToken) {",
+									"            pm.environment.set('refreshToken', jsonData.data.refreshToken);",
+									"            console.log('Refresh token saved:', jsonData.data.refreshToken);",
+									"        }",
+									"        ",
+									"        // Store user/restaurant info if available",
+									"        if (jsonData.data.user) {",
+									"            if (jsonData.data.user.restaurantId) {",
+									"                pm.environment.set('restaurantId', jsonData.data.user.restaurantId);",
+									"            }",
+									"            console.log('User info:', JSON.stringify(jsonData.data.user, null, 2));",
+									"        }",
+									"    }",
+									"    ",
+									"    pm.expect(mainToken).to.not.be.null;",
+									"});",
+									"",
+									"pm.test(\"Token format validation\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    var token = jsonData.data.jwt || jsonData.data.accessToken;",
+									"    if (token) {",
+									"        var tokenParts = token.split('.');",
+									"        pm.expect(tokenParts).to.have.lengthOf(3);",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"{{restaurant2Email}}\",\n    \"password\": \"{{restaurantPassword}}\",\n    \"rememberMe\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/restaurant/user/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["restaurant", "user", "auth", "login"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Restaurant Setup & Configuration",
+			"item": [
+				{
+					"name": "Create Restaurant Room",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201 or 200\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"});",
+									"",
+									"pm.test(\"Room created successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"});",
+									"",
+									"pm.test(\"Room ID returned\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && typeof jsonData.data === 'object') {",
+									"        pm.expect(jsonData.data).to.have.property('id');",
+									"        pm.environment.set('newRoomId', jsonData.data.id);",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{restaurantToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"{{roomName1}}\",\n    \"restaurantId\": {{restaurantId}}\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/restaurant/room",
+							"host": ["{{baseUrl}}"],
+							"path": ["restaurant", "room"]
+						}
+					}
+				},
+				{
+					"name": "Add Table to Room",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201 or 200\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"});",
+									"",
+									"pm.test(\"Table added successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"});",
+									"",
+									"pm.test(\"Table ID returned\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && typeof jsonData.data === 'object') {",
+									"        pm.expect(jsonData.data).to.have.property('id');",
+									"        pm.environment.set('newTableId', jsonData.data.id);",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{restaurantToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"{{tableName1}}\",\n    \"capacity\": {{tableCapacity}},\n    \"roomId\": {{newRoomId}},\n    \"positionX\": 100,\n    \"positionY\": 150\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/restaurant/table",
+							"host": ["{{baseUrl}}"],
+							"path": ["restaurant", "table"]
+						}
+					}
+				},
+				{
+					"name": "Create Restaurant Service",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201 or 200\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"});",
+									"",
+									"pm.test(\"Service created successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"});",
+									"",
+									"pm.test(\"Service ID stored for slots\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && typeof jsonData.data === 'object') {",
+									"        pm.expect(jsonData.data).to.have.property('id');",
+									"        pm.environment.set('newServiceId', jsonData.data.id);",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{restaurantToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"{{serviceName2}}\",\n    \"serviceType\": 1,\n    \"info\": \"Servizio cena dalle 19:00 alle 23:00\",\n    \"validFrom\": \"{{currentDate}}\",\n    \"validTo\": \"{{futureDate}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/restaurant/service/new",
+							"host": ["{{baseUrl}}"],
+							"path": ["restaurant", "service", "new"]
+						}
+					}
+				},
+				{
+					"name": "Create Time Slot",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Log della risposta per debug",
+									"console.log('=== CREATE TIME SLOT - RESPONSE ===');",
+									"console.log('Status Code:', pm.response.code);",
+									"console.log('Response Body:', pm.response.text());",
+									"",
+									"// Salva SEMPRE l'ID dello slot, anche se altri test falliscono",
+									"try {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData && jsonData.data && jsonData.data.id) {",
+									"        pm.environment.set('newSlotId', jsonData.data.id);",
+									"        console.log('newSlotId saved:', jsonData.data.id);",
+									"    } else {",
+									"        console.log('ERROR: No slot ID found in response');",
+									"        console.log('Response data:', jsonData);",
+									"    }",
+									"} catch (error) {",
+									"    console.log('ERROR parsing response for slot ID:', error);",
+									"}",
+									"",
+									"pm.test(\"Status code is 201 or 200\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"});",
+									"",
+									"pm.test(\"Time slot created successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"});",
+									"",
+									"pm.test(\"Slot has correct time format\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && typeof jsonData.data === 'object') {",
+									"        pm.expect(jsonData.data).to.have.property('start');",
+									"        pm.expect(jsonData.data).to.have.property('end');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{restaurantToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"start\": \"{{reservationTime}}\",\n    \"end\": \"21:00\",\n    \"weekday\": \"FRIDAY\",\n    \"serviceId\": {{newServiceId}}\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/restaurant/slot/new",
+							"host": ["{{baseUrl}}"],
+							"path": ["restaurant", "slot", "new"]
+						}
+					}
+				},
+				{
+					"name": "Set No-Show Time Limit",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"No-show limit configured\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{restaurantToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/restaurant/info/no-show-time-limit?minutes={{noShowTimeLimit}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["restaurant", "info", "no-show-time-limit"],
+							"query": [
+								{
+									"key": "minutes",
+									"value": "{{noShowTimeLimit}}"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Menu Management",
+			"item": [
+				{
+					"name": "Create Menu",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Log della risposta per debug",
+									"console.log('=== CREATE MENU - RESPONSE ===');",
+									"console.log('Status Code:', pm.response.code);",
+									"console.log('Response Body:', pm.response.text());",
+									"",
+									"pm.test(\"Status code is 201 or 200\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"});",
+									"",
+									"pm.test(\"Menu created successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"});",
+									"",
+									"// Salva SEMPRE l'ID del menu, anche se altri test falliscono",
+									"try {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData && jsonData.data && jsonData.data.id) {",
+									"        pm.environment.set('newMenuId', jsonData.data.id);",
+									"        console.log('newMenuId saved:', jsonData.data.id);",
+									"        console.log('Menu name:', jsonData.data.name);",
+									"    } else {",
+									"        console.log('ERROR: No menu ID found in response');",
+									"        console.log('Response data:', jsonData);",
+									"    }",
+									"} catch (error) {",
+									"    console.log('ERROR parsing response for menu ID:', error);",
+									"}",
+									"",
+									"pm.test(\"Menu ID stored for dishes\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && typeof jsonData.data === 'object' && jsonData.data.id) {",
+									"        pm.expect(jsonData.data).to.have.property('id');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{restaurantToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"{{menuName2}}\",\n    \"description\": \"Primi piatti tradizionali della cucina italiana\",\n    \"price\": 25.00,\n    \"serviceIds\": [{{newServiceId}}]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/restaurant/menu/create",
+							"host": ["{{baseUrl}}"],
+							"path": ["restaurant", "menu", "create"]
+						}
+					}
+				},
+				{
+					"name": "Create Dish",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Log della risposta per debug",
+									"console.log('=== CREATE DISH - RESPONSE ===');",
+									"console.log('Status Code:', pm.response.code);",
+									"console.log('Response Body:', pm.response.text());",
+									"",
+									"pm.test(\"Status code is 201 or 200\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"});",
+									"",
+									"pm.test(\"Dish created successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"});",
+									"",
+									"// Salva SEMPRE l'ID del piatto, anche se altri test falliscono",
+									"try {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData && jsonData.data && jsonData.data.id) {",
+									"        pm.environment.set('newDishId', jsonData.data.id);",
+									"        console.log('newDishId saved:', jsonData.data.id);",
+									"    } else {",
+									"        console.log('ERROR: No dish ID found in response');",
+									"        console.log('Response data:', jsonData);",
+									"    }",
+									"} catch (error) {",
+									"    console.log('ERROR parsing response for dish ID:', error);",
+									"}",
+									"",
+									"pm.test(\"Dish data structure valid\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && typeof jsonData.data === 'object') {",
+									"        pm.expect(jsonData.data).to.have.property('name');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{restaurantToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"{{dishName1}}\",\n    \"description\": \"Classica pasta romana con guanciale, uova, pecorino e pepe nero\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/restaurant/menu/dishes/create",
+							"host": ["{{baseUrl}}"],
+							"path": ["restaurant", "menu", "dishes", "create"]
+						}
+					}
+				},
+				{
+					"name": "Add Dish to Menu",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Log dei parametri prima della richiesta",
+									"console.log('=== ADD DISH TO MENU - PARAMETERS ===');",
+									"console.log('newMenuId:', pm.environment.get('newMenuId'));",
+									"console.log('newDishId:', pm.environment.get('newDishId'));",
+									"console.log('restaurantToken available:', !!pm.environment.get('restaurantToken'));",
+									"",
+									"// Verifica che tutti i parametri necessari siano disponibili",
+									"const menuId = pm.environment.get('newMenuId');",
+									"const dishId = pm.environment.get('newDishId');",
+									"if (!menuId) {",
+									"    console.log('WARNING: newMenuId is missing or null');",
+									"} else {",
+									"    console.log('MenuId type:', typeof menuId, 'Value:', menuId);",
+									"}",
+									"if (!dishId) {",
+									"    console.log('WARNING: newDishId is missing or null');",
+									"} else {",
+									"    console.log('DishId type:', typeof dishId, 'Value:', dishId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Log della risposta",
+									"console.log('=== ADD DISH TO MENU - RESPONSE ===');",
+									"console.log('Status Code:', pm.response.code);",
+									"console.log('Response Body:', pm.response.text());",
+									"",
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Dish added to menu successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{restaurantToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"menuId\": {{newMenuId}},\n    \"dishId\": {{newDishId}},\n    \"price\": 18.50\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/restaurant/menu/dishes/add",
+							"host": ["{{baseUrl}}"],
+							"path": ["restaurant", "menu", "dishes", "add"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Reservation Management",
+			"item": [
+				{
+					"name": "Get Pending Reservations",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Pending reservations list returned\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"});",
+									"",
+									"pm.test(\"Reservation has required fields\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data.length > 0) {",
+									"        var reservation = jsonData.data[0];",
+									"        pm.expect(reservation).to.have.property('id');",
+									"        pm.expect(reservation).to.have.property('userName');",
+									"        pm.expect(reservation).to.have.property('pax');",
+									"        pm.expect(reservation).to.have.property('status');",
+									"        ",
+									"        // Store first pending reservation ID",
+									"        if (reservation.status === 'NOT_ACCEPTED') {",
+									"            pm.environment.set('pendingReservationId', reservation.id);",
+									"        }",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{restaurantToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/restaurant/reservation/pending/get",
+							"host": ["{{baseUrl}}"],
+							"path": ["restaurant", "reservation", "pending", "get"]
+						}
+					}
+				},
+				{
+					"name": "Create New Reservation",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Log dei parametri prima della richiesta",
+									"console.log('=== CREATE NEW RESERVATION - PARAMETERS ===');",
+									"console.log('newSlotId:', pm.environment.get('newSlotId'));",
+									"console.log('restaurantId:', pm.environment.get('restaurantId'));",
+									"console.log('restaurantToken available:', !!pm.environment.get('restaurantToken'));",
+									"",
+									"// Verifica che tutti i parametri necessari siano disponibili",
+									"const slotId = pm.environment.get('newSlotId');",
+									"if (!slotId) {",
+									"    console.log('WARNING: newSlotId is missing or null');",
+									"} else {",
+									"    console.log('SlotId type:', typeof slotId, 'Value:', slotId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Log della risposta",
+									"console.log('=== CREATE NEW RESERVATION - RESPONSE ===');",
+									"console.log('Status Code:', pm.response.code);",
+									"console.log('Response Body:', pm.response.text());",
+									"",
+									"pm.test(\"Status code is 201 or 200\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"});",
+									"",
+									"pm.test(\"Reservation created successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    console.log('=== PARSING RESPONSE FOR ID ===');",
+									"    console.log('Full jsonData:', JSON.stringify(jsonData, null, 2));",
+									"    console.log('jsonData.success:', jsonData.success);",
+									"    console.log('jsonData.data type:', typeof jsonData.data);",
+									"    console.log('jsonData.data:', jsonData.data);",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"});",
+									"",
+									"pm.test(\"Reservation ID returned\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    console.log('=== EXTRACTING AND SAVING RESERVATION ID ===');",
+									"    if (jsonData.data && typeof jsonData.data === 'object') {",
+									"        console.log('jsonData.data has id property:', jsonData.data.hasOwnProperty('id'));",
+									"        console.log('jsonData.data.id value:', jsonData.data.id);",
+									"        console.log('jsonData.data.id type:', typeof jsonData.data.id);",
+									"        pm.expect(jsonData.data).to.have.property('id');",
+									"        pm.environment.set('newReservationId', jsonData.data.id);",
+									"        console.log('✅ SAVED newReservationId:', jsonData.data.id);",
+									"        console.log('✅ Verification - environment newReservationId:', pm.environment.get('newReservationId'));",
+									"    } else {",
+									"        console.log('❌ ERROR: jsonData.data is not an object or is null');",
+									"        console.log('jsonData.data type:', typeof jsonData.data);",
+									"        console.log('jsonData.data value:', jsonData.data);",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{restaurantToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"userName\": \"Marco Rossi\",\n    \"userEmail\": \"marco.rossi@example.com\",\n    \"userPhoneNumber\": \"+39 329 123 4567\",\n    \"pax\": 3,\n    \"kids\": 1,\n    \"notes\": \"Cliente abituale - tavolo con vista preferito\",\n    \"reservationDay\": \"2025-08-20\",\n    \"idSlot\": {{newSlotId}}\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/restaurant/reservation/new",
+							"host": ["{{baseUrl}}"],
+							"path": ["restaurant", "reservation", "new"]
+						}
+					}
+				},
+				{
+					"name": "Accept Reservation",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"console.log('=== ACCEPT RESERVATION - PRE-REQUEST ===');",
+									"console.log('newReservationId from environment:', pm.environment.get('newReservationId'));",
+									"console.log('newReservationId type:', typeof pm.environment.get('newReservationId'));",
+									"console.log('baseUrl:', pm.environment.get('baseUrl'));",
+									"console.log('Final URL will be:', pm.environment.get('baseUrl') + '/restaurant/reservation/' + pm.environment.get('newReservationId') + '/accept');",
+									"",
+									"const reservationId = pm.environment.get('newReservationId');",
+									"if (!reservationId) {",
+									"    console.log('❌ ERROR: newReservationId is missing or null!');",
+									"} else {",
+									"    console.log('✅ newReservationId found:', reservationId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"console.log('=== ACCEPT RESERVATION - RESPONSE ===');",
+									"console.log('Status Code:', pm.response.code);",
+									"console.log('Response Body:', pm.response.text());",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Reservation accepted successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"});",
+									"",
+									"pm.test(\"Acceptance includes table assignment\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && typeof jsonData.data === 'object') {",
+									"        pm.expect(jsonData.data).to.have.property('status');",
+									"        pm.expect(jsonData.data.status).to.eql('ACCEPTED');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{restaurantToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/restaurant/reservation/{{newReservationId}}/accept",
+							"host": ["{{baseUrl}}"],
+							"path": ["restaurant", "reservation", "{{newReservationId}}", "accept"]
+						}
+					}
+				},
+				{
+					"name": "Mark Customer as Seated",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Customer marked as seated\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{restaurantToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/restaurant/reservation/{{newReservationId}}/seated",
+							"host": ["{{baseUrl}}"],
+							"path": ["restaurant", "reservation", "{{newReservationId}}", "seated"]
+						}
+					}
+				},
+				{
+					"name": "Mark as No-Show",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"No-show recorded successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{restaurantToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/restaurant/reservation/{{newReservationId}}/no_show",
+							"host": ["{{baseUrl}}"],
+							"path": ["restaurant", "reservation", "{{newReservationId}}", "no_show"]
+						}
+					}
+				},
+				{
+					"name": "Reject Reservation",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Reservation rejected successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{restaurantToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/restaurant/reservation/{{newReservationId}}/reject?reason=Fully booked for requested time",
+							"host": ["{{baseUrl}}"],
+							"path": ["restaurant", "reservation", "{{newReservationId}}", "reject"],
+							"query": [
+								{
+									"key": "reason",
+									"value": "Fully booked for requested time"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Restaurant Information & Views",
+			"item": [
+				{
+					"name": "Get All Restaurant Services",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Services list returned\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"});",
+									"",
+									"pm.test(\"Service details are complete\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data.length > 0) {",
+									"        var service = jsonData.data[0];",
+									"        pm.expect(service).to.have.property('name');",
+									"        pm.expect(service).to.have.property('validFrom');",
+									"        pm.expect(service).to.have.property('validTo');",
+									"        pm.expect(service).to.have.property('active');",
+									"        pm.expect(service).to.have.property('enabled');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{restaurantToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/restaurant/service/services",
+							"host": ["{{baseUrl}}"],
+							"path": ["restaurant", "service", "services"]
+						}
+					}
+				},
+				{
+					"name": "Get All Time Slots",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Time slots returned\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"});",
+									"",
+									"pm.test(\"Slot timing information present\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data.length > 0) {",
+									"        var slot = jsonData.data[0];",
+									"        pm.expect(slot).to.have.property('start');",
+									"        pm.expect(slot).to.have.property('end');",
+									"        pm.expect(slot).to.have.property('weekday');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{restaurantToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/restaurant/slot/all",
+							"host": ["{{baseUrl}}"],
+							"path": ["restaurant", "slot", "all"]
+						}
+					}
+				},
+				{
+					"name": "Get All Rooms",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Rooms list returned\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"});",
+									"",
+									"pm.test(\"Room has name and tables\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data.length > 0) {",
+									"        var room = jsonData.data[0];",
+									"        pm.expect(room).to.have.property('name');",
+									"        pm.expect(room).to.have.property('tables');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{restaurantToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/restaurant/room/all",
+							"host": ["{{baseUrl}}"],
+							"path": ["restaurant", "room", "all"]
+						}
+					}
+				},
+				{
+					"name": "Get Tables in Room",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Tables list returned\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"});",
+									"",
+									"pm.test(\"Table has capacity and position\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data.length > 0) {",
+									"        var table = jsonData.data[0];",
+									"        pm.expect(table).to.have.property('capacity');",
+									"        pm.expect(table).to.have.property('name');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{restaurantToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/restaurant/table/room/{{newRoomId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["restaurant", "table", "room", "{{newRoomId}}"]
+						}
+					}
+				},
+				{
+					"name": "Get All Reservations",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Reservations list returned\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"});",
+									"",
+									"pm.test(\"Reservation audit information present\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data.length > 0) {",
+									"        var reservation = jsonData.data[0];",
+									"        pm.expect(reservation).to.have.property('createdAt');",
+									"        pm.expect(reservation).to.have.property('status');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{restaurantToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/restaurant/reservation/reservations?start={{currentDate}}&end={{futureDate}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["restaurant", "reservation", "reservations"],
+							"query": [
+								{
+									"key": "start",
+									"value": "{{currentDate}}"
+								},
+								{
+									"key": "end", 
+									"value": "{{futureDate}}"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Staff Management",
+			"item": [
+				{
+					"name": "Add New Restaurant User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201 or 200\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"});",
+									"",
+									"pm.test(\"User created successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"});",
+									"",
+									"pm.test(\"User ID returned\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && typeof jsonData.data === 'object') {",
+									"        pm.environment.set('newUserId', jsonData.data.id);",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{restaurantToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstName\": \"Francesca\",\n    \"lastName\": \"Lombardi\",\n    \"email\": \"francesca.lombardi@trattoriadamario.it\",\n    \"phoneNumber\": \"+39 347 555 1234\",\n    \"password\": \"StaffPass123!\",\n    \"matchingPassword\": \"StaffPass123!\",\n    \"roleId\": 2\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/restaurant/user/new",
+							"host": ["{{baseUrl}}"],
+							"path": ["restaurant", "user", "new"]
+						}
+					}
+				},
+				{
+					"name": "Get User Authorities",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Authorities list returned\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"});",
+									"",
+									"pm.test(\"Authority has correct format\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data.length > 0) {",
+									"        var authority = jsonData.data[0];",
+									"        pm.expect(authority).to.be.a('string');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{restaurantToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/restaurant/user/authorities",
+							"host": ["{{baseUrl}}"],
+							"path": ["restaurant", "user", "authorities"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Error Scenarios",
+			"item": [
+				{
+					"name": "Invalid Reservation Request",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Validation error returned\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(false);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{restaurantToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"userName\": \"\",\n    \"userEmail\": \"invalid-email\",\n    \"pax\": -1,\n    \"kids\": -1,\n    \"reservationDay\": \"invalid-date\",\n    \"idSlot\": -1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/restaurant/reservation/new",
+							"host": ["{{baseUrl}}"],
+							"path": ["restaurant", "reservation", "new"]
+						}
+					}
+				},
+				{
+					"name": "Unauthorized Access",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 401\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/restaurant/reservation/pending/get",
+							"host": ["{{baseUrl}}"],
+							"path": ["restaurant", "reservation", "pending", "get"]
+						}
+					}
+				},
+				{
+					"name": "Non-existent Reservation",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 403\", function () {",
+									"    pm.response.to.have.status(403);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{restaurantToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/restaurant/reservation/99999/accept?tableId=1",
+							"host": ["{{baseUrl}}"],
+							"path": ["restaurant", "reservation", "99999", "accept"],
+							"query": [
+								{
+									"key": "tableId",
+									"value": "1"
+								}
+							]
+						}
+					}
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Pre-request script for restaurant API",
+					"// Ensure proper authentication for restaurant endpoints",
+					"const authHeader = pm.request.headers.get('Authorization');",
+					"if (authHeader && authHeader.includes('Bearer') && !pm.environment.get('restaurantToken')) {",
+					"    console.log('Warning: Missing restaurant token for authenticated request');",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global test script for restaurant API",
+					"pm.test('Response time is acceptable', function () {",
+					"    pm.expect(pm.response.responseTime).to.be.below(5000);",
+					"});",
+					"",
+					"// Italian business hours validation",
+					"if (pm.response.json() && pm.response.json().data) {",
+					"    const responseData = pm.response.json().data;",
+					"    if (Array.isArray(responseData)) {",
+					"        responseData.forEach(item => {",
+					"            if (item.start && item.end) {",
+					"                // Validate time format HH:mm",
+					"                pm.test('Italian time format valid', function() {",
+					"                    pm.expect(item.start).to.match(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/);",
+					"                });",
+					"            }",
+					"        });",
+					"    }",
+					"}"
+				]
+			}
+		}
+	]
+}

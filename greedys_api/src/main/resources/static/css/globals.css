@@ -1,0 +1,55 @@
+@import url("https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css");
+
+.screen a {
+  display: contents;
+  text-decoration: none;
+}
+
+.container-center-horizontal {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  pointer-events: none;
+  width: 100%;
+}
+
+.container-center-horizontal > * {
+  flex-shrink: 0;
+  pointer-events: auto;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Applica il font Formiga a tutti gli elementi come default */
+* {
+  font-family: 'Formiga-Regular', Helvetica, Arial, sans-serif;
+}
+
+/* Specifico per elementi che potrebbero non avere classi */
+.per-i, .per-i-clienti, .per-i-ristoratori {
+  font-family: 'Formiga-Medium', Helvetica, Arial, sans-serif;
+}
+
+.usa-greedys-sia-da-app-che-da-browser {
+  font-family: 'Formiga-Medium', Helvetica, Arial, sans-serif;
+}
+
+.ristoranti-1, .scopri-chi-ha-gi-scelto-greedys {
+  font-family: 'Formiga-Semibold', Helvetica, Arial, sans-serif;
+}
+
+.configura-il-profilo {
+  font-family: 'Formiga-Medium', Helvetica, Arial, sans-serif;
+  color: var(--tosca);
+}
+
+/* Centra il logo nel footer */
+.footer {
+  justify-content: center !important;
+}
+
+.frame-8-1 {
+  justify-content: center !important;
+}
