@@ -25,9 +25,9 @@ public class ResponseWrapperCatalogController extends BaseController {
     private final ResponseWrapperCatalogService catalogService;
 
     @GetMapping(path = "/response-wrapper-catalog", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ResponseWrapper<Object>> getCatalog() {
+    public ResponseEntity<ResponseWrapper<String>> getCatalog() {
         return execute("get response wrapper catalog", () -> {
-            Object catalog = catalogService.getCatalog();
+            String catalog = catalogService.getCatalog();
             if (catalog == null) {
                 throw new EntityNotFoundException("Response wrapper catalog not found");
             }
