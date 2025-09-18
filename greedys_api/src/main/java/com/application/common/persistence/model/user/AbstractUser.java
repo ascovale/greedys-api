@@ -54,11 +54,7 @@ public abstract class AbstractUser implements UserDetails {
     private String password;
 
     private String phoneNumber;
-
-    public AbstractUser() {
-        // Default constructor for JPA
-    }
-
+    
     @Override
     public int hashCode() {
         return Objects.hash(email);
