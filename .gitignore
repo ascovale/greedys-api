@@ -1,6 +1,7 @@
 greedys_api/target/
 .vscode/settings.json
 .env
+openapi_analysis.md
 
 # Ignora tutto il contenuto della cartella db_data
 db_data/*

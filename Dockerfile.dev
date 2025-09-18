@@ -1,0 +1,25 @@
+FROM maven:3.9.8-eclipse-temurin-17
+
+WORKDIR /workspace
+ENV MAVEN_OPTS="-XX:+UseContainerSupport -XX:InitialRAMPercentage=30 -XX:MaxRAMPercentage=75"
+ENV SPRING_PROFILES_ACTIVE=dev
+ENV BOOT_JVM_ARGS="-Dspring.devtools.restart.enabled=true -Dspring.output.ansi.enabled=ALWAYS"
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends inotify-tools \
+ && rm -rf /var/lib/apt/lists/*
+
+EXPOSE 8080
+VOLUME ["/root/.m2", "/workspace/target"]
+
+CMD ["bash","-lc","set -e; \
+  test -f pom.xml || { echo \"pom.xml non trovato in /workspace. Monta ./greedys_api su /workspace\"; exit 1; }; \
+  echo \"[mvn] dependency:go-offline\"; mvn -B -DskipTests dependency:go-offline || true; \
+  echo \"[mvn] compile (iniziale)\"; mvn -DskipTests -T 1C compile || true; \
+  echo \"[watch] src/main -> mvn compile\"; \
+  ( while inotifywait -r -e modify,create,delete,move src/main; do mvn -q -DskipTests -T 1C compile || true; done ) & \
+  exec mvn -q -DskipTests \
+    -Dspring-boot.run.fork=true \
+    -Dspring-boot.run.profiles=${SPRING_PROFILES_ACTIVE:-dev} \
+    -Dspring-boot.run.jvmArguments=\"$BOOT_JVM_ARGS ${JAVA_DEBUG_OPTS:-}\" \
+    spring-boot:run"]

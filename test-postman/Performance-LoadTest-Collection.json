@@ -1,0 +1,773 @@
+{
+	"info": {
+		"_postman_id": "performance-load-test-collection",
+		"name": "Greedy's Performance & Load Testing Collection",
+		"description": "Comprehensive performance and load testing collection for API endpoints with response time monitoring, concurrent user simulation, and stress testing scenarios",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Performance Test Setup",
+			"description": "Initialize performance testing environment and variables",
+			"item": [
+				{
+					"name": "Initialize Performance Test Run",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Initialize performance test run",
+									"const testRunId = 'perf_' + new Date().getTime() + '_' + Math.random().toString(36).substr(2, 9);",
+									"const testStartTime = new Date().toISOString();",
+									"",
+									"pm.environment.set('testRunId', testRunId);",
+									"pm.environment.set('testStartTime', testStartTime);",
+									"pm.environment.set('performanceMonitoring', 'true');",
+									"",
+									"console.log('🚀 PERFORMANCE TEST INITIALIZATION:');",
+									"console.log('  📊 Test Run ID:', testRunId);",
+									"console.log('  🕒 Start Time:', testStartTime);",
+									"console.log('  🎯 Max Response Time:', pm.environment.get('maxResponseTime') + 'ms');",
+									"console.log('  ⚡ Fast Threshold:', pm.environment.get('fastResponseTime') + 'ms');",
+									"console.log('  🐌 Slow Threshold:', pm.environment.get('slowResponseTime') + 'ms');"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Performance test environment initialized\", function () {",
+									"    pm.expect(pm.environment.get('testRunId')).to.not.be.empty;",
+									"    pm.expect(pm.environment.get('testStartTime')).to.not.be.empty;",
+									"});",
+									"",
+									"console.log('✅ Performance test environment ready for execution');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/health",
+							"host": ["{{baseUrl}}"],
+							"path": ["health"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Authentication Performance Tests",
+			"description": "Test authentication endpoint performance under load",
+			"item": [
+				{
+					"name": "Customer Login Performance Test",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Generate unique test customer for performance testing",
+									"const timestamp = new Date().getTime();",
+									"const perfTestEmail = `perf.customer.${timestamp}@greedy.test.it`;",
+									"pm.environment.set('perfTestCustomerEmail', perfTestEmail);",
+									"",
+									"console.log('🏃 CUSTOMER LOGIN PERFORMANCE TEST');",
+									"console.log('  👤 Test User:', perfTestEmail);",
+									"console.log('  🎯 Target: < ' + pm.environment.get('fastResponseTime') + 'ms');"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const responseTime = pm.response.responseTime;",
+									"const maxTime = parseInt(pm.environment.get('maxResponseTime'));",
+									"const fastTime = parseInt(pm.environment.get('fastResponseTime'));",
+									"const slowTime = parseInt(pm.environment.get('slowResponseTime'));",
+									"",
+									"// Performance Test Assertions",
+									"pm.test(`Response time is under maximum threshold (${maxTime}ms)`, function () {",
+									"    pm.expect(responseTime).to.be.below(maxTime);",
+									"});",
+									"",
+									"pm.test(\"Login successful\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Performance Classification",
+									"if (responseTime < fastTime) {",
+									"    pm.test(`⚡ FAST LOGIN: ${responseTime}ms (< ${fastTime}ms)`, function () {",
+									"        pm.expect(responseTime).to.be.below(fastTime);",
+									"    });",
+									"    console.log('⚡ FAST LOGIN PERFORMANCE:', responseTime + 'ms');",
+									"} else if (responseTime < slowTime) {",
+									"    pm.test(`✅ ACCEPTABLE LOGIN: ${responseTime}ms (< ${slowTime}ms)`, function () {",
+									"        pm.expect(responseTime).to.be.below(slowTime);",
+									"    });",
+									"    console.log('✅ ACCEPTABLE LOGIN PERFORMANCE:', responseTime + 'ms');",
+									"} else {",
+									"    pm.test(`🐌 SLOW LOGIN: ${responseTime}ms (≥ ${slowTime}ms)`, function () {",
+									"        console.warn('⚠️ Login performance below expected threshold');",
+									"        pm.expect(responseTime).to.be.below(maxTime);",
+									"    });",
+									"    console.log('🐌 SLOW LOGIN PERFORMANCE:', responseTime + 'ms');",
+									"}",
+									"",
+									"// Store token for subsequent performance tests",
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData && jsonData.data && jsonData.data.jwt) {",
+									"        pm.environment.set('perfTestCustomerToken', jsonData.data.jwt);",
+									"    }",
+									"}",
+									"",
+									"// Performance Logging",
+									"console.log('📊 CUSTOMER LOGIN PERFORMANCE METRICS:');",
+									"console.log('  ⏱️  Response Time:', responseTime + 'ms');",
+									"console.log('  📏 Response Size:', pm.response.responseSize || 'N/A');",
+									"console.log('  🎯 Status Code:', pm.response.code);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "User-Agent",
+								"value": "{{userAgent}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"{{customerEmail}}\",\n    \"password\": \"{{customerPassword}}\",\n    \"rememberMe\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/customer/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["customer", "auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "Admin Login Performance Test",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const responseTime = pm.response.responseTime;",
+									"const maxTime = parseInt(pm.environment.get('maxResponseTime'));",
+									"const fastTime = parseInt(pm.environment.get('fastResponseTime'));",
+									"",
+									"pm.test(`Admin login under ${maxTime}ms`, function () {",
+									"    pm.expect(responseTime).to.be.below(maxTime);",
+									"});",
+									"",
+									"pm.test(\"Admin login successful\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Store admin token for performance tests",
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData && jsonData.data && jsonData.data.jwt) {",
+									"        pm.environment.set('perfTestAdminToken', jsonData.data.jwt);",
+									"    }",
+									"}",
+									"",
+									"console.log('📊 ADMIN LOGIN PERFORMANCE:', responseTime + 'ms');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"{{adminEmail}}\",\n    \"password\": \"{{adminPassword}}\",\n    \"rememberMe\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "auth", "login"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "API Endpoint Performance Tests",
+			"description": "Test various API endpoints for performance benchmarks",
+			"item": [
+				{
+					"name": "Restaurant Search Performance",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const responseTime = pm.response.responseTime;",
+									"const maxTime = parseInt(pm.environment.get('maxResponseTime'));",
+									"const fastTime = parseInt(pm.environment.get('fastResponseTime'));",
+									"",
+									"pm.test(`Restaurant search under ${maxTime}ms`, function () {",
+									"    pm.expect(responseTime).to.be.below(maxTime);",
+									"});",
+									"",
+									"pm.test(\"Search results returned\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"});",
+									"",
+									"// Check if search is performing well",
+									"if (responseTime < fastTime) {",
+									"    console.log('⚡ FAST SEARCH:', responseTime + 'ms');",
+									"} else {",
+									"    console.log('🐌 SLOW SEARCH:', responseTime + 'ms - Consider optimization');",
+									"}",
+									"",
+									"// Log search performance metrics",
+									"const jsonData = pm.response.json();",
+									"console.log('📊 RESTAURANT SEARCH PERFORMANCE:');",
+									"console.log('  ⏱️  Response Time:', responseTime + 'ms');",
+									"console.log('  📄 Results Count:', jsonData.data ? (Array.isArray(jsonData.data) ? jsonData.data.length : 'N/A') : 'N/A');",
+									"console.log('  📏 Response Size:', pm.response.responseSize || 'N/A');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{perfTestCustomerToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/customer/restaurants/search?query={{searchQuery}}&page={{pageNumber}}&size={{pageSize}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["customer", "restaurants", "search"],
+							"query": [
+								{
+									"key": "query",
+									"value": "{{searchQuery}}"
+								},
+								{
+									"key": "page",
+									"value": "{{pageNumber}}"
+								},
+								{
+									"key": "size",
+									"value": "{{pageSize}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Reservation Creation Performance",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Generate future date for reservation",
+									"const futureDate = new Date();",
+									"futureDate.setDate(futureDate.getDate() + 7);",
+									"const reservationDate = futureDate.toISOString().split('T')[0];",
+									"pm.environment.set('perfReservationDate', reservationDate);",
+									"",
+									"console.log('🍽️  RESERVATION CREATION PERFORMANCE TEST');",
+									"console.log('  📅 Date:', reservationDate);",
+									"console.log('  🏪 Restaurant:', pm.environment.get('restaurantId'));"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const responseTime = pm.response.responseTime;",
+									"const maxTime = parseInt(pm.environment.get('maxResponseTime'));",
+									"",
+									"pm.test(`Reservation creation under ${maxTime}ms`, function () {",
+									"    pm.expect(responseTime).to.be.below(maxTime);",
+									"});",
+									"",
+									"pm.test(\"Reservation created successfully\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"});",
+									"",
+									"// Store reservation ID for cleanup",
+									"if (pm.response.code === 200 || pm.response.code === 201) {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData && jsonData.data && jsonData.data.id) {",
+									"        pm.environment.set('perfReservationId', jsonData.data.id);",
+									"    }",
+									"}",
+									"",
+									"console.log('📊 RESERVATION CREATION PERFORMANCE:', responseTime + 'ms');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{perfTestCustomerToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"restaurantId\": {{restaurantId}},\n    \"reservationDate\": \"{{perfReservationDate}}\",\n    \"reservationTime\": \"{{reservationTime}}\",\n    \"adults\": {{reservationPax}},\n    \"kids\": {{reservationKids}},\n    \"notes\": \"Performance test reservation\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/customer/reservations",
+							"host": ["{{baseUrl}}"],
+							"path": ["customer", "reservations"]
+						}
+					}
+				},
+				{
+					"name": "Admin Dashboard Load Performance",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const responseTime = pm.response.responseTime;",
+									"const maxTime = parseInt(pm.environment.get('maxResponseTime'));",
+									"const slowTime = parseInt(pm.environment.get('slowResponseTime'));",
+									"",
+									"pm.test(`Admin dashboard under ${maxTime}ms`, function () {",
+									"    pm.expect(responseTime).to.be.below(maxTime);",
+									"});",
+									"",
+									"pm.test(\"Dashboard data loaded\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Warn if admin dashboard is slow (critical for user experience)",
+									"if (responseTime > slowTime) {",
+									"    console.warn('⚠️ ADMIN DASHBOARD SLOW:', responseTime + 'ms - UX Impact!');",
+									"} else {",
+									"    console.log('✅ ADMIN DASHBOARD PERFORMANCE:', responseTime + 'ms');",
+									"}",
+									"",
+									"console.log('📊 ADMIN DASHBOARD METRICS:');",
+									"console.log('  ⏱️  Response Time:', responseTime + 'ms');",
+									"console.log('  📏 Response Size:', pm.response.responseSize || 'N/A');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{perfTestAdminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/admin/customers?page={{pageNumber}}&size={{pageSize}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "customers"],
+							"query": [
+								{
+									"key": "page",
+									"value": "{{pageNumber}}"
+								},
+								{
+									"key": "size",
+									"value": "{{pageSize}}"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Load Testing Scenarios",
+			"description": "Simulate concurrent user load and stress testing scenarios",
+			"item": [
+				{
+					"name": "Concurrent Login Load Test",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Simulate concurrent user by adding randomization",
+									"const randomDelay = Math.random() * parseInt(pm.environment.get('requestDelay') || '100');",
+									"",
+									"// Add unique identifier for this concurrent request",
+									"const concurrentId = 'concurrent_' + Math.random().toString(36).substr(2, 9);",
+									"pm.environment.set('concurrentRequestId', concurrentId);",
+									"",
+									"console.log('🚀 CONCURRENT LOGIN TEST - ID:', concurrentId);",
+									"console.log('  ⏰ Randomized Delay:', Math.round(randomDelay) + 'ms');",
+									"",
+									"// Optional delay to simulate real user behavior",
+									"if (randomDelay > 10) {",
+									"    setTimeout(() => {}, randomDelay);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const responseTime = pm.response.responseTime;",
+									"const maxTime = parseInt(pm.environment.get('maxResponseTime'));",
+									"const concurrentId = pm.environment.get('concurrentRequestId');",
+									"",
+									"pm.test(`Concurrent login ${concurrentId} completed`, function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(`Response time under load: ${responseTime}ms < ${maxTime}ms`, function () {",
+									"    pm.expect(responseTime).to.be.below(maxTime);",
+									"});",
+									"",
+									"// Log concurrent request performance",
+									"console.log('📊 CONCURRENT REQUEST PERFORMANCE:');",
+									"console.log('  🆔 Request ID:', concurrentId);",
+									"console.log('  ⏱️  Response Time:', responseTime + 'ms');",
+									"console.log('  🎯 Status:', pm.response.code);",
+									"",
+									"// Store performance data for analysis",
+									"pm.globals.set(`perf_${concurrentId}`, JSON.stringify({",
+									"    id: concurrentId,",
+									"    responseTime: responseTime,",
+									"    status: pm.response.code,",
+									"    timestamp: new Date().toISOString()",
+									"}));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"{{customerEmail}}\",\n    \"password\": \"{{customerPassword}}\",\n    \"rememberMe\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/customer/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["customer", "auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "Heavy Data Load Test - Restaurant List",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Request large page size to test database performance",
+									"pm.environment.set('loadTestPageSize', '100');",
+									"",
+									"console.log('🔥 HEAVY DATA LOAD TEST');",
+									"console.log('  📄 Page Size:', pm.environment.get('loadTestPageSize'));",
+									"console.log('  🎯 Testing database performance under load');"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const responseTime = pm.response.responseTime;",
+									"const maxTime = parseInt(pm.environment.get('maxResponseTime')) * 2; // Allow more time for heavy loads",
+									"",
+									"pm.test(`Heavy load response under ${maxTime}ms`, function () {",
+									"    pm.expect(responseTime).to.be.below(maxTime);",
+									"});",
+									"",
+									"pm.test(\"Heavy data load successful\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Analyze heavy load performance",
+									"const jsonData = pm.response.json();",
+									"const recordCount = jsonData.data ? (Array.isArray(jsonData.data) ? jsonData.data.length : 1) : 0;",
+									"",
+									"console.log('🔥 HEAVY LOAD TEST RESULTS:');",
+									"console.log('  ⏱️  Response Time:', responseTime + 'ms');",
+									"console.log('  📊 Records Returned:', recordCount);",
+									"console.log('  📏 Response Size:', pm.response.responseSize || 'N/A');",
+									"console.log('  ⚖️  Performance Ratio:', Math.round(responseTime / recordCount) + 'ms per record');",
+									"",
+									"// Performance warning for heavy loads",
+									"if (responseTime > 3000) {",
+									"    console.warn('⚠️ HEAVY LOAD PERFORMANCE WARNING: Consider pagination optimization');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{perfTestAdminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/admin/restaurants?page=0&size={{loadTestPageSize}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "restaurants"],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "{{loadTestPageSize}}"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Performance Test Cleanup",
+			"description": "Clean up test data and generate performance summary",
+			"item": [
+				{
+					"name": "Cleanup Test Reservation",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Test reservation cleaned up or not found\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 204, 404]);",
+									"});",
+									"",
+									"if (pm.response.code === 200 || pm.response.code === 204) {",
+									"    console.log('🧹 Test reservation cleaned up successfully');",
+									"} else if (pm.response.code === 404) {",
+									"    console.log('🔍 Test reservation not found (already cleaned up)');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{perfTestCustomerToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/customer/reservations/{{perfReservationId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["customer", "reservations", "{{perfReservationId}}"]
+						}
+					}
+				},
+				{
+					"name": "Generate Performance Summary",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Generate performance test summary",
+									"const testEndTime = new Date().toISOString();",
+									"const testRunId = pm.environment.get('testRunId');",
+									"const testStartTime = pm.environment.get('testStartTime');",
+									"",
+									"pm.environment.set('testEndTime', testEndTime);",
+									"",
+									"// Calculate test duration",
+									"const startTime = new Date(testStartTime);",
+									"const endTime = new Date(testEndTime);",
+									"const duration = Math.round((endTime - startTime) / 1000);",
+									"",
+									"console.log('');",
+									"console.log('📊 PERFORMANCE TEST SUMMARY REPORT');",
+									"console.log('=====================================');",
+									"console.log('🆔 Test Run ID:', testRunId);",
+									"console.log('🕒 Start Time:', testStartTime);",
+									"console.log('⏰ End Time:', testEndTime);",
+									"console.log('⏱️  Total Duration:', duration + ' seconds');",
+									"console.log('');",
+									"console.log('🎯 PERFORMANCE THRESHOLDS:');",
+									"console.log('  ⚡ Fast Response:', pm.environment.get('fastResponseTime') + 'ms');",
+									"console.log('  🐌 Slow Response:', pm.environment.get('slowResponseTime') + 'ms');",
+									"console.log('  🚫 Max Response:', pm.environment.get('maxResponseTime') + 'ms');",
+									"console.log('');",
+									"console.log('🏆 RECOMMENDATIONS:');",
+									"console.log('  - Run with Newman for detailed performance metrics');",
+									"console.log('  - Use --iteration-count for load testing');",
+									"console.log('  - Monitor server resources during execution');",
+									"console.log('  - Compare results across different environments');",
+									"console.log('=====================================');",
+									"",
+									"pm.test(\"Performance test summary generated\", function () {",
+									"    pm.expect(testRunId).to.not.be.empty;",
+									"    pm.expect(duration).to.be.above(0);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/health",
+							"host": ["{{baseUrl}}"],
+							"path": ["health"]
+						}
+					}
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"exec": [
+					"// Global performance monitoring setup",
+					"if (pm.environment.get('performanceMonitoring') === 'true') {",
+					"    const startTime = new Date().getTime();",
+					"    pm.globals.set('requestStartTime', startTime);",
+					"}"
+				],
+				"type": "text/javascript"
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"exec": [
+					"// Global performance monitoring",
+					"if (pm.environment.get('performanceMonitoring') === 'true') {",
+					"    const responseTime = pm.response.responseTime;",
+					"    const maxTime = parseInt(pm.environment.get('maxResponseTime'));",
+					"    const fastTime = parseInt(pm.environment.get('fastResponseTime'));",
+					"    const slowTime = parseInt(pm.environment.get('slowResponseTime'));",
+					"    ",
+					"    // Global performance check",
+					"    if (responseTime > maxTime) {",
+					"        console.error('🚨 CRITICAL PERFORMANCE ISSUE:', responseTime + 'ms exceeds maximum threshold');",
+					"    }",
+					"    ",
+					"    // Response time classification",
+					"    let performanceLevel = '';",
+					"    if (responseTime < fastTime) {",
+					"        performanceLevel = '⚡ FAST';",
+					"    } else if (responseTime < slowTime) {",
+					"        performanceLevel = '✅ ACCEPTABLE';",
+					"    } else {",
+					"        performanceLevel = '🐌 SLOW';",
+					"    }",
+					"    ",
+					"    // Global performance log",
+					"    if (pm.environment.get('debugMode') === 'true') {",
+					"        console.log(`📈 GLOBAL PERF: ${performanceLevel} - ${responseTime}ms`);",
+					"    }",
+					"}"
+				],
+				"type": "text/javascript"
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "perfTestCustomerEmail",
+			"value": "",
+			"description": "Performance test customer email - dynamically generated"
+		},
+		{
+			"key": "perfTestCustomerToken",
+			"value": "",
+			"description": "Performance test customer JWT token"
+		},
+		{
+			"key": "perfTestAdminToken",
+			"value": "",
+			"description": "Performance test admin JWT token"
+		},
+		{
+			"key": "perfReservationDate",
+			"value": "",
+			"description": "Performance test reservation date"
+		},
+		{
+			"key": "perfReservationId",
+			"value": "",
+			"description": "Performance test reservation ID for cleanup"
+		},
+		{
+			"key": "concurrentRequestId",
+			"value": "",
+			"description": "Unique identifier for concurrent requests"
+		},
+		{
+			"key": "loadTestPageSize",
+			"value": "100",
+			"description": "Page size for load testing large datasets"
+		}
+	]
+}

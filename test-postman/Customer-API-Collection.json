@@ -1,0 +1,1413 @@
+{
+	"info": {
+		"_postman_id": "customer-api-collection",
+		"name": "Greedy's Customer API - Test Collection",
+		"description": "Comprehensive test collection for Customer API endpoints with realistic Italian scenarios",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register New Customer",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201 or 200\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"});",
+									"",
+									"pm.test(\"Response has success field\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"});",
+									"",
+									"pm.test(\"Registration message is present\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('message');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstName\": \"{{customerFirstName}}\",\n    \"lastName\": \"{{customerLastName}}\",\n    \"email\": \"{{customerEmail}}\",\n    \"password\": \"{{customerPassword}}\",\n    \"matchingPassword\": \"{{customerPassword}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/customer/auth/new",
+							"host": ["{{baseUrl}}"],
+							"path": ["customer", "auth", "new"]
+						}
+					}
+				},
+				{
+					"name": "Admin Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Admin login successful\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Admin token received\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.have.property('jwt');",
+									"    ",
+									"    // Store admin token for next request",
+									"    pm.environment.set('adminToken', jsonData.data.jwt);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"test@test.com\",\n    \"password\": \"Test100%%%\",\n    \"rememberMe\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "Enable Customer",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Customer enabled successfully\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Enable operation successful\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/admin/customer/enable?email={{customerEmail}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "customer", "enable"],
+							"query": [
+								{
+									"key": "email",
+									"value": "{{customerEmail}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Customer Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has JWT token\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.have.property('jwt');",
+									"    ",
+									"    // Store token for subsequent requests",
+									"    pm.environment.set('customerToken', jsonData.data.jwt);",
+									"});",
+									"",
+									"pm.test(\"Response has refresh token\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('refreshToken');",
+									"    ",
+									"    // Store refresh token",
+									"    pm.environment.set('refreshToken', jsonData.data.refreshToken);",
+									"});",
+									"",
+									"pm.test(\"Token is valid JWT format\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    var token = jsonData.data.jwt;",
+									"    var tokenParts = token.split('.');",
+									"    pm.expect(tokenParts).to.have.lengthOf(3);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"{{customerEmail}}\",\n    \"password\": \"{{customerPassword}}\",\n    \"rememberMe\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/customer/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["customer", "auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "Refresh Authentication Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"New access token received\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('jwt');",
+									"    ",
+									"    // Update stored token",
+									"    pm.environment.set('customerToken', jsonData.data.jwt);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"refreshToken\": \"{{refreshToken}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/customer/auth/refresh",
+							"host": ["{{baseUrl}}"],
+							"path": ["customer", "auth", "refresh"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Customer Profile Management",
+			"item": [
+				{
+					"name": "Get Customer Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Profile data is present\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('firstName');",
+									"    pm.expect(jsonData.data).to.have.property('lastName');",
+									"    pm.expect(jsonData.data).to.have.property('email');",
+									"});",
+									"",
+									"pm.test(\"Customer name matches expected\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.firstName).to.eql(pm.environment.get('customerFirstName'));",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customerToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/customer/get",
+							"host": ["{{baseUrl}}"],
+							"path": ["customer", "get"]
+						}
+					}
+				},
+				{
+					"name": "Update Customer Phone",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Update was successful\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customerToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/customer/update/phone?phone={{customerPhone}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["customer", "update", "phone"],
+							"query": [
+								{
+									"key": "phone",
+									"value": "{{customerPhone}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Customer Email",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Update was successful\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customerToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/customer/update/email?email={{customerEmail}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["customer", "update", "email"],
+							"query": [
+								{
+									"key": "email",
+									"value": "{{customerEmail}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Customer ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Customer ID received\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.be.a('number');",
+									"    ",
+									"    // Store customer ID for other tests",
+									"    pm.environment.set('customerId', jsonData.data);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customerToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/customer/id",
+							"host": ["{{baseUrl}}"],
+							"path": ["customer", "id"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Restaurant Discovery",
+			"item": [
+				{
+					"name": "Get All Restaurants",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Restaurants list is returned\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"    pm.expect(jsonData.data.length).to.be.above(0);",
+									"});",
+									"",
+									"pm.test(\"Restaurant has required fields\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    var restaurant = jsonData.data[0];",
+									"    pm.expect(restaurant).to.have.property('id');",
+									"    pm.expect(restaurant).to.have.property('name');",
+									"    pm.expect(restaurant).to.have.property('address');",
+									"    pm.expect(restaurant).to.have.property('email');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/customer/restaurant",
+							"host": ["{{baseUrl}}"],
+							"path": ["customer", "restaurant"]
+						}
+					}
+				},
+				{
+					"name": "Search Restaurants",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Search results contain query term\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    var searchQuery = pm.environment.get('searchQuery').toLowerCase();",
+									"    ",
+									"    if (jsonData.data.length > 0) {",
+									"        var restaurant = jsonData.data[0];",
+									"        var restaurantName = restaurant.name.toLowerCase();",
+									"        pm.expect(restaurantName).to.include(searchQuery);",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/customer/restaurant/search?name={{searchQuery}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["customer", "restaurant", "search"],
+							"query": [
+								{
+									"key": "name",
+									"value": "{{searchQuery}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Restaurant Services",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Services list returned\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"});",
+									"",
+									"pm.test(\"Service has required properties\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data.length > 0) {",
+									"        var service = jsonData.data[0];",
+									"        pm.expect(service).to.have.property('id');",
+									"        pm.expect(service).to.have.property('name');",
+									"        pm.expect(service).to.have.property('active');",
+									"        pm.expect(service).to.have.property('enabled');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/customer/restaurant/{{restaurantId}}/services",
+							"host": ["{{baseUrl}}"],
+							"path": ["customer", "restaurant", "{{restaurantId}}", "services"]
+						}
+					}
+				},
+				{
+					"name": "Get Restaurant Open Days",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Open days returned as array\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/customer/restaurant/{{restaurantId}}/open-days?start={{currentDate}}&end={{futureDate}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["customer", "restaurant", "{{restaurantId}}", "open-days"],
+							"query": [
+								{
+									"key": "start",
+									"value": "{{currentDate}}"
+								},
+								{
+									"key": "end",
+									"value": "{{futureDate}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Day Time Slots",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Time slots returned\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"    ",
+									"    if (jsonData.data.length > 0) {",
+									"        // Store the first available slot ID",
+									"        var firstSlot = jsonData.data[0];",
+									"        pm.environment.set('slotId', firstSlot.id);",
+									"        console.log('Set slotId to: ' + firstSlot.id);",
+									"    }",
+									"});",
+									"",
+									"pm.test(\"Slots have time information\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data.length > 0) {",
+									"        var slot = jsonData.data[0];",
+									"        pm.expect(slot).to.have.property('start');",
+									"        pm.expect(slot).to.have.property('end');",
+									"        pm.expect(slot).to.have.property('weekday');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/customer/restaurant/{{restaurantId}}/day-slots?date={{reservationDate}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["customer", "restaurant", "{{restaurantId}}", "day-slots"],
+							"query": [
+								{
+									"key": "date",
+									"value": "{{reservationDate}}"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Menu & Dining",
+			"item": [
+				{
+					"name": "Get Restaurant Menus",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Menus list returned\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"});",
+									"",
+									"pm.test(\"Menu has required properties\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data.length > 0) {",
+									"        var menu = jsonData.data[0];",
+									"        pm.expect(menu).to.have.property('id');",
+									"        pm.expect(menu).to.have.property('name');",
+									"        pm.expect(menu).to.have.property('enabled');",
+									"        ",
+									"        // Store menu ID for dish testing",
+									"        pm.environment.set('menuId', menu.id);",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customerToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/customer/restaurant/{{restaurantId}}/menus",
+							"host": ["{{baseUrl}}"],
+							"path": ["customer", "restaurant", "{{restaurantId}}", "menus"]
+						}
+					}
+				},
+				{
+					"name": "Get Menu Dishes",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Dishes list returned\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"});",
+									"",
+									"pm.test(\"Dish has price and name\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data.length > 0) {",
+									"        var dish = jsonData.data[0];",
+									"        pm.expect(dish).to.have.property('price');",
+									"        if (dish.dishDTO && dish.dishDTO !== null) {",
+									"            pm.expect(dish.dishDTO).to.have.property('name');",
+									"        }",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customerToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/customer/restaurant/menus/{{menuId}}/dishes",
+							"host": ["{{baseUrl}}"],
+							"path": ["customer", "restaurant", "menus", "{{menuId}}", "dishes"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Reservation Management",
+			"item": [
+				{
+					"name": "Get Available Slots for Reservation",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Time slots returned\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"    ",
+									"    if (jsonData.data.length > 0) {",
+									"        // Store the first available slot ID for reservation",
+									"        var firstSlot = jsonData.data[0];",
+									"        pm.environment.set('slotId', firstSlot.id);",
+									"        console.log('Set slotId for reservation to: ' + firstSlot.id);",
+									"    } else {",
+									"        console.log('No available slots found for the selected date');",
+									"    }",
+									"});",
+									"",
+									"pm.test(\"Slots have required properties\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data.length > 0) {",
+									"        var slot = jsonData.data[0];",
+									"        pm.expect(slot).to.have.property('id');",
+									"        pm.expect(slot).to.have.property('start');",
+									"        pm.expect(slot).to.have.property('end');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customerToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/customer/restaurant/{{restaurantId}}/day-slots?date={{reservationDate}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["customer", "restaurant", "{{restaurantId}}", "day-slots"],
+							"query": [
+								{
+									"key": "date",
+									"value": "{{reservationDate}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Request New Reservation",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Pre-request validation for reservation",
+									"const slotId = pm.environment.get('slotId');",
+									"const reservationDate = pm.environment.get('reservationDate');",
+									"const customerToken = pm.environment.get('customerToken');",
+									"",
+									"if (!slotId || slotId === '') {",
+									"    console.log('WARNING: slotId not set. Please run \"Get Available Slots for Reservation\" first.');",
+									"}",
+									"",
+									"if (!reservationDate || reservationDate === '') {",
+									"    console.log('WARNING: reservationDate not set.');",
+									"}",
+									"",
+									"if (!customerToken || customerToken === '') {",
+									"    console.log('WARNING: customerToken not set. Please run login sequence first.');",
+									"}",
+									"",
+									"console.log('Reservation request data:');",
+									"console.log('- slotId: ' + slotId);",
+									"console.log('- reservationDate: ' + reservationDate);",
+									"console.log('- restaurantId: ' + pm.environment.get('restaurantId'));"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Log response for debugging",
+									"console.log('Response status: ' + pm.response.code);",
+									"console.log('Response body: ' + pm.response.text());",
+									"",
+									"pm.test(\"Status code is 201 or 200\", function () {",
+									"    if (pm.response.code === 409) {",
+									"        console.log('CONFLICT: Slot might already be taken or date is invalid');",
+									"    } else if (pm.response.code === 400) {",
+									"        console.log('BAD REQUEST: Check date format and slot availability');",
+									"    }",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"});",
+									"",
+									"pm.test(\"Reservation request successful\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    if (!jsonData.success && jsonData.message) {",
+									"        console.log('Error message: ' + jsonData.message);",
+									"    }",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"});",
+									"",
+									"pm.test(\"Reservation ID returned\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.id) {",
+									"        // ReservationDTO returned - extract ID from DTO",
+									"        pm.environment.set('reservationId', jsonData.data.id);",
+									"        console.log('Reservation ID set to: ' + jsonData.data.id);",
+									"        console.log('Reservation details: ' + JSON.stringify(jsonData.data));",
+									"    } else if (jsonData.data && typeof jsonData.data === 'number') {",
+									"        // Direct ID returned (legacy)",
+									"        pm.environment.set('reservationId', jsonData.data);",
+									"        console.log('Reservation ID set to: ' + jsonData.data);",
+									"    } else if (jsonData.data && typeof jsonData.data === 'string' && !isNaN(jsonData.data)) {",
+									"        // String ID returned (legacy)",
+									"        pm.environment.set('reservationId', parseInt(jsonData.data));",
+									"        console.log('Reservation ID set to: ' + parseInt(jsonData.data));",
+									"    } else {",
+									"        console.log('WARNING: Could not extract reservation ID from response');",
+									"        console.log('Response data: ' + JSON.stringify(jsonData.data));",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customerToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"userName\": \"{{customerFirstName}} {{customerLastName}}\",\n    \"idSlot\": {{slotId}},\n    \"pax\": {{reservationPax}},\n    \"kids\": {{reservationKids}},\n    \"notes\": \"{{reservationNotes}}\",\n    \"reservationDay\": \"{{reservationDate}}\",\n    \"restaurantId\": {{restaurantId}}\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/customer/reservation/ask",
+							"host": ["{{baseUrl}}"],
+							"path": ["customer", "reservation", "ask"]
+						}
+					}
+				},
+				{
+					"name": "Get Customer Reservations",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Reservations list returned\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"});",
+									"",
+									"pm.test(\"Reservation has required fields\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data.length > 0) {",
+									"        var reservation = jsonData.data[0];",
+									"        pm.expect(reservation).to.have.property('id');",
+									"        pm.expect(reservation).to.have.property('name');",
+									"        pm.expect(reservation).to.have.property('reservationDay');",
+									"        pm.expect(reservation).to.have.property('status');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customerToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/customer/reservation/reservations",
+							"host": ["{{baseUrl}}"],
+							"path": ["customer", "reservation", "reservations"]
+						}
+					}
+				},
+				{
+					"name": "Get Reservation Details",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Pre-request validation for reservation details",
+									"const reservationId = pm.environment.get('reservationId');",
+									"",
+									"if (!reservationId || reservationId === '') {",
+									"    console.log('ERROR: reservationId not set.');",
+									"    console.log('Please run \"Request New Reservation\" first to create a reservation and get its ID.');",
+									"    console.log('Alternatively, set a manual reservationId in the environment variables.');",
+									"} else {",
+									"    console.log('Using reservationId: ' + reservationId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Log response for debugging",
+									"console.log('Response status: ' + pm.response.code);",
+									"console.log('Response URL: ' + pm.request.url.toString());",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    if (pm.response.code === 404) {",
+									"        console.log('NOT FOUND: Check if reservationId is correct and reservation exists');",
+									"        const url = pm.request.url.toString();",
+									"        if (url.endsWith('/customer/reservation/')) {",
+									"            console.log('ERROR: reservationId is missing from URL - check environment variable');",
+									"        }",
+									"    } else if (pm.response.code === 403) {",
+									"        console.log('FORBIDDEN: You may not have permission to view this reservation');",
+									"    }",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Reservation details returned\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data) {",
+									"        pm.expect(jsonData.data).to.have.property('id');",
+									"        pm.expect(jsonData.data).to.have.property('name');",
+									"        pm.expect(jsonData.data).to.have.property('pax');",
+									"        pm.expect(jsonData.data).to.have.property('status');",
+									"        console.log('Reservation details found for ID: ' + jsonData.data.id);",
+									"    } else {",
+									"        console.log('WARNING: No reservation data in response');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customerToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/customer/reservation/{{reservationId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["customer", "reservation", "{{reservationId}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Customer Health & Allergies",
+			"item": [
+				{
+					"name": "Get Customer Allergies",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Allergies list returned\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customerToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/customer/allergy/allergies",
+							"host": ["{{baseUrl}}"],
+							"path": ["customer", "allergy", "allergies"]
+						}
+					}
+				},
+				{
+					"name": "Add Allergy to Customer",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201 or 200\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"});",
+									"",
+									"pm.test(\"Allergy added successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customerToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/customer/allergy/add/{{allergyId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["customer", "allergy", "add", "{{allergyId}}"]
+						}
+					}
+				},
+				{
+					"name": "Remove Allergy from Customer",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Allergy removal successful\", function () {",
+									"    // Check that response code indicates success",
+									"    pm.expect(pm.response.code).to.be.below(400);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customerToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/customer/allergy/remove/{{allergyId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["customer", "allergy", "remove", "{{allergyId}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Notifications",
+			"item": [
+				{
+					"name": "Register FCM Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201 or 200\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"});",
+									"",
+									"pm.test(\"FCM token registered successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customerToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"fcmToken\": \"{{fcmToken}}\",\n    \"deviceId\": \"{{deviceId}}\",\n    \"createdAt\": \"2024-08-08T12:00:00Z\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/customer/notification/token",
+							"host": ["{{baseUrl}}"],
+							"path": ["customer", "notification", "token"]
+						}
+					}
+				},
+				{
+					"name": "Get Unread Notifications",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Notifications page returned\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('content');",
+									"    pm.expect(jsonData.data.content).to.be.an('array');",
+									"    pm.expect(jsonData.data).to.have.property('totalElements');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customerToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/customer/notification/unread/{{pageNumber}}/{{pageSize}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["customer", "notification", "unread", "{{pageNumber}}", "{{pageSize}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Customer Statistics",
+			"item": [
+				{
+					"name": "Get Current Customer Statistics",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Statistics data returned\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.be.an('object');",
+									"    // Statistics should include reservation counts and no-show rates",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customerToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/customer/statistics/current",
+							"host": ["{{baseUrl}}"],
+							"path": ["customer", "statistics", "current"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Error Scenarios",
+			"item": [
+				{
+					"name": "Invalid Login Credentials",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 401\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test(\"Error response structure\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(false);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"wrong@email.com\",\n    \"password\": \"wrongpassword\",\n    \"rememberMe\": false\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/customer/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["customer", "auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "Unauthorized Request",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 401\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/customer/get",
+							"host": ["{{baseUrl}}"],
+							"path": ["customer", "get"]
+						}
+					}
+				},
+				{
+					"name": "Invalid Reservation Data",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400 or 500\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([400, 500]);",
+									"});",
+									"",
+									"pm.test(\"Validation error returned\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.eql(false);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customerToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"userName\": \"\",\n    \"idSlot\": -1,\n    \"pax\": 0,\n    \"kids\": -1,\n    \"reservationDay\": \"invalid-date\",\n    \"restaurantId\": -1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/customer/reservation/ask",
+							"host": ["{{baseUrl}}"],
+							"path": ["customer", "reservation", "ask"]
+						}
+					}
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Pre-request script to ensure proper authentication",
+					"// Check if we have a valid token for authenticated requests",
+					"const authHeader = pm.request.headers.get('Authorization');",
+					"if (authHeader && authHeader.includes('Bearer') && !pm.environment.get('customerToken')) {",
+					"    console.log('Warning: Missing customer token for authenticated request');",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global test script for common validations",
+					"pm.test('Response time is acceptable', function () {",
+					"    pm.expect(pm.response.responseTime).to.be.below(5000);",
+					"});",
+					"",
+					"// Check for Italian locale in responses where applicable",
+					"if (pm.response.json() && pm.response.json().data) {",
+					"    const responseData = pm.response.json().data;",
+					"    if (typeof responseData === 'object' && responseData.name) {",
+					"        // Additional Italian-specific validations can be added here",
+					"    }",
+					"}"
+				]
+			}
+		}
+	]
+}
