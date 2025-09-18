@@ -7,13 +7,13 @@ import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.MapKeyColumn;
 import jakarta.persistence.MappedSuperclass;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
-import jakarta.persistence.MapKeyColumn;
 
 
 @MappedSuperclass
@@ -38,6 +38,6 @@ public abstract class ANotification {
 
     @Column(name = "is_read")
     @Builder.Default
-    private Boolean isRead = false;
+    private Boolean read = false;
 
 }
