@@ -24,11 +24,16 @@ build:
   stage: build
   services:
     - docker:24.0.5-dind
+  variables:
+    DOCKER_BUILDKIT: "1"
   script:
     - echo "Logging into Docker registry..."
     - echo $CI_JOB_TOKEN | docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY
     - echo "Building and tagging Docker image..."
-    - docker build -t $TAG_LATEST --build-arg SPRING_PROFILES_ACTIVE="docker" .
+    - |
+      for i in 1 2 3; do \
+        docker build --pull --progress=plain -t $TAG_LATEST --build-arg SPRING_PROFILES_ACTIVE="docker" . && break || { echo "docker build failed (attempt $i/3), retrying in 10s"; sleep 10; }; \
+      done
     - echo "Tagging Docker image with commit tag..."
     - docker tag $TAG_LATEST $TAG_COMMIT
     - echo "Pushing Docker images..."
@@ -43,46 +48,19 @@ build:
 deploy:
   image: alpine:3.18
   stage: deploy
-  before_script:
-    - echo "Debug - Checking if ID_RSA variable is set..."
-    - |
-      if [ -z "$ID_RSA" ]; then
-        echo "ERROR: ID_RSA variable is empty or not set!"
-        exit 1
-      fi
-    - echo "Debug - ID_RSA variable length:" $(echo "$ID_RSA" | wc -c) "characters"
-    - echo "Debug - First 50 characters of ID_RSA:"
-    - echo "$ID_RSA" | head -c 50
-    - echo "..."
-    - echo "Converting SSH key from variable to file..."
-    # Extract the base64 content between the headers and decode it
-    - echo "$ID_RSA" | sed -n '2,/-----END/p' | sed '$d' | tr -d '\n' | base64 -d > id_rsa_temp
-    # Add proper OpenSSH headers
-    - echo "-----BEGIN OPENSSH PRIVATE KEY-----" > id_rsa
-    - base64 -w 64 < id_rsa_temp >> id_rsa  
-    - echo "-----END OPENSSH PRIVATE KEY-----" >> id_rsa
-    - rm id_rsa_temp
-    - chmod 600 id_rsa
-    - echo "Debug - Generated key file size:" $(wc -c < id_rsa) "bytes"
-    - echo "Debug - First line of generated key:"
-    - head -1 id_rsa
-    - echo "Debug - Last line of generated key:"
-    - tail -1 id_rsa
-    - echo "Verifying SSH key format..."
-    - head -1 id_rsa | grep -q "BEGIN" || (echo "Invalid SSH key format - key doesn't start with BEGIN" && exit 1)
+  script:
+    - echo "Setting permissions for RSA key..."
+    - chmod 600 $ID_RSA
     - echo "Updating apk and installing openssh-client..."
     - apk update && apk add openssh-client
-    - echo "Testing SSH connection with debug info..."
-    - ssh -i id_rsa -o StrictHostKeyChecking=no -v $SERVER_USER@$SERVER_IP "echo 'SSH connection successful'" || echo "SSH connection failed"
-  script:
     - echo "Creating directory on remote server..."
-    - ssh -i id_rsa -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "mkdir -p /home/$SERVER_USER/greedys_api/"
+    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "mkdir -p /home/$SERVER_USER/greedys_api/"
     - echo "Copying docker-compose.yml and deploy.sh to remote server..."
-    - scp -i id_rsa -o StrictHostKeyChecking=no docker-compose.yml deploy.sh $SERVER_USER@$SERVER_IP:/home/$SERVER_USER/greedys_api/
+    - scp -i $ID_RSA -o StrictHostKeyChecking=no docker-compose.yml deploy.sh $SERVER_USER@$SERVER_IP:/home/$SERVER_USER/greedys_api/
     - echo "Logging into Docker registry on remote server..."
-    - echo $CI_JOB_TOKEN | ssh -i id_rsa -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY"
+    - echo $CI_JOB_TOKEN | ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY"
     - echo "Executing deploy.sh on remote server..."
-    - ssh -i id_rsa -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "cd /home/$SERVER_USER/greedys_api/ && chmod +x deploy.sh && ./deploy.sh"
+    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "cd /home/$SERVER_USER/greedys_api/ && chmod +x deploy.sh && ./deploy.sh"
   only:
     - main
 
