@@ -66,4 +66,12 @@ public class RestaurantRoomController extends BaseController {
 			roomService.deleteRoom(roomId);
 		});
 	}
+	@GetMapping(value = "/{roomId}")
+	@Operation(summary = "Get a specific room", description = "Retrieve details of a specific room by its ID")
+	public ResponseEntity<ResponseWrapper<RoomDTO>> getRoom(@PathVariable Long roomId) {
+		return execute("get room", () -> {
+			log.info("Getting room with ID: {}", roomId);
+			return roomService.findRoomById(roomId);
+		});
+	}
 }
