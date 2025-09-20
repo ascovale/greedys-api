@@ -55,8 +55,8 @@ deploy:
     - echo "$ID_RSA" | head -c 50
     - echo "..."
     - echo "Converting SSH key from variable to file..."
-    # Try to decode base64 first, if it fails use as is
-    - echo "$ID_RSA" | base64 -d > id_rsa 2>/dev/null || echo "$ID_RSA" | tr -d '\r' > id_rsa
+    # The key is already in the correct format, just write it directly
+    - echo "$ID_RSA" > id_rsa
     - chmod 600 id_rsa
     - echo "Debug - Generated key file size:" $(wc -c < id_rsa) "bytes"
     - echo "Debug - First line of generated key:"
