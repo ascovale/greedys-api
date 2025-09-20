@@ -78,4 +78,10 @@ public class RoomService {
             .map(tableMapper::toDTO)
             .collect(Collectors.toList());
     }
+
+    public RoomDTO findRoomById(Long roomId) {
+        Room room = roomDAO.findById(roomId)
+            .orElseThrow(() -> new IllegalArgumentException("Room not found with id: " + roomId));
+        return roomMapper.toDTO(room);
+    }
 }

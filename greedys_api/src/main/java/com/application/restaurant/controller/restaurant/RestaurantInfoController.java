@@ -134,4 +134,6 @@ public class RestaurantInfoController extends BaseController {
 			restaurantService.removeRestaurantCategory(restaurantId, categoryId);
 		});
 	}
+
+	
 }
