@@ -55,8 +55,13 @@ deploy:
     - echo "$ID_RSA" | head -c 50
     - echo "..."
     - echo "Converting SSH key from variable to file..."
-    # The key is already in the correct format, just write it directly
-    - echo "$ID_RSA" > id_rsa
+    # Extract the base64 content between the headers and decode it
+    - echo "$ID_RSA" | sed -n '2,/-----END/p' | sed '$d' | tr -d '\n' | base64 -d > id_rsa_temp
+    # Add proper OpenSSH headers
+    - echo "-----BEGIN OPENSSH PRIVATE KEY-----" > id_rsa
+    - base64 -w 64 < id_rsa_temp >> id_rsa  
+    - echo "-----END OPENSSH PRIVATE KEY-----" >> id_rsa
+    - rm id_rsa_temp
     - chmod 600 id_rsa
     - echo "Debug - Generated key file size:" $(wc -c < id_rsa) "bytes"
     - echo "Debug - First line of generated key:"
