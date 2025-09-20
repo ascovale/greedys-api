@@ -56,20 +56,29 @@ deploy:
         echo "ERROR: ID_RSA is not set"; exit 1;
       fi
       KEYFILE="id_rsa"
-      # Case 1: ID_RSA is a path to an existing file
       if [ -f "$ID_RSA" ]; then
         echo "Using existing key file path from ID_RSA"
         KEYFILE="$ID_RSA"
       else
-        # Case 2: ID_RSA contains an OpenSSH key with headers
-        if echo "$ID_RSA" | head -n1 | grep -q "BEGIN"; then
-          printf '%s\n' "$ID_RSA" > "$KEYFILE"
-        else
-          # Case 3: Try base64-decoding the variable into a key
-          echo "$ID_RSA" | base64 -d > "$KEYFILE" 2>/dev/null || { echo "ERROR: ID_RSA is neither a file, an OpenSSH key, nor valid base64"; exit 1; }
+        # Try 1: treat as text, convert literal \n to newlines if present
+        printf '%s' "$ID_RSA" | sed 's/\r//g; s/\\n/\n/g' > "$KEYFILE"
+        if ! head -n1 "$KEYFILE" | grep -q "BEGIN"; then
+          # Try 2: base64 decode to text (full file content expected)
+          printf '%s' "$ID_RSA" | tr -d '\r\n ' | base64 -d > "$KEYFILE" 2>/dev/null || true
+        fi
+        if ! head -n1 "$KEYFILE" | grep -q "BEGIN"; then
+          # Try 3: assume it's only the base64 body of an OpenSSH key; reconstruct headers and wrap at 64 cols
+          echo "-----BEGIN OPENSSH PRIVATE KEY-----" > "$KEYFILE"
+          printf '%s' "$ID_RSA" | tr -d '\r\n ' | fold -w 64 >> "$KEYFILE"
+          echo "" >> "$KEYFILE"
+          echo "-----END OPENSSH PRIVATE KEY-----" >> "$KEYFILE"
         fi
         chmod 600 "$KEYFILE"
-        echo "SSH key file prepared (permissions set)"
+        # Validate key loads
+        if ! ssh-keygen -y -f "$KEYFILE" >/dev/null 2>&1; then
+          echo "ERROR: Prepared SSH key is invalid or requires a passphrase"; exit 1;
+        fi
+        echo "SSH key file prepared (permissions set and validated)"
       fi
   script:
     - echo "Creating directory on remote server..."
