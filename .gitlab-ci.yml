@@ -49,7 +49,7 @@ deploy:
   image: alpine:3.18
   stage: deploy
   before_script:
-    - apk update && apk add --no-cache openssh-client coreutils
+    - apk update && apk add --no-cache openssh-client coreutils util-linux
     - |
       echo "Preparing SSH key from CI variable..."
       if [ -z "$ID_RSA" ]; then
@@ -74,21 +74,33 @@ deploy:
           echo "-----END OPENSSH PRIVATE KEY-----" >> "$KEYFILE"
         fi
         chmod 600 "$KEYFILE"
-        # Validate key loads
-        if ! ssh-keygen -y -f "$KEYFILE" >/dev/null 2>&1; then
-          echo "ERROR: Prepared SSH key is invalid or requires a passphrase"; exit 1;
+        # If a passphrase is provided, set up SSH_ASKPASS and skip validation here
+        if [ -n "$ID_RSA_PASSPHRASE" ]; then
+          printf '#!/bin/sh\necho "%s"\n' "$ID_RSA_PASSPHRASE" > /tmp/ssh-askpass.sh
+          chmod +x /tmp/ssh-askpass.sh
+          export SSH_ASKPASS=/tmp/ssh-askpass.sh
+          export SSH_ASKPASS_REQUIRE=force
+          export DISPLAY=:0
+          echo "SSH key prepared; passphrase provided via SSH_ASKPASS"
+        else
+          # Validate key loads (will fail if invalid or passphrase-protected)
+          if ! ssh-keygen -y -f "$KEYFILE" >/dev/null 2>&1; then
+            echo "ERROR: Prepared SSH key is invalid or requires a passphrase"; exit 1;
+          fi
+          echo "SSH key file prepared (permissions set and validated)"
         fi
-        echo "SSH key file prepared (permissions set and validated)"
       fi
+      # Prefix to force askpass in non-interactive context when passphrase is set
+      if [ -n "$ID_RSA_PASSPHRASE" ]; then SSH_CMD_PREFIX="setsid -w"; else SSH_CMD_PREFIX=""; fi
   script:
     - echo "Creating directory on remote server..."
-    - ssh -i "$KEYFILE" -o StrictHostKeyChecking=no -o IdentitiesOnly=yes $SERVER_USER@$SERVER_IP "mkdir -p /home/$SERVER_USER/greedys_api/"
+    - $SSH_CMD_PREFIX ssh -i "$KEYFILE" -o StrictHostKeyChecking=no -o IdentitiesOnly=yes $SERVER_USER@$SERVER_IP "mkdir -p /home/$SERVER_USER/greedys_api/"
     - echo "Copying docker-compose.yml and deploy.sh to remote server..."
-    - scp -i "$KEYFILE" -o StrictHostKeyChecking=no -o IdentitiesOnly=yes docker-compose.yml deploy.sh $SERVER_USER@$SERVER_IP:/home/$SERVER_USER/greedys_api/
+    - $SSH_CMD_PREFIX scp -i "$KEYFILE" -o StrictHostKeyChecking=no -o IdentitiesOnly=yes docker-compose.yml deploy.sh $SERVER_USER@$SERVER_IP:/home/$SERVER_USER/greedys_api/
     - echo "Logging into Docker registry on remote server..."
-    - echo $CI_JOB_TOKEN | ssh -i "$KEYFILE" -o StrictHostKeyChecking=no -o IdentitiesOnly=yes $SERVER_USER@$SERVER_IP "docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY"
+    - echo $CI_JOB_TOKEN | $SSH_CMD_PREFIX ssh -i "$KEYFILE" -o StrictHostKeyChecking=no -o IdentitiesOnly=yes $SERVER_USER@$SERVER_IP "docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY"
     - echo "Executing deploy.sh on remote server..."
-    - ssh -i "$KEYFILE" -o StrictHostKeyChecking=no -o IdentitiesOnly=yes $SERVER_USER@$SERVER_IP "cd /home/$SERVER_USER/greedys_api/ && chmod +x deploy.sh && ./deploy.sh"
+    - $SSH_CMD_PREFIX ssh -i "$KEYFILE" -o StrictHostKeyChecking=no -o IdentitiesOnly=yes $SERVER_USER@$SERVER_IP "cd /home/$SERVER_USER/greedys_api/ && chmod +x deploy.sh && ./deploy.sh"
   only:
     - main
 
