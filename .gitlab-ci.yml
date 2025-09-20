@@ -44,14 +44,31 @@ deploy:
   image: alpine:3.18
   stage: deploy
   before_script:
+    - echo "Debug - Checking if ID_RSA variable is set..."
+    - |
+      if [ -z "$ID_RSA" ]; then
+        echo "ERROR: ID_RSA variable is empty or not set!"
+        exit 1
+      fi
+    - echo "Debug - ID_RSA variable length:" $(echo "$ID_RSA" | wc -c) "characters"
+    - echo "Debug - First 50 characters of ID_RSA:"
+    - echo "$ID_RSA" | head -c 50
+    - echo "..."
     - echo "Converting SSH key from variable to file..."
     # Try to decode base64 first, if it fails use as is
     - echo "$ID_RSA" | base64 -d > id_rsa 2>/dev/null || echo "$ID_RSA" | tr -d '\r' > id_rsa
     - chmod 600 id_rsa
+    - echo "Debug - Generated key file size:" $(wc -c < id_rsa) "bytes"
+    - echo "Debug - First line of generated key:"
+    - head -1 id_rsa
+    - echo "Debug - Last line of generated key:"
+    - tail -1 id_rsa
     - echo "Verifying SSH key format..."
-    - head -1 id_rsa | grep -q "BEGIN" || (echo "Invalid SSH key format" && exit 1)
+    - head -1 id_rsa | grep -q "BEGIN" || (echo "Invalid SSH key format - key doesn't start with BEGIN" && exit 1)
     - echo "Updating apk and installing openssh-client..."
     - apk update && apk add openssh-client
+    - echo "Testing SSH connection with debug info..."
+    - ssh -i id_rsa -o StrictHostKeyChecking=no -v $SERVER_USER@$SERVER_IP "echo 'SSH connection successful'" || echo "SSH connection failed"
   script:
     - echo "Creating directory on remote server..."
     - ssh -i id_rsa -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "mkdir -p /home/$SERVER_USER/greedys_api/"
