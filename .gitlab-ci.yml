@@ -49,58 +49,14 @@ deploy:
   image: alpine:3.18
   stage: deploy
   before_script:
-    - apk update && apk add --no-cache openssh-client coreutils util-linux
-    - |
-      echo "Preparing SSH key from CI variable..."
-      if [ -z "$ID_RSA" ]; then
-        echo "ERROR: ID_RSA is not set"; exit 1;
-      fi
-      KEYFILE="id_rsa"
-      if [ -f "$ID_RSA" ]; then
-        echo "Using existing key file path from ID_RSA"
-        KEYFILE="$ID_RSA"
-      else
-        # Try 1: treat as text, convert literal \n to newlines if present
-        printf '%s' "$ID_RSA" | sed 's/\r//g; s/\\n/\n/g' > "$KEYFILE"
-        if ! head -n1 "$KEYFILE" | grep -q "BEGIN"; then
-          # Try 2: base64 decode to text (full file content expected)
-          printf '%s' "$ID_RSA" | tr -d '\r\n ' | base64 -d > "$KEYFILE" 2>/dev/null || true
-        fi
-        if ! head -n1 "$KEYFILE" | grep -q "BEGIN"; then
-          # Try 3: assume it's only the base64 body of an OpenSSH key; reconstruct headers and wrap at 64 cols
-          echo "-----BEGIN OPENSSH PRIVATE KEY-----" > "$KEYFILE"
-          printf '%s' "$ID_RSA" | tr -d '\r\n ' | fold -w 64 >> "$KEYFILE"
-          echo "" >> "$KEYFILE"
-          echo "-----END OPENSSH PRIVATE KEY-----" >> "$KEYFILE"
-        fi
-        chmod 600 "$KEYFILE"
-        # If a passphrase is provided, set up SSH_ASKPASS for non-interactive usage
-        if [ -n "$ID_RSA_PASSPHRASE" ]; then
-          printf '#!/bin/sh\necho "%s"\n' "$ID_RSA_PASSPHRASE" > /tmp/ssh-askpass.sh
-          chmod +x /tmp/ssh-askpass.sh
-          export SSH_ASKPASS=/tmp/ssh-askpass.sh
-          export SSH_ASKPASS_REQUIRE=force
-          export DISPLAY=:0
-          echo "SSH key prepared; passphrase provided via SSH_ASKPASS"
-        else
-          echo "SSH key prepared (permissions set)"
-        fi
-      fi
-      # Safe debug: show header/footer and size (no sensitive material)
-      echo "Key header:"; head -1 "$KEYFILE" || true
-      echo "Key footer:"; tail -1 "$KEYFILE" || true
-      echo "Key size (bytes):" $(wc -c < "$KEYFILE" 2>/dev/null || echo 0)
-      # Prefix to force askpass in non-interactive context when passphrase is set
-      if [ -n "$ID_RSA_PASSPHRASE" ]; then SSH_CMD_PREFIX="setsid -w"; else SSH_CMD_PREFIX=""; fi
+    - apk add --no-cache openssh-client
+    - tr -d '\r' < "$ID_RSA" > id_key && chmod 600 id_key
+    - mkdir -p ~/.ssh && ssh-keyscan -H "$SERVER_IP" >> ~/.ssh/known_hosts
   script:
-    - echo "Creating directory on remote server..."
-    - $SSH_CMD_PREFIX ssh -i "$KEYFILE" -o StrictHostKeyChecking=no -o IdentitiesOnly=yes $SERVER_USER@$SERVER_IP "mkdir -p /home/$SERVER_USER/greedys_api/"
-    - echo "Copying docker-compose.yml and deploy.sh to remote server..."
-    - $SSH_CMD_PREFIX scp -i "$KEYFILE" -o StrictHostKeyChecking=no -o IdentitiesOnly=yes docker-compose.yml deploy.sh $SERVER_USER@$SERVER_IP:/home/$SERVER_USER/greedys_api/
-    - echo "Logging into Docker registry on remote server..."
-    - echo $CI_JOB_TOKEN | $SSH_CMD_PREFIX ssh -i "$KEYFILE" -o StrictHostKeyChecking=no -o IdentitiesOnly=yes $SERVER_USER@$SERVER_IP "docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY"
-    - echo "Executing deploy.sh on remote server..."
-    - $SSH_CMD_PREFIX ssh -i "$KEYFILE" -o StrictHostKeyChecking=no -o IdentitiesOnly=yes $SERVER_USER@$SERVER_IP "cd /home/$SERVER_USER/greedys_api/ && chmod +x deploy.sh && ./deploy.sh"
+    - ssh -i id_key -o IdentitiesOnly=yes "$SERVER_USER@$SERVER_IP" 'mkdir -p ~/greedys_api/'
+    - scp -i id_key -o IdentitiesOnly=yes docker-compose.yml deploy.sh "$SERVER_USER@$SERVER_IP:~/greedys_api/"
+    - printf '%s' "$CI_JOB_TOKEN" | ssh -i id_key -o IdentitiesOnly=yes "$SERVER_USER@$SERVER_IP" "docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY"
+    - ssh -i id_key -o IdentitiesOnly=yes "$SERVER_USER@$SERVER_IP" 'cd ~/greedys_api/ && chmod +x ./deploy.sh && ./deploy.sh'
   only:
     - main
 
