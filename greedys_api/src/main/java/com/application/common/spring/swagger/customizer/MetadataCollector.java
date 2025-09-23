@@ -73,19 +73,23 @@ public class MetadataCollector implements OperationCustomizer {
             // Auto-prefix operationId to avoid duplicates
             String originalOperationId = operation.getOperationId();
             String prefixedOperationId = addPrefixToOperationId(originalOperationId, handlerMethod);
-            String uniqueOperationId = ensureUniqueOperationId(prefixedOperationId);
+            
+            // Determina il gruppo basandosi sul path dell'operazione
+            String group = determineGroupFromOperation(operation, handlerMethod);
+            
+            String uniqueOperationId = ensureUniqueOperationId(prefixedOperationId, group);
             
             operation.setOperationId(uniqueOperationId);
             
-            log.debug("Operation ID enhanced: {} -> {}", originalOperationId, uniqueOperationId);
+            log.debug("Operation ID enhanced: {} -> {} for group: {}", originalOperationId, uniqueOperationId, group);
             
             // Raccoglie i metadati per questa operazione
             OperationDataMetadata metadata = collectMetadata(operation, handlerMethod);
             
-            // Registra i metadati raccolti
-            registry.register(metadata);
+            // Registra i metadati raccolti per il gruppo specifico
+            registry.register(metadata, group);
             
-            log.debug("Registered metadata for operation: {}", operation.getOperationId());
+            log.debug("Registered metadata for operation: {} in group: {}", operation.getOperationId(), group);
             
         } catch (Exception e) {
             String controllerName = handlerMethod.getBeanType().getSimpleName();
@@ -129,10 +133,40 @@ public class MetadataCollector implements OperationCustomizer {
     }
     
     /**
-     * Assicura che l'operationId sia unico nel registry.
+     * Determina il gruppo API basandosi sul path dell'operazione o del controller
      */
-    private String ensureUniqueOperationId(String operationId) {
-        if (!registry.hasOperation(operationId)) {
+    private String determineGroupFromOperation(Operation operation, HandlerMethod handlerMethod) {
+        // 1. Prova a determinare dal path dell'operazione (se presente nei tag o extension)
+        String path = extractPath(operation, handlerMethod);
+        if (path != null) {
+            if (path.startsWith("/admin/")) return "admin";
+            if (path.startsWith("/customer/")) return "customer";
+            if (path.startsWith("/restaurant/")) return "restaurant";
+        }
+        
+        // 2. Prova a determinare dal package del controller
+        String controllerPackage = handlerMethod.getBeanType().getPackage().getName();
+        if (controllerPackage.contains(".admin.")) return "admin";
+        if (controllerPackage.contains(".customer.")) return "customer"; 
+        if (controllerPackage.contains(".restaurant.")) return "restaurant";
+        
+        // 3. Fallback: determina dal nome del controller
+        String controllerName = handlerMethod.getBeanType().getSimpleName().toLowerCase();
+        if (controllerName.contains("admin")) return "admin";
+        if (controllerName.contains("customer")) return "customer";
+        if (controllerName.contains("restaurant")) return "restaurant";
+        
+        // Fallback finale
+        log.warn("Could not determine group for operation: {} - controller: {}, using 'unknown'", 
+            operation.getOperationId(), handlerMethod.getBeanType().getSimpleName());
+        return "unknown";
+    }
+
+    /**
+     * Assicura che l'operationId sia unico nel registry per un gruppo specifico.
+     */
+    private String ensureUniqueOperationId(String operationId, String group) {
+        if (!registry.hasOperation(operationId, group)) {
             return operationId;
         }
         
@@ -141,7 +175,7 @@ public class MetadataCollector implements OperationCustomizer {
         do {
             candidateId = operationId + "_" + counter;
             counter++;
-        } while (registry.hasOperation(candidateId));
+        } while (registry.hasOperation(candidateId, group));
         
         return candidateId;
     }

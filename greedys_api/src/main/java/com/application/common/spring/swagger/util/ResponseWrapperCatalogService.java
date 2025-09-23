@@ -39,4 +39,28 @@ public class ResponseWrapperCatalogService {
         }
     }
 
+    /**
+     * Ritorna il contenuto JSON del catalogo per un gruppo specifico.
+     */
+    public String getCatalogByGroup(String group) {
+        if (group == null || group.trim().isEmpty()) {
+            return getCatalog(); // Fallback al catalogo principale
+        }
+        
+        // Costruisce il percorso del file specifico per gruppo
+        String groupOutputPath = outputPath.replace("response-wrappers.json", "response-wrappers-" + group + ".json");
+        Path out = Path.of(groupOutputPath);
+        
+        try {
+            if (!Files.exists(out)) {
+                log.warn("Response wrapper catalog not found for group '{}' at {}", group, out.toAbsolutePath());
+                return null;
+            }
+            return Files.readString(out);
+        } catch (IOException e) {
+            log.error("Failed to read response wrapper catalog for group '{}': {}", group, e.getMessage(), e);
+            return null;
+        }
+    }
+
 }
