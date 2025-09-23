@@ -138,7 +138,7 @@ publish:
     - export GIT_ASKPASS=/tmp/git-askpass.sh
 
     - echo "Clono il repo delle librerie Dart (greedys_api_dart_lib)…"
-    - git clone https://gitlab.com/PsychoOrange/greedys_api_dart_lib.git
+    - git clone $DART_REPO
     - cd greedys_api_dart_lib
     - git config user.email "ci-bot@greedys.com"
     - git config user.name  "Greedys CI Bot"
