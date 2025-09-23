@@ -1,7 +1,7 @@
 variables:
   TAG_LATEST: ${CI_REGISTRY_IMAGE}:latest
   TAG_COMMIT: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}
-  DART_REPO: git@gitlab.com:PsychoOrange/greedys_api_dart_lib.git
+  DART_REPO: https://gitlab.com/PsychoOrange/greedys_api_dart_lib.git
   # Base URL delle spec OpenAPI
   API_DOCS_BASE: "https://api.greedys.it/v3/api-docs"
   # 🆕 Base URL per response wrappers catalog
@@ -125,7 +125,7 @@ publish:
     - export OPENAPI_CUSTOM_CMD="java -cp $NPM_OPENAPI_JAR:$CUSTOM_JAR org.openapitools.codegen.OpenAPIGenerator generate"
 
     - echo "Clono il repo delle librerie Dart (greedys_api_dart_lib)…"
-    - git clone $DART_REPO
+    - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.com/PsychoOrange/greedys_api_dart_lib.git
     - cd greedys_api_dart_lib
     - git config user.email "ci-bot@greedys.com"
     - git config user.name  "Greedys CI Bot"
