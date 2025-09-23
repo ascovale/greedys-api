@@ -76,24 +76,18 @@ deploy:
 
 
 publish:
-  image: openjdk:11-jre-slim
   stage: publish
+  tags:
+    - publish  # Esegui solo su runner con tag "publish"
   before_script:
-    - echo "Setup ambiente completo per generazione Dart..."
-    # 🆕 Installa Maven per buildare il custom generator
-    - apt-get update && apt-get install -y curl git maven xz-utils
+    - echo "Setup ambiente per generazione Dart..."
+    # Installa solo le dipendenze essenziali
+    - apt-get update && apt-get install -y curl git maven
     
-    # Installa Flutter/Dart per post-processing
+    # Installa OpenAPI Generator CLI
     - curl -sL https://deb.nodesource.com/setup_18.x | bash -
-    - apt-get install -y nodejs unzip
+    - apt-get install -y nodejs
     - npm install -g @openapitools/openapi-generator-cli
-    
-    # Installa Flutter SDK
-    - echo "Installazione Flutter SDK..."
-    - curl -o flutter_linux.tar.xz https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.16.0-stable.tar.xz
-    - tar xf flutter_linux.tar.xz
-    - export PATH="$PATH:`pwd`/flutter/bin"
-    - flutter --version
 
     # BUILD DEL CUSTOM GENERATOR (solo se necessario)
     - echo "Controllo se serve buildare il custom generator..."
@@ -231,13 +225,7 @@ publish:
         echo "- Rimuovo spec temporanea"
         rm "$SPEC_FILE"
         
-        # POST-PROCESSING DART/FLUTTER
-        echo "- Eseguo flutter pub get e build_runner per $GROUP..."
-        cd "$OUTPUT_DIR"
-        flutter pub get || echo "⚠️ flutter pub get fallito per $GROUP"
-        dart run build_runner build --delete-conflicting-outputs || echo "⚠️ build_runner fallito per $GROUP"
-        dart fix --apply || echo "⚠️ dart fix fallito per $GROUP"
-        cd ..
+        echo "✅ Client $GROUP generato (post-processing sarà fatto dalla pipeline dedicata)"
       done
 
     - echo
@@ -247,8 +235,8 @@ publish:
       if git diff-index --quiet HEAD; then
         echo "ℹ️ Nessuna modifica da pushare."
       else
-        # COMMIT MESSAGE con custom generator
-        COMMIT_MSG="🤖 Aggiorna Dart clients (custom generator): $API_GROUPS"
+        # COMMIT MESSAGE - client base senza post-processing
+        COMMIT_MSG="🤖 Genera Dart clients base: $API_GROUPS (post-processing in pipeline dedicata)"
         
         git commit -m "$COMMIT_MSG"
         git push origin main
