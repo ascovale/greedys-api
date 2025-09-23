@@ -2,12 +2,14 @@ variables:
   TAG_LATEST: ${CI_REGISTRY_IMAGE}:latest
   TAG_COMMIT: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}
   DART_REPO: git@gitlab.com:PsychoOrange/greedys_api_dart_lib.git
-  # Comando per invocare OpenAPI Generator (installato via npm)
-  OPENAPI_CLI: openapi-generator-cli
-  # Base URL delle spec (modifica se serve)
+  # Base URL delle spec OpenAPI
   API_DOCS_BASE: "https://api.greedys.it/v3/api-docs"
+  # 🆕 Base URL per response wrappers catalog (non più localhost)
+  WRAPPERS_ENDPOINT: "https://api.greedys.it/api/internal/response-wrapper-catalog"
   # Elenco dei gruppi da processare
   API_GROUPS: "restaurant admin customer"
+  # 🆕 OpenAPI Generator CLI version per download diretto se necessario
+  OPENAPI_GENERATOR_VERSION: "7.8.0"
 
 stages:
   - build
@@ -18,6 +20,7 @@ cache:
   paths:
     - .m2/repository
     - node_modules/
+    - tools/  # 🆕 Cache per JAR e tools scaricati
 
 build:
   image: docker:24.0.5
@@ -76,28 +79,104 @@ publish:
   image: openjdk:11-jre-slim
   stage: publish
   before_script:
-    - echo "Aggiorno apt, installo curl, git e Node.js…"
-    - apt-get update && apt-get install -y curl git
+    - echo "Setup ambiente completo per generazione Dart..."
+    # 🆕 Installa Maven per buildare il custom generator
+    - apt-get update && apt-get install -y curl git maven
+    
+    # Installa Flutter/Dart per post-processing
     - curl -sL https://deb.nodesource.com/setup_18.x | bash -
-    - apt-get install -y nodejs
+    - apt-get install -y nodejs unzip
     - npm install -g @openapitools/openapi-generator-cli
+    
+    # Installa Flutter SDK
+    - echo "Installazione Flutter SDK..."
+    - curl -o flutter_linux.tar.xz https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.16.0-stable.tar.xz
+    - tar xf flutter_linux.tar.xz
+    - export PATH="$PATH:`pwd`/flutter/bin"
+    - flutter --version
 
-    # Setup GIT con PAT
+    # BUILD DEL CUSTOM GENERATOR (solo se necessario)
+    - echo "Controllo se serve buildare il custom generator..."
+    - |
+      if [ ! -d "generator" ]; then
+        echo "❌ ERRORE: Generator custom non trovato in generator/"
+        exit 1
+      fi
+      
+      echo "✅ Generator trovato in generator/"
+      cd generator
+      
+      # Controlla se il JAR esiste ed è aggiornato
+      CUSTOM_JAR_PATTERN="target/custom-dart-codegen-*.jar"
+      if ls $CUSTOM_JAR_PATTERN 1> /dev/null 2>&1 && [ "$CUSTOM_JAR_PATTERN" -nt "pom.xml" ]; then
+        echo "✅ JAR custom già esistente e aggiornato"
+        export CUSTOM_JAR="$(ls $CUSTOM_JAR_PATTERN | head -1)"
+      else
+        echo "🔨 Building custom generator..."
+        mvn clean package -DskipTests -q
+        if ls $CUSTOM_JAR_PATTERN 1> /dev/null 2>&1; then
+          export CUSTOM_JAR="$(ls $CUSTOM_JAR_PATTERN | head -1)"
+          echo "✅ Custom generator buildato: $CUSTOM_JAR"
+        else
+          echo "❌ ERRORE: JAR custom non trovato dopo build"
+          exit 1
+        fi
+      fi
+      cd ..
+
+    # TROVA IL JAR DI OPENAPI-GENERATOR (installato via npm)
+    - export NPM_OPENAPI_JAR="$(npm root -g)/@openapitools/openapi-generator-cli/bin/openapi-generator-cli.jar"
+    - echo "OpenAPI Generator JAR (npm) trovato"
+
+    # CONFIGURA COMANDO CUSTOM GENERATOR
+    - echo "🎯 Configurazione CUSTOM generator"
+    - export OPENAPI_CUSTOM_CMD="java -cp $NPM_OPENAPI_JAR:$CUSTOM_JAR org.openapitools.codegen.OpenAPIGenerator generate"
+
+    # Setup GIT con PAT (INVARIATO)
     - echo "echo \$PAT" > /tmp/git-askpass.sh
     - chmod +x /tmp/git-askpass.sh
     - export GIT_ASKPASS=/tmp/git-askpass.sh
 
-    - echo "Clono il repo del client Dart…"
+    - echo "Clono il repo delle librerie Dart (greedys_api_dart_lib)…"
     - git clone https://gitlab.com/PsychoOrange/greedys_api_dart_lib.git
     - cd greedys_api_dart_lib
     - git config user.email "ci-bot@greedys.com"
     - git config user.name  "Greedys CI Bot"
 
   script:
-    - echo "Pulisco cartelle client…"
-    - rm -rf src/restaurant src/admin src/customer
+    - echo "Pulisco cartelle client API…"
+    - rm -rf restaurant admin customer
+    
+    # Verifica/crea la libreria common se non esiste
+    - |
+      if [ ! -d "common" ]; then
+        echo "📦 Creo la libreria common..."
+        mkdir -p common/lib/model
+        cat > common/pubspec.yaml << EOF
+      name: common
+      version: 1.0.0
+      description: Common library for response wrappers
+      publish_to: none
 
-    # Per ogni gruppo: scarica spec e genera client
+      environment:
+        sdk: ^3.0.0
+
+      dependencies:
+        json_annotation: ^4.9.0
+        built_value: ^8.6.2
+
+      dev_dependencies:
+        test: ^1.16.0
+        build_runner: ^2.4.6
+        json_serializable: ^6.7.1
+        built_value_generator: ^8.6.2
+      EOF
+        echo "✅ Libreria common creata"
+      else
+        echo "✅ Libreria common già esistente"
+      fi
+
+    # GENERA PER OGNI GRUPPO con CUSTOM GENERATOR
     - |
       for GROUP in $API_GROUPS; do
         SPEC_FILE="./openapi-${GROUP}.json"
@@ -108,22 +187,72 @@ publish:
         echo "- Scarico spec da $API_DOCS_BASE/${GROUP}-api"
         curl -sSf -o "$SPEC_FILE" "${API_DOCS_BASE}/${GROUP}-api"
 
-        echo "- Genero Dart client in $OUTPUT_DIR"
-        $OPENAPI_CLI generate -i $SPEC_FILE -g dart-dio -o $OUTPUT_DIR
+        # SCARICA RESPONSE WRAPPERS SPECIFICO PER GRUPPO
+        echo "- Scarico catalogo response wrappers per gruppo $GROUP..."
+        curl -sSf -o "generator/response-wrappers-${GROUP}.json" "$WRAPPERS_ENDPOINT/${GROUP}" || echo "⚠️ Catalogo wrappers per $GROUP non disponibile"
+
+        # GENERA CON CUSTOM GENERATOR
+        echo "- 🎯 Genero con CUSTOM generator in $OUTPUT_DIR"
+        $OPENAPI_CUSTOM_CMD \
+          -g org.openapitools.custom.CustomDartClientCodegen \
+          -i "$SPEC_FILE" \
+          -o "$OUTPUT_DIR" \
+          -t "generator/templates" \
+          --ignore-file-override "generator/.openapi-generator-ignore" \
+          --skip-validate-spec \
+          -p pubName=greedys_${GROUP}_api \
+          -p pubVersion=1.0.0 \
+          -p pubDescription="Greedys ${GROUP^} API client" \
+          -p pubHomepage=https://greedys.it
+
+        # POST-PROCESSING
+        echo "- Post-processing per $GROUP..."
+        
+        # Rimuovi doc ResponseWrapper indesiderati
+        [ -d "$OUTPUT_DIR/doc" ] && find "$OUTPUT_DIR/doc" -name "ResponseWrapper*.md" ! -name "ResponseWrapperErrorDetails.md" -delete 2>/dev/null || true
+        
+        # Rimuovi test ResponseWrapper indesiderati  
+        [ -d "$OUTPUT_DIR/test" ] && find "$OUTPUT_DIR/test" -name "response_wrapper*.dart" ! -name "response_wrapper_error_details_test.dart" -delete 2>/dev/null || true
+        
+        # Pulisci import ResponseWrapper
+        [ -d "$OUTPUT_DIR/lib" ] && find "$OUTPUT_DIR/lib" -name "*.dart" -exec sed -i "/^import 'package:.*\/response_wrapper.*';$/d" {} \; 2>/dev/null || true
+        
+        # Aggiorna pubspec.yaml con common_lib
+        PUBSPEC="$OUTPUT_DIR/pubspec.yaml"
+        if [ -f "$PUBSPEC" ] && ! grep -q "common_lib:" "$PUBSPEC"; then
+          echo "  common_lib:" >> "$PUBSPEC"
+          echo "    path: ../common" >> "$PUBSPEC"
+        fi
+        
+        # Pulisci export ResponseWrapper da openapi.dart
+        OPENAPI_FILE="$OUTPUT_DIR/lib/openapi.dart"
+        [ -f "$OPENAPI_FILE" ] && sed -i "/^export 'package:.*\/response_wrapper\([^_]\|_[^e]\)/d" "$OPENAPI_FILE" 2>/dev/null || true
 
         echo "- Rimuovo spec temporanea"
         rm "$SPEC_FILE"
+        
+        # POST-PROCESSING DART/FLUTTER
+        echo "- Eseguo flutter pub get e build_runner per $GROUP..."
+        cd "$OUTPUT_DIR"
+        flutter pub get || echo "⚠️ flutter pub get fallito per $GROUP"
+        dart run build_runner build --delete-conflicting-outputs || echo "⚠️ build_runner fallito per $GROUP"
+        dart fix --apply || echo "⚠️ dart fix fallito per $GROUP"
+        cd ..
       done
 
     - echo
-    - echo "Committiamo e pushiamo le modifiche generati…"
+    - echo "Committiamo e pushiamo le modifiche…"
     - git add .
     - |
       if git diff-index --quiet HEAD; then
-        echo "Nessuna modifica da pushare."
+        echo "ℹ️ Nessuna modifica da pushare."
       else
-        git commit -m "Aggiorna Dart clients: $API_GROUPS"
+        # COMMIT MESSAGE con custom generator
+        COMMIT_MSG="🤖 Aggiorna Dart clients (custom generator): $API_GROUPS"
+        
+        git commit -m "$COMMIT_MSG"
         git push origin main
+        echo "✅ Client pushati con successo!"
       fi
 
   only:

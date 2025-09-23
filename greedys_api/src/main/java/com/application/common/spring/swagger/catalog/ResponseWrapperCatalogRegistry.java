@@ -37,6 +37,13 @@ public final class ResponseWrapperCatalogRegistry {
     public static void generateAndSave(Map<String, String> wrapperToClassMapping,
                                        Map<String, WrapperCategory> wrapperToCategory,
                                        Iterable<String> wrapperSchemasToGenerate) {
+        generateAndSave(wrapperToClassMapping, wrapperToCategory, wrapperSchemasToGenerate, null);
+    }
+
+    public static void generateAndSave(Map<String, String> wrapperToClassMapping,
+                                       Map<String, WrapperCategory> wrapperToCategory,
+                                       Iterable<String> wrapperSchemasToGenerate,
+                                       String groupName) {
         try {
             List<CatalogEntry> entries = new ArrayList<>();
             for (String wrapperName : wrapperSchemasToGenerate) {
@@ -61,7 +68,7 @@ public final class ResponseWrapperCatalogRegistry {
             catalog.generatedAt = Instant.now().toString();
             catalog.entries = entries;
 
-            Path out = defaultOutputPath();
+            Path out = defaultOutputPath(groupName);
             writeAtomic(catalog, out);
         } catch (Exception ex) {
             // Avoid throwing from swagger customization - log via stderr as last resort
@@ -102,6 +109,10 @@ public final class ResponseWrapperCatalogRegistry {
     }
 
     private static Path defaultOutputPath() {
+        return defaultOutputPath(null);
+    }
+
+    private static Path defaultOutputPath(String groupName) {
         String userDir = System.getProperty("user.dir");
         Path target = Path.of(userDir, "target", "generated-resources");
         try {
@@ -109,7 +120,12 @@ public final class ResponseWrapperCatalogRegistry {
         } catch (IOException e) {
             // ignore
         }
-        return target.resolve("response-wrappers.json");
+        
+        String fileName = (groupName != null && !groupName.trim().isEmpty()) 
+            ? "response-wrappers-" + groupName + ".json"
+            : "response-wrappers.json";
+            
+        return target.resolve(fileName);
     }
 
     private static void writeAtomic(Object obj, Path out) throws IOException {

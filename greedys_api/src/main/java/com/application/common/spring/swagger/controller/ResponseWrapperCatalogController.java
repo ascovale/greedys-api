@@ -3,6 +3,7 @@ package com.application.common.spring.swagger.controller;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -30,6 +31,17 @@ public class ResponseWrapperCatalogController extends BaseController {
             String catalog = catalogService.getCatalog();
             if (catalog == null) {
                 throw new EntityNotFoundException("Response wrapper catalog not found");
+            }
+            return catalog;
+        });
+    }
+
+    @GetMapping(path = "/response-wrapper-catalog/{group}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ResponseWrapper<String>> getCatalogByGroup(@PathVariable String group) {
+        return execute("get response wrapper catalog for group " + group, () -> {
+            String catalog = catalogService.getCatalogByGroup(group);
+            if (catalog == null) {
+                throw new EntityNotFoundException("Response wrapper catalog not found for group: " + group);
             }
             return catalog;
         });

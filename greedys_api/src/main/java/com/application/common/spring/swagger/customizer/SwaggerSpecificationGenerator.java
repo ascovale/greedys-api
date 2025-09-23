@@ -42,26 +42,29 @@ public class SwaggerSpecificationGenerator implements OpenApiCustomizer {
     @Override
     public void customise(OpenAPI openApi) {
         try {
-            // 1. Ottieni tutti i metadati delle operazioni dal registry
-            Collection<OperationDataMetadata> allOperations = registry.getAllCompleteData();
+            // 1. Determina il gruppo corrente dall'OpenAPI
+            String currentGroup = determineGroupName(openApi);
             
-            if (allOperations.isEmpty()) {
-                log.warn("No operation metadata found in registry - schema generation skipped");
+            // 2. Ottieni solo i metadati delle operazioni del gruppo corrente
+            Collection<OperationDataMetadata> groupOperations = registry.getAllCompleteData(currentGroup);
+            
+            if (groupOperations.isEmpty()) {
+                log.warn("No operation metadata found in registry for group: {} - schema generation skipped", currentGroup);
                 return;
             }
             
-            log.info("Generating schemas for {} operations", allOperations.size());
+            log.info("Generating schemas for {} operations in group: {}", groupOperations.size(), currentGroup);
             
-            // 2. Analizza i tipi di schemi da generare
+            // 3. Analizza i tipi di schemi da generare (solo per il gruppo corrente)
             SchemaTypeAnalyzer.SchemaAnalysisResult schemaAnalysis = 
-                SchemaTypeAnalyzer.analyzeSchemaTypes(allOperations);
+                SchemaTypeAnalyzer.analyzeSchemaTypes(groupOperations);
             
-            log.info("Schema analysis: {}", schemaAnalysis.getSummary());
+            log.info("Schema analysis for group {}: {}", currentGroup, schemaAnalysis.getSummary());
             
-            // 3. Genera schemi comuni (errori, metadata)
+            // 4. Genera schemi comuni (errori, metadata)
             DefaultSchemaGenerator.generateCommonSchemas(openApi);
             
-            // 4. Genera schemi DTO dai ModelConverters
+            // 5. Genera schemi DTO dai ModelConverters
             for (String dtoClassName : schemaAnalysis.getDtoSchemasToExtract()) {
                 if (dtoClassName != null && !dtoClassName.trim().isEmpty()) {
                     DtoSchemaGenerator.generateDataSchema(dtoClassName, openApi);
@@ -70,7 +73,7 @@ public class SwaggerSpecificationGenerator implements OpenApiCustomizer {
                 }
             }
             
-            // 5. Genera schemi wrapper (ResponseWrapperXXX) - con informazioni sui tipi e categorie
+            // 6. Genera schemi wrapper (ResponseWrapperXXX) - con informazioni sui tipi e categorie
             Map<String, String> wrapperToClassMapping = schemaAnalysis.getWrapperToDataClassMapping();
             Map<String, WrapperCategory> wrapperToCategory = schemaAnalysis.getWrapperToCategoryMapping();
             for (String wrapperSchemaName : schemaAnalysis.getWrapperSchemasToGenerate()) {
@@ -80,16 +83,16 @@ public class SwaggerSpecificationGenerator implements OpenApiCustomizer {
                 WrapperSchemaGenerator.generateWrapperSchema(wrapperSchemaName, dataClassName, category, openApi);
             }
 
-            // 7. Genera catalogo JSON dei ResponseWrapper prodotti (wrapper -> T, categoria)
+            // 7. Genera catalogo JSON dei ResponseWrapper prodotti (wrapper -> T, categoria) per il gruppo corrente
             com.application.common.spring.swagger.catalog.ResponseWrapperCatalogRegistry.generateAndSave(
-                wrapperToClassMapping, wrapperToCategory, schemaAnalysis.getWrapperSchemasToGenerate()
+                wrapperToClassMapping, wrapperToCategory, schemaAnalysis.getWrapperSchemasToGenerate(), currentGroup
             );
             
-            // 6. Aggiorna le operazioni con i nuovi schemi
-            updateOperations(allOperations, openApi);
+            // 8. Aggiorna le operazioni con i nuovi schemi (solo quelle del gruppo corrente)
+            updateOperations(groupOperations, openApi);
             
-            log.info("Schema generation completed successfully - {} total schemas", 
-                openApi.getComponents().getSchemas().size());
+            log.info("Schema generation completed successfully for group: {} - {} total schemas", 
+                currentGroup, openApi.getComponents().getSchemas().size());
             
         } catch (Exception e) {
             log.error("Error during OpenAPI customization: {}", e.getMessage(), e);
@@ -119,6 +122,24 @@ public class SwaggerSpecificationGenerator implements OpenApiCustomizer {
                 });
             });
         });
+    }
+    
+    /**
+     * Determina il nome del gruppo corrente dall'OpenAPI spec
+     */
+    private String determineGroupName(OpenAPI openApi) {
+        // Cerchiamo di dedurlo dai path presenti nell'OpenAPI
+        if (openApi.getPaths() != null && !openApi.getPaths().isEmpty()) {
+            for (String path : openApi.getPaths().keySet()) {
+                if (path.startsWith("/admin/")) return "admin";
+                if (path.startsWith("/customer/")) return "customer";
+                if (path.startsWith("/restaurant/")) return "restaurant";
+            }
+        }
+        
+        // Fallback
+        log.warn("Could not determine group name, using 'unknown'");
+        return "unknown";
     }
   
 }
