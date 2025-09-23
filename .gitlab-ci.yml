@@ -77,8 +77,6 @@ deploy:
 
 publish:
   stage: publish
-  tags:
-    - publish  # Esegui solo su runner con tag "publish"
   before_script:
     - echo "Setup ambiente per generazione Dart..."
     # Installa solo le dipendenze essenziali
