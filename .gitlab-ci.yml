@@ -4,7 +4,7 @@ variables:
   DART_REPO: git@gitlab.com:PsychoOrange/greedys_api_dart_lib.git
   # Base URL delle spec OpenAPI
   API_DOCS_BASE: "https://api.greedys.it/v3/api-docs"
-  # 🆕 Base URL per response wrappers catalog (non più localhost)
+  # 🆕 Base URL per response wrappers catalog
   WRAPPERS_ENDPOINT: "https://api.greedys.it/api/internal/response-wrapper-catalog"
   # Elenco dei gruppi da processare
   API_GROUPS: "restaurant admin customer"
