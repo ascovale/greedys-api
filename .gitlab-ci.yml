@@ -124,16 +124,13 @@ publish:
     - echo "🎯 Configurazione CUSTOM generator"
     - export OPENAPI_CUSTOM_CMD="java -cp $NPM_OPENAPI_JAR:$CUSTOM_JAR org.openapitools.codegen.OpenAPIGenerator generate"
 
-    # Setup SSH per clone repository
-    - apt-get install -y openssh-client
-    - eval $(ssh-agent -s)
-    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
-    - ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
+    # Setup GIT con PAT
+    - echo "echo \$PAT" > /tmp/git-askpass.sh
+    - chmod +x /tmp/git-askpass.sh
+    - export GIT_ASKPASS=/tmp/git-askpass.sh
 
     - echo "Clono il repo delle librerie Dart (greedys_api_dart_lib)…"
-    - git clone git@gitlab.com:PsychoOrange/greedys_api_dart_lib.git
+    - git clone https://gitlab.com/PsychoOrange/greedys_api_dart_lib.git
     - cd greedys_api_dart_lib
     - git config user.email "ci-bot@greedys.com"
     - git config user.name  "Greedys CI Bot"
