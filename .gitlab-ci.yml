@@ -212,7 +212,7 @@ publish:
     - git add .
     - |
       if git diff-index --quiet HEAD; then
-        echo "ℹ️ Nessuna modifica da pushare."
+        echo " Nessuna modifica da pushare."
       else
         # COMMIT MESSAGE - client base senza post-processing
         COMMIT_MSG="🤖 Genera Dart clients base: $API_GROUPS (post-processing in pipeline dedicata)"
