@@ -1,0 +1,26 @@
+# If you want to also avoid committing generated client entirely, prefer using .gitignore
+
+# Ignore all generated response_wrapper* model files (catch-all)
+# EXCEPT ResponseWrapperErrorDetails which is needed for error handling
+lib/**/model/response_wrapper*.*
+lib/**/model/*response_wrapper*.dart
+lib/**/model/*response_wrapper*.*
+**/model/response_wrapper*.*
+
+# Allow ResponseWrapperErrorDetails specifically
+!lib/**/model/response_wrapper_error_details.*
+!lib/**/model/response_wrapper_error_details.dart
+!**/model/response_wrapper_error_details.*
+!**/model/response_wrapper_error_details.dart
+
+# Ignore response_wrapper documentation files  
+# EXCEPT ResponseWrapperErrorDetails docs
+doc/ResponseWrapper*.md
+doc/*ResponseWrapper*.md
+!doc/ResponseWrapperErrorDetails.md
+
+# Ignore response_wrapper test files
+# EXCEPT ResponseWrapperErrorDetails tests
+test/response_wrapper*.dart
+test/*response_wrapper*.dart
+!test/response_wrapper_error_details*.dart
