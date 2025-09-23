@@ -136,6 +136,21 @@ publish:
     - git config user.name  "Greedys CI Bot"
 
   script:
+    - echo "⏳ Attendo che l'API sia pronta dopo il deploy..."
+    - |
+      for i in {1..50}; do
+        if curl -f --max-time 10 "${API_DOCS_BASE}/restaurant-api" >/dev/null 2>&1; then
+          echo "✅ API pronta! Procedo con la generazione client..."
+          break
+        fi
+        echo "Tentativo $i/30: API non ancora pronta, attendo 10s..."
+        sleep 10
+        if [ $i -eq 50 ]; then
+          echo "❌ TIMEOUT: API non risponde dopo 8 minuti"
+          exit 1
+        fi
+      done
+    
     - echo "Pulisco cartelle client API…"
     - rm -rf restaurant admin customer
     
