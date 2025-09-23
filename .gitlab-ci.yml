@@ -124,11 +124,6 @@ publish:
     - echo "🎯 Configurazione CUSTOM generator"
     - export OPENAPI_CUSTOM_CMD="java -cp $NPM_OPENAPI_JAR:$CUSTOM_JAR org.openapitools.codegen.OpenAPIGenerator generate"
 
-    # Setup GIT con PAT (INVARIATO)
-    - echo "echo \$PAT" > /tmp/git-askpass.sh
-    - chmod +x /tmp/git-askpass.sh
-    - export GIT_ASKPASS=/tmp/git-askpass.sh
-
     - echo "Clono il repo delle librerie Dart (greedys_api_dart_lib)…"
     - git clone $DART_REPO
     - cd greedys_api_dart_lib
@@ -153,35 +148,6 @@ publish:
     
     - echo "Pulisco cartelle client API…"
     - rm -rf restaurant admin customer
-    
-    # Verifica/crea la libreria common se non esiste
-    - |
-      if [ ! -d "common" ]; then
-        echo "📦 Creo la libreria common..."
-        mkdir -p common/lib/model
-        cat > common/pubspec.yaml << EOF
-      name: common
-      version: 1.0.0
-      description: Common library for response wrappers
-      publish_to: none
-
-      environment:
-        sdk: ^3.0.0
-
-      dependencies:
-        json_annotation: ^4.9.0
-        built_value: ^8.6.2
-
-      dev_dependencies:
-        test: ^1.16.0
-        build_runner: ^2.4.6
-        json_serializable: ^6.7.1
-        built_value_generator: ^8.6.2
-      EOF
-        echo "✅ Libreria common creata"
-      else
-        echo "✅ Libreria common già esistente"
-      fi
 
     # GENERA PER OGNI GRUPPO con CUSTOM GENERATOR
     - |
