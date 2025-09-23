@@ -81,7 +81,7 @@ publish:
   before_script:
     - echo "Setup ambiente completo per generazione Dart..."
     # 🆕 Installa Maven per buildare il custom generator
-    - apt-get update && apt-get install -y curl git maven
+    - apt-get update && apt-get install -y curl git maven xz-utils
     
     # Installa Flutter/Dart per post-processing
     - curl -sL https://deb.nodesource.com/setup_18.x | bash -
