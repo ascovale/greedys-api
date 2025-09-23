@@ -1,0 +1,10 @@
+// AUTO-GENERATED FILE, DO NOT MODIFY!
+
+// Barrel file to re-export all generated models (excluding ResponseWrapper* variants)
+{{#models}}
+{{#model}}
+{{^vendorExtensions.x-isResponseWrapper}}
+export 'package:{{pubName}}/src/model/{{classFilename}}.dart';
+{{/vendorExtensions.x-isResponseWrapper}}
+{{/model}}
+{{/models}}

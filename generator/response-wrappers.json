@@ -1,0 +1,552 @@
+﻿{
+    "message":  "Operation get response wrapper catalog completed successfully",
+    "data":  {
+                 "generatedAt":  "2025-09-15T19:41:13.712501900Z",
+                 "entries":  [
+                                 {
+                                     "wrapper":  "ResponseWrapperTableDTO",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperTableDTO",
+                                     "dataType":  "TableDTO",
+                                     "dataTypeFull":  "com.application.common.web.dto.restaurant.TableDTO",
+                                     "category":  "SINGLE",
+                                     "dataTypeSnake":  "table_dto",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperCustomerDTO",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperCustomerDTO",
+                                     "dataType":  "CustomerDTO",
+                                     "dataTypeFull":  "com.application.common.web.dto.customer.CustomerDTO",
+                                     "category":  "SINGLE",
+                                     "dataTypeSnake":  "customer_dto",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperBoolean",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperBoolean",
+                                     "dataType":  "Boolean",
+                                     "dataTypeFull":  "java.lang.Boolean",
+                                     "category":  "SINGLE",
+                                     "dataTypeSnake":  "boolean",
+                                     "isPrimitive":  true,
+                                     "dartType":  "bool"
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperRestaurantValidationResult",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperRestaurantValidationResult",
+                                     "dataType":  "RestaurantValidationResult",
+                                     "dataTypeFull":  "com.application.restaurant.web.dto.validation.RestaurantValidationResult",
+                                     "category":  "SINGLE",
+                                     "dataTypeSnake":  "restaurant_validation_result",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperListServiceDTO",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperListServiceDTO",
+                                     "dataType":  "ServiceDTO",
+                                     "dataTypeFull":  "com.application.common.web.dto.restaurant.ServiceDTO",
+                                     "category":  "LIST",
+                                     "dataTypeSnake":  "service_dto",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperPageRoomDTO",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperPageRoomDTO",
+                                     "dataType":  "RoomDTO",
+                                     "dataTypeFull":  "com.application.common.web.dto.restaurant.RoomDTO",
+                                     "category":  "PAGE",
+                                     "dataTypeSnake":  "room_dto",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperRoomDTO",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperRoomDTO",
+                                     "dataType":  "RoomDTO",
+                                     "dataTypeFull":  "com.application.common.web.dto.restaurant.RoomDTO",
+                                     "category":  "SINGLE",
+                                     "dataTypeSnake":  "room_dto",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperListTableDTO",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperListTableDTO",
+                                     "dataType":  "TableDTO",
+                                     "dataTypeFull":  "com.application.common.web.dto.restaurant.TableDTO",
+                                     "category":  "LIST",
+                                     "dataTypeSnake":  "table_dto",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperRUserDTO",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperRUserDTO",
+                                     "dataType":  "RUserDTO",
+                                     "dataTypeFull":  "com.application.common.web.dto.restaurant.RUserDTO",
+                                     "category":  "SINGLE",
+                                     "dataTypeSnake":  "r_user_dto",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperDishDTO",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperDishDTO",
+                                     "dataType":  "DishDTO",
+                                     "dataTypeFull":  "com.application.common.web.dto.menu.DishDTO",
+                                     "category":  "SINGLE",
+                                     "dataTypeSnake":  "dish_dto",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperLong",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperLong",
+                                     "dataType":  "Long",
+                                     "dataTypeFull":  "java.lang.Long",
+                                     "category":  "SINGLE",
+                                     "dataTypeSnake":  "long",
+                                     "isPrimitive":  true,
+                                     "dartType":  "int"
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperServiceDTO",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperServiceDTO",
+                                     "dataType":  "ServiceDTO",
+                                     "dataTypeFull":  "com.application.common.web.dto.restaurant.ServiceDTO",
+                                     "category":  "SINGLE",
+                                     "dataTypeSnake":  "service_dto",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperAuthResponseDTO",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperAuthResponseDTO",
+                                     "dataType":  "AuthResponseDTO",
+                                     "dataTypeFull":  "com.application.common.web.dto.security.AuthResponseDTO",
+                                     "category":  "SINGLE",
+                                     "dataTypeSnake":  "auth_response_dto",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperPageRestaurantNotificationDTO",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperPageRestaurantNotificationDTO",
+                                     "dataType":  "RestaurantNotificationDTO",
+                                     "dataTypeFull":  "com.application.common.web.dto.notification.RestaurantNotificationDTO",
+                                     "category":  "PAGE",
+                                     "dataTypeSnake":  "restaurant_notification_dto",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperListMenuDTO",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperListMenuDTO",
+                                     "dataType":  "MenuDTO",
+                                     "dataTypeFull":  "com.application.common.web.dto.menu.MenuDTO",
+                                     "category":  "LIST",
+                                     "dataTypeSnake":  "menu_dto",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperPageCustomerDTO",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperPageCustomerDTO",
+                                     "dataType":  "CustomerDTO",
+                                     "dataTypeFull":  "com.application.common.web.dto.customer.CustomerDTO",
+                                     "category":  "PAGE",
+                                     "dataTypeSnake":  "customer_dto",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperListSlotDTO",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperListSlotDTO",
+                                     "dataType":  "SlotDTO",
+                                     "dataTypeFull":  "com.application.common.web.dto.restaurant.SlotDTO",
+                                     "category":  "LIST",
+                                     "dataTypeSnake":  "slot_dto",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperRestaurantVerificationResult",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperRestaurantVerificationResult",
+                                     "dataType":  "RestaurantVerificationResult",
+                                     "dataTypeFull":  "com.application.restaurant.web.dto.verification.RestaurantVerificationResult",
+                                     "category":  "SINGLE",
+                                     "dataTypeSnake":  "restaurant_verification_result",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperListRestaurantDTO",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperListRestaurantDTO",
+                                     "dataType":  "RestaurantDTO",
+                                     "dataTypeFull":  "com.application.common.web.dto.restaurant.RestaurantDTO",
+                                     "category":  "LIST",
+                                     "dataTypeSnake":  "restaurant_dto",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperRestaurantSearchResult",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperRestaurantSearchResult",
+                                     "dataType":  "RestaurantSearchResult",
+                                     "dataTypeFull":  "com.application.restaurant.web.dto.search.RestaurantSearchResult",
+                                     "category":  "SINGLE",
+                                     "dataTypeSnake":  "restaurant_search_result",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperString",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperString",
+                                     "dataType":  "String",
+                                     "dataTypeFull":  "java.lang.String",
+                                     "category":  "SINGLE",
+                                     "dataTypeSnake":  "string",
+                                     "isPrimitive":  true,
+                                     "dartType":  "String"
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperSlotDTO",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperSlotDTO",
+                                     "dataType":  "SlotDTO",
+                                     "dataTypeFull":  "com.application.common.web.dto.restaurant.SlotDTO",
+                                     "category":  "SINGLE",
+                                     "dataTypeSnake":  "slot_dto",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperPageReservationDTO",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperPageReservationDTO",
+                                     "dataType":  "ReservationDTO",
+                                     "dataTypeFull":  "com.application.common.web.dto.reservations.ReservationDTO",
+                                     "category":  "PAGE",
+                                     "dataTypeSnake":  "reservation_dto",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperMenuDTO",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperMenuDTO",
+                                     "dataType":  "MenuDTO",
+                                     "dataTypeFull":  "com.application.common.web.dto.menu.MenuDTO",
+                                     "category":  "SINGLE",
+                                     "dataTypeSnake":  "menu_dto",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperCustomerNotificationDTO",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperCustomerNotificationDTO",
+                                     "dataType":  "CustomerNotificationDTO",
+                                     "dataTypeFull":  "com.application.common.web.dto.notification.CustomerNotificationDTO",
+                                     "category":  "SINGLE",
+                                     "dataTypeSnake":  "customer_notification_dto",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperRestaurantAuthorizationResult",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperRestaurantAuthorizationResult",
+                                     "dataType":  "RestaurantAuthorizationResult",
+                                     "dataTypeFull":  "com.application.restaurant.web.dto.google.RestaurantAuthorizationResult",
+                                     "category":  "SINGLE",
+                                     "dataTypeSnake":  "restaurant_authorization_result",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperPageCustomerNotificationDTO",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperPageCustomerNotificationDTO",
+                                     "dataType":  "CustomerNotificationDTO",
+                                     "dataTypeFull":  "com.application.common.web.dto.notification.CustomerNotificationDTO",
+                                     "category":  "PAGE",
+                                     "dataTypeSnake":  "customer_notification_dto",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperListRestaurantNotificationDTO",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperListRestaurantNotificationDTO",
+                                     "dataType":  "RestaurantNotificationDTO",
+                                     "dataTypeFull":  "com.application.common.web.dto.notification.RestaurantNotificationDTO",
+                                     "category":  "LIST",
+                                     "dataTypeSnake":  "restaurant_notification_dto",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperListMenuDishDTO",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperListMenuDishDTO",
+                                     "dataType":  "MenuDishDTO",
+                                     "dataTypeFull":  "com.application.common.web.dto.menu.MenuDishDTO",
+                                     "category":  "LIST",
+                                     "dataTypeSnake":  "menu_dish_dto",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperReservation",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperReservation",
+                                     "dataType":  "Reservation",
+                                     "dataTypeFull":  "com.application.common.persistence.model.reservation.Reservation",
+                                     "category":  "SINGLE",
+                                     "dataTypeSnake":  "reservation",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperListDishDTO",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperListDishDTO",
+                                     "dataType":  "DishDTO",
+                                     "dataTypeFull":  "com.application.common.web.dto.menu.DishDTO",
+                                     "category":  "LIST",
+                                     "dataTypeSnake":  "dish_dto",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperListReservationDTO",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperListReservationDTO",
+                                     "dataType":  "ReservationDTO",
+                                     "dataTypeFull":  "com.application.common.web.dto.reservations.ReservationDTO",
+                                     "category":  "LIST",
+                                     "dataTypeSnake":  "reservation_dto",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperVerificationResponseDTO",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperVerificationResponseDTO",
+                                     "dataType":  "VerificationResponseDTO",
+                                     "dataTypeFull":  "com.application.restaurant.web.dto.verification.VerificationResponseDTO",
+                                     "category":  "SINGLE",
+                                     "dataTypeSnake":  "verification_response_dto",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperServiceTypeDto",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperServiceTypeDto",
+                                     "dataType":  "ServiceTypeDto",
+                                     "dataTypeFull":  "com.application.common.web.dto.restaurant.ServiceTypeDto",
+                                     "category":  "SINGLE",
+                                     "dataTypeSnake":  "service_type_dto",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperPageRestaurantDTO",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperPageRestaurantDTO",
+                                     "dataType":  "RestaurantDTO",
+                                     "dataTypeFull":  "com.application.common.web.dto.restaurant.RestaurantDTO",
+                                     "category":  "PAGE",
+                                     "dataTypeSnake":  "restaurant_dto",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperPageTableDTO",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperPageTableDTO",
+                                     "dataType":  "TableDTO",
+                                     "dataTypeFull":  "com.application.common.web.dto.restaurant.TableDTO",
+                                     "category":  "PAGE",
+                                     "dataTypeSnake":  "table_dto",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperMenuDishDTO",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperMenuDishDTO",
+                                     "dataType":  "MenuDishDTO",
+                                     "dataTypeFull":  "com.application.common.web.dto.menu.MenuDishDTO",
+                                     "category":  "SINGLE",
+                                     "dataTypeSnake":  "menu_dish_dto",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperAdminVerificationResult",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperAdminVerificationResult",
+                                     "dataType":  "AdminVerificationResult",
+                                     "dataTypeFull":  "com.application.admin.web.dto.verification.AdminVerificationResult",
+                                     "category":  "SINGLE",
+                                     "dataTypeSnake":  "admin_verification_result",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperCustomerStatisticsDTO",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperCustomerStatisticsDTO",
+                                     "dataType":  "CustomerStatisticsDTO",
+                                     "dataTypeFull":  "com.application.common.web.dto.customer.CustomerStatisticsDTO",
+                                     "category":  "SINGLE",
+                                     "dataTypeSnake":  "customer_statistics_dto",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperRestaurantCategoryDTO",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperRestaurantCategoryDTO",
+                                     "dataType":  "RestaurantCategoryDTO",
+                                     "dataTypeFull":  "com.application.common.web.dto.restaurant.RestaurantCategoryDTO",
+                                     "category":  "SINGLE",
+                                     "dataTypeSnake":  "restaurant_category_dto",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperPageRUserDTO",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperPageRUserDTO",
+                                     "dataType":  "RUserDTO",
+                                     "dataTypeFull":  "com.application.common.web.dto.restaurant.RUserDTO",
+                                     "category":  "PAGE",
+                                     "dataTypeSnake":  "r_user_dto",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperPageServiceTypeDto",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperPageServiceTypeDto",
+                                     "dataType":  "ServiceTypeDto",
+                                     "dataTypeFull":  "com.application.common.web.dto.restaurant.ServiceTypeDto",
+                                     "category":  "PAGE",
+                                     "dataTypeSnake":  "service_type_dto",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperReservationDTO",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperReservationDTO",
+                                     "dataType":  "ReservationDTO",
+                                     "dataTypeFull":  "com.application.common.web.dto.reservations.ReservationDTO",
+                                     "category":  "SINGLE",
+                                     "dataTypeSnake":  "reservation_dto",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperRestaurantDTO",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperRestaurantDTO",
+                                     "dataType":  "RestaurantDTO",
+                                     "dataTypeFull":  "com.application.common.web.dto.restaurant.RestaurantDTO",
+                                     "category":  "SINGLE",
+                                     "dataTypeSnake":  "restaurant_dto",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperListString",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperListString",
+                                     "dataType":  "String",
+                                     "dataTypeFull":  "java.lang.String",
+                                     "category":  "LIST",
+                                     "dataTypeSnake":  "string",
+                                     "isPrimitive":  true,
+                                     "dartType":  "String"
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperPageAllergyDTO",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperPageAllergyDTO",
+                                     "dataType":  "AllergyDTO",
+                                     "dataTypeFull":  "com.application.common.web.dto.customer.AllergyDTO",
+                                     "category":  "PAGE",
+                                     "dataTypeSnake":  "allergy_dto",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperListServiceTypeDto",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperListServiceTypeDto",
+                                     "dataType":  "ServiceTypeDto",
+                                     "dataTypeFull":  "com.application.common.web.dto.restaurant.ServiceTypeDto",
+                                     "category":  "LIST",
+                                     "dataTypeSnake":  "service_type_dto",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperAllergyDTO",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperAllergyDTO",
+                                     "dataType":  "AllergyDTO",
+                                     "dataTypeFull":  "com.application.common.web.dto.customer.AllergyDTO",
+                                     "category":  "SINGLE",
+                                     "dataTypeSnake":  "allergy_dto",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperPageUserRestaurantAssociation",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperPageUserRestaurantAssociation",
+                                     "dataType":  "UserRestaurantAssociation",
+                                     "dataTypeFull":  "com.application.admin.web.dto.verification.UserRestaurantAssociation",
+                                     "category":  "PAGE",
+                                     "dataTypeSnake":  "user_restaurant_association",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperRestaurantNotificationDTO",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperRestaurantNotificationDTO",
+                                     "dataType":  "RestaurantNotificationDTO",
+                                     "dataTypeFull":  "com.application.common.web.dto.notification.RestaurantNotificationDTO",
+                                     "category":  "SINGLE",
+                                     "dataTypeSnake":  "restaurant_notification_dto",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperListAllergyDTO",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperListAllergyDTO",
+                                     "dataType":  "AllergyDTO",
+                                     "dataTypeFull":  "com.application.common.web.dto.customer.AllergyDTO",
+                                     "category":  "LIST",
+                                     "dataTypeSnake":  "allergy_dto",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperListLocalDate",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperListLocalDate",
+                                     "dataType":  "LocalDate",
+                                     "dataTypeFull":  "java.time.LocalDate",
+                                     "category":  "LIST",
+                                     "dataTypeSnake":  "local_date",
+                                     "isPrimitive":  true,
+                                     "dartType":  "DateTime"
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperAdminDTO",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperAdminDTO",
+                                     "dataType":  "AdminDTO",
+                                     "dataTypeFull":  "com.application.admin.web.dto.admin.AdminDTO",
+                                     "category":  "SINGLE",
+                                     "dataTypeSnake":  "admin_dto",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 },
+                                 {
+                                     "wrapper":  "ResponseWrapperRUserFcmToken",
+                                     "schemaRef":  "#/components/schemas/ResponseWrapperRUserFcmToken",
+                                     "dataType":  "RUserFcmToken",
+                                     "dataTypeFull":  "com.application.restaurant.persistence.model.user.RUserFcmToken",
+                                     "category":  "SINGLE",
+                                     "dataTypeSnake":  "r_user_fcm_token",
+                                     "isPrimitive":  false,
+                                     "dartType":  null
+                                 }
+                             ]
+             },
+    "timestamp":  "2025-09-15T21:49:38.9005649",
+    "metadata":  {
+                     "filtered":  false
+                 }
+}
