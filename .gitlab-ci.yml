@@ -142,12 +142,12 @@ publish:
         
         # Test più dettagliato con output degli errori
         echo "🔍 Test endpoint base..."
-        if curl -fk --max-time 10 --connect-timeout 5 "https://api.greedys.it" >/dev/null 2>&1; then
+        if curl -f --max-time 10 --connect-timeout 5 "http://api.greedys.it:8080" >/dev/null 2>&1; then
           echo "✅ Server base risponde"
           
           # Test health check se disponibile
           echo "🔍 Test health check..."
-          curl -fk --max-time 5 "https://api.greedys.it/actuator/health" && echo "✅ Health OK" || echo "❌ Health check non disponibile"
+          curl -f --max-time 5 "http://api.greedys.it:8080/actuator/health" && echo "✅ Health OK" || echo "❌ Health check non disponibile"
           
           # Test OpenAPI docs
           echo "🔍 Test OpenAPI docs..."
@@ -171,7 +171,7 @@ publish:
         if [ $i -eq 30 ]; then
           echo "❌ TIMEOUT: API non risponde dopo 7+ minuti totali"
           echo "Provo ultimo test di connettività..."
-          curl -Ik --max-time 5 "https://api.greedys.it" || echo "Server completamente irraggiungibile"
+          curl -I --max-time 5 "http://api.greedys.it:8080" || echo "Server completamente irraggiungibile"
           exit 1
         fi
       done
