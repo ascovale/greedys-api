@@ -1,7 +1,7 @@
 # Pipeline fix: risolto problema database connectivity - cleaned volumes
 variables:
   TAG_LATEST: ${CI_REGISTRY_IMAGE}:latest
-  TAG_COMMIT: ${          if curl -f --max-time 10 --connect-timeout 5 "http://api.greedys.it:8080" >/dev/null 2>&1; thenI_REGISTRY_IMAGE}:${CI_COMMI          curl -I --max-time 5 "http://api.greedys.it:8080" || echo "Server completamente irraggiungibile"_SHORT_SHA}
+  TAG_COMMIT: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}
   DART_REPO: https://gitlab.com/PsychoOrange/greedys_api_dart_lib.git
   # Base URL delle spec OpenAPI - HTTP porta 8080 (configurazione Docker)
   API_DOCS_BASE: "http://api.greedys.it:8080/v3/api-docs"
