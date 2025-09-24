@@ -105,19 +105,26 @@ publish:
       CUSTOM_JAR_PATTERN="target/custom-dart-codegen-*.jar"
       if ls $CUSTOM_JAR_PATTERN 1> /dev/null 2>&1 && [ "$CUSTOM_JAR_PATTERN" -nt "pom.xml" ]; then
         echo "✅ JAR custom già esistente e aggiornato"
-        export CUSTOM_JAR="generator/$(ls $CUSTOM_JAR_PATTERN | head -1)"
+        CUSTOM_JAR_PATH="generator/$(ls $CUSTOM_JAR_PATTERN | head -1)"
       else
         echo "🔨 Building custom generator..."
         mvn clean package -DskipTests -q
         if ls $CUSTOM_JAR_PATTERN 1> /dev/null 2>&1; then
-          export CUSTOM_JAR="generator/$(ls $CUSTOM_JAR_PATTERN | head -1)"
-          echo "✅ Custom generator buildato: $CUSTOM_JAR"
+          CUSTOM_JAR_PATH="generator/$(ls $CUSTOM_JAR_PATTERN | head -1)"
+          echo "✅ Custom generator buildato: $CUSTOM_JAR_PATH"
         else
           echo "❌ ERRORE: JAR custom non trovato dopo build"
           exit 1
         fi
       fi
       cd ..
+      
+      # Salva il percorso in un file temporaneo
+      echo "$CUSTOM_JAR_PATH" > /tmp/custom_jar_path
+    
+    # Recupera il percorso del custom JAR
+    - export CUSTOM_JAR="$(cat /tmp/custom_jar_path)"
+    - echo "Custom JAR recuperato:" "$CUSTOM_JAR"
 
     # TROVA IL JAR DI OPENAPI-GENERATOR (con fallback)
     - |
