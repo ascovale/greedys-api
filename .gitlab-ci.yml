@@ -105,12 +105,12 @@ publish:
       CUSTOM_JAR_PATTERN="target/custom-dart-codegen-*.jar"
       if ls $CUSTOM_JAR_PATTERN 1> /dev/null 2>&1 && [ "$CUSTOM_JAR_PATTERN" -nt "pom.xml" ]; then
         echo "✅ JAR custom già esistente e aggiornato"
-        export CUSTOM_JAR="$(ls $CUSTOM_JAR_PATTERN | head -1)"
+        export CUSTOM_JAR="generator/$(ls $CUSTOM_JAR_PATTERN | head -1)"
       else
         echo "🔨 Building custom generator..."
         mvn clean package -DskipTests -q
         if ls $CUSTOM_JAR_PATTERN 1> /dev/null 2>&1; then
-          export CUSTOM_JAR="$(ls $CUSTOM_JAR_PATTERN | head -1)"
+          export CUSTOM_JAR="generator/$(ls $CUSTOM_JAR_PATTERN | head -1)"
           echo "✅ Custom generator buildato: $CUSTOM_JAR"
         else
           echo "❌ ERRORE: JAR custom non trovato dopo build"
