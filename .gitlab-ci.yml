@@ -53,25 +53,27 @@ deploy:
   stage: deploy
   before_script:
     - apk add --no-cache openssh-client openssh-keygen
+    # Crea cartella deploy per organizzare i file temporanei
+    - mkdir -p deploy
     # se $ID_RSA è una variabile **File**:
-    - cp "$ID_RSA" id_key
-    - tr -d '\r' < id_key > id_key.clean && mv id_key.clean id_key
-    - chmod 600 id_key
+    - cp "$ID_RSA" deploy/id_key
+    - tr -d '\r' < deploy/id_key > deploy/id_key.clean && mv deploy/id_key.clean deploy/id_key
+    - chmod 600 deploy/id_key
     - mkdir -p ~/.ssh && ssh-keyscan -H "$SERVER_IP" >> ~/.ssh/known_hosts
     # sanity: tipo e fingerprint
-    - echo "== Key sanity ==" && head -1 id_key && tail -1 id_key
-    - ssh-keygen -lf id_key
+    - echo "== Key sanity ==" && head -1 deploy/id_key && tail -1 deploy/id_key
+    - ssh-keygen -lf deploy/id_key
     # confronta con la chiave pubblica che hai messo su deployer
-    - ssh-keygen -y -f id_key > id_key.pub
+    - ssh-keygen -y -f deploy/id_key > deploy/id_key.pub
     - |
       echo "== Match con authorized_keys su deployer =="
-      ssh -o BatchMode=yes -o IdentitiesOnly=yes -i id_key deployer@"$SERVER_IP" \
-        "grep -F -x -q \"$(cat id_key.pub)\" ~/.ssh/authorized_keys && echo MATCH || echo NO_MATCH"
+      ssh -o BatchMode=yes -o IdentitiesOnly=yes -i deploy/id_key deployer@"$SERVER_IP" \
+        "grep -F -x -q \"$(cat deploy/id_key.pub)\" ~/.ssh/authorized_keys && echo MATCH || echo NO_MATCH"
   script:
-    - ssh -o IdentitiesOnly=yes -i id_key deployer@"$SERVER_IP" 'mkdir -p ~/greedys_api/'
-    - scp -o IdentitiesOnly=yes -i id_key docker-compose.yml deploy.sh deployer@"$SERVER_IP":~/greedys_api/
-    - printf '%s' "$CI_JOB_TOKEN" | ssh -o IdentitiesOnly=yes -i id_key deployer@"$SERVER_IP" "docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY"
-    - ssh -o IdentitiesOnly=yes -i id_key deployer@"$SERVER_IP" 'cd ~/greedys_api/ && chmod +x ./deploy.sh && ./deploy.sh'
+    - ssh -o IdentitiesOnly=yes -i deploy/id_key deployer@"$SERVER_IP" 'mkdir -p ~/greedys_api/'
+    - scp -o IdentitiesOnly=yes -i deploy/id_key docker-compose.yml deploy.sh deployer@"$SERVER_IP":~/greedys_api/
+    - printf '%s' "$CI_JOB_TOKEN" | ssh -o IdentitiesOnly=yes -i deploy/id_key deployer@"$SERVER_IP" "docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY"
+    - ssh -o IdentitiesOnly=yes -i deploy/id_key deployer@"$SERVER_IP" 'cd ~/greedys_api/ && chmod +x ./deploy.sh && ./deploy.sh'
   only: [main]
 
 
@@ -124,7 +126,7 @@ publish:
     - echo "🎯 Configurazione CUSTOM generator"
     - export OPENAPI_CUSTOM_CMD="java -cp $NPM_OPENAPI_JAR:$CUSTOM_JAR org.openapitools.codegen.OpenAPIGenerator generate"
 
-    # Setup GIT con PAT
+    # Setup GIT con PAT (metodo unificato)
     - echo "echo \$PAT" > /tmp/git-askpass.sh
     - chmod +x /tmp/git-askpass.sh
     - export GIT_ASKPASS=/tmp/git-askpass.sh
