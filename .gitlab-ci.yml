@@ -214,7 +214,16 @@ publish:
 
         # GENERA CON CUSTOM GENERATOR
         echo "- 🎯 Genero con CUSTOM generator in $OUTPUT_DIR"
-        $OPENAPI_CUSTOM_CMD \
+        echo "Debug: NPM_OPENAPI_JAR=$NPM_OPENAPI_JAR"
+        echo "Debug: CUSTOM_JAR=$CUSTOM_JAR" 
+        echo "Debug: Verifica esistenza JAR:"
+        ls -la "$NPM_OPENAPI_JAR" "$CUSTOM_JAR"
+        
+        # Ricrea comando per sicurezza
+        OPENAPI_CMD="java -cp $NPM_OPENAPI_JAR:$CUSTOM_JAR org.openapitools.codegen.OpenAPIGenerator generate"
+        echo "Debug: Comando da eseguire: $OPENAPI_CMD"
+        
+        $OPENAPI_CMD \
           -g org.openapitools.custom.CustomDartClientCodegen \
           -i "$SPEC_FILE" \
           -o "$OUTPUT_DIR" \
