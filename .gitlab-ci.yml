@@ -1,3 +1,4 @@
+# Pipeline fix: risolto problema database connectivity - cleaned volumes
 variables:
   TAG_LATEST: ${CI_REGISTRY_IMAGE}:latest
   TAG_COMMIT: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}
@@ -139,16 +140,29 @@ publish:
 
   script:
     - echo "⏳ Attendo che l'API sia pronta dopo il deploy..."
+    - echo "Controllo endpoint:" "${API_DOCS_BASE}/restaurant-api"
     - |
       for i in {1..50}; do
-        if curl -f --max-time 10 "${API_DOCS_BASE}/restaurant-api" >/dev/null 2>&1; then
+        echo "Tentativo $i/50: Testing ${API_DOCS_BASE}/restaurant-api"
+        
+        # Test più dettagliato con output degli errori
+        if curl -f --max-time 15 --connect-timeout 10 -v "${API_DOCS_BASE}/restaurant-api" >/dev/null 2>&1; then
           echo "✅ API pronta! Procedo con la generazione client..."
           break
+        else
+          # Proviamo anche l'endpoint base per vedere se il server risponde
+          if curl -f --max-time 10 --connect-timeout 5 "https://api.greedys.it" >/dev/null 2>&1; then
+            echo "⚠️ Server risponde ma API docs non disponibili"
+          else
+            echo "❌ Server non risponde completamente"
+          fi
         fi
-        echo "Tentativo $i/30: API non ancora pronta, attendo 10s..."
+        
         sleep 10
         if [ $i -eq 50 ]; then
-          echo "❌ TIMEOUT: API non risponde dopo 8 minuti"
+          echo "❌ TIMEOUT: API non risponde dopo 8+ minuti"
+          echo "Provo ultimo test di connettività..."
+          curl -I --max-time 5 "https://api.greedys.it" || echo "Server completamente irraggiungibile"
           exit 1
         fi
       done
