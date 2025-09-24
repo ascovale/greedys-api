@@ -1,12 +1,12 @@
 # Pipeline fix: risolto problema database connectivity - cleaned volumes
 variables:
   TAG_LATEST: ${CI_REGISTRY_IMAGE}:latest
-  TAG_COMMIT: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}
+  TAG_COMMIT: ${          if curl -f --max-time 10 --connect-timeout 5 "http://api.greedys.it:8080" >/dev/null 2>&1; thenI_REGISTRY_IMAGE}:${CI_COMMI          curl -I --max-time 5 "http://api.greedys.it:8080" || echo "Server completamente irraggiungibile"_SHORT_SHA}
   DART_REPO: https://gitlab.com/PsychoOrange/greedys_api_dart_lib.git
-  # Base URL delle spec OpenAPI - HTTP diretto senza SSL
-  API_DOCS_BASE: "http://api.greedys.it/v3/api-docs"
-  # 🆕 Base URL per response wrappers catalog - HTTP diretto
-  WRAPPERS_ENDPOINT: "http://api.greedys.it/api/internal/response-wrapper-catalog"
+  # Base URL delle spec OpenAPI - HTTP porta 8080 (configurazione Docker)
+  API_DOCS_BASE: "http://api.greedys.it:8080/v3/api-docs"
+  # 🆕 Base URL per response wrappers catalog - HTTP porta 8080
+  WRAPPERS_ENDPOINT: "http://api.greedys.it:8080/api/internal/response-wrapper-catalog"
   # Elenco dei gruppi da processare
   API_GROUPS: "restaurant admin customer"
   # 🆕 OpenAPI Generator CLI version per download diretto se necessario
@@ -131,28 +131,48 @@ publish:
   script:
     - echo "⏳ Attendo che l'API sia pronta dopo il deploy..."
     - echo "Controllo endpoint:" "${API_DOCS_BASE}/restaurant-api"
+    
+    # Prima verifica lo stato del deployment
+    - echo "📋 Verifica stato deployment..."
+    - docker service ls
+    - docker service ps greedys_greedys-api --no-trunc
+    
     - |
       for i in {1..50}; do
         echo "Tentativo $i/50: Testing ${API_DOCS_BASE}/restaurant-api"
         
         # Test più dettagliato con output degli errori
-        if curl -f --max-time 15 --connect-timeout 10 -v "${API_DOCS_BASE}/restaurant-api" >/dev/null 2>&1; then
-          echo "✅ API pronta! Procedo con la generazione client..."
-          break
-        else
-          # Proviamo anche l'endpoint base per vedere se il server risponde
-          if curl -f --max-time 10 --connect-timeout 5 "http://api.greedys.it" >/dev/null 2>&1; then
-            echo "⚠️ Server risponde ma API docs non disponibili"
+        echo "🔍 Test endpoint base..."
+        if curl -fk --max-time 10 --connect-timeout 5 "https://api.greedys.it" >/dev/null 2>&1; then
+          echo "✅ Server base risponde"
+          
+          # Test health check se disponibile
+          echo "🔍 Test health check..."
+          curl -fk --max-time 5 "https://api.greedys.it/actuator/health" && echo "✅ Health OK" || echo "❌ Health check non disponibile"
+          
+          # Test OpenAPI docs
+          echo "🔍 Test OpenAPI docs..."
+          if curl -f --max-time 15 --connect-timeout 10 "${API_DOCS_BASE}/restaurant-api" >/dev/null 2>&1; then
+            echo "✅ API docs pronte! Procedo con la generazione client..."
+            break
           else
-            echo "❌ Server non risponde completamente"
+            echo "❌ OpenAPI docs non disponibili"
+            # Mostra cosa restituisce l'endpoint
+            echo "Contenuto dell'endpoint:"
+            curl --max-time 5 "${API_DOCS_BASE}/restaurant-api" 2>/dev/null | head -10 || echo "Nessuna risposta"
           fi
+        else
+          echo "❌ Server base non risponde"
+          # Verifica i logs del container
+          echo "📋 Ultimi logs del servizio:"
+          docker service logs --tail 20 greedys_greedys-api 2>/dev/null | tail -5 || echo "❌ Impossibile recuperare logs"
         fi
         
         sleep 10
         if [ $i -eq 50 ]; then
           echo "❌ TIMEOUT: API non risponde dopo 8+ minuti"
           echo "Provo ultimo test di connettività..."
-          curl -I --max-time 5 "http://api.greedys.it" || echo "Server completamente irraggiungibile"
+          curl -Ik --max-time 5 "https://api.greedys.it" || echo "Server completamente irraggiungibile"
           exit 1
         fi
       done
@@ -169,11 +189,27 @@ publish:
         echo
         echo ">>> Generazione client per $GROUP <<<"
         echo "- Scarico spec da $API_DOCS_BASE/${GROUP}-api"
-        curl -sSf -o "$SPEC_FILE" "${API_DOCS_BASE}/${GROUP}-api"
+        
+        # Debug: verifica cosa ritorna l'endpoint
+        echo "Debug: test connessione endpoint..."
+        curl -Ik "${API_DOCS_BASE}/${GROUP}-api" || echo "❌ Endpoint non raggiungibile"
+        
+        # Scarica con più debug
+        echo "Scarico spec..."
+        if curl -sSfk -o "$SPEC_FILE" "${API_DOCS_BASE}/${GROUP}-api"; then
+          echo "✅ Spec scaricata, dimensione: $(wc -c < "$SPEC_FILE") bytes"
+          echo "Prime righe del file spec:"
+          head -n 5 "$SPEC_FILE"
+        else
+          echo "❌ ERRORE: Impossibile scaricare spec da ${API_DOCS_BASE}/${GROUP}-api"
+          echo "Verifica manuale dell'endpoint:"
+          curl -v "${API_DOCS_BASE}/${GROUP}-api" 2>&1 | head -20
+          exit 1
+        fi
 
         # SCARICA RESPONSE WRAPPERS SPECIFICO PER GRUPPO
         echo "- Scarico catalogo response wrappers per gruppo $GROUP..."
-        curl -sSf -o "generator/response-wrappers-${GROUP}.json" "$WRAPPERS_ENDPOINT/${GROUP}" || echo "⚠️ Catalogo wrappers per $GROUP non disponibile"
+        curl -sSfk -o "generator/response-wrappers-${GROUP}.json" "$WRAPPERS_ENDPOINT/${GROUP}" || echo "⚠️ Catalogo wrappers per $GROUP non disponibile"
 
         # GENERA CON CUSTOM GENERATOR
         echo "- 🎯 Genero con CUSTOM generator in $OUTPUT_DIR"
