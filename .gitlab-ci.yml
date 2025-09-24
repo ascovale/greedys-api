@@ -132,9 +132,13 @@ publish:
     - echo "⏳ Attendo che l'API sia pronta dopo il deploy..."
     - echo "Controllo endpoint:" "${API_DOCS_BASE}/restaurant-api"
     
+    # Delay iniziale per permettere al deployment di completarsi
+    - echo "🕐 Attendo 2 minuti per il deployment..."
+    - sleep 120
+    
     - |
-      for i in {1..50}; do
-        echo "Tentativo $i/50: Testing ${API_DOCS_BASE}/restaurant-api"
+      for i in {1..30}; do
+        echo "Tentativo $i/30: Testing ${API_DOCS_BASE}/restaurant-api"
         
         # Test più dettagliato con output degli errori
         echo "🔍 Test endpoint base..."
@@ -164,8 +168,8 @@ publish:
         fi
         
         sleep 10
-        if [ $i -eq 50 ]; then
-          echo "❌ TIMEOUT: API non risponde dopo 8+ minuti"
+        if [ $i -eq 30 ]; then
+          echo "❌ TIMEOUT: API non risponde dopo 7+ minuti totali"
           echo "Provo ultimo test di connettività..."
           curl -Ik --max-time 5 "https://api.greedys.it" || echo "Server completamente irraggiungibile"
           exit 1
