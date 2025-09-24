@@ -132,11 +132,6 @@ publish:
     - echo "⏳ Attendo che l'API sia pronta dopo il deploy..."
     - echo "Controllo endpoint:" "${API_DOCS_BASE}/restaurant-api"
     
-    # Prima verifica lo stato del deployment
-    - echo "📋 Verifica stato deployment..."
-    - docker service ls
-    - docker service ps greedys_greedys-api --no-trunc
-    
     - |
       for i in {1..50}; do
         echo "Tentativo $i/50: Testing ${API_DOCS_BASE}/restaurant-api"
