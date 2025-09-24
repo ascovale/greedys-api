@@ -3,10 +3,10 @@ variables:
   TAG_LATEST: ${CI_REGISTRY_IMAGE}:latest
   TAG_COMMIT: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}
   DART_REPO: https://gitlab.com/PsychoOrange/greedys_api_dart_lib.git
-  # Base URL delle spec OpenAPI
-  API_DOCS_BASE: "https://api.greedys.it/v3/api-docs"
-  # 🆕 Base URL per response wrappers catalog
-  WRAPPERS_ENDPOINT: "https://api.greedys.it/api/internal/response-wrapper-catalog"
+  # Base URL delle spec OpenAPI - HTTP diretto senza SSL
+  API_DOCS_BASE: "http://api.greedys.it/v3/api-docs"
+  # 🆕 Base URL per response wrappers catalog - HTTP diretto
+  WRAPPERS_ENDPOINT: "http://api.greedys.it/api/internal/response-wrapper-catalog"
   # Elenco dei gruppi da processare
   API_GROUPS: "restaurant admin customer"
   # 🆕 OpenAPI Generator CLI version per download diretto se necessario
