@@ -119,13 +119,33 @@ publish:
       fi
       cd ..
 
-    # TROVA IL JAR DI OPENAPI-GENERATOR (installato via npm)
-    - export NPM_OPENAPI_JAR="$(npm root -g)/@openapitools/openapi-generator-cli/bin/openapi-generator-cli.jar"
-    - echo "OpenAPI Generator JAR (npm) trovato"
+    # TROVA IL JAR DI OPENAPI-GENERATOR (con fallback)
+    - |
+      # Prova prima npm
+      NPM_JAR_PATH="$(npm root -g)/@openapitools/openapi-generator-cli/bin/openapi-generator-cli.jar"
+      if [ -f "$NPM_JAR_PATH" ]; then
+        export NPM_OPENAPI_JAR="$NPM_JAR_PATH"
+        echo "✅ OpenAPI Generator JAR trovato via npm: $NPM_OPENAPI_JAR"
+      else
+        echo "❌ JAR npm non trovato in $NPM_JAR_PATH"
+        # Fallback: scarica direttamente
+        mkdir -p tools
+        DIRECT_JAR="tools/openapi-generator-cli.jar"
+        if [ ! -f "$DIRECT_JAR" ]; then
+          echo "📥 Scarico OpenAPI Generator CLI direttamente..."
+          curl -sL "https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/7.8.0/openapi-generator-cli-7.8.0.jar" -o "$DIRECT_JAR"
+        fi
+        export NPM_OPENAPI_JAR="$DIRECT_JAR"
+        echo "✅ OpenAPI Generator JAR scaricato: $NPM_OPENAPI_JAR"
+      fi
+    - ls -la "$NPM_OPENAPI_JAR"
 
     # CONFIGURA COMANDO CUSTOM GENERATOR
     - echo "🎯 Configurazione CUSTOM generator"
+    - echo "Custom JAR:" "$CUSTOM_JAR"
+    - ls -la "$CUSTOM_JAR"
     - export OPENAPI_CUSTOM_CMD="java -cp $NPM_OPENAPI_JAR:$CUSTOM_JAR org.openapitools.codegen.OpenAPIGenerator generate"
+    - echo "Comando configurato:" "$OPENAPI_CUSTOM_CMD"
 
     # Setup GIT con PAT (metodo unificato)
     - echo "echo \$PAT" > /tmp/git-askpass.sh
