@@ -1,10 +1,7 @@
 # Pipeline fix: risolto problema database connectivity - cleaned volumes
 variables:
   TAG_LATEST: ${CI_REGISTRY_IMAGE}:latest
-  TAG_COMMIT: ${CI_R    # Setup GIT con PAT (metodo unificato)
-    - echo "echo \\$PAT" > /tmp/git-askpass.sh
-    - chmod +x /tmp/git-askpass.sh
-    - export GIT_ASKPASS=/tmp/git-askpass.shI_COMMIT_SHORT_SHA}
+  TAG_COMMIT: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}
   DART_REPO: https://gitlab.com/PsychoOrange/greedys_api_dart_lib.git
   # Base URL delle spec OpenAPI - HTTP diretto senza SSL
   API_DOCS_BASE: "http://api.greedys.it/v3/api-docs"
