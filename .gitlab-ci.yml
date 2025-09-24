@@ -1,7 +1,10 @@
 # Pipeline fix: risolto problema database connectivity - cleaned volumes
 variables:
   TAG_LATEST: ${CI_REGISTRY_IMAGE}:latest
-  TAG_COMMIT: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}
+  TAG_COMMIT: ${CI_R    # Setup GIT con PAT (metodo unificato)
+    - echo "echo \\$PAT" > /tmp/git-askpass.sh
+    - chmod +x /tmp/git-askpass.sh
+    - export GIT_ASKPASS=/tmp/git-askpass.shI_COMMIT_SHORT_SHA}
   DART_REPO: https://gitlab.com/PsychoOrange/greedys_api_dart_lib.git
   # Base URL delle spec OpenAPI - HTTP diretto senza SSL
   API_DOCS_BASE: "http://api.greedys.it/v3/api-docs"
@@ -91,68 +94,17 @@ publish:
     - npm install -g @openapitools/openapi-generator-cli
 
     # BUILD DEL CUSTOM GENERATOR (solo se necessario)
-    - echo "Controllo se serve buildare il custom generator..."
+    - echo "Building custom generator..."
     - |
       if [ ! -d "generator" ]; then
         echo "❌ ERRORE: Generator custom non trovato in generator/"
         exit 1
       fi
       
-      echo "✅ Generator trovato in generator/"
       cd generator
-      
-      # Controlla se il JAR esiste ed è aggiornato
-      CUSTOM_JAR_PATTERN="target/custom-dart-codegen-*.jar"
-      if ls $CUSTOM_JAR_PATTERN 1> /dev/null 2>&1 && [ "$CUSTOM_JAR_PATTERN" -nt "pom.xml" ]; then
-        echo "✅ JAR custom già esistente e aggiornato"
-        CUSTOM_JAR_PATH="generator/$(ls $CUSTOM_JAR_PATTERN | head -1)"
-      else
-        echo "🔨 Building custom generator..."
-        mvn clean package -DskipTests -q
-        if ls $CUSTOM_JAR_PATTERN 1> /dev/null 2>&1; then
-          CUSTOM_JAR_PATH="generator/$(ls $CUSTOM_JAR_PATTERN | head -1)"
-          echo "✅ Custom generator buildato: $CUSTOM_JAR_PATH"
-        else
-          echo "❌ ERRORE: JAR custom non trovato dopo build"
-          exit 1
-        fi
-      fi
+      mvn clean package -DskipTests -q
+      echo "✅ Custom generator buildato"
       cd ..
-      
-      # Salva il percorso in un file temporaneo
-      echo "$CUSTOM_JAR_PATH" > /tmp/custom_jar_path
-    
-    # Recupera il percorso del custom JAR
-    - export CUSTOM_JAR="$(cat /tmp/custom_jar_path)"
-    - echo "Custom JAR recuperato:" "$CUSTOM_JAR"
-
-    # TROVA IL JAR DI OPENAPI-GENERATOR (con fallback)
-    - |
-      # Prova prima npm
-      NPM_JAR_PATH="$(npm root -g)/@openapitools/openapi-generator-cli/bin/openapi-generator-cli.jar"
-      if [ -f "$NPM_JAR_PATH" ]; then
-        export NPM_OPENAPI_JAR="$NPM_JAR_PATH"
-        echo "✅ OpenAPI Generator JAR trovato via npm: $NPM_OPENAPI_JAR"
-      else
-        echo "❌ JAR npm non trovato in $NPM_JAR_PATH"
-        # Fallback: scarica direttamente
-        mkdir -p tools
-        DIRECT_JAR="tools/openapi-generator-cli.jar"
-        if [ ! -f "$DIRECT_JAR" ]; then
-          echo "📥 Scarico OpenAPI Generator CLI direttamente..."
-          curl -sL "https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/7.8.0/openapi-generator-cli-7.8.0.jar" -o "$DIRECT_JAR"
-        fi
-        export NPM_OPENAPI_JAR="$DIRECT_JAR"
-        echo "✅ OpenAPI Generator JAR scaricato: $NPM_OPENAPI_JAR"
-      fi
-    - ls -la "$NPM_OPENAPI_JAR"
-
-    # CONFIGURA COMANDO CUSTOM GENERATOR
-    - echo "🎯 Configurazione CUSTOM generator"
-    - echo "Custom JAR:" "$CUSTOM_JAR"
-    - ls -la "$CUSTOM_JAR"
-    - export OPENAPI_CUSTOM_CMD="java -cp $NPM_OPENAPI_JAR:$CUSTOM_JAR org.openapitools.codegen.OpenAPIGenerator generate"
-    - echo "Comando configurato:" "$OPENAPI_CUSTOM_CMD"
 
     # Setup GIT con PAT (metodo unificato)
     - echo "echo \$PAT" > /tmp/git-askpass.sh
@@ -164,6 +116,20 @@ publish:
     - cd greedys_api_dart_lib
     - git config user.email "ci-bot@greedys.com"
     - git config user.name  "Greedys CI Bot"
+    
+    # Ricrea i JAR necessari nella directory corrente
+    - echo "📦 Setup JAR per generazione nella directory dart_lib..."
+    - mkdir -p tools
+    - curl -sL "https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/7.8.0/openapi-generator-cli-7.8.0.jar" -o "tools/openapi-generator-cli.jar"
+    - cp "../generator/target/custom-dart-codegen-1.0.0-SNAPSHOT.jar" "tools/" || echo "❌ Custom JAR non trovato"
+    - ls -la tools/
+    
+    # Configura variabili per la generazione
+    - export NPM_OPENAPI_JAR="tools/openapi-generator-cli.jar"
+    - export CUSTOM_JAR="tools/custom-dart-codegen-1.0.0-SNAPSHOT.jar"
+    - echo "JAR configurati localmente:"
+    - echo "OpenAPI JAR:" "$NPM_OPENAPI_JAR"
+    - echo "Custom JAR:" "$CUSTOM_JAR"
 
   script:
     - echo "⏳ Attendo che l'API sia pronta dopo il deploy..."
@@ -178,7 +144,7 @@ publish:
           break
         else
           # Proviamo anche l'endpoint base per vedere se il server risponde
-          if curl -f --max-time 10 --connect-timeout 5 "https://api.greedys.it" >/dev/null 2>&1; then
+          if curl -f --max-time 10 --connect-timeout 5 "http://api.greedys.it" >/dev/null 2>&1; then
             echo "⚠️ Server risponde ma API docs non disponibili"
           else
             echo "❌ Server non risponde completamente"
@@ -189,7 +155,7 @@ publish:
         if [ $i -eq 50 ]; then
           echo "❌ TIMEOUT: API non risponde dopo 8+ minuti"
           echo "Provo ultimo test di connettività..."
-          curl -I --max-time 5 "https://api.greedys.it" || echo "Server completamente irraggiungibile"
+          curl -I --max-time 5 "http://api.greedys.it" || echo "Server completamente irraggiungibile"
           exit 1
         fi
       done
@@ -214,21 +180,14 @@ publish:
 
         # GENERA CON CUSTOM GENERATOR
         echo "- 🎯 Genero con CUSTOM generator in $OUTPUT_DIR"
-        echo "Debug: NPM_OPENAPI_JAR=$NPM_OPENAPI_JAR"
-        echo "Debug: CUSTOM_JAR=$CUSTOM_JAR" 
-        echo "Debug: Verifica esistenza JAR:"
         ls -la "$NPM_OPENAPI_JAR" "$CUSTOM_JAR"
         
-        # Ricrea comando per sicurezza
-        OPENAPI_CMD="java -cp $NPM_OPENAPI_JAR:$CUSTOM_JAR org.openapitools.codegen.OpenAPIGenerator generate"
-        echo "Debug: Comando da eseguire: $OPENAPI_CMD"
-        
-        $OPENAPI_CMD \
+        java -cp "$NPM_OPENAPI_JAR:$CUSTOM_JAR" org.openapitools.codegen.OpenAPIGenerator generate \
           -g org.openapitools.custom.CustomDartClientCodegen \
           -i "$SPEC_FILE" \
           -o "$OUTPUT_DIR" \
-          -t "generator/templates" \
-          --ignore-file-override "generator/.openapi-generator-ignore" \
+          -t "../generator/templates" \
+          --ignore-file-override "../generator/.openapi-generator-ignore" \
           --skip-validate-spec \
           -p pubName=greedys_${GROUP}_api \
           -p pubVersion=1.0.0 \
