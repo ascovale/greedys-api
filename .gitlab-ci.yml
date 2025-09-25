@@ -235,13 +235,13 @@ publish:
         # Rimuovi test ResponseWrapper indesiderati  
         [ -d "$OUTPUT_DIR/test" ] && find "$OUTPUT_DIR/test" -name "response_wrapper*.dart" ! -name "response_wrapper_error_details_test.dart" -delete 2>/dev/null || true
         
-        # Pulisci import ResponseWrapper
-        [ -d "$OUTPUT_DIR/lib" ] && find "$OUTPUT_DIR/lib" -name "*.dart" -exec sed -i "/^import 'package:.*\/response_wrapper.*';$/d" {} \; 2>/dev/null || true
+        # Pulisci import ResponseWrapper generati automaticamente (escludi quello di common)
+        [ -d "$OUTPUT_DIR/lib" ] && find "$OUTPUT_DIR/lib" -name "*.dart" -exec sed -i "/^import 'package:greedys_.*\/response_wrapper.*';$/d" {} \; 2>/dev/null || true
         
-        # Aggiorna pubspec.yaml con common_lib
+        # Aggiorna pubspec.yaml con common
         PUBSPEC="$OUTPUT_DIR/pubspec.yaml"
-        if [ -f "$PUBSPEC" ] && ! grep -q "common_lib:" "$PUBSPEC"; then
-          echo "  common_lib:" >> "$PUBSPEC"
+        if [ -f "$PUBSPEC" ] && ! grep -q "common:" "$PUBSPEC"; then
+          echo "  common:" >> "$PUBSPEC"
           echo "    path: ../common" >> "$PUBSPEC"
         fi
         
