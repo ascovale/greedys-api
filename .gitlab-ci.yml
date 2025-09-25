@@ -221,7 +221,7 @@ publish:
           -t "../generator/templates" \
           --ignore-file-override "../generator/.openapi-generator-ignore" \
           --skip-validate-spec \
-          -p pubName=greedys_${GROUP}_api \
+          -p pubName=${GROUP} \
           -p pubVersion=1.0.0 \
           -p pubDescription="Greedys ${GROUP^} API client" \
           -p pubHomepage=https://greedys.it
