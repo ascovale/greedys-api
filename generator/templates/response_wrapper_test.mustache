@@ -1,0 +1,178 @@
+import 'package:test/test.dart';
+import 'package:common/model/response_wrapper.dart';
+
+void main() {
+  group('ResponseWrapper<T> from common package', () {
+    group('constructor', () {
+      test('should create instance with required parameters', () {
+        const wrapper = ResponseWrapper<String>(success: true);
+        
+        expect(wrapper.success, isTrue);
+        expect(wrapper.data, isNull);
+        expect(wrapper.message, isNull);
+        expect(wrapper.errors, isNull);
+        expect(wrapper.statusCode, isNull);
+      });
+
+      test('should create instance with all parameters', () {
+        final errors = <String, dynamic>{'field': ['error']};
+        const wrapper = ResponseWrapper<String>(
+          success: false,
+          data: 'test data',
+          message: 'Error message',
+          errors: errors,
+          statusCode: 400,
+        );
+        
+        expect(wrapper.success, isFalse);
+        expect(wrapper.data, equals('test data'));
+        expect(wrapper.message, equals('Error message'));
+        expect(wrapper.errors, equals(errors));
+        expect(wrapper.statusCode, equals(400));
+      });
+    });
+
+    group('factory constructors', () {
+      test('success() should create successful response', () {
+        final wrapper = ResponseWrapper<String>.success('data', statusCode: 201);
+        
+        expect(wrapper.success, isTrue);
+        expect(wrapper.data, equals('data'));
+        expect(wrapper.statusCode, equals(201));
+        expect(wrapper.message, isNull);
+        expect(wrapper.errors, isNull);
+      });
+
+      test('success() should default to 200 status code', () {
+        final wrapper = ResponseWrapper<String>.success('data');
+        
+        expect(wrapper.statusCode, equals(200));
+      });
+
+      test('error() should create error response', () {
+        final errors = <String, dynamic>{'field': ['validation error']};
+        final wrapper = ResponseWrapper<String>.error(
+          'Something went wrong',
+          errors: errors,
+          statusCode: 422,
+        );
+        
+        expect(wrapper.success, isFalse);
+        expect(wrapper.data, isNull);
+        expect(wrapper.message, equals('Something went wrong'));
+        expect(wrapper.errors, equals(errors));
+        expect(wrapper.statusCode, equals(422));
+      });
+
+      test('error() should default to 400 status code', () {
+        final wrapper = ResponseWrapper<String>.error('Error');
+        
+        expect(wrapper.statusCode, equals(400));
+      });
+    });
+
+    group('JSON serialization', () {
+      test('fromJson() should parse successful response', () {
+        final json = <String, dynamic>{
+          'success': true,
+          'data': 'test data',
+          'statusCode': 200,
+        };
+        
+        final wrapper = ResponseWrapper<String>.fromJson(
+          json,
+          (data) => data as String,
+        );
+        
+        expect(wrapper.success, isTrue);
+        expect(wrapper.data, equals('test data'));
+        expect(wrapper.statusCode, equals(200));
+      });
+
+      test('fromJson() should parse error response', () {
+        final json = <String, dynamic>{
+          'success': false,
+          'message': 'Error occurred',
+          'errors': <String, dynamic>{'field': ['error']},
+          'statusCode': 400,
+        };
+        
+        final wrapper = ResponseWrapper<String>.fromJson(json, null);
+        
+        expect(wrapper.success, isFalse);
+        expect(wrapper.message, equals('Error occurred'));
+        expect(wrapper.errors, equals(<String, dynamic>{'field': ['error']}));
+        expect(wrapper.statusCode, equals(400));
+      });
+
+      test('toJson() should serialize to JSON', () {
+        final errors = <String, dynamic>{'field': ['error']};
+        const wrapper = ResponseWrapper<String>(
+          success: false,
+          data: 'test',
+          message: 'Error',
+          errors: errors,
+          statusCode: 422,
+        );
+        
+        final json = wrapper.toJson((data) => data);
+        
+        expect(json, equals(<String, dynamic>{
+          'success': false,
+          'data': 'test',
+          'message': 'Error',
+          'errors': errors,
+          'statusCode': 422,
+        }));
+      });
+
+      test('toJson() should exclude null values', () {
+        const wrapper = ResponseWrapper<String>(success: true);
+        
+        final json = wrapper.toJson(null);
+        
+        expect(json, equals(<String, dynamic>{'success': true}));
+      });
+    });
+
+    group('equality and hashCode', () {
+      test('should be equal when all properties match', () {
+        const wrapper1 = ResponseWrapper<String>(
+          success: true,
+          data: 'data',
+          statusCode: 200,
+        );
+        const wrapper2 = ResponseWrapper<String>(
+          success: true,
+          data: 'data',
+          statusCode: 200,
+        );
+        
+        expect(wrapper1, equals(wrapper2));
+        expect(wrapper1.hashCode, equals(wrapper2.hashCode));
+      });
+
+      test('should not be equal when properties differ', () {
+        const wrapper1 = ResponseWrapper<String>(success: true);
+        const wrapper2 = ResponseWrapper<String>(success: false);
+        
+        expect(wrapper1, isNot(equals(wrapper2)));
+      });
+    });
+
+    test('toString() should contain all properties', () {
+      const wrapper = ResponseWrapper<String>(
+        success: true,
+        data: 'test',
+        statusCode: 200,
+      );
+      
+      final str = wrapper.toString();
+      
+      expect(str, contains('ResponseWrapper<String>'));
+      expect(str, contains('success: true'));
+      expect(str, contains('data: test'));
+      expect(str, contains('statusCode: 200'));
+    });
+  });
+}

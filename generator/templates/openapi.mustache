@@ -10,6 +10,10 @@ export 'package:{{pubName}}/src/auth/oauth.dart';
 export 'package:{{pubName}}/src/serializers.dart';
 export 'package:{{pubName}}/src/model/date.dart';
 
+{{! Export ResponseWrapper<T> from common package }}
+export 'package:common/model/response_wrapper.dart';
+
+
 {{! Export all API files }}
 {{#apiInfo}}
 {{#apis}}

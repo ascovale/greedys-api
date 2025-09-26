@@ -221,8 +221,8 @@ publish:
           -t "../generator/templates" \
           --ignore-file-override "../generator/.openapi-generator-ignore" \
           --skip-validate-spec \
-          -p pubName=${GROUP} \
-          #ATTENZIONE CAMBIARE QUI PERCHE POI RESTAURANT CUSTOMER ADMIN POSSONO ESSERE USATE
+          -p pubName=${GROUP}-api \
+          #RENAMED: Added -api suffix for better organization (restaurant-api, admin-api, customer-api)
           -p pubVersion=1.0.0 \
           -p pubDescription="Greedys ${GROUP^} API client" \
           -p pubHomepage=https://greedys.it
