@@ -3,8 +3,8 @@ package com.application.restaurant.service.google.after;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.application.common.persistence.model.reservation.Reservation;
 import com.application.common.persistence.model.reservation.ReservationRequest;
+import com.application.common.web.dto.reservations.ReservationDTO;
 
 @Service
 public class GoogleReserveService {
@@ -15,7 +15,7 @@ public class GoogleReserveService {
     /**
      * Crea una prenotazione tramite Google Reserve API
      */
-    public Reservation createReservation(ReservationRequest reservationRequest) {
+    public ReservationDTO createReservation(ReservationRequest reservationRequest) {
         try {
             // TODO: Implementa la chiamata effettiva all'API Google Reserve
             // BASE_URL: https://mapsplatformreserveapis.googleapis.com/v1
@@ -80,7 +80,7 @@ public class GoogleReserveService {
     /**
      * Modifica una prenotazione esistente
      */
-    public Reservation modifyReservation(String googleReservationId, ReservationRequest newDetails) {
+    public ReservationDTO modifyReservation(String googleReservationId, ReservationRequest newDetails) {
         try {
             // TODO: Implementa la chiamata effettiva all'API Google Reserve
             // String url = String.format("%s/bookings/%s?key=%s", GOOGLE_RESERVE_BASE_URL, googleReservationId, googleReserveApiKey);
