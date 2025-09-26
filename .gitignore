@@ -8,3 +8,12 @@ db_data/*
 
 # Non ignorare la cartella db_data stessa
 !db_data/
+
+# Ignora i client generati dai test locali
+generator/generated-clients/
+
+# Ignora i client generati dalla pipeline
+/generated-clients/
+
+# Ignora strumenti temporanei
+generator/tools

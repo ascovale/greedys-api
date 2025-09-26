@@ -183,7 +183,7 @@ publish:
     - |
       for GROUP in $API_GROUPS; do
         SPEC_FILE="./openapi-${GROUP}.json"
-        OUTPUT_DIR="./${GROUP}"
+        OUTPUT_DIR="./${GROUP}_api"
 
         echo
         echo ">>> Generazione client per $GROUP <<<"
@@ -221,7 +221,7 @@ publish:
           -t "../generator/templates" \
           --ignore-file-override "../generator/.openapi-generator-ignore" \
           --skip-validate-spec \
-          -p pubName=${GROUP}-api \
+          -p pubName=${GROUP}_api \
           #RENAMED: Added -api suffix for better organization (restaurant-api, admin-api, customer-api)
           -p pubVersion=1.0.0 \
           -p pubDescription="Greedys ${GROUP^} API client" \
@@ -237,7 +237,7 @@ publish:
         [ -d "$OUTPUT_DIR/test" ] && find "$OUTPUT_DIR/test" -name "response_wrapper*.dart" ! -name "response_wrapper_error_details_test.dart" -delete 2>/dev/null || true
         
         # Pulisci import ResponseWrapper generati automaticamente (escludi quello di common)
-        [ -d "$OUTPUT_DIR/lib" ] && find "$OUTPUT_DIR/lib" -name "*.dart" -exec sed -i "/^import 'package:${GROUP}\/.*\/response_wrapper.*';$/d" {} \; 2>/dev/null || true
+        [ -d "$OUTPUT_DIR/lib" ] && find "$OUTPUT_DIR/lib" -name "*.dart" -exec sed -i "/^import 'package:${GROUP}_api\/.*\/response_wrapper.*';$/d" {} \; 2>/dev/null || true
         
         # Aggiorna pubspec.yaml con common
         PUBSPEC="$OUTPUT_DIR/pubspec.yaml"
