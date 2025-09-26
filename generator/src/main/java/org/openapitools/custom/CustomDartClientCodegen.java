@@ -17,6 +17,7 @@ import org.json.JSONObject;
 import org.openapitools.codegen.CodegenModel;
 import org.openapitools.codegen.CodegenOperation;
 import org.openapitools.codegen.CodegenParameter;
+import org.openapitools.codegen.SupportingFile;
 import org.openapitools.codegen.languages.DartDioClientCodegen;
 import org.openapitools.codegen.model.ModelMap;
 import org.openapitools.codegen.model.ModelsMap;
@@ -186,6 +187,11 @@ public class CustomDartClientCodegen extends DartDioClientCodegen {
     @Override
     public void processOpts() {
         super.processOpts();
+        //TODO DA TESTARE QUESTA PARTE!!!
+        // Force main export file to always be named 'openapi.dart' regardless of pubName
+        supportingFiles.removeIf(supportingFile -> 
+            supportingFile.getTemplateFile().equals("openapi.mustache"));
+        supportingFiles.add(new SupportingFile("openapi.mustache", "lib", "openapi.dart"));
 
         try {
             // Prima prova nel percorso corrente, poi nei percorsi relativi comuni
@@ -239,6 +245,45 @@ public class CustomDartClientCodegen extends DartDioClientCodegen {
         } catch (Exception e) {
             throw new RuntimeException("Errore nel parsing di response-wrappers.json", e);
         }
+        
+        LOGGER.info("[CustomDartClientCodegen] Wrapper JSON loaded with " + wrapperMap.size() + " wrapper types.");
+        
+        // Aggiungi docs/test per il ResponseWrapper<T> da common
+        addResponseWrapperDocsAndTests();
+    }
+    
+    /**
+     * Aggiunge documentazione e test per il ResponseWrapper<T> generico da common
+     */
+    private void addResponseWrapperDocsAndTests() {
+        // Aggiungi documentazione per ResponseWrapper<T> generico
+        supportingFiles.add(new SupportingFile("response_wrapper_doc.mustache", "doc", "ResponseWrapper.md"));
+        
+        // Aggiungi test per ResponseWrapper<T> generico  
+        supportingFiles.add(new SupportingFile("response_wrapper_test.mustache", "test", "response_wrapper_test.dart"));
+        
+        LOGGER.info("[CustomDartClientCodegen] Added docs and tests for ResponseWrapper<T> from common package");
+    }
+
+    /**
+     * Override per controllare quali file template devono essere processati
+     * Salta la generazione di docs/test solo per i ResponseWrapper models specifici
+     * ECCEZIONE: ResponseWrapperErrorDetails (il generico viene dal package common)
+     */
+    @Override
+    public boolean shouldOverwrite(String filename) {
+        if (filename != null) {
+            // Skip docs/test files per ResponseWrapper models specifici
+            // MANTIENI: Solo ResponseWrapperErrorDetails (il generico è in common)
+            if (filename.contains("response_wrapper") && 
+                !filename.contains("response_wrapper_error_details") &&  // Eccezione: ErrorDetails
+                (filename.endsWith("_doc.md") || filename.endsWith("_test.dart"))) {
+                
+                LOGGER.info("[CustomDartClientCodegen] Skipping doc/test generation for specific ResponseWrapper file: " + filename);
+                return false; // Non sovrascrivere = non generare
+            }
+        }
+        return super.shouldOverwrite(filename);
     }
 
     @Override
@@ -524,7 +569,7 @@ public class CustomDartClientCodegen extends DartDioClientCodegen {
                     !model.classname.equals("ResponseWrapperErrorDetails");
                 
                 if (isResponseWrapper) {
-                    String source = wrapperMap.containsKey(model.classname) ? 
+                    String source = (model.classname != null && wrapperMap.containsKey(model.classname)) ? 
                         "defined in response-wrappers.json" : "pattern-based (uncatalogued)";
                     LOGGER.info("[CustomDartClientCodegen] Removing ResponseWrapper model: " + model.classname + 
                                " (" + source + ")");
