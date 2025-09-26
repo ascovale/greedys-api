@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
-import com.application.common.persistence.model.reservation.Reservation;
 import com.application.common.persistence.model.reservation.ReservationRequest;
 import com.application.common.web.ResponseWrapper;
+import com.application.common.web.dto.reservations.ReservationDTO;
 import com.application.restaurant.service.google.after.GoogleReserveService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -40,13 +40,13 @@ public class GoogleReserveController extends BaseController {
                      "Restituisce i dettagli della prenotazione e l'ID di conferma."
     )
     @PostMapping("/book")
-    public ResponseEntity<ResponseWrapper<Reservation>> createReservation(
+    public ResponseEntity<ResponseWrapper<ReservationDTO>> createReservation(
             @RequestBody ReservationRequest reservationRequest) {
-        
-        return executeCreate("create reservation", "Prenotazione creata con successo", 
-            new OperationSupplier<Reservation>() {
+
+        return executeCreate("create reservation", "Prenotazione creata con successo",
+            new OperationSupplier<ReservationDTO>() {
                 @Override
-                public Reservation get() {
+                public ReservationDTO get() {
                     return googleReserveService.createReservation(reservationRequest);
                 }
             });
@@ -61,14 +61,14 @@ public class GoogleReserveController extends BaseController {
                      "Può cambiare data, ora, numero di persone e richieste speciali."
     )
     @PutMapping("/{reservationId}")
-    public ResponseEntity<ResponseWrapper<Reservation>> modifyReservation(
+    public ResponseEntity<ResponseWrapper<ReservationDTO>> modifyReservation(
             @PathVariable String reservationId,
             @RequestBody ReservationRequest newDetails) {
         
         return execute("modify reservation", "Prenotazione modificata con successo", 
-            new OperationSupplier<Reservation>() {
+            new OperationSupplier<ReservationDTO>() {
                 @Override
-                public Reservation get() {
+                public ReservationDTO get() {
                     return googleReserveService.modifyReservation(reservationId, newDetails);
                 }
             });
