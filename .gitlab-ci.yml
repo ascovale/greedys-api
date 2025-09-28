@@ -107,12 +107,20 @@ publish:
         "https://gitlab.com/api/v4/projects/$PROJECT_ID/packages/maven/org/openapitools/custom/custom-dart-codegen/latest/custom-dart-codegen-latest-templates.zip" \
         -o "templates.zip"
       
+      # Debug del file templates scaricato
+      echo "📊 Debug templates ZIP:"
+      ls -la templates.zip
+      file templates.zip || echo "Comando file non disponibile"
+      echo "Prime righe del file templates:"
+      head -10 templates.zip || echo "File binario o vuoto"
+      
       # Estrazione templates
       if [ -f "templates.zip" ] && [ -s "templates.zip" ]; then
         unzip -q templates.zip -d generator/templates/
         echo "✅ Templates estratti: $(find generator/templates -name '*.mustache' | wc -l) files"
       else
-        echo "⚠️ Templates non disponibili, uso templates di default"
+        echo "❌ ERRORE: Templates ZIP non scaricato correttamente"
+        exit 1
       fi
       
       # Verifica download JAR
