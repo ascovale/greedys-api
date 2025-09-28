@@ -101,20 +101,13 @@ publish:
         "https://gitlab.com/api/v4/projects/$PROJECT_ID/packages/maven/org/openapitools/custom/custom-dart-codegen/latest/custom-dart-codegen-latest.jar" \
         -o "tools/custom-dart-codegen-latest.jar"
       
-      # Download templates ZIP
-      echo "🔽 Download templates ZIP..."
-      curl -s --header "JOB_TOKEN:$CI_JOB_TOKEN" \
-        "https://gitlab.com/api/v4/projects/$PROJECT_ID/packages/maven/org/openapitools/custom/custom-dart-codegen/latest/custom-dart-codegen-latest-templates.zip" \
+      # Download templates ZIP con PAT
+      echo "🔽 Download templates ZIP con PAT..."
+      curl -s --header "PRIVATE-TOKEN:$PAT" \
+        "https://gitlab.com/api/v4/projects/greedysgroup%2Fgreedys_generator/packages/maven/org/openapitools/custom/custom-dart-codegen/latest/custom-dart-codegen-latest-templates.zip" \
         -o "templates.zip"
       
-      # Debug del file templates scaricato
-      echo "📊 Debug templates ZIP:"
-      ls -la templates.zip
-      file templates.zip || echo "Comando file non disponibile"
-      echo "Prime righe del file templates:"
-      head -10 templates.zip || echo "File binario o vuoto"
-      
-      # Estrazione templates
+      # Estrazione templates  
       if [ -f "templates.zip" ] && [ -s "templates.zip" ]; then
         unzip -q templates.zip -d generator/templates/
         echo "✅ Templates estratti: $(find generator/templates -name '*.mustache' | wc -l) files"
