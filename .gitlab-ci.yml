@@ -83,38 +83,43 @@ publish:
   before_script:
     - echo "Setup ambiente per generazione Dart..."
     # Installa solo le dipendenze essenziali
-    - apt-get update && apt-get install -y curl git maven
+    - apt-get update && apt-get install -y curl git unzip
     
-    # Installa OpenAPI Generator CLI
-    - curl -sL https://deb.nodesource.com/setup_18.x | bash -
-    - apt-get install -y nodejs
-    - npm install -g @openapitools/openapi-generator-cli
-
-    # 🆕 SCARICA JAR E TEMPLATES DAL PACKAGE REGISTRY MAVEN
-    - echo "📦 Scarico JAR e templates dal Package Registry Maven..."
+    # 🆕 USA SOLO IL JAR CUSTOM DAL PACKAGE REGISTRY
+    - echo "📦 Scarico JAR custom e templates dal Package Registry..."
     - PROJECT_ID="greedysgroup%2Fgreedys_generator"
     - mkdir -p tools generator/templates
     - |
-      # Download JAR principale
+      # Download JAR custom (versione definitiva 1.0.0-SNAPSHOT)
       echo "🔽 Download JAR custom generator..."
       curl -s --header "JOB_TOKEN:$CI_JOB_TOKEN" \
-        "https://gitlab.com/api/v4/projects/$PROJECT_ID/packages/maven/org/openapitools/custom/custom-dart-codegen/latest/custom-dart-codegen-latest.jar" \
-        -o "tools/custom-dart-codegen-latest.jar"
+        "https://gitlab.com/api/v4/projects/$PROJECT_ID/packages/maven/org/openapitools/custom/custom-dart-codegen/1.0.0-SNAPSHOT/custom-dart-codegen-1.0.0-SNAPSHOT.jar" \
+        -o "tools/custom-generator.jar"
+      
+      # Download templates con PAT (versione definitiva)
+      echo "🔽 Download templates ZIP..."
+      curl -s --header "PRIVATE-TOKEN:$PAT" \
+        "https://gitlab.com/api/v4/projects/greedysgroup%2Fgreedys_generator/packages/maven/org/openapitools/custom/custom-dart-codegen/1.0.0-SNAPSHOT/custom-dart-codegen-1.0.0-SNAPSHOT-templates.zip" \
+        -o "templates.zip"
+      
+      # Debug: verifica file scaricati
+      echo "� File scaricati in tools/:"
+      ls -la tools/
+      
+      # Trova il JAR custom effettivo
+      CUSTOM_JAR_FILE=$(find tools/ -name "*custom*" -type f | head -1)
+      if [ -z "$CUSTOM_JAR_FILE" ]; then
+        echo "❌ JAR custom non trovato, uso il nome atteso"
+        CUSTOM_JAR_FILE="tools/custom-dart-codegen-latest.jar"
+      else
+        echo "✅ JAR custom trovato: $CUSTOM_JAR_FILE"
+      fi
       
       # Download templates ZIP con PAT
       echo "🔽 Download templates ZIP con PAT..."
       curl -s --header "PRIVATE-TOKEN:$PAT" \
         "https://gitlab.com/api/v4/projects/greedysgroup%2Fgreedys_generator/packages/maven/org/openapitools/custom/custom-dart-codegen/latest/custom-dart-codegen-latest-templates.zip" \
         -o "templates.zip"
-      
-      # Estrazione templates  
-      if [ -f "templates.zip" ] && [ -s "templates.zip" ]; then
-        unzip -q templates.zip -d generator/templates/
-        echo "✅ Templates estratti: $(find generator/templates -name '*.mustache' | wc -l) files"
-      else
-        echo "❌ ERRORE: Templates ZIP non scaricato correttamente"
-        exit 1
-      fi
       
       # Verifica download JAR
       if [ -f "tools/custom-dart-codegen-latest.jar" ] && [ -s "tools/custom-dart-codegen-latest.jar" ]; then
@@ -136,16 +141,23 @@ publish:
     - git config user.name  "Greedys CI Bot"
     
     # Setup JAR per generazione nella directory dart_lib
-    - echo "📦 Download OpenAPI Generator CLI..."
-    - curl -sL "https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/7.8.0/openapi-generator-cli-7.8.0.jar" -o "tools/openapi-generator-cli.jar"
+
     - ls -la tools/
     
     # Configura variabili per la generazione
-    - export NPM_OPENAPI_JAR="tools/openapi-generator-cli.jar"
-    - export CUSTOM_JAR="tools/custom-dart-codegen-latest.jar"
-    - echo "JAR configurati localmente:"
-    - echo "OpenAPI JAR:" "$NPM_OPENAPI_JAR"
-    - echo "Custom JAR:" "$CUSTOM_JAR"
+    - |
+      # Estrazione templates  
+      if [ -f "templates.zip" ] && [ -s "templates.zip" ]; then
+        unzip -q templates.zip -d generator/templates/
+        echo "✅ Templates estratti: $(find generator/templates -name '*.mustache' | wc -l) files"
+      else
+        echo "❌ ERRORE: Templates ZIP non scaricato correttamente"
+        exit 1
+      fi
+      
+    - export CUSTOM_JAR="tools/custom-generator.jar"
+    - echo "JAR custom configurato:" "$CUSTOM_JAR"
+    - ls -la "$CUSTOM_JAR"
 
   script:
     - echo "⏳ Attendo che l'API sia pronta dopo il deploy..."
@@ -231,9 +243,9 @@ publish:
 
         # GENERA CON CUSTOM GENERATOR
         echo "- 🎯 Genero con CUSTOM generator in $OUTPUT_DIR"
-        ls -la "$NPM_OPENAPI_JAR" "$CUSTOM_JAR"
+        ls -la "$CUSTOM_JAR"
         
-        java -cp "$NPM_OPENAPI_JAR:$CUSTOM_JAR" org.openapitools.codegen.OpenAPIGenerator generate \
+        java -jar "$CUSTOM_JAR" generate \
           -g org.openapitools.custom.CustomDartClientCodegen \
           -i "$SPEC_FILE" \
           -o "$OUTPUT_DIR" \
