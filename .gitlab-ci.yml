@@ -97,13 +97,13 @@ publish:
     - |
       # Download JAR principale
       echo "🔽 Download JAR custom generator..."
-      curl -s --header "JOB-TOKEN:$CI_JOB_TOKEN" \
+      curl -s --header "JOB_TOKEN:$CI_JOB_TOKEN" \
         "https://gitlab.com/api/v4/projects/$PROJECT_ID/packages/maven/org/openapitools/custom/custom-dart-codegen/latest/custom-dart-codegen-latest.jar" \
         -o "tools/custom-dart-codegen-latest.jar"
       
       # Download templates ZIP
       echo "🔽 Download templates ZIP..."
-      curl -s --header "JOB-TOKEN:$CI_JOB_TOKEN" \
+      curl -s --header "JOB_TOKEN:$CI_JOB_TOKEN" \
         "https://gitlab.com/api/v4/projects/$PROJECT_ID/packages/maven/org/openapitools/custom/custom-dart-codegen/latest/custom-dart-codegen-latest-templates.zip" \
         -o "templates.zip"
       
