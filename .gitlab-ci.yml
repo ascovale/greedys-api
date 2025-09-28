@@ -90,16 +90,16 @@ publish:
     - PROJECT_ID="greedysgroup%2Fgreedys_generator"
     - mkdir -p tools generator/templates
     - |
-      # Download JAR custom (versione definitiva 1.0.0-SNAPSHOT)
+      # Download JAR custom (versione definitiva 1.0.0)
       echo "🔽 Download JAR custom generator..."
-      curl -s --header "JOB_TOKEN:$CI_JOB_TOKEN" \
-        "https://gitlab.com/api/v4/projects/$PROJECT_ID/packages/maven/org/openapitools/custom/custom-dart-codegen/1.0.0-SNAPSHOT/custom-dart-codegen-1.0.0-SNAPSHOT.jar" \
+      curl -s --header "JOB-TOKEN:$CI_JOB_TOKEN" \
+        "https://gitlab.com/api/v4/projects/greedysgroup%2Fgreedys_generator/packages/maven/org/openapitools/custom/custom-dart-codegen/1.0.0/custom-dart-codegen-1.0.0.jar" \
         -o "tools/custom-generator.jar"
       
-      # Download templates con PAT (versione definitiva)
+      # Download templates con PAT (versione definitiva 1.0.0)
       echo "🔽 Download templates ZIP..."
-      curl -s --header "PRIVATE-TOKEN:$PAT" \
-        "https://gitlab.com/api/v4/projects/greedysgroup%2Fgreedys_generator/packages/maven/org/openapitools/custom/custom-dart-codegen/1.0.0-SNAPSHOT/custom-dart-codegen-1.0.0-SNAPSHOT-templates.zip" \
+      curl -s --header "Private-Token:$PAT" \
+        "https://gitlab.com/api/v4/projects/greedysgroup%2Fgreedys_generator/packages/maven/org/openapitools/custom/custom-dart-codegen/1.0.0/custom-dart-codegen-1.0.0-templates.zip" \
         -o "templates.zip"
       
       # Debug: verifica file scaricati
