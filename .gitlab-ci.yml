@@ -215,10 +215,9 @@ publish:
         # GENERA CON CUSTOM GENERATOR v1.0.0 STANDALONE
         echo "🔧 Genero client con custom generator v1.0.0..."
         echo "   Debug: Usando JAR = $CUSTOM_JAR"
-        echo "   Debug: Verifica Main-Class:"
-        unzip -p "$CUSTOM_JAR" META-INF/MANIFEST.MF | grep "Main-Class" || echo "   Main-Class non trovato"
         
-        # Prova prima con la classe standard di OpenAPI Generator CLI
+        # ✅ STRATEGIA DOPPIO TENTATIVO: java -jar → java -cp fallback
+        echo "🎯 Tentativo 1/2: java -jar (tradizionale)"
         if java -jar "$CUSTOM_JAR" generate \
           -g org.openapitools.custom.CustomDartClientCodegen \
           -i "$SPEC_FILE" \
@@ -229,13 +228,13 @@ publish:
           -p pubName=${GROUP}_api \
           -p pubVersion=1.0.0 \
           -p pubDescription="Greedys ${GROUP^} API client" \
-          -p pubHomepage=https://greedys.it; then
-          echo "✅ Generazione completata con successo"
+          -p pubHomepage=https://greedys.it 2>/dev/null; then
+          echo "✅ Generazione completata con java -jar (tradizionale)"
         else
-          echo "❌ ERRORE: Generazione fallita"
-          echo "   Provo con classe alternativa..."
-          # Prova con classe alternativa
-          java -cp "$CUSTOM_JAR" org.openapitools.codegen.OpenAPIGenerator generate \
+          echo "⚠️ Tentativo java -jar fallito, provo fallback..."
+          echo "🎯 Tentativo 2/2: java -cp (classpath esplicito)"
+          
+          if java -cp "$CUSTOM_JAR" org.openapitools.codegen.OpenAPIGenerator generate \
             -g org.openapitools.custom.CustomDartClientCodegen \
             -i "$SPEC_FILE" \
             -o "$OUTPUT_DIR" \
@@ -245,7 +244,16 @@ publish:
             -p pubName=${GROUP}_api \
             -p pubVersion=1.0.0 \
             -p pubDescription="Greedys ${GROUP^} API client" \
-            -p pubHomepage=https://greedys.it || exit 1
+            -p pubHomepage=https://greedys.it; then
+            echo "✅ Generazione completata con java -cp (classpath esplicito)"
+          else
+            echo "❌ ERRORE: Entrambi i metodi falliti"
+            echo "   Debug MANIFEST.MF:"
+            unzip -p "$CUSTOM_JAR" META-INF/MANIFEST.MF | head -5 || echo "   MANIFEST.MF inaccessibile"
+            echo "   Debug JAR structure:"
+            unzip -l "$CUSTOM_JAR" | grep -E "(Main-Class|org/openapitools)" | head -5 || echo "   Struttura JAR problematica"
+            exit 1
+          fi
         fi
 
         # POST-PROCESSING
