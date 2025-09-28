@@ -1,15 +1,11 @@
-# Pipeline fix: risolto problema database connectivity - cleaned volumes
+# Pipeline corretta per API con generator v1.0.0
 variables:
   TAG_LATEST: ${CI_REGISTRY_IMAGE}:latest
   TAG_COMMIT: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}
   DART_REPO: https://gitlab.com/GreedysGroup/greedys_api_dart_lib.git
-  # Base URL delle spec OpenAPI - HTTP porta 8080 (configurazione Docker)
   API_DOCS_BASE: "http://api.greedys.it:8080/v3/api-docs"
-  # 🆕 Base URL per response wrappers catalog - HTTP porta 8080
   WRAPPERS_ENDPOINT: "http://api.greedys.it:8080/api/internal/response-wrapper-catalog"
-  # Elenco dei gruppi da processare
   API_GROUPS: "restaurant admin customer"
-  # 🆕 OpenAPI Generator CLI version per download diretto se necessario
   OPENAPI_GENERATOR_VERSION: "7.8.0"
 
 stages:
@@ -21,7 +17,7 @@ cache:
   paths:
     - .m2/repository
     - node_modules/
-    - tools/  # 🆕 Cache per JAR e tools scaricati
+    - tools/
 
 build:
   image: docker:24.0.5
@@ -54,17 +50,13 @@ deploy:
   stage: deploy
   before_script:
     - apk add --no-cache openssh-client openssh-keygen
-    # Crea cartella deploy per organizzare i file temporanei
     - mkdir -p deploy
-    # se $ID_RSA è una variabile **File**:
     - cp "$ID_RSA" deploy/id_key
     - tr -d '\r' < deploy/id_key > deploy/id_key.clean && mv deploy/id_key.clean deploy/id_key
     - chmod 600 deploy/id_key
     - mkdir -p ~/.ssh && ssh-keyscan -H "$SERVER_IP" >> ~/.ssh/known_hosts
-    # sanity: tipo e fingerprint
     - echo "== Key sanity ==" && head -1 deploy/id_key && tail -1 deploy/id_key
     - ssh-keygen -lf deploy/id_key
-    # confronta con la chiave pubblica che hai messo su deployer
     - ssh-keygen -y -f deploy/id_key > deploy/id_key.pub
     - |
       echo "== Match con authorized_keys su deployer =="
@@ -77,185 +69,118 @@ deploy:
     - ssh -o IdentitiesOnly=yes -i deploy/id_key deployer@"$SERVER_IP" 'cd ~/greedys_api/ && chmod +x ./deploy.sh && ./deploy.sh'
   only: [main]
 
-
 publish:
   stage: publish
   before_script:
     - echo "Setup ambiente per generazione Dart..."
-    # Installa solo le dipendenze essenziali
     - apt-get update && apt-get install -y curl git unzip
     
-    # 🆕 USA SOLO IL JAR CUSTOM DAL PACKAGE REGISTRY
-    - echo "📦 Scarico JAR custom e templates dal Package Registry..."
-    - PROJECT_ID="greedysgroup%2Fgreedys_generator"
+    # SCARICA JAR E TEMPLATES DALLA VERSIONE 1.0.0
+    - echo "📦 Scarico JAR custom e templates dal Package Registry v1.0.0..."
     - mkdir -p tools generator/templates
     - |
-      # Download JAR custom con PAT (JOB_TOKEN non ha accesso cross-project)
-      echo "🔽 Download JAR custom generator con PAT..."
+      # Download JAR custom versione 1.0.0 con PAT
+      echo "🔽 Download JAR custom generator v1.0.0..."
       curl -s --header "Private-Token:$PAT" \
         "https://gitlab.com/api/v4/projects/greedysgroup%2Fgreedys_generator/packages/maven/org/openapitools/custom/custom-dart-codegen/1.0.0/custom-dart-codegen-1.0.0.jar" \
         -o "tools/custom-generator.jar"
       
-      # Debug: mostra cosa ha ricevuto
+      # Controlla dimensione JAR
       echo "📊 JAR scaricato - dimensione: $(stat -c%s tools/custom-generator.jar) bytes"
       if [ $(stat -c%s "tools/custom-generator.jar") -lt 1000 ]; then
         echo "❌ JAR troppo piccolo, contenuto errore:"
         cat tools/custom-generator.jar
-        echo ""
+        exit 1
       else
-        echo "✅ JAR dimensione OK"
+        echo "✅ JAR dimensione OK ($(stat -c%s tools/custom-generator.jar) bytes)"
       fi
       
-      # Download templates con PAT (versione definitiva 1.0.0)
-      echo "🔽 Download templates ZIP..."
+      # Download templates ZIP versione 1.0.0 con PAT
+      echo "🔽 Download templates ZIP v1.0.0..."
       curl -s --header "Private-Token:$PAT" \
         "https://gitlab.com/api/v4/projects/greedysgroup%2Fgreedys_generator/packages/maven/org/openapitools/custom/custom-dart-codegen/1.0.0/custom-dart-codegen-1.0.0-templates.zip" \
         -o "templates.zip"
       
-      # Debug: verifica file scaricati
-      echo "� File scaricati in tools/:"
-      ls -la tools/
-      
-      # Trova il JAR custom effettivo
-      CUSTOM_JAR_FILE=$(find tools/ -name "*custom*" -type f | head -1)
-      if [ -z "$CUSTOM_JAR_FILE" ]; then
-        echo "❌ JAR custom non trovato, uso il nome atteso"
-        CUSTOM_JAR_FILE="tools/custom-dart-codegen-latest.jar"
+      # Controlla dimensione Templates ZIP
+      echo "📊 Templates ZIP - dimensione: $(stat -c%s templates.zip) bytes"
+      if [ $(stat -c%s "templates.zip") -lt 1000 ]; then
+        echo "❌ Templates ZIP troppo piccolo, contenuto errore:"
+        cat templates.zip
+        exit 1
       else
-        echo "✅ JAR custom trovato: $CUSTOM_JAR_FILE"
+        echo "✅ Templates ZIP dimensione OK ($(stat -c%s templates.zip) bytes)"
       fi
       
-      # Download templates ZIP con PAT
-      echo "🔽 Download templates ZIP con PAT..."
-      curl -s --header "PRIVATE-TOKEN:$PAT" \
-        "https://gitlab.com/api/v4/projects/greedysgroup%2Fgreedys_generator/packages/maven/org/openapitools/custom/custom-dart-codegen/latest/custom-dart-codegen-latest-templates.zip" \
-        -o "templates.zip"
+      # Estrai templates
+      if [ -f "templates.zip" ] && [ -s "templates.zip" ]; then
+        unzip -q templates.zip -d generator/templates/
+        echo "✅ Templates estratti: $(find generator/templates -name '*.mustache' | wc -l) files"
+      else
+        echo "❌ ERRORE: Templates ZIP non valido"
+        exit 1
+      fi
       
     # Setup GIT con PAT
     - echo "echo \$PAT" > /tmp/git-askpass.sh
     - chmod +x /tmp/git-askpass.sh
     - export GIT_ASKPASS=/tmp/git-askpass.sh
+    - export CUSTOM_JAR="../tools/custom-generator.jar"
 
-    # Configurazione finale
-    - export CUSTOM_JAR="tools/custom-generator.jar"
-    - echo "Configurazione completata - JAR:" "$CUSTOM_JAR"
-
-    # Setup GIT con PAT (metodo unificato)
-    - echo "echo \$PAT" > /tmp/git-askpass.sh
-    - chmod +x /tmp/git-askpass.sh
-    - export GIT_ASKPASS=/tmp/git-askpass.sh
-
-    - echo "Clono il repo delle librerie Dart (greedys_api_dart_lib)…"
+    - echo "Clono repo Dart API..."
     - git clone https://gitlab.com/GreedysGroup/greedys_api_dart_lib.git
     - cd greedys_api_dart_lib
     - git config user.email "ci-bot@greedys.com"
-    - git config user.name  "Greedys CI Bot"
+    - git config user.name "Greedys CI Bot"
     
-    # Setup JAR per generazione nella directory dart_lib
-
-    - ls -la tools/
-    
-    # Configura variabili per la generazione
-    - |
-      # Estrazione templates  
-      if [ -f "templates.zip" ] && [ -s "templates.zip" ]; then
-        unzip -q templates.zip -d generator/templates/
-        echo "✅ Templates estratti: $(find generator/templates -name '*.mustache' | wc -l) files"
-      else
-        echo "❌ ERRORE: Templates ZIP non scaricato correttamente"
-        exit 1
-      fi
-      
-    - export CUSTOM_JAR="tools/custom-generator.jar"
-    - echo "JAR custom configurato:" "$CUSTOM_JAR"
-    - ls -la "$CUSTOM_JAR"
+    # Verifica finale
+    - 'echo "JAR configurato: $CUSTOM_JAR ($(stat -c%s \"$CUSTOM_JAR\") bytes)"'
 
   script:
-    - echo "⏳ Attendo che l'API sia pronta dopo il deploy..."
-    - echo "Controllo endpoint:" "${API_DOCS_BASE}/restaurant-api"
-    
-    # Delay iniziale per permettere al deployment di completarsi
-    - echo "🕐 Attendo 2 minuti per il deployment..."
+    - echo "⏳ Attendo che l'API sia pronta..."
     - sleep 120
     
+    # Test connessione API
     - |
       for i in {1..30}; do
         echo "Tentativo $i/30: Testing ${API_DOCS_BASE}/restaurant-api"
-        
-        # Test più dettagliato con output degli errori
-        echo "🔍 Test endpoint base..."
-        if curl -f --max-time 10 --connect-timeout 5 "http://api.greedys.it:8080" >/dev/null 2>&1; then
-          echo "✅ Server base risponde"
-          
-          # Test health check se disponibile
-          echo "🔍 Test health check..."
-          curl -f --max-time 5 "http://api.greedys.it:8080/actuator/health" && echo "✅ Health OK" || echo "❌ Health check non disponibile"
-          
-          # Test OpenAPI docs
-          echo "🔍 Test OpenAPI docs..."
-          if curl -f --max-time 15 --connect-timeout 10 "${API_DOCS_BASE}/restaurant-api" >/dev/null 2>&1; then
-            echo "✅ API docs pronte! Procedo con la generazione client..."
-            break
-          else
-            echo "❌ OpenAPI docs non disponibili"
-            # Mostra cosa restituisce l'endpoint
-            echo "Contenuto dell'endpoint:"
-            curl --max-time 5 "${API_DOCS_BASE}/restaurant-api" 2>/dev/null | head -10 || echo "Nessuna risposta"
-          fi
-        else
-          echo "❌ Server base non risponde"
-          # Verifica i logs del container
-          echo "📋 Ultimi logs del servizio:"
-          docker service logs --tail 20 greedys_greedys-api 2>/dev/null | tail -5 || echo "❌ Impossibile recuperare logs"
+        if curl -f --max-time 15 "${API_DOCS_BASE}/restaurant-api" >/dev/null 2>&1; then
+          echo "✅ API docs pronte!"
+          break
         fi
-        
         sleep 10
         if [ $i -eq 30 ]; then
-          echo "❌ TIMEOUT: API non risponde dopo 7+ minuti totali"
-          echo "Provo ultimo test di connettività..."
-          curl -I --max-time 5 "http://api.greedys.it:8080" || echo "Server completamente irraggiungibile"
+          echo "❌ TIMEOUT: API non risponde"
           exit 1
         fi
       done
     
-    - echo "Pulisco cartelle client API…"
+    - echo "Pulisco cartelle client API precedenti..."
     - rm -rf restaurant admin customer
 
-    # GENERA PER OGNI GRUPPO con CUSTOM GENERATOR
+    # GENERA CLIENT PER OGNI GRUPPO
     - |
       for GROUP in $API_GROUPS; do
         SPEC_FILE="./openapi-${GROUP}.json"
         OUTPUT_DIR="./${GROUP}_api"
 
-        echo
-        echo ">>> Generazione client per $GROUP <<<"
-        echo "- Scarico spec da $API_DOCS_BASE/${GROUP}-api"
+        echo ""
+        echo "🎯 >>> Generazione client $GROUP <<<"
         
-        # Debug: verifica cosa ritorna l'endpoint
-        echo "Debug: test connessione endpoint..."
-        curl -Ik "${API_DOCS_BASE}/${GROUP}-api" || echo "❌ Endpoint non raggiungibile"
-        
-        # Scarica con più debug
-        echo "Scarico spec..."
+        # Scarica spec OpenAPI
+        echo "📥 Scarico spec da ${API_DOCS_BASE}/${GROUP}-api"
         if curl -sSfk -o "$SPEC_FILE" "${API_DOCS_BASE}/${GROUP}-api"; then
-          echo "✅ Spec scaricata, dimensione: $(wc -c < "$SPEC_FILE") bytes"
-          echo "Prime righe del file spec:"
-          head -n 5 "$SPEC_FILE"
+          echo "✅ Spec scaricata: $(wc -c < "$SPEC_FILE") bytes"
         else
-          echo "❌ ERRORE: Impossibile scaricare spec da ${API_DOCS_BASE}/${GROUP}-api"
-          echo "Verifica manuale dell'endpoint:"
-          curl -v "${API_DOCS_BASE}/${GROUP}-api" 2>&1 | head -20
+          echo "❌ ERRORE: Impossibile scaricare spec per $GROUP"
           exit 1
         fi
 
-        # SCARICA RESPONSE WRAPPERS SPECIFICO PER GRUPPO
-        echo "- Scarico catalogo response wrappers per gruppo $GROUP..."
-        curl -sSfk -o "generator/response-wrappers-${GROUP}.json" "$WRAPPERS_ENDPOINT/${GROUP}" || echo "⚠️ Catalogo wrappers per $GROUP non disponibile"
+        # Scarica response wrappers
+        echo "📥 Scarico response wrappers per $GROUP..."
+        curl -sSfk -o "generator/response-wrappers-${GROUP}.json" "$WRAPPERS_ENDPOINT/${GROUP}" || echo "⚠️ Catalogo wrappers non disponibile"
 
-        # GENERA CON CUSTOM GENERATOR
-        echo "- 🎯 Genero con CUSTOM generator in $OUTPUT_DIR"
-        ls -la "$CUSTOM_JAR"
-        
+        # GENERA CON CUSTOM GENERATOR v1.0.0
+        echo "🔧 Genero client con custom generator v1.0.0..."
         java -jar "$CUSTOM_JAR" generate \
           -g org.openapitools.custom.CustomDartClientCodegen \
           -i "$SPEC_FILE" \
@@ -264,13 +189,12 @@ publish:
           --ignore-file-override "generator/.openapi-generator-ignore" \
           --skip-validate-spec \
           -p pubName=${GROUP}_api \
-          #RENAMED: Added -api suffix for better organization (restaurant-api, admin-api, customer-api)
           -p pubVersion=1.0.0 \
           -p pubDescription="Greedys ${GROUP^} API client" \
           -p pubHomepage=https://greedys.it
 
         # POST-PROCESSING
-        echo "- Post-processing per $GROUP..."
+        echo "🧹 Post-processing per $GROUP..."
         
         # Rimuovi doc ResponseWrapper indesiderati
         [ -d "$OUTPUT_DIR/doc" ] && find "$OUTPUT_DIR/doc" -name "ResponseWrapper*.md" ! -name "ResponseWrapperErrorDetails.md" -delete 2>/dev/null || true
@@ -278,7 +202,7 @@ publish:
         # Rimuovi test ResponseWrapper indesiderati  
         [ -d "$OUTPUT_DIR/test" ] && find "$OUTPUT_DIR/test" -name "response_wrapper*.dart" ! -name "response_wrapper_error_details_test.dart" -delete 2>/dev/null || true
         
-        # Pulisci import ResponseWrapper generati automaticamente (escludi quello di common)
+        # Pulisci import ResponseWrapper generati automaticamente
         [ -d "$OUTPUT_DIR/lib" ] && find "$OUTPUT_DIR/lib" -name "*.dart" -exec sed -i "/^import 'package:${GROUP}_api\/.*\/response_wrapper.*';$/d" {} \; 2>/dev/null || true
         
         # Aggiorna pubspec.yaml con common
@@ -292,25 +216,21 @@ publish:
         OPENAPI_FILE="$OUTPUT_DIR/lib/openapi.dart"
         [ -f "$OPENAPI_FILE" ] && sed -i "/^export 'package:.*\/response_wrapper\([^_]\|_[^e]\)/d" "$OPENAPI_FILE" 2>/dev/null || true
 
-        echo "- Rimuovo spec temporanea"
         rm "$SPEC_FILE"
-        
-        echo "✅ Client $GROUP generato (post-processing sarà fatto dalla pipeline dedicata)"
+        echo "✅ Client $GROUP generato con successo!"
       done
 
-    - echo
-    - echo "Committiamo e pushiamo le modifiche…"
+    # COMMIT E PUSH
+    - echo ""
+    - echo "📤 Commit e push delle modifiche..."
     - git add .
     - |
       if git diff-index --quiet HEAD; then
-        echo " Nessuna modifica da pushare."
+        echo "📝 Nessuna modifica da pushare"
       else
-        # COMMIT MESSAGE - client base senza post-processing
-        COMMIT_MSG="🤖 Genera Dart clients base: $API_GROUPS (post-processing in pipeline dedicata)"
-        
-        git commit -m "$COMMIT_MSG"
+        git commit -m "🤖 Genera Dart clients v1.0.0: $API_GROUPS"
         git push origin main
-        echo "✅ Client pushati con successo!"
+        echo "✅ Client v1.0.0 pushati con successo!"
       fi
 
   only:
