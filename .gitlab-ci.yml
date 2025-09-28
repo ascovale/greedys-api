@@ -6,7 +6,6 @@ variables:
   API_DOCS_BASE: "http://api.greedys.it:8080/v3/api-docs"
   WRAPPERS_ENDPOINT: "http://api.greedys.it:8080/api/internal/response-wrapper-catalog"
   API_GROUPS: "restaurant admin customer"
-  OPENAPI_GENERATOR_VERSION: "7.8.0"
 
 stages:
   - build
@@ -139,9 +138,9 @@ publish:
       echo "🔍 Main-Class nel MANIFEST.MF:"
       unzip -p "tools/custom-generator.jar" META-INF/MANIFEST.MF | grep "Main-Class" || echo "   Main-Class non trovato"
       
-      if java -jar "tools/custom-generator.jar" help >/dev/null 2>&1; then
+      if java -jar "tools/custom-generator.jar" version >/dev/null 2>&1; then
         echo "✅ JAR standalone funzionante"
-      elif java -jar "tools/custom-generator.jar" version >/dev/null 2>&1; then
+      elif java -jar "tools/custom-generator.jar" help >/dev/null 2>&1; then
         echo "✅ JAR standalone funzionante"  
       elif java -jar "tools/custom-generator.jar" list >/dev/null 2>&1; then
         echo "✅ JAR standalone funzionante"
