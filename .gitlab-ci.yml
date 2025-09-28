@@ -1,4 +1,4 @@
-# Pipeline corretta per API con generator v1.0.0
+# Pipeline corretta per API con generator v1.0.0 standalone
 variables:
   TAG_LATEST: ${CI_REGISTRY_IMAGE}:latest
   TAG_COMMIT: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}
