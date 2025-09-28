@@ -134,6 +134,11 @@ publish:
       
       # Verifica che il JAR standalone sia eseguibile
       echo "🧪 Verifica JAR standalone eseguibile..."
+      
+      # Debug: Mostra Main-Class dal MANIFEST.MF
+      echo "🔍 Main-Class nel MANIFEST.MF:"
+      unzip -p "tools/custom-generator.jar" META-INF/MANIFEST.MF | grep "Main-Class" || echo "   Main-Class non trovato"
+      
       if java -jar "tools/custom-generator.jar" help >/dev/null 2>&1; then
         echo "✅ JAR standalone funzionante"
       elif java -jar "tools/custom-generator.jar" version >/dev/null 2>&1; then
@@ -207,9 +212,14 @@ publish:
         echo "📥 Scarico response wrappers per $GROUP..."
         curl -sSfk -o "../generator/response-wrappers-${GROUP}.json" "$WRAPPERS_ENDPOINT/${GROUP}" || echo "⚠️ Catalogo wrappers non disponibile"
 
-        # GENERA CON CUSTOM GENERATOR v1.0.0
+        # GENERA CON CUSTOM GENERATOR v1.0.0 STANDALONE
         echo "🔧 Genero client con custom generator v1.0.0..."
-        java -jar "$CUSTOM_JAR" generate \
+        echo "   Debug: Usando JAR = $CUSTOM_JAR"
+        echo "   Debug: Verifica Main-Class:"
+        unzip -p "$CUSTOM_JAR" META-INF/MANIFEST.MF | grep "Main-Class" || echo "   Main-Class non trovato"
+        
+        # Prova prima con la classe standard di OpenAPI Generator CLI
+        if java -jar "$CUSTOM_JAR" generate \
           -g org.openapitools.custom.CustomDartClientCodegen \
           -i "$SPEC_FILE" \
           -o "$OUTPUT_DIR" \
@@ -219,7 +229,24 @@ publish:
           -p pubName=${GROUP}_api \
           -p pubVersion=1.0.0 \
           -p pubDescription="Greedys ${GROUP^} API client" \
-          -p pubHomepage=https://greedys.it
+          -p pubHomepage=https://greedys.it; then
+          echo "✅ Generazione completata con successo"
+        else
+          echo "❌ ERRORE: Generazione fallita"
+          echo "   Provo con classe alternativa..."
+          # Prova con classe alternativa
+          java -cp "$CUSTOM_JAR" org.openapitools.codegen.OpenAPIGenerator generate \
+            -g org.openapitools.custom.CustomDartClientCodegen \
+            -i "$SPEC_FILE" \
+            -o "$OUTPUT_DIR" \
+            -t "../generator/templates" \
+            --ignore-file-override "../generator/.openapi-generator-ignore" \
+            --skip-validate-spec \
+            -p pubName=${GROUP}_api \
+            -p pubVersion=1.0.0 \
+            -p pubDescription="Greedys ${GROUP^} API client" \
+            -p pubHomepage=https://greedys.it || exit 1
+        fi
 
         # POST-PROCESSING
         echo "🧹 Post-processing per $GROUP..."
