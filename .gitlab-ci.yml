@@ -1,4 +1,4 @@
-# Pipeline corretta per API con generator v1.0.0 standalone
+# Pipeline corretta per API con generator v1.0.0
 variables:
   TAG_LATEST: ${CI_REGISTRY_IMAGE}:latest
   TAG_COMMIT: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}
@@ -89,8 +89,19 @@ publish:
       # Controlla dimensione JAR
       echo "📊 JAR scaricato - dimensione: $(stat -c%s tools/custom-generator.jar) bytes"
       if [ $(stat -c%s "tools/custom-generator.jar") -lt 1000000 ]; then
-        echo "❌ JAR troppo piccolo (dovrebbe essere ~50MB), contenuto errore:"
+        echo "❌ JAR troppo piccolo (dovrebbe essere ~26MB), contenuto errore:"
         cat tools/custom-generator.jar
+        
+        # 🆕 DEBUG DETTAGLIATO DEL JAR
+        echo "🔍 Analisi dettagliata del JAR:"
+        echo "   File type: $(file tools/custom-generator.jar)"
+        echo "   Verifica ZIP structure:"
+        unzip -l tools/custom-generator.jar | head -10 || echo "❌ Struttura JAR non valida"
+        echo "   Controllo MANIFEST.MF:"
+        unzip -p tools/custom-generator.jar META-INF/MANIFEST.MF | head -10 || echo "❌ MANIFEST.MF non trovato"
+        echo "   Test esecuzione JAR:"
+        java -jar tools/custom-generator.jar --help 2>&1 | head -5 || echo "❌ JAR non eseguibile"
+        
         exit 1
       else
         echo "✅ JAR standalone dimensione OK ($(stat -c%s tools/custom-generator.jar) bytes)"
