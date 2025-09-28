@@ -70,6 +70,7 @@ deploy:
   only: [main]
 
 publish:
+  image: openjdk:17-slim
   stage: publish
   before_script:
     - echo "Setup ambiente per generazione Dart..."
@@ -177,7 +178,7 @@ publish:
 
         # Scarica response wrappers
         echo "📥 Scarico response wrappers per $GROUP..."
-        curl -sSfk -o "generator/response-wrappers-${GROUP}.json" "$WRAPPERS_ENDPOINT/${GROUP}" || echo "⚠️ Catalogo wrappers non disponibile"
+        curl -sSfk -o "../generator/response-wrappers-${GROUP}.json" "$WRAPPERS_ENDPOINT/${GROUP}" || echo "⚠️ Catalogo wrappers non disponibile"
 
         # GENERA CON CUSTOM GENERATOR v1.0.0
         echo "🔧 Genero client con custom generator v1.0.0..."
@@ -185,8 +186,8 @@ publish:
           -g org.openapitools.custom.CustomDartClientCodegen \
           -i "$SPEC_FILE" \
           -o "$OUTPUT_DIR" \
-          -t "generator/templates" \
-          --ignore-file-override "generator/.openapi-generator-ignore" \
+          -t "../generator/templates" \
+          --ignore-file-override "../generator/.openapi-generator-ignore" \
           --skip-validate-spec \
           -p pubName=${GROUP}_api \
           -p pubVersion=1.0.0 \
