@@ -95,8 +95,19 @@ publish:
     # SCARICA GLI ARTEFATTI DEL CUSTOM GENERATOR
     - echo "📦 Scarico gli artefatti del custom generator..."
     - curl -sL --header "PRIVATE-TOKEN:$PAT" "$GENERATOR_ARTIFACTS_URL" -o generator-artifacts.zip
+    - echo "📊 Controllo file scaricato..."
+    - ls -la generator-artifacts.zip
+    - |
+      if file generator-artifacts.zip 2>/dev/null | grep -q "Zip archive"; then
+        echo "✅ File ZIP valido"
+      else
+        echo "❌ File non è un ZIP valido, contenuto:"
+        head -20 generator-artifacts.zip 2>/dev/null || echo "File vuoto o non leggibile"
+        echo "Probabilmente errore di autenticazione o URL sbagliato"
+        exit 1
+      fi
     - unzip -q generator-artifacts.zip
-    - ls -la generator/
+    - ls -la generator/ 2>/dev/null || echo "❌ Cartella generator non trovata"
     - echo "✅ Artefatti custom generator scaricati"
 
     # Setup GIT con PAT (metodo unificato)
