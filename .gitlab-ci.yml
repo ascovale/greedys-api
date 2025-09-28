@@ -11,6 +11,8 @@ variables:
   API_GROUPS: "restaurant admin customer"
   # 🆕 OpenAPI Generator CLI version per download diretto se necessario
   OPENAPI_GENERATOR_VERSION: "7.8.0"
+  # 🆕 URL per scaricare gli artefatti del custom generator
+  GENERATOR_ARTIFACTS_URL: "https://gitlab.com/greedysgroup/greedys_generator/-/jobs/artifacts/main/download?job=build"
 
 stages:
   - build
@@ -90,18 +92,12 @@ publish:
     - apt-get install -y nodejs
     - npm install -g @openapitools/openapi-generator-cli
 
-    # BUILD DEL CUSTOM GENERATOR (solo se necessario)
-    - echo "Building custom generator..."
-    - |
-      if [ ! -d "generator" ]; then
-        echo "❌ ERRORE: Generator custom non trovato in generator/"
-        exit 1
-      fi
-      
-      cd generator
-      mvn clean package -DskipTests -q
-      echo "✅ Custom generator buildato"
-      cd ..
+    # SCARICA GLI ARTEFATTI DEL CUSTOM GENERATOR
+    - echo "📦 Scarico gli artefatti del custom generator..."
+    - curl -sL --header "PRIVATE-TOKEN:$PAT" "$GENERATOR_ARTIFACTS_URL" -o generator-artifacts.zip
+    - unzip -q generator-artifacts.zip
+    - ls -la generator/
+    - echo "✅ Artefatti custom generator scaricati"
 
     # Setup GIT con PAT (metodo unificato)
     - echo "echo \$PAT" > /tmp/git-askpass.sh
@@ -118,12 +114,12 @@ publish:
     - echo "📦 Setup JAR per generazione nella directory dart_lib..."
     - mkdir -p tools
     - curl -sL "https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/7.8.0/openapi-generator-cli-7.8.0.jar" -o "tools/openapi-generator-cli.jar"
-    - cp "../generator/target/custom-dart-codegen-1.0.0-SNAPSHOT.jar" "tools/" || echo "❌ Custom JAR non trovato"
+    - cp "generator/target/custom-dart-codegen-latest.jar" "tools/" || echo "❌ Custom JAR non trovato"
     - ls -la tools/
     
     # Configura variabili per la generazione
     - export NPM_OPENAPI_JAR="tools/openapi-generator-cli.jar"
-    - export CUSTOM_JAR="tools/custom-dart-codegen-1.0.0-SNAPSHOT.jar"
+    - export CUSTOM_JAR="tools/custom-dart-codegen-latest.jar"
     - echo "JAR configurati localmente:"
     - echo "OpenAPI JAR:" "$NPM_OPENAPI_JAR"
     - echo "Custom JAR:" "$CUSTOM_JAR"
@@ -218,8 +214,8 @@ publish:
           -g org.openapitools.custom.CustomDartClientCodegen \
           -i "$SPEC_FILE" \
           -o "$OUTPUT_DIR" \
-          -t "../generator/templates" \
-          --ignore-file-override "../generator/.openapi-generator-ignore" \
+          -t "generator/templates" \
+          --ignore-file-override "generator/.openapi-generator-ignore" \
           --skip-validate-spec \
           -p pubName=${GROUP}_api \
           #RENAMED: Added -api suffix for better organization (restaurant-api, admin-api, customer-api)
