@@ -94,7 +94,7 @@ publish:
 
     # SCARICA GLI ARTEFATTI DEL CUSTOM GENERATOR
     - echo "📦 Scarico gli artefatti del custom generator..."
-    - curl -sL --header "PRIVATE-TOKEN:$PAT" "$GENERATOR_ARTIFACTS_URL" -o generator-artifacts.zip
+    - curl -sL --header "JOB-TOKEN:$CI_JOB_TOKEN" "$GENERATOR_ARTIFACTS_URL" -o generator-artifacts.zip
     - echo "📊 Controllo file scaricato..."
     - ls -la generator-artifacts.zip
     - |
