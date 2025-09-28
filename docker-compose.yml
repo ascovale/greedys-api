@@ -1,6 +1,6 @@
 services:
   spring-app:
-    image: registry.gitlab.com/psychoorange/greedys_api:latest
+    image: registry.gitlab.com/greedysgroup/greedys_api:latest
     ports:
       - "8080:8080"  # HTTP diretto (no più HTTPS interno)
     deploy:
