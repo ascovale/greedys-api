@@ -90,11 +90,21 @@ publish:
     - PROJECT_ID="greedysgroup%2Fgreedys_generator"
     - mkdir -p tools generator/templates
     - |
-      # Download JAR custom (versione definitiva 1.0.0)
-      echo "🔽 Download JAR custom generator..."
-      curl -s --header "JOB-TOKEN:$CI_JOB_TOKEN" \
+      # Download JAR custom con PAT (JOB_TOKEN non ha accesso cross-project)
+      echo "🔽 Download JAR custom generator con PAT..."
+      curl -s --header "Private-Token:$PAT" \
         "https://gitlab.com/api/v4/projects/greedysgroup%2Fgreedys_generator/packages/maven/org/openapitools/custom/custom-dart-codegen/1.0.0/custom-dart-codegen-1.0.0.jar" \
         -o "tools/custom-generator.jar"
+      
+      # Debug: mostra cosa ha ricevuto
+      echo "📊 JAR scaricato - dimensione: $(stat -c%s tools/custom-generator.jar) bytes"
+      if [ $(stat -c%s "tools/custom-generator.jar") -lt 1000 ]; then
+        echo "❌ JAR troppo piccolo, contenuto errore:"
+        cat tools/custom-generator.jar
+        echo ""
+      else
+        echo "✅ JAR dimensione OK"
+      fi
       
       # Download templates con PAT (versione definitiva 1.0.0)
       echo "🔽 Download templates ZIP..."
