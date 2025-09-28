@@ -76,24 +76,24 @@ publish:
     - echo "Setup ambiente per generazione Dart..."
     - apt-get update && apt-get install -y curl git unzip
     
-    # SCARICA JAR E TEMPLATES DALLA VERSIONE 1.0.0
-    - echo "📦 Scarico JAR custom e templates dal Package Registry v1.0.0..."
+    # SCARICA JAR STANDALONE E TEMPLATES DALLA VERSIONE 1.0.0
+    - echo "📦 Scarico JAR standalone custom e templates dal Package Registry v1.0.0..."
     - mkdir -p tools generator/templates
     - |
-      # Download JAR custom versione 1.0.0 con PAT
-      echo "🔽 Download JAR custom generator v1.0.0..."
+      # Download JAR custom versione 1.0.0 STANDALONE con PAT
+      echo "🔽 Download JAR custom generator v1.0.0 STANDALONE..."
       curl -s --header "Private-Token:$PAT" \
-        "https://gitlab.com/api/v4/projects/greedysgroup%2Fgreedys_generator/packages/maven/org/openapitools/custom/custom-dart-codegen/1.0.0/custom-dart-codegen-1.0.0.jar" \
+        "https://gitlab.com/api/v4/projects/greedysgroup%2Fgreedys_generator/packages/maven/org/openapitools/custom/custom-dart-codegen/1.0.0/custom-dart-codegen-1.0.0-standalone.jar" \
         -o "tools/custom-generator.jar"
       
       # Controlla dimensione JAR
       echo "📊 JAR scaricato - dimensione: $(stat -c%s tools/custom-generator.jar) bytes"
-      if [ $(stat -c%s "tools/custom-generator.jar") -lt 1000 ]; then
-        echo "❌ JAR troppo piccolo, contenuto errore:"
+      if [ $(stat -c%s "tools/custom-generator.jar") -lt 1000000 ]; then
+        echo "❌ JAR troppo piccolo (dovrebbe essere ~50MB), contenuto errore:"
         cat tools/custom-generator.jar
         exit 1
       else
-        echo "✅ JAR dimensione OK ($(stat -c%s tools/custom-generator.jar) bytes)"
+        echo "✅ JAR standalone dimensione OK ($(stat -c%s tools/custom-generator.jar) bytes)"
       fi
       
       # Download templates ZIP versione 1.0.0 con PAT
@@ -118,6 +118,15 @@ publish:
         echo "✅ Templates estratti: $(find generator/templates -name '*.mustache' | wc -l) files"
       else
         echo "❌ ERRORE: Templates ZIP non valido"
+        exit 1
+      fi
+      
+      # Verifica che il JAR standalone sia eseguibile
+      echo "🧪 Verifica JAR standalone eseguibile..."
+      if java -jar "tools/custom-generator.jar" help >/dev/null 2>&1; then
+        echo "✅ JAR standalone funzionante"
+      else
+        echo "❌ ERRORE: JAR standalone non eseguibile o corrotto"
         exit 1
       fi
       
