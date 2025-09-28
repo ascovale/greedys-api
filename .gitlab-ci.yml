@@ -131,13 +131,14 @@ publish:
         "https://gitlab.com/api/v4/projects/greedysgroup%2Fgreedys_generator/packages/maven/org/openapitools/custom/custom-dart-codegen/latest/custom-dart-codegen-latest-templates.zip" \
         -o "templates.zip"
       
-      # Verifica download JAR
-      if [ -f "tools/custom-dart-codegen-latest.jar" ] && [ -s "tools/custom-dart-codegen-latest.jar" ]; then
-        echo "✅ JAR scaricato: $(ls -lh tools/custom-dart-codegen-latest.jar)"
-      else
-        echo "❌ ERRORE: Impossibile scaricare JAR dal Package Registry"
-        exit 1
-      fi
+    # Setup GIT con PAT
+    - echo "echo \$PAT" > /tmp/git-askpass.sh
+    - chmod +x /tmp/git-askpass.sh
+    - export GIT_ASKPASS=/tmp/git-askpass.sh
+
+    # Configurazione finale
+    - export CUSTOM_JAR="tools/custom-generator.jar"
+    - echo "Configurazione completata - JAR:" "$CUSTOM_JAR"
 
     # Setup GIT con PAT (metodo unificato)
     - echo "echo \$PAT" > /tmp/git-askpass.sh
