@@ -11,8 +11,6 @@ variables:
   API_GROUPS: "restaurant admin customer"
   # 🆕 OpenAPI Generator CLI version per download diretto se necessario
   OPENAPI_GENERATOR_VERSION: "7.8.0"
-  # 🆕 URL per scaricare gli artefatti del custom generator
-  GENERATOR_ARTIFACTS_URL: "https://gitlab.com/greedysgroup/greedys_generator/-/jobs/artifacts/main/download?job=build"
 
 stages:
   - build
@@ -92,23 +90,38 @@ publish:
     - apt-get install -y nodejs
     - npm install -g @openapitools/openapi-generator-cli
 
-    # SCARICA GLI ARTEFATTI DEL CUSTOM GENERATOR
-    - echo "📦 Scarico gli artefatti del custom generator..."
-    - curl -sL --header "JOB-TOKEN:$CI_JOB_TOKEN" "$GENERATOR_ARTIFACTS_URL" -o generator-artifacts.zip
-    - echo "📊 Controllo file scaricato..."
-    - ls -la generator-artifacts.zip
+    # 🆕 SCARICA JAR E TEMPLATES DAL PACKAGE REGISTRY MAVEN
+    - echo "📦 Scarico JAR e templates dal Package Registry Maven..."
+    - PROJECT_ID="greedysgroup%2Fgreedys_generator"
+    - mkdir -p tools generator/templates
     - |
-      if file generator-artifacts.zip 2>/dev/null | grep -q "Zip archive"; then
-        echo "✅ File ZIP valido"
+      # Download JAR principale
+      echo "🔽 Download JAR custom generator..."
+      curl -s --header "JOB-TOKEN:$CI_JOB_TOKEN" \
+        "https://gitlab.com/api/v4/projects/$PROJECT_ID/packages/maven/org/openapitools/custom/custom-dart-codegen/latest/custom-dart-codegen-latest.jar" \
+        -o "tools/custom-dart-codegen-latest.jar"
+      
+      # Download templates ZIP
+      echo "🔽 Download templates ZIP..."
+      curl -s --header "JOB-TOKEN:$CI_JOB_TOKEN" \
+        "https://gitlab.com/api/v4/projects/$PROJECT_ID/packages/maven/org/openapitools/custom/custom-dart-codegen/latest/custom-dart-codegen-latest-templates.zip" \
+        -o "templates.zip"
+      
+      # Estrazione templates
+      if [ -f "templates.zip" ] && [ -s "templates.zip" ]; then
+        unzip -q templates.zip -d generator/templates/
+        echo "✅ Templates estratti: $(find generator/templates -name '*.mustache' | wc -l) files"
       else
-        echo "❌ File non è un ZIP valido, contenuto:"
-        head -20 generator-artifacts.zip 2>/dev/null || echo "File vuoto o non leggibile"
-        echo "Probabilmente errore di autenticazione o URL sbagliato"
+        echo "⚠️ Templates non disponibili, uso templates di default"
+      fi
+      
+      # Verifica download JAR
+      if [ -f "tools/custom-dart-codegen-latest.jar" ] && [ -s "tools/custom-dart-codegen-latest.jar" ]; then
+        echo "✅ JAR scaricato: $(ls -lh tools/custom-dart-codegen-latest.jar)"
+      else
+        echo "❌ ERRORE: Impossibile scaricare JAR dal Package Registry"
         exit 1
       fi
-    - unzip -q generator-artifacts.zip
-    - ls -la generator/ 2>/dev/null || echo "❌ Cartella generator non trovata"
-    - echo "✅ Artefatti custom generator scaricati"
 
     # Setup GIT con PAT (metodo unificato)
     - echo "echo \$PAT" > /tmp/git-askpass.sh
@@ -121,11 +134,9 @@ publish:
     - git config user.email "ci-bot@greedys.com"
     - git config user.name  "Greedys CI Bot"
     
-    # Ricrea i JAR necessari nella directory corrente
-    - echo "📦 Setup JAR per generazione nella directory dart_lib..."
-    - mkdir -p tools
+    # Setup JAR per generazione nella directory dart_lib
+    - echo "📦 Download OpenAPI Generator CLI..."
     - curl -sL "https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/7.8.0/openapi-generator-cli-7.8.0.jar" -o "tools/openapi-generator-cli.jar"
-    - cp "generator/target/custom-dart-codegen-latest.jar" "tools/" || echo "❌ Custom JAR non trovato"
     - ls -la tools/
     
     # Configura variabili per la generazione
