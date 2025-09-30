@@ -1,4 +1,4 @@
-# Pipeline corretta per API con generator v1.0.0
+# Pipeline corretta per API con generator v1.0.0-SNAPSHOT
 variables:
   TAG_LATEST: ${CI_REGISTRY_IMAGE}:latest
   TAG_COMMIT: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}
@@ -75,14 +75,14 @@ publish:
     - echo "Setup ambiente per generazione Dart..."
     - apt-get update && apt-get install -y curl git unzip
     
-    # SCARICA JAR STANDALONE E TEMPLATES DALLA VERSIONE 1.0.0
-    - echo "📦 Scarico JAR standalone custom e templates dal Package Registry v1.0.0..."
+    # SCARICA JAR STANDALONE E TEMPLATES DALLA VERSIONE 1.0.0-SNAPSHOT
+    - echo "📦 Scarico JAR standalone custom e templates dal Package Registry v1.0.0-SNAPSHOT..."
     - mkdir -p tools generator/templates
     - |
-      # Download JAR custom versione 1.0.0 STANDALONE con PAT
-      echo "🔽 Download JAR custom generator v1.0.0 STANDALONE..."
+      # Download JAR custom versione 1.0.0-SNAPSHOT STANDALONE con PAT
+      echo "🔽 Download JAR custom generator v1.0.0-SNAPSHOT STANDALONE..."
       curl -s --header "Private-Token:$PAT" \
-        "https://gitlab.com/api/v4/projects/greedysgroup%2Fgreedys_generator/packages/maven/org/openapitools/custom/custom-dart-codegen/1.0.0/custom-dart-codegen-1.0.0-standalone.jar" \
+        "https://gitlab.com/api/v4/projects/greedysgroup%2Fgreedys_generator/packages/maven/org/openapitools/custom/custom-dart-codegen/1.0.0-SNAPSHOT/custom-dart-codegen-1.0.0-SNAPSHOT-standalone.jar" \
         -o "tools/custom-generator.jar"
       
       # Controlla dimensione JAR
@@ -106,10 +106,10 @@ publish:
         echo "✅ JAR standalone dimensione OK ($(stat -c%s tools/custom-generator.jar) bytes)"
       fi
       
-      # Download templates ZIP versione 1.0.0 con PAT
-      echo "🔽 Download templates ZIP v1.0.0..."
+      # Download templates ZIP versione 1.0.0-SNAPSHOT con PAT
+      echo "🔽 Download templates ZIP v1.0.0-SNAPSHOT..."
       curl -s --header "Private-Token:$PAT" \
-        "https://gitlab.com/api/v4/projects/greedysgroup%2Fgreedys_generator/packages/maven/org/openapitools/custom/custom-dart-codegen/1.0.0/custom-dart-codegen-1.0.0-templates.zip" \
+        "https://gitlab.com/api/v4/projects/greedysgroup%2Fgreedys_generator/packages/maven/org/openapitools/custom/custom-dart-codegen/1.0.0-SNAPSHOT/custom-dart-codegen-1.0.0-SNAPSHOT-templates.zip" \
         -o "templates.zip"
       
       # Controlla dimensione Templates ZIP
@@ -211,8 +211,8 @@ publish:
         echo "📥 Scarico response wrappers per $GROUP..."
         curl -sSfk -o "../generator/response-wrappers-${GROUP}.json" "$WRAPPERS_ENDPOINT/${GROUP}" || echo "⚠️ Catalogo wrappers non disponibile"
 
-        # GENERA CON CUSTOM GENERATOR v1.0.0 STANDALONE
-        echo "🔧 Genero client con custom generator v1.0.0..."
+        # GENERA CON CUSTOM GENERATOR v1.0.0-SNAPSHOT STANDALONE
+        echo "🔧 Genero client con custom generator v1.0.0-SNAPSHOT..."
         echo "   Debug: Usando JAR = $CUSTOM_JAR"
         
         # ✅ STRATEGIA DOPPIO TENTATIVO: java -jar → java -cp fallback
@@ -290,9 +290,9 @@ publish:
       if git diff-index --quiet HEAD; then
         echo "📝 Nessuna modifica da pushare"
       else
-        git commit -m "🤖 Genera Dart clients v1.0.0: $API_GROUPS"
+        git commit -m "🤖 Genera Dart clients v1.0.0-SNAPSHOT: $API_GROUPS"
         git push origin main
-        echo "✅ Client v1.0.0 pushati con successo!"
+        echo "✅ Client v1.0.0-SNAPSHOT pushati con successo!"
       fi
 
   only:
