@@ -84,7 +84,7 @@ publish:
       
       # Query Package Registry per trovare l'URL esatto con timestamp
       PACKAGES_JSON=$(curl -s --header "Private-Token:$PAT" \
-        "https://gitlab.com/api/v4/projects/greedysgroup%2Fgreedys_generator/packages?package_type=maven&package_name=custom-dart-codegen")
+        "https://gitlab.com/api/v4/projects/greedysgroup%2Fgreedys_generator/packages?package_type=maven&package_name=org%2Fopenapitools%2Fcustom%2Fcustom-dart-codegen")
       
       echo "📋 Packages trovati: $(echo "$PACKAGES_JSON" | jq -r 'length') packages"
       
