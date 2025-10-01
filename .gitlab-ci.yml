@@ -105,7 +105,7 @@ publish:
         "https://gitlab.com/api/v4/projects/greedysgroup%2Fgreedys_generator/packages/$SNAPSHOT_PACKAGE_ID/package_files")
       
       # Trova il JAR standalone (quello più grande, ~31MB) - dinamicamente
-      JAR_FILE_ID=$(echo "$PACKAGE_FILES" | jq -r '.[] | select(.file_name | test("-standalone\\.jar$")) | select(.size > 30000000) | .id')
+      JAR_FILE_ID=$(echo "$PACKAGE_FILES" | jq -r '.[] | select(.file_name | endswith("-standalone.jar")) | select(.size > 30000000) | .id')
       
       if [ -z "$JAR_FILE_ID" ]; then
         echo "❌ ERRORE: JAR standalone non trovato"
@@ -139,7 +139,7 @@ publish:
       fi
       
       # Trova il templates ZIP usando l'API dinamica
-      TEMPLATES_FILE_ID=$(echo "$PACKAGE_FILES" | jq -r '.[] | select(.file_name | test("-templates\\.zip$")) | .id')
+      TEMPLATES_FILE_ID=$(echo "$PACKAGE_FILES" | jq -r '.[] | select(.file_name | endswith("-templates.zip")) | .id')
       
       if [ -z "$TEMPLATES_FILE_ID" ]; then
         echo "❌ ERRORE: Templates ZIP non trovato"
