@@ -84,12 +84,12 @@ publish:
       
       # Query Package Registry per trovare l'URL esatto con timestamp
       PACKAGES_JSON=$(curl -s --header "Private-Token:$PAT" \
-        "https://gitlab.com/api/v4/projects/greedysgroup%2Fgreedys_generator/packages?package_type=maven&package_name=org%2Fopenapitools%2Fcustom%2Fcustom-dart-codegen")
+        "https://gitlab.com/api/v4/projects/greedysgroup%2Fgreedys_generator/packages?package_type=maven")
       
       echo "📋 Packages trovati: $(echo "$PACKAGES_JSON" | jq -r 'length') packages"
       
-      # Trova il package 1.0.0-SNAPSHOT più recente
-      SNAPSHOT_PACKAGE_ID=$(echo "$PACKAGES_JSON" | jq -r '.[] | select(.version | contains("1.0.0-SNAPSHOT")) | .id' | head -1)
+      # Trova il package org/openapitools/custom/custom-dart-codegen con versione 1.0.0-SNAPSHOT più recente
+      SNAPSHOT_PACKAGE_ID=$(echo "$PACKAGES_JSON" | jq -r '.[] | select(.name == "org/openapitools/custom/custom-dart-codegen" and (.version | contains("1.0.0-SNAPSHOT"))) | .id' | head -1)
       
       if [ -z "$SNAPSHOT_PACKAGE_ID" ]; then
         echo "❌ ERRORE: Package 1.0.0-SNAPSHOT non trovato"
@@ -104,18 +104,18 @@ publish:
       PACKAGE_FILES=$(curl -s --header "Private-Token:$PAT" \
         "https://gitlab.com/api/v4/projects/greedysgroup%2Fgreedys_generator/packages/$SNAPSHOT_PACKAGE_ID/package_files")
       
-      # Trova il JAR standalone
-      JAR_FILE_URL=$(echo "$PACKAGE_FILES" | jq -r '.[] | select(.file_name | contains("-standalone.jar")) | ._links.download_link')
+      # Trova il JAR standalone (quello più grande, ~31MB) - dinamicamente
+      JAR_FILE_ID=$(echo "$PACKAGE_FILES" | jq -r '.[] | select(.file_name | test("-standalone\\.jar$")) | select(.size > 30000000) | .id')
       
-      if [ -z "$JAR_FILE_URL" ]; then
+      if [ -z "$JAR_FILE_ID" ]; then
         echo "❌ ERRORE: JAR standalone non trovato"
         echo "📋 Files disponibili:"
-        echo "$PACKAGE_FILES" | jq -r '.[] | .file_name'
+        echo "$PACKAGE_FILES" | jq -r '.[] | .file_name + " (" + (.size | tostring) + " bytes)"'
         exit 1
       fi
       
-      echo "🔽 Download JAR standalone da: $JAR_FILE_URL"
-      curl -s --header "Private-Token:$PAT" "$JAR_FILE_URL" -o "tools/custom-generator.jar"
+      echo "🔽 Download JAR standalone (File ID: $JAR_FILE_ID)..."
+      curl -s --header "Private-Token:$PAT" "https://gitlab.com/api/v4/projects/greedysgroup%2Fgreedys_generator/packages/$SNAPSHOT_PACKAGE_ID/package_files/$JAR_FILE_ID" -o "tools/custom-generator.jar"
       
       # Controlla dimensione JAR
       echo "📊 JAR scaricato - dimensione: $(stat -c%s tools/custom-generator.jar) bytes"
@@ -139,17 +139,17 @@ publish:
       fi
       
       # Trova il templates ZIP usando l'API dinamica
-      TEMPLATES_FILE_URL=$(echo "$PACKAGE_FILES" | jq -r '.[] | select(.file_name | contains("-templates.zip")) | ._links.download_link')
+      TEMPLATES_FILE_ID=$(echo "$PACKAGE_FILES" | jq -r '.[] | select(.file_name | test("-templates\\.zip$")) | .id')
       
-      if [ -z "$TEMPLATES_FILE_URL" ]; then
+      if [ -z "$TEMPLATES_FILE_ID" ]; then
         echo "❌ ERRORE: Templates ZIP non trovato"
         echo "📋 Files disponibili:"
-        echo "$PACKAGE_FILES" | jq -r '.[] | .file_name'
+        echo "$PACKAGE_FILES" | jq -r '.[] | .file_name + " (" + (.size | tostring) + " bytes)"'
         exit 1
       fi
       
-      echo "🔽 Download templates ZIP da: $TEMPLATES_FILE_URL"
-      curl -s --header "Private-Token:$PAT" "$TEMPLATES_FILE_URL" -o "templates.zip"
+      echo "🔽 Download templates ZIP (File ID: $TEMPLATES_FILE_ID)..."
+      curl -s --header "Private-Token:$PAT" "https://gitlab.com/api/v4/projects/greedysgroup%2Fgreedys_generator/packages/$SNAPSHOT_PACKAGE_ID/package_files/$TEMPLATES_FILE_ID" -o "templates.zip"
       
       # Controlla dimensione Templates ZIP
       echo "📊 Templates ZIP - dimensione: $(stat -c%s templates.zip) bytes"
