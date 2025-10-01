@@ -73,22 +73,54 @@ publish:
   stage: publish
   before_script:
     - echo "Setup ambiente per generazione Dart..."
-    - apt-get update && apt-get install -y curl git unzip
+    - apt-get update && apt-get install -y curl git unzip jq
     
     # SCARICA JAR STANDALONE E TEMPLATES DALLA VERSIONE 1.0.0-SNAPSHOT
     - echo "📦 Scarico JAR standalone custom e templates dal Package Registry v1.0.0-SNAPSHOT..."
     - mkdir -p tools generator/templates
     - |
-      # Download JAR custom versione 1.0.0-SNAPSHOT STANDALONE con PAT
-      echo "🔽 Download JAR custom generator v1.0.0-SNAPSHOT STANDALONE..."
-      curl -s --header "Private-Token:$PAT" \
-        "https://gitlab.com/api/v4/projects/greedysgroup%2Fgreedys_generator/packages/maven/org/openapitools/custom/custom-dart-codegen/1.0.0-SNAPSHOT/custom-dart-codegen-1.0.0-SNAPSHOT-standalone.jar" \
-        -o "tools/custom-generator.jar"
+      # Ricerca dinamica URL corretto per versione 1.0.0-SNAPSHOT con timestamp
+      echo "� Ricerca versione 1.0.0-SNAPSHOT con timestamp corretto..."
+      
+      # Query Package Registry per trovare l'URL esatto con timestamp
+      PACKAGES_JSON=$(curl -s --header "Private-Token:$PAT" \
+        "https://gitlab.com/api/v4/projects/greedysgroup%2Fgreedys_generator/packages?package_type=maven&package_name=org.openapitools.custom%2Fcustom-dart-codegen")
+      
+      echo "📋 Packages trovati: $(echo "$PACKAGES_JSON" | jq -r 'length') packages"
+      
+      # Trova il package 1.0.0-SNAPSHOT più recente
+      SNAPSHOT_PACKAGE_ID=$(echo "$PACKAGES_JSON" | jq -r '.[] | select(.version | contains("1.0.0-SNAPSHOT")) | .id' | head -1)
+      
+      if [ -z "$SNAPSHOT_PACKAGE_ID" ]; then
+        echo "❌ ERRORE: Package 1.0.0-SNAPSHOT non trovato"
+        echo "📋 Versioni disponibili:"
+        echo "$PACKAGES_JSON" | jq -r '.[] | .version' | head -10
+        exit 1
+      fi
+      
+      echo "📦 Package ID trovato: $SNAPSHOT_PACKAGE_ID"
+      
+      # Ottieni i file del package
+      PACKAGE_FILES=$(curl -s --header "Private-Token:$PAT" \
+        "https://gitlab.com/api/v4/projects/greedysgroup%2Fgreedys_generator/packages/$SNAPSHOT_PACKAGE_ID/package_files")
+      
+      # Trova il JAR standalone
+      JAR_FILE_URL=$(echo "$PACKAGE_FILES" | jq -r '.[] | select(.file_name | contains("-standalone.jar")) | ._links.download_link')
+      
+      if [ -z "$JAR_FILE_URL" ]; then
+        echo "❌ ERRORE: JAR standalone non trovato"
+        echo "📋 Files disponibili:"
+        echo "$PACKAGE_FILES" | jq -r '.[] | .file_name'
+        exit 1
+      fi
+      
+      echo "🔽 Download JAR standalone da: $JAR_FILE_URL"
+      curl -s --header "Private-Token:$PAT" "$JAR_FILE_URL" -o "tools/custom-generator.jar"
       
       # Controlla dimensione JAR
       echo "📊 JAR scaricato - dimensione: $(stat -c%s tools/custom-generator.jar) bytes"
       if [ $(stat -c%s "tools/custom-generator.jar") -lt 1000000 ]; then
-        echo "❌ JAR troppo piccolo (dovrebbe essere ~26MB), contenuto errore:"
+        echo "❌ JAR troppo piccolo (dovrebbe essere ~31MB), contenuto errore:"
         cat tools/custom-generator.jar
         
         # 🆕 DEBUG DETTAGLIATO DEL JAR
@@ -106,11 +138,18 @@ publish:
         echo "✅ JAR standalone dimensione OK ($(stat -c%s tools/custom-generator.jar) bytes)"
       fi
       
-      # Download templates ZIP versione 1.0.0-SNAPSHOT con PAT
-      echo "🔽 Download templates ZIP v1.0.0-SNAPSHOT..."
-      curl -s --header "Private-Token:$PAT" \
-        "https://gitlab.com/api/v4/projects/greedysgroup%2Fgreedys_generator/packages/maven/org/openapitools/custom/custom-dart-codegen/1.0.0-SNAPSHOT/custom-dart-codegen-1.0.0-SNAPSHOT-templates.zip" \
-        -o "templates.zip"
+      # Trova il templates ZIP usando l'API dinamica
+      TEMPLATES_FILE_URL=$(echo "$PACKAGE_FILES" | jq -r '.[] | select(.file_name | contains("-templates.zip")) | ._links.download_link')
+      
+      if [ -z "$TEMPLATES_FILE_URL" ]; then
+        echo "❌ ERRORE: Templates ZIP non trovato"
+        echo "📋 Files disponibili:"
+        echo "$PACKAGE_FILES" | jq -r '.[] | .file_name'
+        exit 1
+      fi
+      
+      echo "🔽 Download templates ZIP da: $TEMPLATES_FILE_URL"
+      curl -s --header "Private-Token:$PAT" "$TEMPLATES_FILE_URL" -o "templates.zip"
       
       # Controlla dimensione Templates ZIP
       echo "📊 Templates ZIP - dimensione: $(stat -c%s templates.zip) bytes"
