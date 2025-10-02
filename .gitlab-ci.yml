@@ -251,6 +251,11 @@ publish:
         # Scarica response wrappers
         echo "📥 Scarico response wrappers per $GROUP..."
         curl -sSfk -o "../generator/response-wrappers-${GROUP}.json" "$WRAPPERS_ENDPOINT/${GROUP}" || echo "⚠️ Catalogo wrappers non disponibile"
+        
+        # Copia il file nella posizione che il generatore custom si aspetta
+        mkdir -p "test_output"
+        cp "../generator/response-wrappers-${GROUP}.json" "test_output/response-wrappers-${GROUP}.json" 2>/dev/null || echo "⚠️ File wrappers non copiato"
+        echo "📋 Response wrappers file: $(ls -la test_output/response-wrappers-${GROUP}.json 2>/dev/null || echo 'File non trovato')"
 
         # GENERA CON CUSTOM GENERATOR v1.0.0-SNAPSHOT STANDALONE
         echo "🔧 Genero client con custom generator v1.0.0-SNAPSHOT..."
