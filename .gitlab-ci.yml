@@ -197,16 +197,16 @@ publish:
     - echo "echo \$PAT" > /tmp/git-askpass.sh
     - chmod +x /tmp/git-askpass.sh
     - export GIT_ASKPASS=/tmp/git-askpass.sh
-    - export CUSTOM_JAR="../tools/custom-generator.jar"
+    
+    # Salva il path assoluto del JAR prima di cambiare directory
+    - export CUSTOM_JAR="$(pwd)/tools/custom-generator.jar"
+    - 'echo "JAR configurato: $CUSTOM_JAR ($(stat -c%s \"$CUSTOM_JAR\") bytes)"'
 
     - echo "Clono repo Dart API..."
     - git clone https://gitlab.com/GreedysGroup/greedys_api_dart_lib.git
     - cd greedys_api_dart_lib
     - git config user.email "ci-bot@greedys.com"
     - git config user.name "Greedys CI Bot"
-    
-    # Verifica finale
-    - 'echo "JAR configurato: $CUSTOM_JAR ($(stat -c%s \"$CUSTOM_JAR\") bytes)"'
 
   script:
     - echo "⏳ Attendo che l'API sia pronta..."
