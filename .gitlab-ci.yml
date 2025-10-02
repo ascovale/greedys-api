@@ -248,16 +248,13 @@ publish:
           exit 1
         fi
 
-        # Scarica response wrappers e estrae il campo 'value'
+        # Scarica response wrappers e estrae il campo 'value' direttamentente nella directory corrente
         echo "📥 Scarico response wrappers per $GROUP..."
         WRAPPER_RESPONSE=$(curl -sSfk "$WRAPPERS_ENDPOINT/${GROUP}" || echo '{"value":"{}"}')
-        echo "$WRAPPER_RESPONSE" | jq -r '.value' > "../generator/response-wrappers-${GROUP}.json" 2>/dev/null || echo '{}' > "../generator/response-wrappers-${GROUP}.json"
+        echo "$WRAPPER_RESPONSE" | jq -r '.value' > "response-wrappers-${GROUP}.json" 2>/dev/null || echo '{}' > "response-wrappers-${GROUP}.json"
         
-        # Copia il file nella posizione che il generatore custom si aspetta
-        mkdir -p "test_output"
-        cp "../generator/response-wrappers-${GROUP}.json" "test_output/response-wrappers-${GROUP}.json" 2>/dev/null || echo "⚠️ File wrappers non copiato"
-        echo "📋 Response wrappers file: $(ls -la test_output/response-wrappers-${GROUP}.json 2>/dev/null || echo 'File non trovato')"
-        echo "📋 File content preview: $(head -c 200 test_output/response-wrappers-${GROUP}.json 2>/dev/null || echo 'File vuoto')"
+        echo "📋 Response wrappers file: $(ls -la response-wrappers-${GROUP}.json 2>/dev/null || echo 'File non trovato')"
+        echo "📋 File content preview: $(head -c 200 response-wrappers-${GROUP}.json 2>/dev/null || echo 'File vuoto')"
 
         # GENERA CON CUSTOM GENERATOR v1.0.0-SNAPSHOT STANDALONE
         echo "🔧 Genero client con custom generator v1.0.0-SNAPSHOT..."
