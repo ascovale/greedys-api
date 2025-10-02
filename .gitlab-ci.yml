@@ -248,13 +248,30 @@ publish:
           exit 1
         fi
 
-        # Scarica response wrappers e estrae il campo 'value' direttamentente nella directory corrente
+        # Scarica response wrappers per questo gruppo
         echo "📥 Scarico response wrappers per $GROUP..."
-        WRAPPER_RESPONSE=$(curl -sSfk "$WRAPPERS_ENDPOINT/${GROUP}" || echo '{"value":"{}"}')
-        echo "$WRAPPER_RESPONSE" | jq -r '.value' > "response-wrappers-${GROUP}.json" 2>/dev/null || echo '{}' > "response-wrappers-${GROUP}.json"
+        WRAPPERS_FILE="response-wrappers-${GROUP}.json"
         
-        echo "📋 Response wrappers file: $(ls -la response-wrappers-${GROUP}.json 2>/dev/null || echo 'File non trovato')"
-        echo "📋 File content preview: $(head -c 200 response-wrappers-${GROUP}.json 2>/dev/null || echo 'File vuoto')"
+        if curl -s "$WRAPPERS_ENDPOINT/$GROUP" -o "$WRAPPERS_FILE"; then
+            # Verifica se il download è valido (non un errore del server)
+            if jq -e '.value' "$WRAPPERS_FILE" >/dev/null 2>&1; then
+                echo "✅ Wrappers scaricati dal server ($(stat -c%s "$WRAPPERS_FILE") bytes)"
+                
+                # Estrai il campo 'value' e sovrascrivi il file
+                jq -r '.value' "$WRAPPERS_FILE" > "${WRAPPERS_FILE}.tmp" && mv "${WRAPPERS_FILE}.tmp" "$WRAPPERS_FILE"
+                echo "✅ Campo 'value' estratto ($(stat -c%s "$WRAPPERS_FILE") bytes)"
+                
+                # Mostra alcuni wrapper dal catalogo (processando il nuovo formato server)
+                WRAPPER_NAMES=$(jq -r 'fromjson | .entries[].wrapper' "$WRAPPERS_FILE" 2>/dev/null | head -5 | tr '\n' ',' | sed 's/,$//')
+                echo "📋 Primi wrapper nel catalogo $GROUP: $WRAPPER_NAMES"
+            else
+                echo "❌ Server restituisce errore per $GROUP"
+                continue
+            fi
+        else
+            echo "❌ Catalogo wrappers non disponibile per $GROUP"
+            continue
+        fi
         
         # Verifica che il file .openapi-generator-ignore esista
         IGNORE_FILE="../generator/templates/.openapi-generator-ignore"
