@@ -238,6 +238,33 @@ publish:
         # GENERA CLIENT CON CUSTOM GENERATOR
         echo "🔧 Genero client $GROUP con custom generator..."
         
+        echo "📋 Path files per $GROUP:"
+        echo "   SPEC_FILE: $SPEC_FILE (realpath: $(realpath "$SPEC_FILE" 2>/dev/null || echo "NON TROVATO"))"
+        echo "   OUTPUT_DIR: $OUTPUT_DIR (realpath: $(realpath "$OUTPUT_DIR" 2>/dev/null || echo "NON ESISTE ANCORA"))"
+        echo "   CUSTOM_JAR: $CUSTOM_JAR (realpath: $(realpath "$CUSTOM_JAR" 2>/dev/null || echo "NON TROVATO"))"
+        echo "   TEMPLATES_DIR: $TEMPLATES_DIR (realpath: $(realpath "$TEMPLATES_DIR" 2>/dev/null || echo "NON TROVATO"))"
+        echo "   IGNORE_FILE: $IGNORE_FILE (realpath: $(realpath "$IGNORE_FILE" 2>/dev/null || echo "NON TROVATO"))"
+        echo "   WRAPPERS_FILE: $WRAPPERS_FILE (realpath: $(realpath "$WRAPPERS_FILE" 2>/dev/null || echo "NON TROVATO"))"
+        
+        echo ""
+        echo "� Verifica CUSTOM_JAR:"
+        if [ -f "$CUSTOM_JAR" ]; then
+          echo "   ✅ Esiste: $CUSTOM_JAR"
+          echo "   📏 Dimensione: $(stat -c%s "$CUSTOM_JAR") bytes"
+          echo "   🔍 Tipo file: $(file "$CUSTOM_JAR" 2>/dev/null || echo "comando file non disponibile")"
+        else
+          echo "   ❌ FILE JAR NON TROVATO: $CUSTOM_JAR"
+        fi
+        
+        echo ""
+        echo "�📄 Contenuto IGNORE_FILE ($IGNORE_FILE):"
+        if [ -f "$IGNORE_FILE" ]; then
+          cat "$IGNORE_FILE"
+        else
+          echo "❌ FILE NON TROVATO!"
+        fi
+        echo ""
+        
         java -jar $CUSTOM_JAR generate \
           -g org.openapitools.custom.CustomDartClientCodegen \
           -i $SPEC_FILE \
@@ -316,19 +343,6 @@ publish:
           echo "❌ Directory modelli non trovata: $MODELS_DIR"
         fi
 
-        # POST-PROCESSING CLEANUP (solo se necessario dopo analisi)
-        echo ""
-        echo "🧹 Post-processing cleanup per $GROUP..."
-        
-        # Rimuovi doc ResponseWrapper indesiderati
-        [ -d "$OUTPUT_DIR/doc" ] && find "$OUTPUT_DIR/doc" -name "ResponseWrapper*.md" ! -name "ResponseWrapperErrorDetails.md" -delete 2>/dev/null || true
-        
-        # Rimuovi test ResponseWrapper indesiderati  
-        [ -d "$OUTPUT_DIR/test" ] && find "$OUTPUT_DIR/test" -name "response_wrapper*.dart" ! -name "response_wrapper_error_details_test.dart" -delete 2>/dev/null || true
-        
-        # Pulisci import ResponseWrapper generati automaticamente
-        [ -d "$OUTPUT_DIR/lib" ] && find "$OUTPUT_DIR/lib" -name "*.dart" -exec sed -i "/^import 'package:${GROUP}_api\/.*\/response_wrapper.*';$/d" {} \; 2>/dev/null || true
-        
         # Aggiorna pubspec.yaml con common
         PUBSPEC="$OUTPUT_DIR/pubspec.yaml"
         if [ -f "$PUBSPEC" ] && ! grep -q "common:" "$PUBSPEC"; then
