@@ -105,17 +105,18 @@ publish:
         "https://gitlab.com/api/v4/projects/greedysgroup%2Fgreedys_generator/packages/$SNAPSHOT_PACKAGE_ID/package_files")
       
       # Trova il JAR standalone (quello più grande, ~31MB) - dinamicamente
-      JAR_FILE_ID=$(echo "$PACKAGE_FILES" | jq -r '.[] | select(.file_name | endswith("-standalone.jar")) | select(.size > 30000000) | .id')
+      JAR_FILE_INFO=$(echo "$PACKAGE_FILES" | jq -r '.[] | select(.file_name | endswith("-standalone.jar")) | select(.size > 30000000) | .file_name')
       
-      if [ -z "$JAR_FILE_ID" ]; then
+      if [ -z "$JAR_FILE_INFO" ]; then
         echo "❌ ERRORE: JAR standalone non trovato"
         echo "📋 Files disponibili:"
         echo "$PACKAGE_FILES" | jq -r '.[] | .file_name + " (" + (.size | tostring) + " bytes)"'
         exit 1
       fi
       
-      echo "🔽 Download JAR standalone (File ID: $JAR_FILE_ID)..."
-      curl -s --header "Private-Token:$PAT" "https://gitlab.com/api/v4/projects/greedysgroup%2Fgreedys_generator/packages/$SNAPSHOT_PACKAGE_ID/package_files/$JAR_FILE_ID" -o "tools/custom-generator.jar"
+      echo "🔽 Download JAR standalone: $JAR_FILE_INFO"
+      # Usa l'endpoint Maven Registry per scaricare il file
+      curl -s --header "Private-Token:$PAT" "https://gitlab.com/api/v4/projects/greedysgroup%2Fgreedys_generator/packages/maven/org/openapitools/custom/custom-dart-codegen/1.0.0-SNAPSHOT/$JAR_FILE_INFO" -o "tools/custom-generator.jar"
       
       # Controlla dimensione JAR
       echo "📊 JAR scaricato - dimensione: $(stat -c%s tools/custom-generator.jar) bytes"
@@ -139,17 +140,18 @@ publish:
       fi
       
       # Trova il templates ZIP usando l'API dinamica
-      TEMPLATES_FILE_ID=$(echo "$PACKAGE_FILES" | jq -r '.[] | select(.file_name | endswith("-templates.zip")) | .id')
+      TEMPLATES_FILE_INFO=$(echo "$PACKAGE_FILES" | jq -r '.[] | select(.file_name | endswith("-templates.zip")) | .file_name')
       
-      if [ -z "$TEMPLATES_FILE_ID" ]; then
+      if [ -z "$TEMPLATES_FILE_INFO" ]; then
         echo "❌ ERRORE: Templates ZIP non trovato"
         echo "📋 Files disponibili:"
         echo "$PACKAGE_FILES" | jq -r '.[] | .file_name + " (" + (.size | tostring) + " bytes)"'
         exit 1
       fi
       
-      echo "🔽 Download templates ZIP (File ID: $TEMPLATES_FILE_ID)..."
-      curl -s --header "Private-Token:$PAT" "https://gitlab.com/api/v4/projects/greedysgroup%2Fgreedys_generator/packages/$SNAPSHOT_PACKAGE_ID/package_files/$TEMPLATES_FILE_ID" -o "templates.zip"
+      echo "🔽 Download templates ZIP: $TEMPLATES_FILE_INFO"
+      # Usa l'endpoint Maven Registry per scaricare il file
+      curl -s --header "Private-Token:$PAT" "https://gitlab.com/api/v4/projects/greedysgroup%2Fgreedys_generator/packages/maven/org/openapitools/custom/custom-dart-codegen/1.0.0-SNAPSHOT/$TEMPLATES_FILE_INFO" -o "templates.zip"
       
       # Controlla dimensione Templates ZIP
       echo "📊 Templates ZIP - dimensione: $(stat -c%s templates.zip) bytes"
