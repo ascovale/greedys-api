@@ -265,6 +265,7 @@ publish:
         fi
         echo ""
         
+        echo "🔧 Eseguo generazione client $GROUP..."
         java -jar $CUSTOM_JAR generate \
           -g org.openapitools.custom.CustomDartClientCodegen \
           -i $SPEC_FILE \
@@ -275,73 +276,9 @@ publish:
           -p pubName=${GROUP}_api \
           -p pubVersion=1.0.0 \
           -p pubDescription="Greedys ${GROUP^} API client" \
-          -p pubHomepage=https://greedys.it || { echo "❌ ERRORE: Generazione client $GROUP fallita"; exit 1; }
+          -p pubHomepage=https://greedys.it >/dev/null 2>&1 || { echo "❌ ERRORE: Generazione client $GROUP fallita"; exit 1; }
         
         echo "✅ Client $GROUP generato con successo"
-
-        # ANALISI RISULTATI (COME SCRIPT TEST per verificare filtering)
-        echo ""
-        echo "📊 ANALISI RISULTATI per $GROUP"
-        
-        # Controlla serializers.dart
-        SERIALIZERS_FILE="$OUTPUT_DIR/lib/src/serializers.dart"
-        if [ -f "$SERIALIZERS_FILE" ]; then
-          RESPONSE_WRAPPERS=$(grep -o 'ResponseWrapper[A-Za-z0-9]*' "$SERIALIZERS_FILE" 2>/dev/null | sort -u || true)
-          WRAPPER_COUNT=$(echo "$RESPONSE_WRAPPERS" | wc -l)
-          
-          echo "🔍 ResponseWrapper trovati in serializers.dart ($WRAPPER_COUNT):"
-          
-          if [ -n "$RESPONSE_WRAPPERS" ] && [ "$RESPONSE_WRAPPERS" != "" ]; then
-            # Ottieni tutti i wrapper dal catalogo (formato già estratto, senza .value)
-            ALL_CATALOG_WRAPPERS=$(jq -r '.entries[].wrapper' "$WRAPPERS_FILE" 2>/dev/null || true)
-            
-            while IFS= read -r wrapper; do
-              if [ -n "$wrapper" ]; then
-                if echo "$ALL_CATALOG_WRAPPERS" | grep -q "^$wrapper$"; then
-                  echo "   $wrapper - ❌ NEL CATALOGO (dovrebbe essere filtrato)"
-                else
-                  echo "   $wrapper - ✅ NON nel catalogo (OK)"
-                fi
-              fi
-            done <<< "$RESPONSE_WRAPPERS"
-          else
-            echo "   ✅ Nessun ResponseWrapper trovato (filtering perfetto)"
-          fi
-        else
-          echo "❌ File serializers.dart non trovato!"
-        fi
-        
-        # Controlla modelli generati
-        MODELS_DIR="$OUTPUT_DIR/lib/src/model"
-        if [ -d "$MODELS_DIR" ]; then
-          MODEL_FILES=$(find "$MODELS_DIR" -name "response_wrapper*.dart" 2>/dev/null || true)
-          MODEL_COUNT=$(echo "$MODEL_FILES" | wc -l)
-          
-          echo "🔍 File modelli ResponseWrapper generati ($MODEL_COUNT):"
-          
-          if [ -n "$MODEL_FILES" ] && [ "$MODEL_FILES" != "" ]; then
-            # Ottieni tutti i wrapper dal catalogo (formato già estratto, senza .value)
-            ALL_CATALOG_WRAPPERS=$(jq -r '.entries[].wrapper' "$WRAPPERS_FILE" 2>/dev/null || true)
-            
-            while IFS= read -r file; do
-              if [ -n "$file" ]; then
-                filename=$(basename "$file")
-                # Converti il nome del file nel nome del modello
-                model_name=$(echo "$filename" | sed 's/\.dart$//' | sed 's/_//g' | sed 's/responsewrapper/ResponseWrapper/')
-                
-                if echo "$ALL_CATALOG_WRAPPERS" | grep -q "^$model_name$"; then
-                  echo "   $filename -> $model_name - ❌ NEL CATALOGO (dovrebbe essere filtrato)"
-                else
-                  echo "   $filename -> $model_name - ✅ NON nel catalogo (OK)"
-                fi
-              fi
-            done <<< "$MODEL_FILES"
-          else
-            echo "   ✅ Nessun file modello ResponseWrapper trovato (filtering perfetto)"
-          fi
-        else
-          echo "❌ Directory modelli non trovata: $MODELS_DIR"
-        fi
 
         # Aggiorna pubspec.yaml con common
         PUBSPEC="$OUTPUT_DIR/pubspec.yaml"
