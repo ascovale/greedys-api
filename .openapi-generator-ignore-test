@@ -1,0 +1,14 @@
+# OpenAPI Generator Ignore File
+# Ignora tutti i ResponseWrapper ECCETTO ResponseWrapperErrorDetails
+
+# Models
+lib/src/model/response_wrapper*.dart
+!lib/src/model/response_wrapper_error_details.dart
+
+# Documentation
+doc/ResponseWrapper*.md
+!doc/ResponseWrapperErrorDetails.md
+
+# Tests
+test/response_wrapper*.dart
+!test/response_wrapper_error_details_test.dart

@@ -257,7 +257,7 @@ publish:
         fi
         
         echo ""
-        echo "�📄 Contenuto IGNORE_FILE ($IGNORE_FILE):"
+        echo " Contenuto IGNORE_FILE ($IGNORE_FILE):"
         if [ -f "$IGNORE_FILE" ]; then
           cat "$IGNORE_FILE"
         else
@@ -284,6 +284,20 @@ publish:
           -p pubHomepage=https://greedys.it >/dev/null 2>&1 || { echo "❌ ERRORE: Generazione client $GROUP fallita"; exit 1; }
         
         echo "✅ Client $GROUP generato con successo"
+        
+        # VERIFICA: Controlla se i ResponseWrapper sono stati generati nonostante l'ignore file
+        echo "🔍 Verifica ResponseWrapper generati in $OUTPUT_DIR:"
+        GENERATED_MODELS=$(find "$OUTPUT_DIR/lib/src/model" -name "response_wrapper*.dart" 2>/dev/null | wc -l)
+        GENERATED_DOCS=$(find "$OUTPUT_DIR/doc" -name "ResponseWrapper*.md" 2>/dev/null | wc -l)
+        GENERATED_TESTS=$(find "$OUTPUT_DIR/test" -name "response_wrapper*.dart" 2>/dev/null | wc -l)
+        echo "   Models: $GENERATED_MODELS files"
+        echo "   Docs: $GENERATED_DOCS files"
+        echo "   Tests: $GENERATED_TESTS files"
+        if [ "$GENERATED_MODELS" -gt 1 ] || [ "$GENERATED_DOCS" -gt 1 ] || [ "$GENERATED_TESTS" -gt 1 ]; then
+          echo "   ⚠️  Ignore file NON ha funzionato - file generati nonostante ignore"
+        else
+          echo "   ✅ Ignore file funziona correttamente"
+        fi
 
         # Aggiorna pubspec.yaml con common
         PUBSPEC="$OUTPUT_DIR/pubspec.yaml"
