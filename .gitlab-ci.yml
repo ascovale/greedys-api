@@ -200,7 +200,7 @@ publish:
     
     # Salva il path assoluto del JAR prima di cambiare directory
     - export CUSTOM_JAR="$(pwd)/tools/custom-generator.jar"
-    - 'echo "JAR configurato: $CUSTOM_JAR ($(stat -c%s \"$CUSTOM_JAR\") bytes)"'
+    - echo "JAR configurato:" $CUSTOM_JAR "($(stat -c%s $CUSTOM_JAR) bytes)"
 
     - echo "Clono repo Dart API..."
     - git clone https://gitlab.com/GreedysGroup/greedys_api_dart_lib.git
