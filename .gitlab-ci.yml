@@ -255,35 +255,47 @@ publish:
         
         echo "📋 Response wrappers file: $(ls -la response-wrappers-${GROUP}.json 2>/dev/null || echo 'File non trovato')"
         echo "📋 File content preview: $(head -c 200 response-wrappers-${GROUP}.json 2>/dev/null || echo 'File vuoto')"
+        
+        # Verifica che il file .openapi-generator-ignore esista
+        IGNORE_FILE="../generator/templates/.openapi-generator-ignore"
+        if [ -f "$IGNORE_FILE" ]; then
+          echo "✅ File .openapi-generator-ignore trovato: $(ls -la $IGNORE_FILE)"
+          echo "📋 Contenuto ignore file: $(head -c 300 $IGNORE_FILE 2>/dev/null || echo 'File vuoto')"
+        else
+          echo "⚠️ File .openapi-generator-ignore NON trovato in: $IGNORE_FILE"
+          echo "📋 Files disponibili in templates: $(ls -la ../generator/templates/ 2>/dev/null | head -5 || echo 'Directory vuota')"
+        fi
 
         # GENERA CON CUSTOM GENERATOR v1.0.0-SNAPSHOT STANDALONE
         echo "🔧 Genero client con custom generator v1.0.0-SNAPSHOT..."
         echo "   Debug: Usando JAR = $CUSTOM_JAR"
         
-        # ✅ STRATEGIA DOPPIO TENTATIVO: java -jar → java -cp fallback
-        echo "🎯 Tentativo 1/2: java -jar (tradizionale)"
+        # ✅ STRATEGIA DOPPIO TENTATIVO: java -jar → java -cp fallback (VERBOSE)
+        echo "🎯 Tentativo 1/2: java -jar (tradizionale) - OUTPUT COMPLETO:"
+        echo "Command: java -jar $CUSTOM_JAR generate -g org.openapitools.custom.CustomDartClientCodegen -i $SPEC_FILE -o $OUTPUT_DIR ..."
         if java -jar "$CUSTOM_JAR" generate \
           -g org.openapitools.custom.CustomDartClientCodegen \
           -i "$SPEC_FILE" \
           -o "$OUTPUT_DIR" \
           -t "../generator/templates" \
-          --ignore-file-override "../generator/.openapi-generator-ignore" \
+          --ignore-file-override "../generator/templates/.openapi-generator-ignore" \
           --skip-validate-spec \
           -p pubName=${GROUP}_api \
           -p pubVersion=1.0.0 \
           -p pubDescription="Greedys ${GROUP^} API client" \
-          -p pubHomepage=https://greedys.it 2>/dev/null; then
+          -p pubHomepage=https://greedys.it; then
           echo "✅ Generazione completata con java -jar (tradizionale)"
         else
           echo "⚠️ Tentativo java -jar fallito, provo fallback..."
-          echo "🎯 Tentativo 2/2: java -cp (classpath esplicito)"
+          echo "🎯 Tentativo 2/2: java -cp (classpath esplicito) - OUTPUT COMPLETO:"
+          echo "Command: java -cp $CUSTOM_JAR org.openapitools.codegen.OpenAPIGenerator generate ..."
           
           if java -cp "$CUSTOM_JAR" org.openapitools.codegen.OpenAPIGenerator generate \
             -g org.openapitools.custom.CustomDartClientCodegen \
             -i "$SPEC_FILE" \
             -o "$OUTPUT_DIR" \
             -t "../generator/templates" \
-            --ignore-file-override "../generator/.openapi-generator-ignore" \
+            --ignore-file-override "../generator/templates/.openapi-generator-ignore" \
             --skip-validate-spec \
             -p pubName=${GROUP}_api \
             -p pubVersion=1.0.0 \
