@@ -172,6 +172,27 @@ publish:
         exit 1
       fi
       
+      # 🆕 SCARICA IL FILE .openapi-generator-ignore DAL PACKAGE REGISTRY
+      echo "🔽 Scarico file .openapi-generator-ignore dal Package Registry..."
+      IGNORE_FILE_INFO=$(echo "$PACKAGE_FILES" | jq -r '.[] | select(.file_name | endswith("-openapi-generator.ignore")) | .file_name')
+      
+      if [ -n "$IGNORE_FILE_INFO" ]; then
+        echo "📦 File ignore trovato: $IGNORE_FILE_INFO"
+        curl -s --header "Private-Token:$PAT" "https://gitlab.com/api/v4/projects/greedysgroup%2Fgreedys_generator/packages/maven/org/openapitools/custom/custom-dart-codegen/1.0.0-SNAPSHOT/$IGNORE_FILE_INFO" -o "generator/templates/.openapi-generator-ignore"
+        
+        if [ -f "generator/templates/.openapi-generator-ignore" ] && [ -s "generator/templates/.openapi-generator-ignore" ]; then
+          echo "✅ File ignore scaricato: $(stat -c%s generator/templates/.openapi-generator-ignore) bytes"
+          echo "📋 Contenuto ignore file (prime righe):"
+          head -5 "generator/templates/.openapi-generator-ignore" 2>/dev/null | sed 's/^/   /' || echo "   File vuoto"
+        else
+          echo "⚠️ File ignore scaricato ma vuoto, creerò fallback"
+        fi
+      else
+        echo "⚠️ File .openapi-generator-ignore non trovato nel Package Registry"
+        echo "📋 Files disponibili:"
+        echo "$PACKAGE_FILES" | jq -r '.[] | .file_name' | grep -E "(ignore|template)" || echo "   Nessun file ignore/template trovato"
+      fi
+      
       # Verifica che il JAR standalone sia eseguibile
       echo "🧪 Verifica JAR standalone eseguibile..."
       
@@ -248,59 +269,195 @@ publish:
           exit 1
         fi
 
-        # Scarica response wrappers e estrae il campo 'value' direttamente nella directory corrente
+        # Scarica response wrappers per questo gruppo (FORMATO CORRETTO come script test)
         echo "📥 Scarico response wrappers per $GROUP..."
-        WRAPPER_RESPONSE=$(curl -sSfk "$WRAPPERS_ENDPOINT/${GROUP}" || echo '{"value":"{}"}')
-        echo "$WRAPPER_RESPONSE" | jq -r '.value' > "response-wrappers-${GROUP}.json" 2>/dev/null || echo '{}' > "response-wrappers-${GROUP}.json"
+        WRAPPERS_FILE="response-wrappers-${GROUP}.json"
+        WRAPPERS_SERVER_FILE="response-wrappers-${GROUP}-server.json"
+        
+        if curl -sSfk "$WRAPPERS_ENDPOINT/${GROUP}" -o "$WRAPPERS_SERVER_FILE"; then
+          # Verifica se il download è valido (contiene il campo .value)
+          if jq -e '.value' "$WRAPPERS_SERVER_FILE" >/dev/null 2>&1; then
+            echo "✅ Wrappers scaricati dal server ($(stat -c%s "$WRAPPERS_SERVER_FILE") bytes)"
+            
+            # ESTRAI IL CONTENUTO DA .value E SALVALO NEL FILE FINALE
+            # Il server restituisce: {"value": "{\"generatedAt\":\"...\",\"entries\":[...]}"}
+            # Dobbiamo estrarre .value e parsarlo come JSON
+            if jq -r '.value | fromjson' "$WRAPPERS_SERVER_FILE" > "$WRAPPERS_FILE" 2>/dev/null; then
+              echo "✅ Catalogo estratto correttamente da .value ($(stat -c%s "$WRAPPERS_FILE") bytes)"
+              
+              # Mostra alcuni wrapper dal catalogo per debug
+              WRAPPER_COUNT=$(jq -r '.entries | length' "$WRAPPERS_FILE" 2>/dev/null || echo "0")
+              WRAPPER_NAMES=$(jq -r '.entries[].wrapper' "$WRAPPERS_FILE" 2>/dev/null | head -3 | tr '\n' ',' | sed 's/,$//' || echo "nessuno")
+              echo "📋 Catalogo $GROUP: $WRAPPER_COUNT wrappers totali"
+              echo "📋 Primi 3 wrapper: $WRAPPER_NAMES"
+              
+              # Mostra anche generatedAt per verificare la freschezza del catalogo
+              GENERATED_AT=$(jq -r '.generatedAt' "$WRAPPERS_FILE" 2>/dev/null || echo "sconosciuto")
+              echo "📅 Catalogo generato il: $GENERATED_AT"
+            else
+              echo "❌ Errore nell'estrazione di .value, uso catalogo vuoto"
+              echo '{"generatedAt":"'$(date -Iseconds)'","entries":[]}' > "$WRAPPERS_FILE"
+            fi
+            
+            # Cleanup file temporaneo server
+            rm -f "$WRAPPERS_SERVER_FILE"
+          else
+            echo "❌ Server restituisce errore per $GROUP (no .value field), uso catalogo vuoto"
+            echo "   Contenuto risposta server:"
+            cat "$WRAPPERS_SERVER_FILE" | head -3 | sed 's/^/   /' || echo "   File vuoto"
+            echo '{"generatedAt":"'$(date -Iseconds)'","entries":[]}' > "$WRAPPERS_FILE"
+            rm -f "$WRAPPERS_SERVER_FILE"
+          fi
+        else
+          echo "❌ Catalogo wrappers non disponibile per $GROUP (curl failed), uso catalogo vuoto"
+          echo '{"generatedAt":"'$(date -Iseconds)'","entries":[]}' > "$WRAPPERS_FILE"
+        fi
         
         echo "📋 Response wrappers file: $(ls -la response-wrappers-${GROUP}.json 2>/dev/null || echo 'File non trovato')"
         
-        # Verifica che il file .openapi-generator-ignore esista
-        IGNORE_FILE="../generator/templates/.openapi-generator-ignore"
-        if [ -f "$IGNORE_FILE" ]; then
-          echo "✅ File .openapi-generator-ignore trovato: $(ls -la $IGNORE_FILE)"
-          echo "📋 Contenuto ignore file: $(head -c 300 $IGNORE_FILE 2>/dev/null || echo 'File vuoto')"
+        # DEBUG: Verifica posizione corrente e struttura directory
+        echo "🔍 DEBUG: Verifica struttura directory e files..."
+        echo "   Current directory: $(pwd)"
+        echo "   Parent directory contents:"
+        ls -la ../ 2>/dev/null | head -10 || echo "   Directory parent inaccessibile"
+        
+        # Verifica che i template e ignore file esistano 
+        TEMPLATES_DIR="../generator/templates"
+        echo "   Verifica templates dir: $TEMPLATES_DIR"
+        
+        if [ -d "$TEMPLATES_DIR" ]; then
+          echo "✅ Directory templates trovata"
+          echo "   Templates directory contents:"
+          ls -la "$TEMPLATES_DIR" 2>/dev/null | head -10 || echo "   Directory templates inaccessibile"
+          
+          # Verifica se il file .openapi-generator-ignore esiste (scaricato dal Package Registry)
+          IGNORE_FILE="$TEMPLATES_DIR/.openapi-generator-ignore"
+          
+          if [ -f "$IGNORE_FILE" ] && [ -s "$IGNORE_FILE" ]; then
+            echo "✅ File .openapi-generator-ignore trovato dal Package Registry"
+            echo "   Dimensione: $(stat -c%s "$IGNORE_FILE") bytes"
+            echo "   Numero righe: $(wc -l < "$IGNORE_FILE")"
+            echo "   Contenuto ignore file (prime righe):"
+            head -5 "$IGNORE_FILE" 2>/dev/null | sed 's/^/     /' || echo "     File vuoto"
+          else
+            echo "⚠️ File .openapi-generator-ignore non trovato o vuoto, creo fallback"
+            echo "📋 Creo ignore file fallback con contenuto corretto per filtering ResponseWrapper..."
+            # Creo il file ignore con echo per evitare problemi YAML heredoc
+            echo "# If you want to also avoid committing generated client entirely, prefer using .gitignore" > "$IGNORE_FILE"
+            echo "" >> "$IGNORE_FILE"
+            echo "# Ignore all generated response_wrapper* model files (catch-all)" >> "$IGNORE_FILE"
+            echo "# EXCEPT ResponseWrapperErrorDetails which is needed for error handling" >> "$IGNORE_FILE"
+            echo "lib/**/model/response_wrapper*.*" >> "$IGNORE_FILE"
+            echo "lib/**/model/*response_wrapper*.dart" >> "$IGNORE_FILE"
+            echo "lib/**/model/*response_wrapper*.*" >> "$IGNORE_FILE"
+            echo "**/model/response_wrapper*.*" >> "$IGNORE_FILE"
+            echo "" >> "$IGNORE_FILE"
+            echo "# Allow ResponseWrapperErrorDetails specifically" >> "$IGNORE_FILE"
+            echo "!lib/**/model/response_wrapper_error_details.*" >> "$IGNORE_FILE"
+            echo "!lib/**/model/response_wrapper_error_details.dart" >> "$IGNORE_FILE"
+            echo "!**/model/response_wrapper_error_details.*" >> "$IGNORE_FILE"
+            echo "!**/model/response_wrapper_error_details.dart" >> "$IGNORE_FILE"
+            echo "" >> "$IGNORE_FILE"
+            echo "# Ignore response_wrapper documentation files" >> "$IGNORE_FILE"
+            echo "# EXCEPT ResponseWrapperErrorDetails docs" >> "$IGNORE_FILE"
+            echo "doc/ResponseWrapper*.md" >> "$IGNORE_FILE"
+            echo "doc/*ResponseWrapper*.md" >> "$IGNORE_FILE"
+            echo "!doc/ResponseWrapperErrorDetails.md" >> "$IGNORE_FILE"
+            echo "" >> "$IGNORE_FILE"
+            echo "# Ignore response_wrapper test files" >> "$IGNORE_FILE"
+            echo "# EXCEPT ResponseWrapperErrorDetails tests" >> "$IGNORE_FILE"
+            echo "test/response_wrapper*.dart" >> "$IGNORE_FILE"
+            echo "test/*response_wrapper*.dart" >> "$IGNORE_FILE"
+            echo "!test/response_wrapper_error_details*.dart" >> "$IGNORE_FILE"
+            echo "   Creato ignore file fallback con $(wc -l < "$IGNORE_FILE") righe di regole"
+          fi
         else
-          echo "⚠️ File .openapi-generator-ignore NON trovato in: $IGNORE_FILE"
-          echo "📋 Files disponibili in templates: $(ls -la ../generator/templates/ 2>/dev/null | head -5 || echo 'Directory vuota')"
+          echo "❌ Directory templates NON trovata: $TEMPLATES_DIR"
+          echo "📋 Creo directory e ignore file fallback..."
+          mkdir -p "$TEMPLATES_DIR"
+          IGNORE_FILE="$TEMPLATES_DIR/.openapi-generator-ignore"
+          # Creo il file ignore fallback
+          echo "# If you want to also avoid committing generated client entirely, prefer using .gitignore" > "$IGNORE_FILE"
+          echo "" >> "$IGNORE_FILE"
+          echo "# Ignore all generated response_wrapper* model files (catch-all)" >> "$IGNORE_FILE"
+          echo "lib/**/model/response_wrapper*.*" >> "$IGNORE_FILE"
+          echo "**/model/response_wrapper*.*" >> "$IGNORE_FILE"
+          echo "doc/ResponseWrapper*.md" >> "$IGNORE_FILE"
+          echo "test/response_wrapper*.dart" >> "$IGNORE_FILE"
+          echo "" >> "$IGNORE_FILE"
+          echo "# Allow ResponseWrapperErrorDetails specifically" >> "$IGNORE_FILE"
+          echo "!lib/**/model/response_wrapper_error_details.*" >> "$IGNORE_FILE"
+          echo "!doc/ResponseWrapperErrorDetails.md" >> "$IGNORE_FILE"
+          echo "!test/response_wrapper_error_details*.dart" >> "$IGNORE_FILE"
+          echo "   Creati: $TEMPLATES_DIR e ignore file fallback con $(wc -l < "$IGNORE_FILE") righe di regole"
+        fi
+        
+        # VERIFICA FINALE del contenuto ignore file
+        echo ""
+        echo "🧪 VERIFICA FINALE ignore file..."
+        if [ -f "$IGNORE_FILE" ]; then
+          echo "   ✅ File esiste: $IGNORE_FILE"
+          echo "   📊 Dimensione: $(stat -c%s "$IGNORE_FILE") bytes, Righe: $(wc -l < "$IGNORE_FILE")"
+          
+          # Verifica rapida delle regole essenziali
+          if grep -q "response_wrapper" "$IGNORE_FILE" 2>/dev/null; then
+            echo "   ✅ Contiene regole ResponseWrapper filtering"
+            
+            # Conta le regole principali
+            IGNORE_RULES=$(grep -c "response_wrapper" "$IGNORE_FILE" 2>/dev/null || echo "0")
+            ALLOW_RULES=$(grep -c "!.*response_wrapper_error_details" "$IGNORE_FILE" 2>/dev/null || echo "0")
+            echo "   📋 Regole ignore: $IGNORE_RULES, Eccezioni allow: $ALLOW_RULES"
+            
+          else
+            echo "   ⚠️ File ignore senza regole ResponseWrapper, potrebbe essere vuoto"
+          fi
+          
+          # Mostra un campione del contenuto per debug
+          echo "   📄 Contenuto ignore file (prime 10 righe):"
+          head -10 "$IGNORE_FILE" 2>/dev/null | sed 's/^/      /' || echo "      File vuoto o inaccessibile"
+        else
+          echo "   ❌ ERRORE: File ignore non esiste!"
+          exit 1
         fi
 
         # GENERA CON CUSTOM GENERATOR v1.0.0-SNAPSHOT STANDALONE
         echo "🔧 Genero client con custom generator v1.0.0-SNAPSHOT..."
         echo "   Debug: Usando JAR = $CUSTOM_JAR"
         
-        # ✅ STRATEGIA DOPPIO TENTATIVO: java -jar → java -cp fallback (VERBOSE)
-        echo "🎯 Tentativo 1/2: java -jar (tradizionale) - OUTPUT COMPLETO:"
-        echo "Command: java -jar $CUSTOM_JAR generate -g org.openapitools.custom.CustomDartClientCodegen -i $SPEC_FILE -o $OUTPUT_DIR ..."
-        if java -jar "$CUSTOM_JAR" generate \
+        # GENERA CON CUSTOM GENERATOR (COME SCRIPT TEST FUNZIONANTE)
+        echo "🔧 Genero client con custom generator (formato script test)..."
+        JAVA_CMD="java -jar $CUSTOM_JAR generate \
           -g org.openapitools.custom.CustomDartClientCodegen \
-          -i "$SPEC_FILE" \
-          -o "$OUTPUT_DIR" \
-          -t "../generator/templates" \
-          --ignore-file-override "../generator/templates/.openapi-generator-ignore" \
+          -i $SPEC_FILE \
+          -o $OUTPUT_DIR \
+          -t $TEMPLATES_DIR \
+          --ignore-file-override $IGNORE_FILE \
           --skip-validate-spec \
           -p pubName=${GROUP}_api \
           -p pubVersion=1.0.0 \
-          -p pubDescription="Greedys ${GROUP^} API client" \
-          -p pubHomepage=https://greedys.it; then
-          echo "✅ Generazione completata con java -jar (tradizionale)"
+          -p pubDescription=\"Greedys ${GROUP^} API client\" \
+          -p pubHomepage=https://greedys.it"
+        
+        echo "Command: $JAVA_CMD"
+        if eval $JAVA_CMD; then
+          echo "✅ Generazione completata con successo"
         else
-          echo "⚠️ Tentativo java -jar fallito, provo fallback..."
-          echo "🎯 Tentativo 2/2: java -cp (classpath esplicito) - OUTPUT COMPLETO:"
-          echo "Command: java -cp $CUSTOM_JAR org.openapitools.codegen.OpenAPIGenerator generate ..."
-          
-          if java -cp "$CUSTOM_JAR" org.openapitools.codegen.OpenAPIGenerator generate \
+          echo "⚠️ Tentativo principale fallito, provo fallback java -cp..."
+          JAVA_FALLBACK_CMD="java -cp $CUSTOM_JAR org.openapitools.codegen.OpenAPIGenerator generate \
             -g org.openapitools.custom.CustomDartClientCodegen \
-            -i "$SPEC_FILE" \
-            -o "$OUTPUT_DIR" \
-            -t "../generator/templates" \
-            --ignore-file-override "../generator/templates/.openapi-generator-ignore" \
+            -i $SPEC_FILE \
+            -o $OUTPUT_DIR \
+            -t $TEMPLATES_DIR \
+            --ignore-file-override $IGNORE_FILE \
             --skip-validate-spec \
             -p pubName=${GROUP}_api \
             -p pubVersion=1.0.0 \
-            -p pubDescription="Greedys ${GROUP^} API client" \
-            -p pubHomepage=https://greedys.it; then
-            echo "✅ Generazione completata con java -cp (classpath esplicito)"
+            -p pubDescription=\"Greedys ${GROUP^} API client\" \
+            -p pubHomepage=https://greedys.it"
+          
+          echo "Fallback command: $JAVA_FALLBACK_CMD"
+          if eval $JAVA_FALLBACK_CMD; then
+            echo "✅ Generazione completata con fallback java -cp"
           else
             echo "❌ ERRORE: Entrambi i metodi falliti"
             echo "   Debug MANIFEST.MF:"
@@ -311,8 +468,73 @@ publish:
           fi
         fi
 
-        # POST-PROCESSING
-        echo "🧹 Post-processing per $GROUP..."
+        # ANALISI RISULTATI (COME SCRIPT TEST per verificare filtering)
+        echo ""
+        echo "📊 ANALISI RISULTATI per $GROUP"
+        
+        # Controlla serializers.dart
+        SERIALIZERS_FILE="$OUTPUT_DIR/lib/src/serializers.dart"
+        if [ -f "$SERIALIZERS_FILE" ]; then
+          RESPONSE_WRAPPERS=$(grep -o 'ResponseWrapper[A-Za-z0-9]*' "$SERIALIZERS_FILE" 2>/dev/null | sort -u || true)
+          WRAPPER_COUNT=$(echo "$RESPONSE_WRAPPERS" | wc -l)
+          
+          echo "🔍 ResponseWrapper trovati in serializers.dart ($WRAPPER_COUNT):"
+          
+          if [ -n "$RESPONSE_WRAPPERS" ] && [ "$RESPONSE_WRAPPERS" != "" ]; then
+            # Ottieni tutti i wrapper dal catalogo (formato server)
+            ALL_CATALOG_WRAPPERS=$(jq -r '.value | fromjson | .entries[].wrapper' "$WRAPPERS_FILE" 2>/dev/null || true)
+            
+            while IFS= read -r wrapper; do
+              if [ -n "$wrapper" ]; then
+                if echo "$ALL_CATALOG_WRAPPERS" | grep -q "^$wrapper$"; then
+                  echo "   $wrapper - ❌ NEL CATALOGO (dovrebbe essere filtrato)"
+                else
+                  echo "   $wrapper - ✅ NON nel catalogo (OK)"
+                fi
+              fi
+            done <<< "$RESPONSE_WRAPPERS"
+          else
+            echo "   ✅ Nessun ResponseWrapper trovato (filtering perfetto)"
+          fi
+        else
+          echo "❌ File serializers.dart non trovato!"
+        fi
+        
+        # Controlla modelli generati
+        MODELS_DIR="$OUTPUT_DIR/lib/src/model"
+        if [ -d "$MODELS_DIR" ]; then
+          MODEL_FILES=$(find "$MODELS_DIR" -name "response_wrapper*.dart" 2>/dev/null || true)
+          MODEL_COUNT=$(echo "$MODEL_FILES" | wc -l)
+          
+          echo "🔍 File modelli ResponseWrapper generati ($MODEL_COUNT):"
+          
+          if [ -n "$MODEL_FILES" ] && [ "$MODEL_FILES" != "" ]; then
+            # Ottieni tutti i wrapper dal catalogo (formato server)
+            ALL_CATALOG_WRAPPERS=$(jq -r '.value | fromjson | .entries[].wrapper' "$WRAPPERS_FILE" 2>/dev/null || true)
+            
+            while IFS= read -r file; do
+              if [ -n "$file" ]; then
+                filename=$(basename "$file")
+                # Converti il nome del file nel nome del modello
+                model_name=$(echo "$filename" | sed 's/\.dart$//' | sed 's/_//g' | sed 's/responsewrapper/ResponseWrapper/')
+                
+                if echo "$ALL_CATALOG_WRAPPERS" | grep -q "^$model_name$"; then
+                  echo "   $filename -> $model_name - ❌ NEL CATALOGO (dovrebbe essere filtrato)"
+                else
+                  echo "   $filename -> $model_name - ✅ NON nel catalogo (OK)"
+                fi
+              fi
+            done <<< "$MODEL_FILES"
+          else
+            echo "   ✅ Nessun file modello ResponseWrapper trovato (filtering perfetto)"
+          fi
+        else
+          echo "❌ Directory modelli non trovata: $MODELS_DIR"
+        fi
+
+        # POST-PROCESSING CLEANUP (solo se necessario dopo analisi)
+        echo ""
+        echo "🧹 Post-processing cleanup per $GROUP..."
         
         # Rimuovi doc ResponseWrapper indesiderati
         [ -d "$OUTPUT_DIR/doc" ] && find "$OUTPUT_DIR/doc" -name "ResponseWrapper*.md" ! -name "ResponseWrapperErrorDetails.md" -delete 2>/dev/null || true
