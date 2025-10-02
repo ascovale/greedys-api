@@ -266,12 +266,17 @@ publish:
         echo ""
         
         echo "🔧 Eseguo generazione client $GROUP..."
+        
+        # Copia templates e ignore file nella directory corrente (come nello script di test)
+        cp -r "$TEMPLATES_DIR" "./templates"
+        cp "$IGNORE_FILE" "./.openapi-generator-ignore"
+        
         java -jar $CUSTOM_JAR generate \
           -g org.openapitools.custom.CustomDartClientCodegen \
           -i $SPEC_FILE \
           -o $OUTPUT_DIR \
-          -t $TEMPLATES_DIR \
-          --ignore-file-override $IGNORE_FILE \
+          -t templates \
+          --ignore-file-override .openapi-generator-ignore \
           --skip-validate-spec \
           -p pubName=${GROUP}_api \
           -p pubVersion=1.0.0 \
