@@ -333,6 +333,16 @@ publish:
         echo "✅ Client $GROUP generato con successo!"
       done
 
+    # PULIZIA FILE TEMPORANEI
+    - echo ""
+    - echo "🧹 Pulizia file temporanei..."
+    - rm -f response-wrappers-restaurant.json
+    - rm -f response-wrappers-admin.json
+    - rm -f response-wrappers-customer.json
+    - rm -f .openapi-generator-ignore
+    - rm -rf templates/
+    - echo "✅ File temporanei rimossi"
+
     # COMMIT E PUSH
     - echo ""
     - echo "📤 Commit e push delle modifiche..."
