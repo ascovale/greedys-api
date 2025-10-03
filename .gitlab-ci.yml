@@ -153,14 +153,32 @@ publish:
       unzip -q templates.zip -d $TEMPLATES_DIR_PATH/
       echo "✅ Templates estratti: $(find $TEMPLATES_DIR_PATH -name '*.mustache' | wc -l) files"
       
-      # Scarica ignore file direttamente con nome preciso e rinomina
-      curl -s --header "Private-Token:$PAT" "https://gitlab.com/api/v4/projects/greedysgroup%2Fgreedys_generator/packages/maven/org/openapitools/custom/custom-dart-codegen/1.0.0-SNAPSHOT/custom-dart-codegen-1.0.0-20251002.113120-1-openapi-generator.ignore" -o "$IGNORE_FILE_PATH"
+      # === DOWNLOAD IGNORE FILE (DINAMICO) ===
+      IGNORE_FILE_INFO=$(echo "$PACKAGE_FILES" | jq -r '.[] | select(.file_name | endswith("-openapi-generator.ignore")) | .file_name')
+      
+      if [ -z "$IGNORE_FILE_INFO" ]; then
+        echo "❌ ERRORE: Ignore file non trovato"
+        echo "📋 Files disponibili:"
+        echo "$PACKAGE_FILES" | jq -r '.[] | .file_name + " (" + (.size | tostring) + " bytes)"'
+        exit 1
+      fi
+      
+      echo "🔽 Download ignore file: $IGNORE_FILE_INFO"
+      curl -s --header "Private-Token:$PAT" \
+        "https://gitlab.com/api/v4/projects/greedysgroup%2Fgreedys_generator/packages/maven/org/openapitools/custom/custom-dart-codegen/1.0.0-SNAPSHOT/$IGNORE_FILE_INFO" \
+        -o "$IGNORE_FILE_PATH"
       
       if [ ! -f "$IGNORE_FILE_PATH" ] || [ $(stat -c%s "$IGNORE_FILE_PATH") -lt 10 ]; then
         echo "❌ ERRORE: Ignore file non valido"
+        cat "$IGNORE_FILE_PATH"
         exit 1
       fi
+      
       echo "✅ Ignore file scaricato: $(stat -c%s $IGNORE_FILE_PATH) bytes"
+      echo ""
+      echo "📄 Contenuto ignore file:"
+      cat "$IGNORE_FILE_PATH"
+      echo ""
       
 
     # Setup GIT con PAT
@@ -299,11 +317,12 @@ publish:
           echo "   ✅ Ignore file funziona correttamente"
         fi
 
-        # Aggiorna pubspec.yaml con common
+        # Aggiorna pubspec.yaml con common nella sezione dependencies corretta
         PUBSPEC="$OUTPUT_DIR/pubspec.yaml"
         if [ -f "$PUBSPEC" ] && ! grep -q "common:" "$PUBSPEC"; then
-          echo "  common:" >> "$PUBSPEC"
-          echo "    path: ../common" >> "$PUBSPEC"
+          echo "📝 Aggiungo dipendenza common a pubspec.yaml..."
+          sed -i '/^dependencies:/a\  common:\n    path: ..\/common' "$PUBSPEC"
+          echo "✅ Dipendenza common aggiunta correttamente"
         fi
         
         # Pulisci export ResponseWrapper da openapi.dart
