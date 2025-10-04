@@ -252,14 +252,24 @@ public class MetadataCollector implements OperationCustomizer {
         return null; // Nessun prefisso riconosciuto
     }
     
+    // Contatore per generare indici univoci per tag vuoti
+    private final java.util.concurrent.atomic.AtomicInteger emptyTagCounter = new java.util.concurrent.atomic.AtomicInteger(1);
+    
     /**
      * Migliora un singolo tag aggiungendo il prefisso se non già presente.
      * Utilizzato per tutti i controller per garantire coerenza.
+     * Se il tag è vuoto, genera un indice progressivo univoco.
      */
     @SuppressWarnings("unused")
     private String enhanceTag(String originalTag, String prefix) {
-        if (originalTag == null || originalTag.trim().isEmpty() || prefix == null) {
+        if (prefix == null) {
             return originalTag;
+        }
+        
+        // Gestione tag vuoti: genera indice progressivo
+        if (originalTag == null || originalTag.trim().isEmpty()) {
+            int index = emptyTagCounter.getAndIncrement();
+            return prefix + " - Op" + index;
         }
         
         // Normalizza il tag originale rimuovendo spazi extra
@@ -268,6 +278,12 @@ public class MetadataCollector implements OperationCustomizer {
         // Non aggiungere il prefisso se già presente con il formato corretto
         if (cleanTag.startsWith(prefix + " - ")) {
             return cleanTag;
+        }
+        
+        // Gestione caso speciale: tag uguale al prefisso (es. "Customer" con prefisso "Customer")
+        // In questo caso aggiungi suffisso "Operations" per evitare conflitti di nomi
+        if (cleanTag.equalsIgnoreCase(prefix)) {
+            return prefix + " - Operations";
         }
         
         // Non aggiungere il prefisso se il tag già contiene il prefisso
@@ -279,6 +295,10 @@ public class MetadataCollector implements OperationCustomizer {
                 // Rimuovi eventuali trattini o spazi iniziali
                 while (withoutPrefix.startsWith("-") || withoutPrefix.startsWith(" ")) {
                     withoutPrefix = withoutPrefix.substring(1).trim();
+                }
+                // Se dopo la rimozione del prefisso rimane vuoto, aggiungi "Operations"
+                if (withoutPrefix.isEmpty()) {
+                    return prefix + " - Operations";
                 }
                 return prefix + " - " + withoutPrefix;
             }
