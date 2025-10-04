@@ -33,7 +33,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Tag(name = "Customer", description = "Controller for managing customers")
+@Tag(name = "Profile Management", description = "Customer profile management operations")
 @RestController
 @RequestMapping("/customer")
 @SecurityRequirement(name = "bearerAuth")
