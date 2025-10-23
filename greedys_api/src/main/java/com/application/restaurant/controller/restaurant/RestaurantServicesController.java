@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
 import com.application.common.service.RestaurantService;
-import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.ServiceDTO;
 import com.application.common.web.dto.restaurant.ServiceTypeDto;
 import com.application.common.web.dto.restaurant.SlotDTO;
@@ -46,9 +45,9 @@ public class RestaurantServicesController extends BaseController {
     @Operation(summary = "Create a new service", description = "This method creates a new service in the system.")
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_WRITE')")
     @PostMapping("/new")
-    public ResponseEntity<ResponseWrapper<ServiceDTO>> newService(@RequestBody RestaurantNewServiceDTO servicesDto) {
+    public ResponseEntity<ServiceDTO> newService(@RequestBody RestaurantNewServiceDTO servicesDto) {
         return executeCreate("create new service", "Service created successfully", () -> {
-            System.out.println("<<<   Controller Service   >>>");
+            System.out.println("<<<   Controller Service   >>");
             System.out.println("<<<   name: " + servicesDto.getName());
             return serviceService.newService(servicesDto);
         });
@@ -58,11 +57,12 @@ public class RestaurantServicesController extends BaseController {
     
     @PreAuthorize("authentication.principal.isEnabled() & hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_WRITE')")
     @DeleteMapping("/{serviceId}/delete")
-        public ResponseEntity<ResponseWrapper<String>> deleteService(@PathVariable Long serviceId) {
-        return executeVoid("delete service", "Service deleted successfully", () -> {
-            System.out.println("<<<   Controller Service   >>>");
+    public ResponseEntity<String> deleteService(@PathVariable Long serviceId) {
+        return execute("delete service", () -> {
+            System.out.println("<<<   Controller Service   >>");
             System.out.println("<<<   serviceId: " + serviceId);
             serviceService.deleteService(serviceId);
+            return "Service deleted successfully";
         });
     }
 
@@ -70,7 +70,7 @@ public class RestaurantServicesController extends BaseController {
     
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_READ')")
     @GetMapping("/{serviceId}")
-    public ResponseEntity<ResponseWrapper<ServiceDTO>> getServiceById(@PathVariable Long serviceId) {
+    public ResponseEntity<ServiceDTO> getServiceById(@PathVariable Long serviceId) {
         return execute("get service by id", () -> serviceService.findById(serviceId));
     }
 
@@ -78,7 +78,7 @@ public class RestaurantServicesController extends BaseController {
     
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_READ')")
     @GetMapping("/{serviceId}/slots")
-    public ResponseEntity<ResponseWrapper<List<SlotDTO>>> getSlots(@PathVariable long serviceId) {
+    public ResponseEntity<List<SlotDTO>> getSlots(@PathVariable long serviceId) {
         return executeList("get service slots", () -> {
             Collection<SlotDTO> slots = slotService.findByService_Id(serviceId);
             return slots instanceof java.util.List ? (java.util.List<SlotDTO>) slots : new java.util.ArrayList<>(slots);
@@ -88,7 +88,7 @@ public class RestaurantServicesController extends BaseController {
     @Operation(summary = "Get all service types", description = "Retrieve all service types.")
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_READ')")
     @GetMapping("/types")
-    public ResponseEntity<ResponseWrapper<List<ServiceTypeDto>>> getServiceTypes() {
+    public ResponseEntity<List<ServiceTypeDto>> getServiceTypes() {
         return executeList("get service types", () -> {
             Collection<ServiceTypeDto> types = serviceService.getServiceTypesFromRUser();
             return types instanceof java.util.List ? (java.util.List<ServiceTypeDto>) types : new java.util.ArrayList<>(types);
@@ -97,10 +97,11 @@ public class RestaurantServicesController extends BaseController {
 
     @Operation(summary = "Get services of a restaurant", description = "Retrieve the services of a restaurant")
     @GetMapping(value = "/services")
-    public ResponseEntity<ResponseWrapper<List<ServiceDTO>>> getServices(@AuthenticationPrincipal RUser rUser) {
+    public ResponseEntity<List<ServiceDTO>> getServices(@AuthenticationPrincipal RUser rUser) {
         return executeList("get restaurant services", () -> {
             Collection<ServiceDTO> services = restaurantService.getServices(rUser.getRestaurant().getId());
             return services instanceof java.util.List ? (java.util.List<ServiceDTO>) services : new java.util.ArrayList<>(services);
         });
     }
 }
+

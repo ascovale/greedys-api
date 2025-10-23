@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
-import com.application.common.web.ResponseWrapper;
 import com.application.restaurant.service.verification.RestaurantTwilioVerificationService;
 import com.application.restaurant.web.dto.verification.VerificationRequestDTO;
 import com.application.restaurant.web.dto.verification.VerificationResponseDTO;
@@ -47,7 +46,7 @@ public class TwilioRestaurantVerificationController extends BaseController {
     )
     
     @PostMapping("/initiate")
-    public ResponseEntity<ResponseWrapper<VerificationResponseDTO>> initiateVerification(
+    public ResponseEntity<VerificationResponseDTO> initiateVerification(
             @Valid @RequestBody VerificationRequestDTO request) {
         
         return executeCreate("initiate verification", () -> {
@@ -62,7 +61,7 @@ public class TwilioRestaurantVerificationController extends BaseController {
     )
     
     @PostMapping("/{restaurantId}/verify")
-    public ResponseEntity<ResponseWrapper<VerificationResponseDTO>> verifyCode(
+    public ResponseEntity<VerificationResponseDTO> verifyCode(
             @Parameter(description = "Restaurant ID") 
             @PathVariable @NotNull Long restaurantId,
             
@@ -81,7 +80,7 @@ public class TwilioRestaurantVerificationController extends BaseController {
     )
     
     @GetMapping("/{restaurantId}/status")
-    public ResponseEntity<ResponseWrapper<VerificationResponseDTO>> getVerificationStatus(
+    public ResponseEntity<VerificationResponseDTO> getVerificationStatus(
             @Parameter(description = "Restaurant ID") 
             @PathVariable @NotNull Long restaurantId) {
         
@@ -97,7 +96,7 @@ public class TwilioRestaurantVerificationController extends BaseController {
     )
     
     @PostMapping("/{restaurantId}/cancel")
-    public ResponseEntity<ResponseWrapper<VerificationResponseDTO>> cancelVerification(
+    public ResponseEntity<VerificationResponseDTO> cancelVerification(
             @Parameter(description = "Restaurant ID") 
             @PathVariable @NotNull Long restaurantId) {
         
@@ -107,3 +106,4 @@ public class TwilioRestaurantVerificationController extends BaseController {
         });
     }
 }
+

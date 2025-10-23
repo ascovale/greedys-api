@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.application.admin.service.AdminCustomerService;
 import com.application.admin.service.authentication.AdminCustomerAuthenticationService;
 import com.application.common.controller.BaseController;
-import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.customer.CustomerDTO;
 import com.application.common.web.dto.security.AuthResponseDTO;
 import com.application.customer.persistence.model.Customer;
@@ -36,34 +35,37 @@ public class AdminCustomerController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_WRITE')")
     @Operation(summary = "Block customer", description = "Blocks a customer by their ID")
     @PutMapping("/{customerId}/block")
-    public ResponseEntity<ResponseWrapper<String>> blockUser(@PathVariable Long customerId) {
-        return executeVoid("block customer", "Customer blocked successfully", () -> {
+    public ResponseEntity<String> blockUser(@PathVariable Long customerId) {
+        return execute("block customer", () -> {
             adminCustomerService.updateCustomerStatus(customerId, Customer.Status.BLOCKED);
+            return "Customer blocked successfully";
         });
     }
 
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_WRITE')")
     @Operation(summary = "Enable user", description = "Enables a user by their ID")
     @PutMapping("/{customerId}/enable")
-    public ResponseEntity<ResponseWrapper<String>> enableCustomer(@PathVariable Long customerId) {
-        return executeVoid("enable customer", "User enabled successfully", () -> {
+    public ResponseEntity<String> enableCustomer(@PathVariable Long customerId) {
+        return execute("enable customer", () -> {
             adminCustomerService.updateCustomerStatus(customerId, Customer.Status.ENABLED);
+            return "User enabled successfully";
         });
     }
 
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_WRITE')")
     @Operation(summary = "Enable customer by email", description = "Enables a customer by their email address")
     @PutMapping("/enable")
-    public ResponseEntity<ResponseWrapper<String>> enableCustomerByEmail(@RequestParam String email) {
-        return executeVoid("enable customer by email", "Customer enabled successfully", () -> {
+    public ResponseEntity<String> enableCustomerByEmail(@RequestParam String email) {
+        return execute("enable customer by email", () -> {
             adminCustomerService.updateCustomerStatusByEmail(email, Customer.Status.ENABLED);
+            return "Customer enabled successfully";
         });
     }
 
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_READ')")
     @Operation(summary = "List customers with pagination", description = "Returns a paginated list of customers")
     @GetMapping("/customers/page")
-    public ResponseEntity<ResponseWrapper<Page<CustomerDTO>>> listCustomersWithPagination(@RequestParam int page, @RequestParam int size) {
+    public ResponseEntity<Page<CustomerDTO>> listCustomersWithPagination(@RequestParam int page, @RequestParam int size) {
         return executePaginated("list customers", () -> adminCustomerService.findAll(PageRequest.of(page, size)));
         
     }
@@ -71,7 +73,7 @@ public class AdminCustomerController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_SWITCH_TO_CUSTOMER')")
     @Operation(summary = "Get JWT Token of a customer", description = "Get JWT Token of a customer")
     @GetMapping("/login/{customerId}")
-    public ResponseEntity<ResponseWrapper<AuthResponseDTO>> loginTokenHasCustomer(@PathVariable Long customerId) {
+    public ResponseEntity<AuthResponseDTO> loginTokenHasCustomer(@PathVariable Long customerId) {
         return execute("get customer token", () -> {
             return adminCustomerAuthenticationService.adminLoginToCustomer(customerId);
         });
@@ -80,36 +82,41 @@ public class AdminCustomerController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_WRITE')")
     @Operation(summary = "Add role to customer", description = "Adds a role to a customer by their ID")
     @PutMapping("/{customerId}/add_role")
-    public ResponseEntity<ResponseWrapper<String>> addRoleToCustomer(@PathVariable Long customerId, @RequestParam String roleName) {
-        return executeVoid("add role to customer", "Role added successfully", () -> {
+    public ResponseEntity<String> addRoleToCustomer(@PathVariable Long customerId, @RequestParam String roleName) {
+        return execute("add role to customer", () -> {
             adminCustomerService.addRoleToCustomer(customerId, roleName);
+            return "Role added successfully";
         });
     }
 
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_WRITE')")
     @Operation(summary = "Remove role from customer", description = "Removes a role from a customer by their ID")
     @PutMapping("/{customerId}/remove_role")
-    public ResponseEntity<ResponseWrapper<String>> removeRoleFromCustomer(@PathVariable Long customerId, @RequestParam String roleName) {
-        return executeVoid("remove role from customer", "Role removed successfully", () -> {
+    public ResponseEntity<String> removeRoleFromCustomer(@PathVariable Long customerId, @RequestParam String roleName) {
+        return execute("remove role from customer", () -> {
             adminCustomerService.removeRoleFromCustomer(customerId, roleName);
+            return "Role removed successfully";
         });
     }
 
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_WRITE')")
     @Operation(summary = "Add privilege to role", description = "Aggiunge un permesso a un ruolo specifico")
     @PutMapping("/role/{roleName}/add_permission")
-    public ResponseEntity<ResponseWrapper<String>> addPermissionToRole(@PathVariable String roleName, @RequestParam String permission) {
-        return executeVoid("add permission to role", "Permission added successfully", () -> {
+    public ResponseEntity<String> addPermissionToRole(@PathVariable String roleName, @RequestParam String permission) {
+        return execute("add permission to role", () -> {
             adminCustomerService.addPrivilegeToRole(roleName, permission);
+            return "Permission added successfully";
         });
     }
 
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_WRITE')")
     @Operation(summary = "Remove privilege from role", description = "Rimuove un permesso da un ruolo specifico")
     @PutMapping("/role/{roleName}/remove_permission")
-    public ResponseEntity<ResponseWrapper<String>> removePermissionFromRole(@PathVariable String roleName, @RequestParam String permission) {
-        return executeVoid("remove permission from role", "Permission removed successfully", () -> {
+    public ResponseEntity<String> removePermissionFromRole(@PathVariable String roleName, @RequestParam String permission) {
+        return execute("remove permission from role", () -> {
             adminCustomerService.removePrivilegeFromRole(roleName, permission);
+            return "Permission removed successfully";
         });
     }
 }
+

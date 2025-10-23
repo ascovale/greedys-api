@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
 import com.application.common.service.RestaurantService;
-import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.SlotDTO;
 import com.application.restaurant.persistence.model.user.RUser;
 import com.application.restaurant.service.SlotService;
@@ -39,7 +38,7 @@ public class RestaurantSlotManagementController extends BaseController {
 	@GetMapping(value = "/day-slots")
 	@Operation(summary = "Get day slots of the authenticated restaurant", description = "Retrieve the daily slots of the authenticated restaurant")
 	
-    public ResponseEntity<ResponseWrapper<List<SlotDTO>>> getDaySlots(
+    public ResponseEntity<List<SlotDTO>> getDaySlots(
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate date,
 			@AuthenticationPrincipal RUser rUser) {
 		return executeList("get day slots", () -> {
@@ -53,7 +52,7 @@ public class RestaurantSlotManagementController extends BaseController {
 	@GetMapping(value = "/all")
 	@Operation(summary = "Get all slots of the authenticated restaurant", description = "Retrieve all available slots for the authenticated restaurant")
 	
-    public ResponseEntity<ResponseWrapper<List<SlotDTO>>> getAllSlots(@AuthenticationPrincipal RUser rUser) {
+    public ResponseEntity<List<SlotDTO>> getAllSlots(@AuthenticationPrincipal RUser rUser) {
 		return executeList("get all slots", () -> {
 			Long restaurantId = rUser.getId();
 			log.info("Getting all slots for restaurant ID: {}", restaurantId);
@@ -64,10 +63,11 @@ public class RestaurantSlotManagementController extends BaseController {
 	@GetMapping("/{slotId}")
 	@Operation(summary = "Get slot by id", description = "Retrieve a slot by its ID")
 	
-    public ResponseEntity<ResponseWrapper<SlotDTO>> getSlotById(@PathVariable Long slotId) {
+    public ResponseEntity<SlotDTO> getSlotById(@PathVariable Long slotId) {
 		return execute("get slot by id", () -> {
 			log.info("Getting slot by ID: {}", slotId);
 			return slotService.findById(slotId);
 		});
 	}
 }
+

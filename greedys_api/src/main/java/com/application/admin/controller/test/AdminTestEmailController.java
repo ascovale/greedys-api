@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.application.admin.web.dto.communication.EmailRequestDTO;
 import com.application.common.controller.BaseController;
 import com.application.common.service.EmailService;
-import com.application.common.web.ResponseWrapper;
 import com.application.customer.service.notification.CustomerNotificationService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,7 +30,7 @@ public class AdminTestEmailController extends BaseController {
     
     
     @PostMapping("/send_test_email")
-    public ResponseEntity<ResponseWrapper<String>> sendTestEmail(@RequestBody EmailRequestDTO emailRequest) {
+    public ResponseEntity<String> sendTestEmail(@RequestBody EmailRequestDTO emailRequest) {
         return executeCreate("send test email", "Email sent successfully", () -> {
             log.info("Trying to send Test email to: {}", emailRequest.getEmail());
             log.info("Subject: {}", emailRequest.getSubject());
@@ -43,25 +42,28 @@ public class AdminTestEmailController extends BaseController {
 
     @Operation(summary = "Send test notification to restaurant User", description = "Sends a test notification with the specified title and body to the specified restaurant user")
     @PostMapping("/send_RUser_test_notification")
-    public ResponseEntity<ResponseWrapper<String>> sendTestNotification(@RequestBody NotificationRequest notificationRequest) {
-        return executeVoid("send test notification", "Notification sent successfully", () -> {
+    public ResponseEntity<String> sendTestNotification(@RequestBody NotificationRequest notificationRequest) {
+        return execute("send test notification", () -> {
             //restaurantNotificationService.sendRestaurantNotification(notificationRequest.getTitle(), notificationRequest.getBody(), notificationRequest.getIdRUser());
+            return "Notification sent successfully";
         });
     }
 
     @Operation(summary = "Send test user notification", description = "Sends a test notification with the specified title and body to the specified user")
     @PostMapping("/send_user_test_notification")
-    public ResponseEntity<ResponseWrapper<String>> sendUserTestNotification(@RequestBody NotificationRequest notificationRequest) {
-        return executeVoid("send user test notification", "Notification sent successfully", () -> {
+    public ResponseEntity<String> sendUserTestNotification(@RequestBody NotificationRequest notificationRequest) {
+        return execute("send user test notification", () -> {
             notificationService.sendNotification(notificationRequest.getTitle(), notificationRequest.getBody(), null, notificationRequest.getIdRUser());
+            return "Notification sent successfully";
         });
     }
 
     @Operation(summary = "Send test restaurant notification", description = "Sends a test notification with the specified title and body to the restaurant")
     @PostMapping("/send_test_restaurant_notification")
-    public ResponseEntity<ResponseWrapper<String>> sendTestRestaurantNotification(@RequestBody NotificationRequest notificationRequest) {
-        return executeVoid("send test restaurant notification", "Notification sent successfully", () -> {
+    public ResponseEntity<String> sendTestRestaurantNotification(@RequestBody NotificationRequest notificationRequest) {
+        return execute("send test restaurant notification", () -> {
             //restaurantNotificationService.sendRestaurantNotification(notificationRequest.getTitle(), notificationRequest.getBody(), null);
+            return "Notification sent successfully";
         });
     }
 
@@ -71,7 +73,7 @@ public class AdminTestEmailController extends BaseController {
      */
     @Operation(summary = "Test SMTP connection", description = "Tests the SMTP connection for sending emails")
     @PostMapping("/test_smtp_connection")
-    public ResponseEntity<ResponseWrapper<String>> testSmtpConnection() {
+    public ResponseEntity<String> testSmtpConnection() {
         return executeCreate("test smtp connection", () -> {
             try {
                 log.info("Testing connection to SMTP server...");
@@ -121,3 +123,4 @@ public class AdminTestEmailController extends BaseController {
         }
     }
 }
+

@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
-import com.application.common.web.ResponseWrapper;
 import com.application.restaurant.persistence.model.user.RUser;
 import com.application.restaurant.service.RUserService;
 
@@ -30,17 +29,20 @@ public class AdminUserController extends BaseController {
 
 	@PostMapping("/{RUserId}/accept")
 	@Operation(summary = "Accept a user", description = "Accept a user for a specific restaurant")
-    public ResponseEntity<ResponseWrapper<String>> acceptUser(@PathVariable Long RUserId) {
-		return executeVoid("accept user", "User accepted successfully", () -> {
+    public ResponseEntity<String> acceptUser(@PathVariable Long RUserId) {
+		return execute("accept user", () -> {
 			rUserService.acceptRUser(RUserId);
+			return "User accepted successfully";
 		});
 	}
 
 	@PostMapping("/enable")
 	@Operation(summary = "Enable restaurant user by email", description = "Enables all restaurant users with the specified email address")
-    public ResponseEntity<ResponseWrapper<String>> enableByEmail(@RequestParam String email) {
-		return executeVoid("enable user by email", "RUser enabled successfully", () -> {
+    public ResponseEntity<String> enableByEmail(@RequestParam String email) {
+		return execute("enable user by email", () -> {
 			rUserService.updateRUserStatusByEmail(email, RUser.Status.ENABLED);
+			return "RUser enabled successfully";
 		});
 	}
 }
+

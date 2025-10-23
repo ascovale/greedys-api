@@ -14,14 +14,13 @@ import org.springframework.stereotype.Controller;
 import com.application.common.controller.annotation.CreateApiResponses;
 import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.controller.annotation.StandardApiResponses;
-import com.application.common.web.ResponseWrapper;
 
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Base controller with standardized response methods using unified ResponseWrapper.
+ * Base controller with standardized response methods for direct entity responses.
  * 
- * This controller provides only SUCCESS response methods and execution wrappers.
+ * This controller provides SUCCESS response methods and execution wrappers.
  * ERROR handling is delegated to GlobalExceptionHandler through thrown exceptions.
  * 
  * Controllers should:
@@ -40,36 +39,24 @@ public class BaseController {
      * Create a successful response with data
      */
     @ReadApiResponses
-    protected <T> ResponseEntity<ResponseWrapper<T>> ok(T data) {
-        return ResponseEntity.ok(ResponseWrapper.success(data));
-    }
-
-    /**
-     * Create a successful response with data and custom message
-     */
-    @ReadApiResponses
-    protected <T> ResponseEntity<ResponseWrapper<T>> ok(T data, String message) {
-        return ResponseEntity.ok(ResponseWrapper.success(data, message));
-    }
-
-    /**
-     * Create a successful response with only a message (no data)
-     */
-    @ReadApiResponses
-    protected ResponseEntity<ResponseWrapper<String>> ok(String message) {
-        return ResponseEntity.ok(ResponseWrapper.success(message, message));
+    protected <T> ResponseEntity<T> ok(T data) {
+        return ResponseEntity.ok(data);
     }
 
     /**
      * Create a created response (201)
      */
     @CreateApiResponses
-    protected <T> ResponseEntity<ResponseWrapper<T>> created(T data, String message) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ResponseWrapper.success(data, message));
+    protected <T> ResponseEntity<T> created(T data) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(data);
     }
 
-    // ===================== LIST RESPONSES ======================
+    /**
+     * Create a no content response (204) for successful operations without data
+     */
+    protected ResponseEntity<Void> noContent() {
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
 
     // ===================== PAGE RESPONSES ======================
 
@@ -77,26 +64,28 @@ public class BaseController {
      * Create a successful page response with data
      */
     @ReadApiResponses
-    protected <T> ResponseEntity<ResponseWrapper<Page<T>>> okPage(Page<T> page) {
-        return ResponseEntity.ok(ResponseWrapper.successPage(page));
+    protected <T> ResponseEntity<Page<T>> okPage(Page<T> page) {
+        return ResponseEntity.ok(page);
     }
 
+    // ===================== LIST RESPONSES ======================
+
     /**
-     * Create a successful page response with data and custom message
+     * Create a successful list response with data
      */
     @ReadApiResponses
-    protected <T> ResponseEntity<ResponseWrapper<Page<T>>> okPage(Page<T> page, String message) {
-        return ResponseEntity.ok(ResponseWrapper.successPage(page, message));
+    protected <T> ResponseEntity<List<T>> okList(List<T> list) {
+        return ResponseEntity.ok(list);
     }
 
-
+    // ===================== SLICE RESPONSES ======================
 
     /**
-     * Create a no content response (204) for successful operations without data
+     * Create a successful slice response with data
      */
-    protected ResponseEntity<ResponseWrapper<String>> noContent(String message) {
-        return ResponseEntity.status(HttpStatus.NO_CONTENT)
-                .body(ResponseWrapper.success(null, message));
+    @ReadApiResponses
+    protected <T> ResponseEntity<Slice<T>> okSlice(Slice<T> slice) {
+        return ResponseEntity.ok(slice);
     }
 
     // ===================== EXECUTION METHODS ======================
@@ -106,19 +95,19 @@ public class BaseController {
      * Exceptions are handled by GlobalExceptionHandler
      */
     @ReadApiResponses
-    protected ResponseEntity<ResponseWrapper<String>> executeVoid(String operationName, String successMessage, VoidOperation operation) {
+    protected ResponseEntity<Void> executeVoid(String operationName, VoidOperation operation) {
         operation.execute();
-        return ok(successMessage);
+        return noContent();
     }
 
     /**
-     * Execute an operation with void return (for operations like delete, update status)
+     * Execute an operation with void return and custom success message (for operations like delete, update status)
      * Exceptions are handled by GlobalExceptionHandler
      */
     @ReadApiResponses
-    protected ResponseEntity<ResponseWrapper<String>> executeVoid(String operationName, VoidOperation operation) {
+    protected ResponseEntity<Void> executeVoid(String operationName, String successMessage, VoidOperation operation) {
         operation.execute();
-        return ok("Operation " + operationName + " completed successfully");
+        return noContent();
     }
 
     /**
@@ -126,19 +115,19 @@ public class BaseController {
      * Exceptions are handled by GlobalExceptionHandler
      */
     @ReadApiResponses
-    protected <T> ResponseEntity<ResponseWrapper<T>> execute(String operation, OperationSupplier<T> supplier) {
+    protected <T> ResponseEntity<T> execute(String operation, OperationSupplier<T> supplier) {
         T result = supplier.get();
-        return ok(result, "Operation " + operation + " completed successfully");
+        return ok(result);
     }
 
     /**
-     * Execute an operation with custom success message
+     * Execute an operation with standardized error handling and custom success message
      * Exceptions are handled by GlobalExceptionHandler
      */
     @ReadApiResponses
-    protected <T> ResponseEntity<ResponseWrapper<T>> execute(String operation, String successMessage, OperationSupplier<T> supplier) {
+    protected <T> ResponseEntity<T> execute(String operation, String successMessage, OperationSupplier<T> supplier) {
         T result = supplier.get();
-        return ok(result, successMessage);
+        return ok(result);
     }
 
     /**
@@ -146,77 +135,55 @@ public class BaseController {
      * Exceptions are handled by GlobalExceptionHandler
      */
     @CreateApiResponses
-    protected <T> ResponseEntity<ResponseWrapper<T>> executeCreate(String operation, String successMessage, OperationSupplier<T> supplier) {
+    protected <T> ResponseEntity<T> executeCreate(String operation, OperationSupplier<T> supplier) {
         T result = supplier.get();
-        return created(result, successMessage);
+        return created(result);
     }
 
     /**
-     * Execute a CREATE operation with 201 Created response
+     * Execute a CREATE operation with 201 Created response and custom success message
      * Exceptions are handled by GlobalExceptionHandler
      */
     @CreateApiResponses
-    protected <T> ResponseEntity<ResponseWrapper<T>> executeCreate(String operation, OperationSupplier<T> supplier) {
+    protected <T> ResponseEntity<T> executeCreate(String operation, String successMessage, OperationSupplier<T> supplier) {
         T result = supplier.get();
-        return created(result, "Operation " + operation + " completed successfully");
+        return created(result);
     }
-
-    /**
-     * Execute a list operation with standardized error handling
-     */
-
-    // ===================== LIST OPERATIONS ======================
 
     /**
      * Execute operation that returns a List<T>
      * 
      * @param operation Description of the operation for logging
      * @param supplier  Function that returns List<T>
-     * @return ResponseEntity with wrapped List<T>
+     * @return ResponseEntity with List<T>
      */
     @ReadApiResponses
-    protected <T> ResponseEntity<ResponseWrapper<List<T>>> executeList(String operation, OperationSupplier<List<T>> supplier) {
+    protected <T> ResponseEntity<List<T>> executeList(String operation, OperationSupplier<List<T>> supplier) {
         List<T> result = supplier.get();
-        return ResponseEntity.ok(ResponseWrapper.successList(result));
+        return okList(result);
     }
-
-    // ===================== SLICE OPERATIONS ======================
 
     /**
      * Execute operation that returns a Slice<T>
      * 
      * @param operation Description of the operation for logging
      * @param supplier  Function that returns Slice<T>
-     * @return ResponseEntity with wrapped Slice<T>
+     * @return ResponseEntity with Slice<T>
      */
     @ReadApiResponses
-    protected <T> ResponseEntity<ResponseWrapper<Slice<T>>> executeSlice(String operation, OperationSupplier<Slice<T>> supplier) {
+    protected <T> ResponseEntity<Slice<T>> executeSlice(String operation, OperationSupplier<Slice<T>> supplier) {
         Slice<T> result = supplier.get();
-        return ResponseEntity.ok(ResponseWrapper.successSlice(result));
-    }
-
-    // ===================== PAGINATED OPERATIONS ======================
-
-        /**
-     * Execute a paginated read operation with automatic message
-     * Exceptions are handled by GlobalExceptionHandler
-     */
-    @ReadApiResponses
-    protected <T> ResponseEntity<ResponseWrapper<Page<T>>> executePaginated(String operation, OperationSupplier<Page<T>> supplier) {
-        Page<T> page = supplier.get();
-        return ResponseEntity.ok(ResponseWrapper.successPage(page, 
-            String.format("Page %d of %d (%d total items)", 
-                page.getNumber() + 1, page.getTotalPages(), page.getTotalElements())));
+        return okSlice(result);
     }
 
     /**
-     * Execute a paginated read operation with custom success message
+     * Execute a paginated read operation
      * Exceptions are handled by GlobalExceptionHandler
      */
     @ReadApiResponses
-    protected <T> ResponseEntity<ResponseWrapper<Page<T>>> executePaginated(String operation, String successMessage, OperationSupplier<Page<T>> supplier) {
+    protected <T> ResponseEntity<Page<T>> executePaginated(String operation, OperationSupplier<Page<T>> supplier) {
         Page<T> page = supplier.get();
-        return ResponseEntity.ok(ResponseWrapper.successPage(page, successMessage));
+        return okPage(page);
     }
 
     /**

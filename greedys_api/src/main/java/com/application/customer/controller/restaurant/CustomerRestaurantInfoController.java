@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
 import com.application.common.service.RestaurantService;
-import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.RestaurantDTO;
 import com.application.common.web.dto.restaurant.SlotDTO;
 
@@ -38,14 +37,14 @@ public class CustomerRestaurantInfoController extends BaseController {
 	@Operation(summary = "Get all restaurants", description = "Retrieve all restaurants")
 	@GetMapping("")
 	
-    public ResponseEntity<ResponseWrapper<Page<RestaurantDTO>>> getRestaurants(
+    public ResponseEntity<Page<RestaurantDTO>> getRestaurants(
     		@PageableDefault(size = 10, sort = "id") Pageable pageable) {
 		return executePaginated("get all restaurants", () -> restaurantService.findAllPaginated(pageable));
 	}
 
 	@GetMapping("/{restaurantId}/open-days")
 	@Operation(summary = "Get open days of a restaurant", description = "Retrieve the open days of a restaurant")
-	public ResponseEntity<ResponseWrapper<List<String>>> getOpenDays(
+	public ResponseEntity<List<String>> getOpenDays(
 			@PathVariable Long restaurantId,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end) {
@@ -58,7 +57,7 @@ public class CustomerRestaurantInfoController extends BaseController {
 	@GetMapping("/{restaurantId}/closed-days")
 	@Operation(summary = "Get closed days of a restaurant", description = "Retrieve the closed days of a restaurant")
 	
-    public ResponseEntity<ResponseWrapper<List<LocalDate>>> getClosedDays(
+    public ResponseEntity<List<LocalDate>> getClosedDays(
 			@PathVariable Long restaurantId,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end) {
@@ -71,7 +70,7 @@ public class CustomerRestaurantInfoController extends BaseController {
 	@GetMapping("/{restaurantId}/day-slots")
 	@Operation(summary = "Get day slots of a restaurant", description = "Retrieve the daily slots of a restaurant")
 	
-    public ResponseEntity<ResponseWrapper<List<SlotDTO>>> getDaySlots(
+    public ResponseEntity<List<SlotDTO>> getDaySlots(
 			@PathVariable Long restaurantId,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate date) {
 		return executeList("get day slots", () -> {
@@ -83,7 +82,7 @@ public class CustomerRestaurantInfoController extends BaseController {
 	@Operation(summary = "Search restaurants by name", description = "Search for restaurants by name")
 	@GetMapping("/search")
 	
-    public ResponseEntity<ResponseWrapper<List<RestaurantDTO>>> searchRestaurants(@RequestParam String name) {
+    public ResponseEntity<List<RestaurantDTO>> searchRestaurants(@RequestParam String name) {
 		return executeList("search restaurants", () -> {
 			Collection<RestaurantDTO> restaurants = restaurantService.findBySearchTerm(name);
 			return restaurants instanceof List ? (List<RestaurantDTO>) restaurants : List.copyOf(restaurants);
@@ -92,7 +91,7 @@ public class CustomerRestaurantInfoController extends BaseController {
 
 	@GetMapping("/{restaurantId}/types")
 	@Operation(summary = "Get types of a restaurant", description = "Retrieve the types of a restaurant")
-	public ResponseEntity<ResponseWrapper<List<String>>> getRestaurantTypesNames(@PathVariable Long restaurantId) {
+	public ResponseEntity<List<String>> getRestaurantTypesNames(@PathVariable Long restaurantId) {
 		return executeList("get restaurant types", () -> {
 			Collection<String> types = restaurantService.getRestaurantTypesNames(restaurantId);
 			return types instanceof List ? (List<String>) types : List.copyOf(types);
@@ -101,3 +100,4 @@ public class CustomerRestaurantInfoController extends BaseController {
 
 
 }
+

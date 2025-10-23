@@ -7,15 +7,10 @@ import java.util.TreeMap;
 
 import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springdoc.core.models.GroupedOpenApi;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
-import com.application.common.spring.swagger.customizer.MetadataCollector;
-import com.application.common.spring.swagger.customizer.SwaggerSpecificationGenerator;
-import com.application.common.spring.swagger.customizer.TagDefinitionCustomizer;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -28,19 +23,9 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 public class SwaggerConfig implements WebMvcConfigurer {
 
     // =========================================
-    // NUOVA ARCHITETTURA RISTRUTTURATA ATTIVA
+    // ARCHITETTURA SEMPLIFICATA
+    // ResponseWrapper rimosso - risposte dirette
     // =========================================
-    // I nuovi customizer sono attivati tramite @Component:
-    // - MetadataCollector (Order 500) - raccoglie metadati 
-    // - SwaggerSpecificationGenerator (Order 1000) - genera schemi
-    // - MetadataRegistry - registry centralizzato con caching
-    // =========================================
-    
-    @Autowired
-    private MetadataCollector metadataCollector;
-    
-    @Autowired
-    private SwaggerSpecificationGenerator swaggerSpecificationGenerator;
 
     // Package scanning configuration for DTOs - TEMPORARY: all DTOs until proper reorganization
     private static final List<String> ALL_DTO_PACKAGES = Arrays.asList(
@@ -86,7 +71,7 @@ public class SwaggerConfig implements WebMvcConfigurer {
         };
     }
 
-        @Bean
+    @Bean
     GroupedOpenApi adminApi() {
         return GroupedOpenApi.builder()
                 .group("admin-api")
@@ -99,13 +84,8 @@ public class SwaggerConfig implements WebMvcConfigurer {
                     ALL_DTO_PACKAGES.get(3)  // common.web.dto
                 )
                 .pathsToMatch("/admin/**")
-                // NUOVA ARCHITETTURA: customizer tramite dependency injection
-                .addOperationCustomizer(metadataCollector)
-                // OPENAPI CUSTOMIZERS SECOND (process extension data)
-                .addOpenApiCustomizer(new TagDefinitionCustomizer("Admin"))  // Per la modifica delle tag globali
                 .addOpenApiCustomizer(groupCustomizer())
                 .addOpenApiCustomizer(sortSchemasCustomizer())
-                .addOpenApiCustomizer(swaggerSpecificationGenerator)
                 .build();
     }
 
@@ -120,13 +100,8 @@ public class SwaggerConfig implements WebMvcConfigurer {
                     ALL_DTO_PACKAGES.get(3)  // common.web.dto
                 )
                 .pathsToMatch("/customer/**")
-                // NUOVA ARCHITETTURA: customizer tramite dependency injection
-                .addOperationCustomizer(metadataCollector)
-                // OPENAPI CUSTOMIZERS SECOND (process extension data)
-                .addOpenApiCustomizer(new TagDefinitionCustomizer("Customer"))  // Per la modifica delle tag globali
                 .addOpenApiCustomizer(groupCustomizer())
                 .addOpenApiCustomizer(sortSchemasCustomizer())
-                .addOpenApiCustomizer(swaggerSpecificationGenerator)
                 .build();
     }
 
@@ -141,13 +116,8 @@ public class SwaggerConfig implements WebMvcConfigurer {
                     ALL_DTO_PACKAGES.get(3)  // common.web.dto
                 )
                 .pathsToMatch("/restaurant/**")
-                // NUOVA ARCHITETTURA: customizer tramite dependency injection
-                .addOperationCustomizer(metadataCollector)
-                // OPENAPI CUSTOMIZERS SECOND (process extension data)
-                .addOpenApiCustomizer(new TagDefinitionCustomizer("Restaurant"))  // Per la modifica delle tag globali
                 .addOpenApiCustomizer(groupCustomizer())
                 .addOpenApiCustomizer(sortSchemasCustomizer())
-                .addOpenApiCustomizer(swaggerSpecificationGenerator)
                 .build();
     }
 
@@ -166,10 +136,7 @@ public class SwaggerConfig implements WebMvcConfigurer {
     }
 
     private Components baseComponents() {
-        Components components = new Components();
-        // Non definiamo risposte generiche qui perché vengono gestite dal SwaggerSpecificationGenerator
-        // che applica i tipi specifici per ogni operazione
-        return components;
+        return new Components();
     }
 
     private SecurityScheme bearerScheme() {

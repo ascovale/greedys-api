@@ -16,7 +16,6 @@ import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.CreateApiResponses;
 import com.application.common.persistence.model.reservation.Reservation;
 import com.application.common.service.reservation.ReservationService;
-import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.reservations.ReservationDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,7 +36,7 @@ public class AdminReservationController extends BaseController {
 	
 	@PostMapping("/new")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_WRITE')")
-	@CreateApiResponses	public ResponseEntity<ResponseWrapper<ReservationDTO>> createReservation(@RequestBody AdminNewReservationDTO DTO) {
+	@CreateApiResponses	public ResponseEntity<ReservationDTO> createReservation(@RequestBody AdminNewReservationDTO DTO) {
 		return executeCreate("create reservation", () -> {
 			return adminReservationService.createReservation(DTO);
 		});
@@ -46,25 +45,27 @@ public class AdminReservationController extends BaseController {
 	@PutMapping("/{reservationId}/accept")
 	@Operation(summary = "Accept a reservation", description = "Endpoint to accept a reservation by its ID")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_WRITE')")
-	public ResponseEntity<ResponseWrapper<String>> acceptReservation(@PathVariable Long reservationId) {
-		return executeVoid("accept reservation", "Reservation accepted successfully", () -> {
+	public ResponseEntity<String> acceptReservation(@PathVariable Long reservationId) {
+		return execute("accept reservation", () -> {
 			reservationService.setStatus(reservationId, Reservation.Status.ACCEPTED);
+			return "Reservation accepted successfully";
 		});
 	}
 
 	@Operation(summary = "Reject a reservation", description = "Endpoint to reject a reservation by its ID")
 	@PutMapping("/{reservationId}/reject")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_WRITE')")
-	public ResponseEntity<ResponseWrapper<String>> rejectReservation(@PathVariable Long reservationId) {
-		return executeVoid("reject reservation", "Reservation rejected successfully", () -> {
+	public ResponseEntity<String> rejectReservation(@PathVariable Long reservationId) {
+		return execute("reject reservation", () -> {
 			reservationService.setStatus(reservationId, Reservation.Status.REJECTED);
+			return "Reservation rejected successfully";
 		});
 	}
 
 	@Operation(summary = "Mark a reservation as no show", description = "Endpoint to mark a reservation as no show by its ID")
 	@PutMapping("/{reservationId}/no_show")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_WRITE')")
-	public ResponseEntity<ResponseWrapper<ReservationDTO>> markReservationNoShow(@PathVariable Long reservationId) {
+	public ResponseEntity<ReservationDTO> markReservationNoShow(@PathVariable Long reservationId) {
 		return execute("mark reservation no show", "Reservation marked as no show", () -> {
 			return reservationService.setStatus(reservationId, Reservation.Status.NO_SHOW);
 		});
@@ -73,7 +74,7 @@ public class AdminReservationController extends BaseController {
 	@Operation(summary = "Mark a reservation as seated", description = "Endpoint to mark a reservation as seated by its ID")
 	@PutMapping("/{reservationId}/seated")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_WRITE')")
-	public ResponseEntity<ResponseWrapper<ReservationDTO>> markReservationSeated(@PathVariable Long reservationId) {
+	public ResponseEntity<ReservationDTO> markReservationSeated(@PathVariable Long reservationId) {
 		return execute("mark reservation seated", "Reservation marked as seated", () -> {
 			return reservationService.setStatus(reservationId, Reservation.Status.SEATED);
 		});
@@ -82,7 +83,7 @@ public class AdminReservationController extends BaseController {
 	@Operation(summary = "Delete a reservation", description = "Endpoint to delete a reservation by its ID")
 	@PutMapping("/{reservationId}/delete")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_WRITE')")
-	public ResponseEntity<ResponseWrapper<ReservationDTO>> deleteReservation(@PathVariable Long reservationId) {
+	public ResponseEntity<ReservationDTO> deleteReservation(@PathVariable Long reservationId) {
 		return execute("delete reservation", "Reservation deleted successfully", () -> {
 			return reservationService.setStatus(reservationId, Reservation.Status.DELETED);
 		});
@@ -91,7 +92,7 @@ public class AdminReservationController extends BaseController {
 	@Operation(summary = "Get reservation by ID", description = "Endpoint to get a reservation by its ID")
 	@GetMapping("/{reservationId}")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_READ')")
-    public ResponseEntity<ResponseWrapper<ReservationDTO>> getReservation(@PathVariable Long reservationId) {
+    public ResponseEntity<ReservationDTO> getReservation(@PathVariable Long reservationId) {
 		return execute("get reservation", () -> {
 			return adminReservationService.findReservationById(reservationId);
 		});
@@ -100,9 +101,10 @@ public class AdminReservationController extends BaseController {
 	@Operation(summary = "Modify a reservation", description = "Endpoint to modify an existing reservation")
 	@PutMapping("/{reservationId}/modify")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_WRITE')")
-    public ResponseEntity<ResponseWrapper<ReservationDTO>> modifyReservation(@PathVariable Long reservationId, @RequestBody AdminNewReservationDTO reservationDto) {
+    public ResponseEntity<ReservationDTO> modifyReservation(@PathVariable Long reservationId, @RequestBody AdminNewReservationDTO reservationDto) {
 		return execute("modify reservation", () -> {
 			return adminReservationService.modifyReservation(reservationId, reservationDto);
 		});
 	}
 }
+

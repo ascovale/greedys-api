@@ -1,4 +1,3 @@
-
 package com.application.admin.controller;
 
 import org.springframework.data.domain.Page;
@@ -17,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.CreateApiResponses;
-import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.ServiceTypeDto;
 import com.application.restaurant.service.ServiceService;
 
@@ -40,7 +38,7 @@ public class AdminServicesController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_READ')")
     @GetMapping("/types")
     @Operation(summary = "Get all service types", description = "Retrieve all service types.")
-    public ResponseEntity<ResponseWrapper<Page<ServiceTypeDto>>> getServiceTypes(
+    public ResponseEntity<Page<ServiceTypeDto>> getServiceTypes(
             @PageableDefault(size = 10, sort = "id") Pageable pageable) {
         return executePaginated("get service types", () -> serviceService.getServiceTypes(pageable));
     }
@@ -49,7 +47,7 @@ public class AdminServicesController extends BaseController {
     @Operation(summary = "Create a new service type", description = "This method creates a new service type in the system.")
     @CreateApiResponses
     @PostMapping("/type/new")
-    public ResponseEntity<ResponseWrapper<String>> newServiceType(@RequestBody String serviceTypeString) {
+    public ResponseEntity<String> newServiceType(@RequestBody String serviceTypeString) {
         return executeCreate("create service type", () -> {
             serviceService.newServiceType(serviceTypeString);
             return "Service type created successfully";
@@ -59,7 +57,7 @@ public class AdminServicesController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
     @Operation(summary = "Update a service type", description = "This method updates an existing service type.")
     @PutMapping("/type/{typeId}/update")
-    public ResponseEntity<ResponseWrapper<ServiceTypeDto>> updateServiceType(@PathVariable Long typeId, @RequestBody String serviceTypeString) {
+    public ResponseEntity<ServiceTypeDto> updateServiceType(@PathVariable Long typeId, @RequestBody String serviceTypeString) {
         return execute("update service type", () -> {
             return serviceService.updateServiceTypeAndReturn(typeId, serviceTypeString);
         });
@@ -68,9 +66,11 @@ public class AdminServicesController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
     @Operation(summary = "Delete a service type", description = "This method deletes a service type by its ID.")
     @DeleteMapping("/type/{typeId}/delete")
-    public ResponseEntity<ResponseWrapper<String>> deleteServiceType(@PathVariable Long typeId) {
-        return executeVoid("delete service type", "Service type deleted successfully", () -> {
+    public ResponseEntity<String> deleteServiceType(@PathVariable Long typeId) {
+        return execute("delete service type", () -> {
             serviceService.deleteServiceType(typeId);
+            return "Service type deleted successfully";
         });
     }
 }
+

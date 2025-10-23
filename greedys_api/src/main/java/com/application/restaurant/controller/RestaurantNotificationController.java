@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
-import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.notification.RestaurantNotificationDTO;
 import com.application.restaurant.persistence.model.user.RUser;
 import com.application.restaurant.service.RestaurantNotificationService;
@@ -37,7 +36,7 @@ public class RestaurantNotificationController extends BaseController {
 
     @Operation(summary = "Get unread notifications", description = "Returns a pageable list of unread notifications")
     @GetMapping("/unread/{page}/{size}")
-    public ResponseEntity<ResponseWrapper<Page<RestaurantNotificationDTO>>> getUnreadNotifications(
+    public ResponseEntity<Page<RestaurantNotificationDTO>> getUnreadNotifications(
             @PathVariable int page,
             @PathVariable int size) {
         return executePaginated("get unread notifications", () -> {
@@ -48,7 +47,7 @@ public class RestaurantNotificationController extends BaseController {
 
     @Operation(summary = "Set notification as read", description = "Sets the notification with the given ID as the given read boolean")
     @PutMapping("/read")
-    public ResponseEntity<ResponseWrapper<RestaurantNotificationDTO>> setNotificationAsRead(
+    public ResponseEntity<RestaurantNotificationDTO> setNotificationAsRead(
             @RequestParam Long notificationId, @RequestParam Boolean read) {
         return execute("set notification as read", () -> 
             restaurantNotificationService.updateNotificationReadStatusAndReturnDTO(notificationId, read));
@@ -56,7 +55,7 @@ public class RestaurantNotificationController extends BaseController {
 
     @Operation(summary = "Get all notifications", description = "Returns a pageable list of all notifications")
     @GetMapping("/all/{page}/{size}")
-    public ResponseEntity<ResponseWrapper<Page<RestaurantNotificationDTO>>> getAllNotifications(
+    public ResponseEntity<Page<RestaurantNotificationDTO>> getAllNotifications(
             @PathVariable int page,
             @PathVariable int size) {
         return executePaginated("get all notifications", () -> {
@@ -67,14 +66,14 @@ public class RestaurantNotificationController extends BaseController {
 
     @Operation(summary = "Get a specific notification", description = "Returns the notification with the given ID")
     @GetMapping("/{notificationId}")
-    public ResponseEntity<ResponseWrapper<RestaurantNotificationDTO>> getRestaurantNotification(
+    public ResponseEntity<RestaurantNotificationDTO> getRestaurantNotification(
             @PathVariable Long notificationId) {
         return execute("get notification", () -> restaurantNotificationService.getNotificationByIdDTO(notificationId));
     }
 
     @Operation(summary = "Set all notifications as read", description = "Sets all notifications for the given user as read")
     @PutMapping("/all-read")
-    public ResponseEntity<ResponseWrapper<List<RestaurantNotificationDTO>>> setAllNotificationsAsRead(@AuthenticationPrincipal RUser rUser) {
+    public ResponseEntity<List<RestaurantNotificationDTO>> setAllNotificationsAsRead(@AuthenticationPrincipal RUser rUser) {
         return execute("mark all notifications as read", () -> 
             restaurantNotificationService.markAllNotificationsAsReadAndReturn(rUser.getId()));
     }
@@ -82,8 +81,9 @@ public class RestaurantNotificationController extends BaseController {
     @Operation(summary = "Get unread notifications count", description = "Returns the count of unread notifications")
     
     @GetMapping("/unread/count")
-    public ResponseEntity<ResponseWrapper<Long>> getUnreadNotificationsCount(@AuthenticationPrincipal RUser rUser) {
+    public ResponseEntity<Long> getUnreadNotificationsCount(@AuthenticationPrincipal RUser rUser) {
         return execute("get unread notifications count", () -> 
             restaurantNotificationService.countUnreadNotifications(rUser).longValue());
     }
 }
+

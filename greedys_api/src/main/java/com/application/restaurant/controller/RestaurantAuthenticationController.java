@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
 import com.application.common.security.jwt.JwtUtil;
-import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.RestaurantDTO;
 import com.application.common.web.dto.security.AuthResponseDTO;
 import com.application.common.web.dto.security.RefreshTokenRequestDTO;
@@ -48,7 +47,7 @@ public class RestaurantAuthenticationController extends BaseController {
     @Operation(summary = "Get list of restaurants for hub user", description = "Given a hub JWT, returns the list of restaurants associated with the hub user")
     @GetMapping(value = "/restaurants", produces = "application/json")
     
-    public ResponseEntity<ResponseWrapper<Page<RestaurantDTO>>> restaurants(
+    public ResponseEntity<Page<RestaurantDTO>> restaurants(
             @Parameter(hidden = true) @RequestHeader("Authorization") String authHeader) {
         return executePaginated("get restaurants for hub user", () -> {
             try {
@@ -74,7 +73,7 @@ public class RestaurantAuthenticationController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_HUB')")
     @Operation(summary = "Select a restaurant after intermediate login", description = "Given a hub JWT and a restaurantId, returns a JWT for the selected restaurant user")
     @GetMapping(value = "/select-restaurant", produces = "application/json")
-    public ResponseEntity<ResponseWrapper<AuthResponseDTO>> selectRestaurant(@RequestParam Long restaurantId) {
+    public ResponseEntity<AuthResponseDTO> selectRestaurant(@RequestParam Long restaurantId) {
         return execute("select restaurant", () -> {
             if (restaurantId == null || restaurantId <= 0) {
                 throw new IllegalArgumentException("Invalid restaurantId: " + restaurantId);
@@ -108,7 +107,7 @@ public class RestaurantAuthenticationController extends BaseController {
 
     @Operation(summary = "Refresh hub token", description = "Refresh a hub JWT token using a hub refresh token")
     @PostMapping(value = "/refresh/hub", produces = "application/json")
-    public ResponseEntity<ResponseWrapper<AuthResponseDTO>> refreshHubToken(
+    public ResponseEntity<AuthResponseDTO> refreshHubToken(
             @RequestBody RefreshTokenRequestDTO refreshRequest) {
         return execute("refresh hub token",
                 () -> restaurantAuthenticationService.refreshHubToken(refreshRequest.getRefreshToken()));
@@ -116,7 +115,7 @@ public class RestaurantAuthenticationController extends BaseController {
 
     @Operation(summary = "Refresh restaurant user token", description = "Refresh a restaurant user JWT token using a refresh token")
     @PostMapping(value = "/refresh", produces = "application/json")
-    public ResponseEntity<ResponseWrapper<AuthResponseDTO>> refreshRUserToken(
+    public ResponseEntity<AuthResponseDTO> refreshRUserToken(
             @RequestBody RefreshTokenRequestDTO refreshRequest) {
         return execute("refresh restaurant user token",
                 () -> restaurantAuthenticationService.refreshRUserToken(refreshRequest.getRefreshToken()));

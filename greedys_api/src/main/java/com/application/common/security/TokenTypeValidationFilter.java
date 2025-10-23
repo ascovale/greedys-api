@@ -6,6 +6,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.application.common.security.jwt.JwtUtil;
+import com.application.common.web.ErrorDetails;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -149,18 +152,17 @@ public class TokenTypeValidationFilter extends OncePerRequestFilter {
     }
     
     /**
-     * Metodo generico per scrivere risposte di errore in formato JSON compatibile con ResponseWrapper
+     * Metodo generico per scrivere risposte di errore in formato JSON
      */
     private void writeErrorResponse(HttpServletResponse response, int status, String message, String errorCode) throws IOException {
         response.setStatus(status);
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         
-        com.application.common.web.ResponseWrapper<com.application.common.web.ErrorDetails> errorResponse = 
-            com.application.common.web.ResponseWrapper.error(message, errorCode);
+        ErrorDetails errorResponse = ErrorDetails.of(errorCode, message);
         
-        com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
-        objectMapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
         String jsonResponse = objectMapper.writeValueAsString(errorResponse);
         response.getWriter().write(jsonResponse);
     }
