@@ -3,6 +3,7 @@ package com.application.common.persistence.model.user;
 import java.util.List;
 
 import io.swagger.v3.oas.annotations.Hidden;
+//PROVA
 
 @Hidden
 public interface BaseRole<T extends BasePrivilege> {
