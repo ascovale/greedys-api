@@ -29,7 +29,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * Refactored Reservation entity with centralized auditing and reduced duplication.
+ * Reservation entity for managing restaurant reservations.
+ * This class is hidden from OpenAPI documentation to prevent exposure of internal JPA model structure.
+ * Internal model - use ReservationDTO for API responses.
  */
 @Hidden
 @Entity
