@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
 import com.application.common.service.RestaurantService;
-import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.RestaurantDTO;
 import com.application.common.web.dto.security.AuthResponseDTO;
 import com.application.restaurant.service.authentication.RestaurantAuthenticationService;
@@ -42,7 +41,7 @@ public class RestaurantRegistrationController extends BaseController {
 
     @Operation(summary = "Request to register a new restaurant", description = "Request to register a new restaurant")
     @PostMapping(value = "/new")
-    public ResponseEntity<ResponseWrapper<RestaurantDTO>> registerRestaurant(@RequestBody NewRestaurantDTO restaurantDto) {
+    public ResponseEntity<RestaurantDTO> registerRestaurant(@RequestBody NewRestaurantDTO restaurantDto) {
         return executeCreate("register restaurant", "Restaurant registered successfully", () -> {
             log.debug("Registering restaurant with information:", restaurantDto);
             return restaurantService.registerRestaurant(restaurantDto);
@@ -54,15 +53,17 @@ public class RestaurantRegistrationController extends BaseController {
     @Operation(summary = "Resend registration token", description = "Resends the registration token")
     @GetMapping(value = "/resend_token")
     @ResponseBody
-    public ResponseEntity<ResponseWrapper<String>> resendRegistrationToken(final HttpServletRequest request,
+    public ResponseEntity<String> resendRegistrationToken(final HttpServletRequest request,
             @RequestParam("token") final String existingToken) {
-        return executeVoid("resend registration token", () -> 
-            restaurantAuthenticationService.resendRegistrationToken(request, existingToken));
+        return execute("resend registration token", () -> {
+            restaurantAuthenticationService.resendRegistrationToken(request, existingToken);
+            return "Registration token resent successfully";
+        });
     }
 
     @Operation(summary = "Request password reset", description = "Sends a password reset token to the restaurant user's email")
     @PostMapping(value = "/password/forgot")
-    public ResponseEntity<ResponseWrapper<String>> forgotPassword(@RequestParam("email") final String userEmail,
+    public ResponseEntity<String> forgotPassword(@RequestParam("email") final String userEmail,
             final HttpServletRequest request) {
         return execute("forgot password", () -> {
             ResponseEntity<String> response = restaurantAuthenticationService.forgotPassword(userEmail, request);
@@ -73,13 +74,13 @@ public class RestaurantRegistrationController extends BaseController {
     @Operation(summary = "Change restaurant and get a new JWT", description = "Switches the restaurant and returns a new JWT for the specified restaurant ID")
     @PreAuthorize("@securityRUserService.hasPermissionForRestaurant(#restaurantId)")
     @PostMapping(value = "/change-restaurant", produces = "application/json")
-    public ResponseEntity<ResponseWrapper<AuthResponseDTO>> changeRestaurant(@RequestParam Long restaurantId) {
+    public ResponseEntity<AuthResponseDTO> changeRestaurant(@RequestParam Long restaurantId) {
         return execute("change restaurant", () -> restaurantAuthenticationService.changeRestaurant(restaurantId));
     }
 
     @Operation(summary = "Confirm restaurant user registration", description = "Conferma la registrazione")
     @GetMapping(value = "/confirm")
-    public ResponseEntity<ResponseWrapper<String>> confirmRUserRegistration(final HttpServletRequest request,
+    public ResponseEntity<String> confirmRUserRegistration(final HttpServletRequest request,
             @RequestParam final String token) throws UnsupportedEncodingException {
         return execute("confirm registration", () -> {
             // Esegue la conferma e ritorna un messaggio di successo
@@ -90,7 +91,7 @@ public class RestaurantRegistrationController extends BaseController {
 
     @Operation(summary = "Confirm password change with token", description = "Confirms the password change using a token")
     @PutMapping(value = "/password/confirm")
-    public ResponseEntity<ResponseWrapper<String>> confirmPasswordChange(
+    public ResponseEntity<String> confirmPasswordChange(
             @Parameter(description = "Password reset token") @RequestParam final String token) {
         return execute("confirm password change", () -> restaurantAuthenticationService.confirmPasswordChange(token));
     }
@@ -119,3 +120,4 @@ public class RestaurantRegistrationController extends BaseController {
      * }
      */
 }
+

@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.CreateApiResponses;
 import com.application.common.service.RestaurantCategoryService;
-import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.RestaurantCategoryDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,7 +37,7 @@ public class AdminCategoryController extends BaseController {
 	@GetMapping(value = "{restaurantId}/categories")
 	@Operation(summary = "Get types of a restaurant", description = "Retrieve the types of a restaurant")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
-    public ResponseEntity<ResponseWrapper<List<String>>> getRestaurantTypesNames(@PathVariable Long restaurantId) {
+    public ResponseEntity<List<String>> getRestaurantTypesNames(@PathVariable Long restaurantId) {
 		return execute("get restaurant types", () -> {
 			return restaurantCategoryService.getRestaurantTypesNames(restaurantId);
 		});
@@ -48,7 +47,7 @@ public class AdminCategoryController extends BaseController {
 	@Operation(summary = "Create category", description = "Create a new category for the specified restaurant")
 @CreateApiResponses
 	@PostMapping("/category/new")
-	public ResponseEntity<ResponseWrapper<String>> createCategory(@RequestBody RestaurantCategoryDTO restaurantCategoryDto) {
+	public ResponseEntity<String> createCategory(@RequestBody RestaurantCategoryDTO restaurantCategoryDto) {
 		return executeCreate("create category", "Category created successfully", () -> {
 			restaurantCategoryService.createRestaurantCategory(restaurantCategoryDto);
 			return "Category created successfully";
@@ -58,20 +57,21 @@ public class AdminCategoryController extends BaseController {
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
 	@Operation(summary = "Delete category", description = "Delete a category by its ID")
 	@DeleteMapping("/category/{categoryId}/delete")
-	
-	public ResponseEntity<ResponseWrapper<String>> deleteCategory(@PathVariable Long categoryId) {
-		return executeVoid("delete category", "Category deleted successfully", () -> {
+	public ResponseEntity<String> deleteCategory(@PathVariable Long categoryId) {
+		return execute("delete category", () -> {
 			restaurantCategoryService.deleteRestaurantCategory(categoryId);
+			return "Category deleted successfully";
 		});
 	}
 
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
 	@Operation(summary = "Update category", description = "Update an existing category by its ID")
 	@PutMapping("/category/{categoryId}/update")
-	public ResponseEntity<ResponseWrapper<RestaurantCategoryDTO>> updateCategory(@PathVariable Long categoryId,
+	public ResponseEntity<RestaurantCategoryDTO> updateCategory(@PathVariable Long categoryId,
 			@RequestBody RestaurantCategoryDTO restaurantCategoryDto) {
 		return execute("update category", () -> {
 			return restaurantCategoryService.updateRestaurantCategoryAndReturn(categoryId, restaurantCategoryDto);
 		});
 	}
 }
+

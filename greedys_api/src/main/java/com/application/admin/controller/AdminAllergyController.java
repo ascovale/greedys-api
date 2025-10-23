@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.CreateApiResponses;
 import com.application.common.service.AllergyService;
-import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.customer.AllergyDTO;
 import com.application.common.web.dto.customer.NewAllergyDTO;
 
@@ -35,7 +34,7 @@ public class AdminAllergyController extends BaseController {
     @Operation(summary = "Create allergy", description = "Creates a new allergy for the specified user by their ID")
     @CreateApiResponses
     @PostMapping("/new")
-    public ResponseEntity<ResponseWrapper<AllergyDTO>> createAllergy(@RequestBody NewAllergyDTO allergyDto) {
+    public ResponseEntity<AllergyDTO> createAllergy(@RequestBody NewAllergyDTO allergyDto) {
         return executeCreate("create allergy", "Allergy created successfully", () -> {
             return allergyService.createAllergy(allergyDto);
         });
@@ -44,18 +43,20 @@ public class AdminAllergyController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_WRITE')")
     @Operation(summary = "Delete allergy", description = "Deletes an allergy by its ID")
     @DeleteMapping("/{allergyId}/delete")
-    public ResponseEntity<ResponseWrapper<String>> deleteAllergy(@PathVariable Long allergyId) {
-        return executeVoid("delete allergy", "Allergy deleted successfully", () -> {
+    public ResponseEntity<String> deleteAllergy(@PathVariable Long allergyId) {
+        return execute("delete allergy", "Allergy deleted successfully", () -> {
             allergyService.deleteAllergy(allergyId);
+            return "Allergy deleted successfully";
         });
     }
 
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_WRITE')")
     @Operation(summary = "Modify allergy", description = "Modifies an existing allergy")
     @PutMapping("/{allergyId}/modify")
-    public ResponseEntity<ResponseWrapper<AllergyDTO>> modifyAllergy(@PathVariable Long allergyId, @RequestBody NewAllergyDTO allergyDto) {
+    public ResponseEntity<AllergyDTO> modifyAllergy(@PathVariable Long allergyId, @RequestBody NewAllergyDTO allergyDto) {
         return execute("modify allergy", () -> {
             return allergyService.modifyAllergyAndReturn(allergyId, allergyDto);
         });
     }
 }
+

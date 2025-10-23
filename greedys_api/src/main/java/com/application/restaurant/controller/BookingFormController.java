@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
-import com.application.common.web.ResponseWrapper;
 
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +23,7 @@ public class BookingFormController extends BaseController {
     @GetMapping("/restaurant-form")
     @ResponseBody
     
-    public ResponseEntity<ResponseWrapper<String>> getRestaurantIFrameForm(@RequestParam Long idRestaurant) {
+    public ResponseEntity<String> getRestaurantIFrameForm(@RequestParam Long idRestaurant) {
         return execute("get restaurant booking form", () -> {
             try {
                 ClassPathResource resource = new ClassPathResource("static/restaurant-booking.html");
@@ -36,3 +35,4 @@ public class BookingFormController extends BaseController {
         });
     }
 }
+

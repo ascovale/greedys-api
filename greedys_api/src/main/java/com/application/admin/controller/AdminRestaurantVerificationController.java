@@ -16,7 +16,6 @@ import com.application.admin.persistence.model.Admin;
 import com.application.admin.web.dto.verification.AdminVerificationResult;
 import com.application.admin.web.dto.verification.UserRestaurantAssociation;
 import com.application.common.controller.BaseController;
-import com.application.common.web.ResponseWrapper;
 import com.application.restaurant.service.google.RestaurantDataValidationService;
 import com.application.restaurant.service.google.RestaurantGooglePlacesService;
 import com.application.restaurant.web.dto.restaurantGoogleDTO.AdminVerificationRequestDTO;
@@ -48,7 +47,7 @@ public class AdminRestaurantVerificationController extends BaseController {
                      "Uses website domain matching, phone area correlation, and name pattern analysis."
     )
     @PostMapping("/verify-email")
-    public ResponseEntity<ResponseWrapper<AdminVerificationResult>> verifyRestaurantEmail(
+    public ResponseEntity<AdminVerificationResult> verifyRestaurantEmail(
             @RequestBody RestaurantAssociationRequestDTO request) {
         
         return execute("verify restaurant email", "Email verification analysis completed", 
@@ -74,7 +73,7 @@ public class AdminRestaurantVerificationController extends BaseController {
                      "Provides manual verification guidance when automated methods are limited."
     )
     @PostMapping("/find-contact-email")
-    public ResponseEntity<ResponseWrapper<AdminVerificationResult>> findRestaurantContactEmail(
+    public ResponseEntity<AdminVerificationResult> findRestaurantContactEmail(
             @RequestBody RestaurantAssociationRequestDTO request) {
         
         return execute("find restaurant contact email", "Contact email search completed", 
@@ -99,7 +98,7 @@ public class AdminRestaurantVerificationController extends BaseController {
                      "Returns confidence score and recommendations for admin decision."
     )
     @PostMapping("/analyze-ownership")
-    public ResponseEntity<ResponseWrapper<AdminVerificationResult>> analyzeRestaurantOwnership(
+    public ResponseEntity<AdminVerificationResult> analyzeRestaurantOwnership(
             @RequestBody RestaurantAssociationRequestDTO request) {
         
         return execute("analyze restaurant ownership", "Ownership analysis completed", 
@@ -125,7 +124,7 @@ public class AdminRestaurantVerificationController extends BaseController {
                      "This creates a permanent record of the verification decision."
     )
     @PostMapping("/approve-association")
-    public ResponseEntity<ResponseWrapper<AdminVerificationResult>> approveRestaurantAssociation(
+    public ResponseEntity<AdminVerificationResult> approveRestaurantAssociation(
             @RequestBody AdminVerificationRequestDTO request) {
         
         return execute("approve restaurant association", "Verification decision recorded", 
@@ -153,7 +152,7 @@ public class AdminRestaurantVerificationController extends BaseController {
                      "Admins can review these and make approval/rejection decisions."
     )
     @GetMapping("/pending")
-    public ResponseEntity<ResponseWrapper<Page<UserRestaurantAssociation>>> getPendingVerifications(
+    public ResponseEntity<Page<UserRestaurantAssociation>> getPendingVerifications(
             @PageableDefault(size = 10, sort = "id") Pageable pageable) {
         
         return executePaginated("get pending verifications", () -> googlePlacesService.getPendingVerifications(pageable));
@@ -169,7 +168,7 @@ public class AdminRestaurantVerificationController extends BaseController {
                      "Compares local data with Google Places data and saves validation results."
     )
     @PostMapping("/validate-restaurant/{restaurantId}")
-    public ResponseEntity<ResponseWrapper<RestaurantValidationResult>> validateRestaurantById(
+    public ResponseEntity<RestaurantValidationResult> validateRestaurantById(
             @PathVariable Long restaurantId) {
         
         return execute("validate restaurant with ID", "Restaurant validation completed", 
@@ -204,7 +203,7 @@ public class AdminRestaurantVerificationController extends BaseController {
     )
     @PostMapping("/request-association")
     // No @PreAuthorize - users can request associations
-    public ResponseEntity<ResponseWrapper<AdminVerificationResult>> requestRestaurantAssociation(
+    public ResponseEntity<AdminVerificationResult> requestRestaurantAssociation(
             @RequestBody RestaurantAssociationRequestDTO request) {
         
         return execute("request restaurant association", "Association request submitted", 
@@ -261,3 +260,4 @@ public class AdminRestaurantVerificationController extends BaseController {
         return null;
     }
 }
+

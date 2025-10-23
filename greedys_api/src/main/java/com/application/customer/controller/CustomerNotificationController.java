@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
-import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.notification.CustomerNotificationDTO;
 import com.application.common.web.dto.shared.FcmTokenDTO;
 import com.application.customer.service.CustomerFcmTokenService;
@@ -65,7 +64,7 @@ public class CustomerNotificationController extends BaseController {
 
     @Operation(summary = "Get unread notifications", description = "Returns a pageable list of unread notifications")
     @GetMapping("/unread/{page}/{size}")
-    public ResponseEntity<ResponseWrapper<Page<CustomerNotificationDTO>>> getUnreadNotifications(@PathVariable int page,
+    public ResponseEntity<Page<CustomerNotificationDTO>> getUnreadNotifications(@PathVariable int page,
             @PathVariable int size) {
         Pageable pageable = PageRequest.of(page, size);
         return executePaginated("getUnreadNotifications", () -> notificationService.getUnreadNotificationsDTO(pageable));
@@ -73,7 +72,7 @@ public class CustomerNotificationController extends BaseController {
 
     @Operation(summary = "Get all notifications", description = "Returns a pageable list of all notifications")
     @GetMapping("/all/{page}/{size}")
-    public ResponseEntity<ResponseWrapper<Page<CustomerNotificationDTO>>> getAllNotifications(@PathVariable int page,
+    public ResponseEntity<Page<CustomerNotificationDTO>> getAllNotifications(@PathVariable int page,
             @PathVariable int size) {
         Pageable pageable = PageRequest.of(page, size);
         return executePaginated("getAllNotifications", () -> notificationService.getAllNotificationsDTO(pageable));
@@ -81,14 +80,14 @@ public class CustomerNotificationController extends BaseController {
 
     @Operation(summary = "Set notification as read", description = "Sets the notification with the given ID as the given read boolean")
     @PutMapping("/read")
-    public ResponseEntity<ResponseWrapper<CustomerNotificationDTO>> setNotificationAsRead(@RequestParam Long notificationId, @RequestParam Boolean read) {
+    public ResponseEntity<CustomerNotificationDTO> setNotificationAsRead(@RequestParam Long notificationId, @RequestParam Boolean read) {
         return execute("setNotificationAsRead", () -> notificationService.markAsReadAndReturn(notificationId));
     }
 
     @Operation(summary = "Register a user's FCM token", description = "Registers a user's FCM token")
     @PostMapping("/token")
     
-    public ResponseEntity<ResponseWrapper<String>> registerUserFcmToken(@RequestBody FcmTokenDTO userFcmToken) {
+    public ResponseEntity<String> registerUserFcmToken(@RequestBody FcmTokenDTO userFcmToken) {
         return executeCreate("registerUserFcmToken", "FCM token registered successfully", () -> {
             customerFcmTokenRepository.saveUserFcmToken(userFcmToken);
             return "FCM token registered successfully";
@@ -97,7 +96,7 @@ public class CustomerNotificationController extends BaseController {
 
     @Operation(summary = "Check if a device's token is present", description = "Checks if a device's token is present")
     @GetMapping("/token/present")
-    public ResponseEntity<ResponseWrapper<String>> isDeviceTokenPresent(@RequestParam String deviceId) {
+    public ResponseEntity<String> isDeviceTokenPresent(@RequestParam String deviceId) {
         return execute("isDeviceTokenPresent", () -> {
             boolean isPresent = customerFcmTokenRepository.isDeviceTokenPresent(deviceId);
             if (isPresent) {
@@ -109,7 +108,8 @@ public class CustomerNotificationController extends BaseController {
 
     @Operation(summary = "Verify a device's token", description = "Verifies a device's token and returns the status")
     @GetMapping("/token/verify")
-    public ResponseEntity<ResponseWrapper<String>> verifyToken(@RequestParam String deviceId) {
+    public ResponseEntity<String> verifyToken(@RequestParam String deviceId) {
         return execute("verifyToken", () -> customerFcmTokenRepository.verifyTokenByDeviceId(deviceId));
     }
 }
+

@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
-import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.RoomDTO;
 import com.application.restaurant.persistence.model.user.RUser;
 import com.application.restaurant.service.RoomService;
@@ -39,7 +38,7 @@ public class RestaurantRoomController extends BaseController {
 	@GetMapping(value = "/all")
 	@Operation(summary = "Get rooms of a restaurant", description = "Retrieve the rooms of a restaurant")
 	
-    public ResponseEntity<ResponseWrapper<Page<RoomDTO>>> getRooms(
+    public ResponseEntity<Page<RoomDTO>> getRooms(
     		@AuthenticationPrincipal RUser rUser,
     		@PageableDefault(size = 10, sort = "id") Pageable pageable) {
 		return executePaginated("get restaurant rooms", () -> {
@@ -50,7 +49,7 @@ public class RestaurantRoomController extends BaseController {
 
 	@PostMapping
 	@Operation(summary = "Add a room to a restaurant", description = "Add a new room to a restaurant")
-    public ResponseEntity<ResponseWrapper<RoomDTO>> addRoom(@RequestBody NewRoomDTO roomDto,
+    public ResponseEntity<RoomDTO> addRoom(@RequestBody NewRoomDTO roomDto,
 			@AuthenticationPrincipal RUser rUser) {
 		return executeCreate("add room", "Room added successfully", () -> {
 			log.info("Adding new room for restaurant: {}", rUser.getRestaurant().getId());
@@ -60,18 +59,20 @@ public class RestaurantRoomController extends BaseController {
 
 	@DeleteMapping(value = "/remove/{roomId}")
 	@Operation(summary = "Remove a room", description = "Remove a specific room by its ID")
-	public ResponseEntity<ResponseWrapper<String>> removeRoom(@PathVariable Long roomId) {
-		return executeVoid("remove room", "Room removed successfully", () -> {
+	public ResponseEntity<String> removeRoom(@PathVariable Long roomId) {
+		return execute("remove room", () -> {
 			log.info("Removing room with ID: {}", roomId);
 			roomService.deleteRoom(roomId);
+			return "Room removed successfully";
 		});
 	}
 	@GetMapping(value = "/{roomId}")
 	@Operation(summary = "Get a specific room", description = "Retrieve details of a specific room by its ID")
-	public ResponseEntity<ResponseWrapper<RoomDTO>> getRoom(@PathVariable Long roomId) {
+	public ResponseEntity<RoomDTO> getRoom(@PathVariable Long roomId) {
 		return execute("get room", () -> {
 			log.info("Getting room with ID: {}", roomId);
 			return roomService.findRoomById(roomId);
 		});
 	}
 }
+

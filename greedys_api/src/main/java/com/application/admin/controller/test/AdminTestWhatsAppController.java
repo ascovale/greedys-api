@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
 import com.application.common.service.WhatsAppService;
-import com.application.common.web.ResponseWrapper;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -28,9 +27,10 @@ public class AdminTestWhatsAppController extends BaseController {
     @Operation(summary = "Send WhatsApp message", description = "Sends a WhatsApp message to the specified phone number")
     
     @PostMapping("/send-message")
-    public ResponseEntity<ResponseWrapper<String>> sendMessage(@RequestBody MessageRequest request) {
-        return executeVoid("send whatsapp message", "Message sent successfully", () -> {
+    public ResponseEntity<String> sendMessage(@RequestBody MessageRequest request) {
+        return execute("send whatsapp message", () -> {
             whatsappService.sendWhatsAppMessage(request.getPhoneNumber(), request.getMessage());
+            return "Message sent successfully";
         });
     }
 
@@ -78,3 +78,4 @@ public class AdminTestWhatsAppController extends BaseController {
         }
     }
 }
+

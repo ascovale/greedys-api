@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.CreateApiResponses;
 import com.application.common.service.RestaurantService;
-import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.RestaurantDTO;
 import com.application.common.web.dto.restaurant.ServiceDTO;
 
@@ -42,7 +41,7 @@ public class AdminRestaurantManagementController extends BaseController {
 	@Operation(summary = "Get services of a restaurant", description = "Retrieve the services of a restaurant")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_READ')")
 	
-    public ResponseEntity<ResponseWrapper<List<ServiceDTO>>> getServices(@PathVariable Long restaurantId) {
+    public ResponseEntity<List<ServiceDTO>> getServices(@PathVariable Long restaurantId) {
 		return executeList("get services", () -> {
 			Collection<ServiceDTO> services = restaurantService.getServices(restaurantId);
 			return services instanceof java.util.List ? (java.util.List<ServiceDTO>) services : new java.util.ArrayList<>(services);
@@ -53,25 +52,29 @@ public class AdminRestaurantManagementController extends BaseController {
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
 	@PostMapping(value = "{restaurantId}/no_show_time_limit")
 	
-	public ResponseEntity<ResponseWrapper<String>> setNoShowTimeLimit(@PathVariable Long restaurantId, @RequestParam int minutes) {
-		return executeVoid("set no show time limit", "No-show time limit updated successfully", () -> 
-			restaurantService.setNoShowTimeLimit(restaurantId, minutes));
+	public ResponseEntity<String> setNoShowTimeLimit(@PathVariable Long restaurantId, @RequestParam int minutes) {
+		return execute("set no show time limit", () -> {
+			restaurantService.setNoShowTimeLimit(restaurantId, minutes);
+			return "No-show time limit updated successfully";
+		});
 	}
 
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
 	@Operation(summary = "Enable restaurant", description = "Enable a restaurant by its primary email")
 	@PutMapping("/{restaurantId}/enable_restaurant")
 	
-	public ResponseEntity<ResponseWrapper<String>> enableRestaurant(@PathVariable Long restaurantId) {
-		return executeVoid("enable restaurant", "Restaurant enabled successfully", () -> 
-			restaurantService.enableRestaurant(restaurantId));
+	public ResponseEntity<String> enableRestaurant(@PathVariable Long restaurantId) {
+		return execute("enable restaurant", () -> {
+			restaurantService.enableRestaurant(restaurantId);
+			return "Restaurant enabled successfully";
+		});
 	}
 
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
 	@Operation(summary = "Create restaurant", description = "Create a new restaurant")
 	@CreateApiResponses
 	@PostMapping("/new")
-	public ResponseEntity<ResponseWrapper<RestaurantDTO>> createRestaurant(@RequestBody RestaurantDTO restaurantDto) {
+	public ResponseEntity<RestaurantDTO> createRestaurant(@RequestBody RestaurantDTO restaurantDto) {
 		return executeCreate("create restaurant", () -> 
 			restaurantService.createRestaurantAndReturnDTO(restaurantDto));
 	}
@@ -79,16 +82,21 @@ public class AdminRestaurantManagementController extends BaseController {
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
 	@Operation(summary = "Change restaurant email", description = "Change the email of a restaurant by its ID")
 	@PutMapping("/{restaurantId}/change_email")
-	public ResponseEntity<ResponseWrapper<String>> changeRestaurantEmail(@PathVariable Long restaurantId, @RequestParam String newEmail) {
-		return executeVoid("change restaurant email", "Restaurant email changed successfully", () -> 
-			restaurantService.changeRestaurantEmail(restaurantId, newEmail));
+	public ResponseEntity<String> changeRestaurantEmail(@PathVariable Long restaurantId, @RequestParam String newEmail) {
+		return execute("change restaurant email", () -> {
+			restaurantService.changeRestaurantEmail(restaurantId, newEmail);
+			return "Restaurant email changed successfully";
+		});
 	}
 
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
 	@Operation(summary = "Mark restaurant as deleted", description = "Mark a restaurant as deleted or disabled by its ID")
 	@DeleteMapping("/{restaurantId}/delete")
-	public ResponseEntity<ResponseWrapper<String>> markRestaurantAsDeleted(@PathVariable Long restaurantId, @RequestParam boolean deleted) {
-		return executeVoid("mark restaurant as deleted", "Restaurant marked as deleted successfully", () -> 
-			restaurantService.setRestaurantDeleted(restaurantId, deleted));
+	public ResponseEntity<String> markRestaurantAsDeleted(@PathVariable Long restaurantId, @RequestParam boolean deleted) {
+		return execute("mark restaurant as deleted", () -> {
+			restaurantService.setRestaurantDeleted(restaurantId, deleted);
+			return "Restaurant marked as deleted successfully";
+		});
 	}
 }
+

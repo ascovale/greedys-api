@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
-import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.customer.CustomerDTO;
 import com.application.common.web.dto.customer.CustomerStatisticsDTO;
 import com.application.common.web.dto.security.UpdatePasswordDTO;
@@ -48,14 +47,14 @@ public class CustomerController extends BaseController {
     @Operation(summary = "Get Customer ID", description = "Retrieves the ID of the current customer")
     @GetMapping("/id")
     
-    public ResponseEntity<ResponseWrapper<Long>> getCustomerId(@AuthenticationPrincipal Customer customer) {
+    public ResponseEntity<Long> getCustomerId(@AuthenticationPrincipal Customer customer) {
         return execute("getCustomerId", () -> {
             return customer.getId();
         });
     }
     @Operation(summary = "Update customer phone number", description = "Updates the phone number of a specific customer by their ID")
     @PutMapping("/update/phone")
-    public ResponseEntity<ResponseWrapper<CustomerDTO>> updatePhone(@RequestParam String phone,@AuthenticationPrincipal Customer customer) {
+    public ResponseEntity<CustomerDTO> updatePhone(@RequestParam String phone,@AuthenticationPrincipal Customer customer) {
         return execute("updatePhone", "Phone number updated successfully", () -> {
             return customerService.updatePhone(customer.getId(), phone);
         });
@@ -63,7 +62,7 @@ public class CustomerController extends BaseController {
 
     @Operation(summary = "Update customer date of birth", description = "Updates the date of birth of a specific customer by their ID")
     @PutMapping("/update/dateOfBirth")
-    public ResponseEntity<ResponseWrapper<CustomerDTO>> updateDateOfBirth(@RequestParam Date dateOfBirth,@AuthenticationPrincipal Customer customer) {
+    public ResponseEntity<CustomerDTO> updateDateOfBirth(@RequestParam Date dateOfBirth,@AuthenticationPrincipal Customer customer) {
         return execute("updateDateOfBirth", "Date of birth updated successfully", () -> {
             return customerService.updateDateOfBirth(customer.getId(), dateOfBirth);
         });
@@ -102,7 +101,7 @@ public class CustomerController extends BaseController {
 
     @Operation(summary = "Get current customer statistics", description = "Retrieves statistics for the current authenticated customer including no-show rate, reservations count, etc.")
     @GetMapping("/statistics/current")
-    public ResponseEntity<ResponseWrapper<CustomerStatisticsDTO>> getCurrentCustomerStatistics(@AuthenticationPrincipal Customer customer) {
+    public ResponseEntity<CustomerStatisticsDTO> getCurrentCustomerStatistics(@AuthenticationPrincipal Customer customer) {
         return execute("getCurrentCustomerStatistics", () -> {
             return customerService.getCustomerStatistics(customer.getId());
         });
@@ -110,7 +109,7 @@ public class CustomerController extends BaseController {
 
     @Operation(summary = "Get customer statistics", description = "Retrieves statistics for a specific customer by ID including no-show rate, reservations count, etc.")
     @GetMapping("/{customerId}/statistics")
-    public ResponseEntity<ResponseWrapper<CustomerStatisticsDTO>> getCustomerStatistics(
+    public ResponseEntity<CustomerStatisticsDTO> getCustomerStatistics(
             @Parameter(description = "The ID of the customer to retrieve statistics for", required = true, example = "1")
             @PathVariable Long customerId) {
         return execute("getCustomerStatistics", () -> customerService.getCustomerStatistics(customerId));
@@ -120,13 +119,13 @@ public class CustomerController extends BaseController {
 
     @Operation(summary = "Get current customer", description = "Retrieves the current authenticated customer")
     @GetMapping("/get")
-    public ResponseEntity<ResponseWrapper<CustomerDTO>> getCustomer(@AuthenticationPrincipal Customer customer) {
+    public ResponseEntity<CustomerDTO> getCustomer(@AuthenticationPrincipal Customer customer) {
         return execute("getCustomer", () -> new CustomerDTO(customer));
     }
 
     @Operation(summary = "Generate new token for password change", description = "Changes the user's password after verifying the old password")
     @PostMapping(value = "/password/new_token")
-    public ResponseEntity<ResponseWrapper<String>> changeUserPassword(
+    public ResponseEntity<String> changeUserPassword(
             @Parameter(description = "Locale for response messages") final Locale locale,
             @Parameter(description = "DTO containing the old and new password", required = true) @Valid UpdatePasswordDTO passwordDto,
             @AuthenticationPrincipal Customer customer) {
@@ -144,14 +143,16 @@ public class CustomerController extends BaseController {
 
     @Operation(summary = "Delete customer", description = "Deletes a specific customer by their ID")
     @DeleteMapping("/delete")
-    public ResponseEntity<ResponseWrapper<String>> deleteCustomer(@AuthenticationPrincipal Customer customer) {
-        return executeVoid("deleteCustomer", "Customer deleted successfully", () -> 
-            customerService.markCustomerHasDeleted(customer.getId()));
+    public ResponseEntity<String> deleteCustomer(@AuthenticationPrincipal Customer customer) {
+        return execute("deleteCustomer", "Customer deleted successfully", () -> {
+            customerService.markCustomerHasDeleted(customer.getId());
+            return "Customer deleted successfully";
+        });
     }
 
     @Operation(summary = "Update customer first name", description = "Updates the first name of a specific customer by their ID")
     @PutMapping("/update/firstName")
-    public ResponseEntity<ResponseWrapper<CustomerDTO>> updateFirstName(@RequestParam String firstName, @AuthenticationPrincipal Customer customer) {
+    public ResponseEntity<CustomerDTO> updateFirstName(@RequestParam String firstName, @AuthenticationPrincipal Customer customer) {
         return execute("updateFirstName", "First name updated successfully", () -> {
             CustomerDTO updatedCustomer = customerService.updateFirstName(customer.getId(), firstName);
             return updatedCustomer;
@@ -160,7 +161,7 @@ public class CustomerController extends BaseController {
 
     @Operation(summary = "Update customer last name", description = "Updates the last name of a specific customer by their ID")
     @PutMapping("/update/lastName")
-    public ResponseEntity<ResponseWrapper<CustomerDTO>> updateLastName(@RequestParam String lastName, @AuthenticationPrincipal Customer customer) {
+    public ResponseEntity<CustomerDTO> updateLastName(@RequestParam String lastName, @AuthenticationPrincipal Customer customer) {
         return execute("updateLastName", "Last name updated successfully", () -> {
             CustomerDTO updatedCustomer = customerService.updateLastName(customer.getId(), lastName);
             return updatedCustomer;
@@ -169,7 +170,7 @@ public class CustomerController extends BaseController {
 
     @Operation(summary = "Update customer email", description = "Updates the email of a specific customer by their ID")
     @PutMapping("/update/email")
-    public ResponseEntity<ResponseWrapper<CustomerDTO>> updateEmail(@RequestParam String email, @AuthenticationPrincipal Customer customer) {
+    public ResponseEntity<CustomerDTO> updateEmail(@RequestParam String email, @AuthenticationPrincipal Customer customer) {
         return execute("updateEmail", "Email updated successfully", () -> {
             CustomerDTO updatedCustomer = customerService.updateEmail(customer.getId(), email);
             return updatedCustomer;
@@ -202,3 +203,4 @@ public class CustomerController extends BaseController {
      */
 
 }
+

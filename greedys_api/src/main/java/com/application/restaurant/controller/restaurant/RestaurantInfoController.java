@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
 import com.application.common.service.RestaurantService;
-import com.application.common.web.ResponseWrapper;
 import com.application.common.web.dto.restaurant.ServiceDTO;
 import com.application.restaurant.persistence.model.user.RUser;
 
@@ -37,18 +36,18 @@ public class RestaurantInfoController extends BaseController {
 
 	@PostMapping(value = "/no-show-time-limit")
 	@Operation(summary = "Set no-show time limit", description = "Set the time limit for no-show reservations")
-	public ResponseEntity<ResponseWrapper<String>> setNoShowTimeLimit(@RequestParam int minutes, @AuthenticationPrincipal RUser rUser) {
-		return executeVoid("set no-show time limit", "No-show time limit updated successfully", () -> {
+	public ResponseEntity<String> setNoShowTimeLimit(@RequestParam int minutes, @AuthenticationPrincipal RUser rUser) {
+		return execute("set no-show time limit", () -> {
 			Long restaurantId = rUser.getRestaurant().getId();
 			log.info("Setting no-show time limit to {} minutes for restaurant ID: {}", minutes, restaurantId);
 			restaurantService.setNoShowTimeLimit(restaurantId, minutes);
-			
+			return "No-show time limit updated successfully";
 		});
 	}
 
 	@GetMapping(value = "/types")
 	@Operation(summary = "Get types of a restaurant", description = "Retrieve the types of a restaurant")
-	public ResponseEntity<ResponseWrapper<List<String>>> getRestaurantTypesNames() {
+	public ResponseEntity<List<String>> getRestaurantTypesNames() {
 		return executeList("get restaurant types", () -> {
 			log.info("Getting restaurant types");
 			return restaurantService.getRestaurantTypesNames();
@@ -57,7 +56,7 @@ public class RestaurantInfoController extends BaseController {
 
 	@GetMapping(value = "/open-days")
 	@Operation(summary = "Get open days of the authenticated restaurant", description = "Retrieve the open days of the authenticated restaurant")
-	public ResponseEntity<ResponseWrapper<List<String>>> getOpenDays(
+	public ResponseEntity<List<String>> getOpenDays(
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate end,
 			@AuthenticationPrincipal RUser rUser) {
@@ -72,7 +71,7 @@ public class RestaurantInfoController extends BaseController {
 	@GetMapping(value = "/closed-days")
 	@Operation(summary = "Get closed days of the authenticated restaurant", description = "Retrieve the closed days of the authenticated restaurant")
 	
-    public ResponseEntity<ResponseWrapper<List<LocalDate>>> getClosedDays(
+    public ResponseEntity<List<LocalDate>> getClosedDays(
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate end,
 			@AuthenticationPrincipal RUser rUser) {
@@ -87,7 +86,7 @@ public class RestaurantInfoController extends BaseController {
 	@GetMapping(value = "/active-services-in-period")
 	@Operation(summary = "Get active and enabled services of the authenticated restaurant for a specific period", description = "Retrieve the services of the authenticated restaurant that are active and enabled in a given date range")
 	
-    public ResponseEntity<ResponseWrapper<List<ServiceDTO>>> getActiveEnabledServicesInPeriod(
+    public ResponseEntity<List<ServiceDTO>> getActiveEnabledServicesInPeriod(
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate end,
 			@AuthenticationPrincipal RUser rUser) {
@@ -102,7 +101,7 @@ public class RestaurantInfoController extends BaseController {
 	@GetMapping(value = "/active-services-in-date")
 	@Operation(summary = "Get active and enabled services of the authenticated restaurant for a specific date", description = "Retrieve the services of the authenticated restaurant that are active and enabled on a given date")
 	
-    public ResponseEntity<ResponseWrapper<List<ServiceDTO>>> getActiveEnabledServicesInDate(
+    public ResponseEntity<List<ServiceDTO>> getActiveEnabledServicesInDate(
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate date,
 			@AuthenticationPrincipal RUser rUser) {
 		return executeList("get active services in date", () -> {
@@ -115,25 +114,28 @@ public class RestaurantInfoController extends BaseController {
 
 	@PostMapping(value = "/add-category")
 	@Operation(summary = "Add a category to the restaurant", description = "Add a new category to the authenticated restaurant")
-	public ResponseEntity<ResponseWrapper<String>> addRestaurantCategory(@RequestParam Long categoryId,
+	public ResponseEntity<String> addRestaurantCategory(@RequestParam Long categoryId,
 			@AuthenticationPrincipal RUser rUser) {
-		return executeVoid("add restaurant category", "Category added successfully", () -> {
+		return execute("add restaurant category", () -> {
 			Long restaurantId = rUser.getRestaurant().getId();
 			log.info("Adding category ID '{}' to restaurant ID: {}", categoryId, restaurantId);
 			restaurantService.addRestaurantCategory(restaurantId, categoryId);
+			return "Category added successfully";
 		});
 	}
 
 	@PostMapping(value = "/remove-category")
 	@Operation(summary = "Remove a category from the restaurant", description = "Remove a category from the authenticated restaurant")
-	public ResponseEntity<ResponseWrapper<String>> removeRestaurantCategory(@RequestParam Long categoryId,
+	public ResponseEntity<String> removeRestaurantCategory(@RequestParam Long categoryId,
 			@AuthenticationPrincipal RUser rUser) {
-		return executeVoid("remove restaurant category", "Category removed successfully", () -> {
+		return execute("remove restaurant category", () -> {
 			Long restaurantId = rUser.getRestaurant().getId();
 			log.info("Removing category ID '{}' from restaurant ID: {}", categoryId, restaurantId);
 			restaurantService.removeRestaurantCategory(restaurantId, categoryId);
+			return "Category removed successfully";
 		});
 	}
 
 	
 }
+

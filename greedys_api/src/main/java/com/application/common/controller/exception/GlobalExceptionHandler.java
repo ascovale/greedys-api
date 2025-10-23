@@ -32,7 +32,6 @@ import org.springframework.web.server.UnsupportedMediaTypeStatusException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import com.application.common.web.ErrorDetails;
-import com.application.common.web.ResponseWrapper;
 import com.application.common.web.error.RestaurantNotFoundException;
 import com.application.common.web.error.UserNotFoundException;
 
@@ -47,182 +46,254 @@ public class GlobalExceptionHandler {
     // === ECCEZIONI BUSINESS LOGIC ===
 
     @ExceptionHandler(RestaurantNotFoundException.class)
-    public ResponseEntity<ResponseWrapper<ErrorDetails>> handleRestaurantNotFoundException(
+    public ResponseEntity<ErrorDetails> handleRestaurantNotFoundException(
             RestaurantNotFoundException ex, WebRequest request) {
         log.warn("Restaurant not found: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(ResponseWrapper.error(ex.getMessage(), "RESTAURANT_NOT_FOUND"));
+                .body(ErrorDetails.builder()
+                        .code("RESTAURANT_NOT_FOUND")
+                        .details(ex.getMessage())
+                        .build());
     }
 
     @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ResponseWrapper<ErrorDetails>> handleUserNotFoundException(
+    public ResponseEntity<ErrorDetails> handleUserNotFoundException(
             UserNotFoundException ex, WebRequest request) {
         log.warn("User not found: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(ResponseWrapper.error(ex.getMessage(), "USER_NOT_FOUND"));
+                .body(ErrorDetails.builder()
+                        .code("USER_NOT_FOUND")
+                        .details(ex.getMessage())
+                        .build());
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<ResponseWrapper<ErrorDetails>> handleEntityNotFoundException(EntityNotFoundException ex, WebRequest request) {
+    public ResponseEntity<ErrorDetails> handleEntityNotFoundException(EntityNotFoundException ex, WebRequest request) {
         log.warn("Entity not found: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(ResponseWrapper.error(ex.getMessage(), "ENTITY_NOT_FOUND"));
+                .body(ErrorDetails.builder()
+                        .code("ENTITY_NOT_FOUND")
+                        .details(ex.getMessage())
+                        .build());
     }
 
     @ExceptionHandler(NoSuchElementException.class)
-    public ResponseEntity<ResponseWrapper<ErrorDetails>> handleNoSuchElementException(NoSuchElementException ex, WebRequest request) {
+    public ResponseEntity<ErrorDetails> handleNoSuchElementException(NoSuchElementException ex, WebRequest request) {
         log.warn("Resource not found: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(ResponseWrapper.error("Resource not found: " + ex.getMessage(), "RESOURCE_NOT_FOUND"));
+                .body(ErrorDetails.builder()
+                        .code("RESOURCE_NOT_FOUND")
+                        .details("Resource not found: " + ex.getMessage())
+                        .build());
     }
 
     // === ECCEZIONI DI VALIDAZIONE E RICHIESTE ===
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ResponseWrapper<ErrorDetails>> handleIllegalArgumentException(IllegalArgumentException ex, WebRequest request) {
+    public ResponseEntity<ErrorDetails> handleIllegalArgumentException(IllegalArgumentException ex, WebRequest request) {
         log.warn("Invalid argument: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ResponseWrapper.error(ex.getMessage(), "INVALID_ARGUMENT"));
+                .body(ErrorDetails.builder()
+                        .code("INVALID_ARGUMENT")
+                        .details(ex.getMessage())
+                        .build());
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<ResponseWrapper<ErrorDetails>> handleConstraintViolation(ConstraintViolationException ex, WebRequest request) {
+    public ResponseEntity<ErrorDetails> handleConstraintViolation(ConstraintViolationException ex, WebRequest request) {
         log.warn("Validation error: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ResponseWrapper.error("Validation error: " + ex.getMessage(), "VALIDATION_ERROR"));
+                .body(ErrorDetails.builder()
+                        .code("VALIDATION_ERROR")
+                        .details("Validation error: " + ex.getMessage())
+                        .build());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ResponseWrapper<ErrorDetails>> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, WebRequest request) {
+    public ResponseEntity<ErrorDetails> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, WebRequest request) {
         log.warn("Method argument validation failed: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                .body(ResponseWrapper.error("Validation failed: " + ex.getMessage(), "VALIDATION_ERROR"));
+                .body(ErrorDetails.builder()
+                        .code("VALIDATION_ERROR")
+                        .details("Validation failed: " + ex.getMessage())
+                        .build());
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
-    public ResponseEntity<ResponseWrapper<ErrorDetails>> handleMissingParam(MissingServletRequestParameterException ex, WebRequest request) {
+    public ResponseEntity<ErrorDetails> handleMissingParam(MissingServletRequestParameterException ex, WebRequest request) {
         log.warn("Missing parameter: {}", ex.getParameterName());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ResponseWrapper.error("Missing parameter: " + ex.getParameterName(), "MISSING_PARAMETER"));
+                .body(ErrorDetails.builder()
+                        .code("MISSING_PARAMETER")
+                        .details("Missing parameter: " + ex.getParameterName())
+                        .build());
     }
 
     // === ECCEZIONI HTTP E FORMATO ===
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-    public ResponseEntity<ResponseWrapper<ErrorDetails>> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex, WebRequest request) {
+    public ResponseEntity<ErrorDetails> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex, WebRequest request) {
         log.warn("HTTP method not supported: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
-                .body(ResponseWrapper.error("Method not allowed: " + ex.getMessage(), "METHOD_NOT_ALLOWED"));
+                .body(ErrorDetails.builder()
+                        .code("METHOD_NOT_ALLOWED")
+                        .details("Method not allowed: " + ex.getMessage())
+                        .build());
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ResponseWrapper<ErrorDetails>> handleNotReadable(HttpMessageNotReadableException ex, WebRequest request) {
+    public ResponseEntity<ErrorDetails> handleNotReadable(HttpMessageNotReadableException ex, WebRequest request) {
         log.warn("Unreadable request or invalid format: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ResponseWrapper.error("Unreadable request or invalid format", "INVALID_FORMAT"));
+                .body(ErrorDetails.builder()
+                        .code("INVALID_FORMAT")
+                        .details("Unreadable request or invalid format")
+                        .build());
     }
 
     @ExceptionHandler(UnsupportedMediaTypeStatusException.class)
-    public ResponseEntity<ResponseWrapper<ErrorDetails>> handleUnsupportedMediaType(UnsupportedMediaTypeStatusException ex, WebRequest request) {
+    public ResponseEntity<ErrorDetails> handleUnsupportedMediaType(UnsupportedMediaTypeStatusException ex, WebRequest request) {
         log.warn("Unsupported media type: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
-                .body(ResponseWrapper.error("Unsupported media type: " + ex.getMessage(), "UNSUPPORTED_MEDIA_TYPE"));
+                .body(ErrorDetails.builder()
+                        .code("UNSUPPORTED_MEDIA_TYPE")
+                        .details("Unsupported media type: " + ex.getMessage())
+                        .build());
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
-    public ResponseEntity<ResponseWrapper<ErrorDetails>> handleMaxUploadSizeExceeded(MaxUploadSizeExceededException ex, WebRequest request) {
+    public ResponseEntity<ErrorDetails> handleMaxUploadSizeExceeded(MaxUploadSizeExceededException ex, WebRequest request) {
         log.warn("File too large: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
-                .body(ResponseWrapper.error("File too large: " + ex.getMessage(), "FILE_TOO_LARGE"));
+                .body(ErrorDetails.builder()
+                        .code("FILE_TOO_LARGE")
+                        .details("File too large: " + ex.getMessage())
+                        .build());
     }
 
     // === ECCEZIONI DI DATI E INTEGRITÀ ===
 
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<ResponseWrapper<ErrorDetails>> handleDataIntegrityViolation(DataIntegrityViolationException ex, WebRequest request) {
+    public ResponseEntity<ErrorDetails> handleDataIntegrityViolation(DataIntegrityViolationException ex, WebRequest request) {
         log.error("Data integrity violation: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(ResponseWrapper.error("Data integrity violation: " + ex.getMessage(), "DATA_INTEGRITY_VIOLATION"));
+                .body(ErrorDetails.builder()
+                        .code("DATA_INTEGRITY_VIOLATION")
+                        .details("Data integrity violation: " + ex.getMessage())
+                        .build());
     }
 
     @ExceptionHandler(OptimisticLockingFailureException.class)
-    public ResponseEntity<ResponseWrapper<ErrorDetails>> handleOptimisticLockingFailure(OptimisticLockingFailureException ex, WebRequest request) {
+    public ResponseEntity<ErrorDetails> handleOptimisticLockingFailure(OptimisticLockingFailureException ex, WebRequest request) {
         log.warn("Optimistic locking failure: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(ResponseWrapper.error("Optimistic locking failure: " + ex.getMessage(), "OPTIMISTIC_LOCKING_FAILURE"));
+                .body(ErrorDetails.builder()
+                        .code("OPTIMISTIC_LOCKING_FAILURE")
+                        .details("Optimistic locking failure: " + ex.getMessage())
+                        .build());
     }
 
     // === ECCEZIONI DI AUTENTICAZIONE E AUTORIZZAZIONE ===
 
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<ResponseWrapper<ErrorDetails>> handleBadCredentialsException(BadCredentialsException ex, WebRequest request) {
+    public ResponseEntity<ErrorDetails> handleBadCredentialsException(BadCredentialsException ex, WebRequest request) {
         log.error("Bad credentials: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ResponseWrapper.error("Invalid username or password", "BAD_CREDENTIALS"));
+                .body(ErrorDetails.builder()
+                        .code("BAD_CREDENTIALS")
+                        .details("Invalid username or password")
+                        .build());
     }
 
     @ExceptionHandler(DisabledException.class)
-    public ResponseEntity<ResponseWrapper<ErrorDetails>> handleDisabledException(DisabledException ex, WebRequest request) {
+    public ResponseEntity<ErrorDetails> handleDisabledException(DisabledException ex, WebRequest request) {
         log.error("Account disabled: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ResponseWrapper.error("Account is disabled", "ACCOUNT_DISABLED"));
+                .body(ErrorDetails.builder()
+                        .code("ACCOUNT_DISABLED")
+                        .details("Account is disabled")
+                        .build());
     }
 
     @ExceptionHandler(AccountExpiredException.class)
-    public ResponseEntity<ResponseWrapper<ErrorDetails>> handleAccountExpiredException(AccountExpiredException ex, WebRequest request) {
+    public ResponseEntity<ErrorDetails> handleAccountExpiredException(AccountExpiredException ex, WebRequest request) {
         log.error("Account expired: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ResponseWrapper.error("Account has expired", "ACCOUNT_EXPIRED"));
+                .body(ErrorDetails.builder()
+                        .code("ACCOUNT_EXPIRED")
+                        .details("Account has expired")
+                        .build());
     }
 
     @ExceptionHandler(CredentialsExpiredException.class)
-    public ResponseEntity<ResponseWrapper<ErrorDetails>> handleCredentialsExpiredException(CredentialsExpiredException ex, WebRequest request) {
+    public ResponseEntity<ErrorDetails> handleCredentialsExpiredException(CredentialsExpiredException ex, WebRequest request) {
         log.error("Credentials expired: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ResponseWrapper.error("Credentials have expired", "CREDENTIALS_EXPIRED"));
+                .body(ErrorDetails.builder()
+                        .code("CREDENTIALS_EXPIRED")
+                        .details("Credentials have expired")
+                        .build());
     }
 
     @ExceptionHandler(LockedException.class)
-    public ResponseEntity<ResponseWrapper<ErrorDetails>> handleLockedException(LockedException ex, WebRequest request) {
+    public ResponseEntity<ErrorDetails> handleLockedException(LockedException ex, WebRequest request) {
         log.error("Account locked: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ResponseWrapper.error("Account is locked", "ACCOUNT_LOCKED"));
+                .body(ErrorDetails.builder()
+                        .code("ACCOUNT_LOCKED")
+                        .details("Account is locked")
+                        .build());
     }
 
     @ExceptionHandler(UsernameNotFoundException.class)
-    public ResponseEntity<ResponseWrapper<ErrorDetails>> handleUsernameNotFoundException(UsernameNotFoundException ex, WebRequest request) {
+    public ResponseEntity<ErrorDetails> handleUsernameNotFoundException(UsernameNotFoundException ex, WebRequest request) {
         log.error("Authentication failed: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ResponseWrapper.error("Invalid username or password", "AUTHENTICATION_FAILED"));
+                .body(ErrorDetails.builder()
+                        .code("AUTHENTICATION_FAILED")
+                        .details("Invalid username or password")
+                        .build());
     }
 
     @ExceptionHandler(InsufficientAuthenticationException.class)
-    public ResponseEntity<ResponseWrapper<ErrorDetails>> handleInsufficientAuthentication(InsufficientAuthenticationException ex, WebRequest request) {
+    public ResponseEntity<ErrorDetails> handleInsufficientAuthentication(InsufficientAuthenticationException ex, WebRequest request) {
         log.warn("Insufficient authentication: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ResponseWrapper.error("Insufficient authentication", "INSUFFICIENT_AUTHENTICATION"));
+                .body(ErrorDetails.builder()
+                        .code("INSUFFICIENT_AUTHENTICATION")
+                        .details("Insufficient authentication")
+                        .build());
     }
 
     @ExceptionHandler(AuthenticationCredentialsNotFoundException.class)
-    public ResponseEntity<ResponseWrapper<ErrorDetails>> handleAuthenticationCredentialsNotFound(AuthenticationCredentialsNotFoundException ex, WebRequest request) {
+    public ResponseEntity<ErrorDetails> handleAuthenticationCredentialsNotFound(AuthenticationCredentialsNotFoundException ex, WebRequest request) {
         log.warn("Authentication required: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ResponseWrapper.error("Authentication required: " + ex.getMessage(), "AUTHENTICATION_REQUIRED"));
+                .body(ErrorDetails.builder()
+                        .code("AUTHENTICATION_REQUIRED")
+                        .details("Authentication required: " + ex.getMessage())
+                        .build());
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ResponseWrapper<ErrorDetails>> handleAccessDeniedException(AccessDeniedException ex, WebRequest request) {
+    public ResponseEntity<ErrorDetails> handleAccessDeniedException(AccessDeniedException ex, WebRequest request) {
         log.warn("Access denied: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(ResponseWrapper.error("Access denied: " + ex.getMessage(), "ACCESS_DENIED"));
+                .body(ErrorDetails.builder()
+                        .code("ACCESS_DENIED")
+                        .details("Access denied: " + ex.getMessage())
+                        .build());
     }
 
     @ExceptionHandler(InternalAuthenticationServiceException.class)
-    public ResponseEntity<ResponseWrapper<ErrorDetails>> handleInternalAuthenticationServiceException(
+    public ResponseEntity<ErrorDetails> handleInternalAuthenticationServiceException(
             InternalAuthenticationServiceException ex, WebRequest request) {
         log.error("Authentication service error: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ResponseWrapper.error("Authentication service error", "AUTHENTICATION_SERVICE_ERROR"));
+                .body(ErrorDetails.builder()
+                        .code("AUTHENTICATION_SERVICE_ERROR")
+                        .details("Authentication service error")
+                        .build());
     }
 
     // === ECCEZIONI DI RETE E TIMEOUT ===
@@ -235,30 +306,39 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(TimeoutException.class)
-    public ResponseEntity<ResponseWrapper<ErrorDetails>> handleTimeoutException(TimeoutException ex, WebRequest request) {
+    public ResponseEntity<ErrorDetails> handleTimeoutException(TimeoutException ex, WebRequest request) {
         log.warn("Request timeout: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT)
-                .body(ResponseWrapper.error("Request timeout: " + ex.getMessage(), "TIMEOUT"));
+                .body(ErrorDetails.builder()
+                        .code("TIMEOUT")
+                        .details("Request timeout: " + ex.getMessage())
+                        .build());
     }
 
     @ExceptionHandler(ConnectException.class)
-    public ResponseEntity<ResponseWrapper<ErrorDetails>> handleConnectException(ConnectException ex, WebRequest request) {
+    public ResponseEntity<ErrorDetails> handleConnectException(ConnectException ex, WebRequest request) {
         log.error("Service unavailable: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
-                .body(ResponseWrapper.error("Service unavailable: " + ex.getMessage(), "SERVICE_UNAVAILABLE"));
+                .body(ErrorDetails.builder()
+                        .code("SERVICE_UNAVAILABLE")
+                        .details("Service unavailable: " + ex.getMessage())
+                        .build());
     }
 
     @ExceptionHandler(ServerErrorException.class)
-    public ResponseEntity<ResponseWrapper<ErrorDetails>> handleServerErrorException(ServerErrorException ex, WebRequest request) {
+    public ResponseEntity<ErrorDetails> handleServerErrorException(ServerErrorException ex, WebRequest request) {
         log.error("Bad gateway: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
-                .body(ResponseWrapper.error("Bad gateway: " + ex.getMessage(), "BAD_GATEWAY"));
+                .body(ErrorDetails.builder()
+                        .code("BAD_GATEWAY")
+                        .details("Bad gateway: " + ex.getMessage())
+                        .build());
     }
 
     // === ECCEZIONI DI RISORSE ===
 
     @ExceptionHandler(NoResourceFoundException.class)
-    public ResponseEntity<ResponseWrapper<ErrorDetails>> handleNoResourceFoundException(NoResourceFoundException ex, WebRequest request) {
+    public ResponseEntity<ErrorDetails> handleNoResourceFoundException(NoResourceFoundException ex, WebRequest request) {
         String resourcePath = ex.getResourcePath();
         
         // Per favicon e altre risorse statiche, non loggare come errori - è comportamento normale del browser
@@ -273,14 +353,20 @@ public class GlobalExceptionHandler {
             log.warn("Resource not found: {}", resourcePath);
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(ResponseWrapper.error("Resource not found", "RESOURCE_NOT_FOUND"));
+                .body(ErrorDetails.builder()
+                        .code("RESOURCE_NOT_FOUND")
+                        .details("Resource not found")
+                        .build());
     }
     
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ResponseWrapper<ErrorDetails>> handleGenericException(Exception ex, WebRequest request) {
+    public ResponseEntity<ErrorDetails> handleGenericException(Exception ex, WebRequest request) {
         log.error("Unhandled exception: {}", ex.getClass().getSimpleName(), ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ResponseWrapper.error("An unexpected error occurred", "INTERNAL_SERVER_ERROR"));
+                .body(ErrorDetails.builder()
+                        .code("INTERNAL_SERVER_ERROR")
+                        .details("An unexpected error occurred")
+                        .build());
     }
 
 }
