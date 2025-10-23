@@ -94,13 +94,13 @@ public class ReservationService {
 
     public Collection<ReservationDTO> getReservations(Long restaurantId, LocalDate start, LocalDate end) {
         return reservationDAO.findByRestaurantAndDateBetween(restaurantId, start, end).stream()
-                .map(ReservationDTO::new).collect(Collectors.toList());
+                .map(reservationMapper::toDTO).collect(Collectors.toList());
     }
 
     public Collection<ReservationDTO> getAcceptedReservations(Long restaurantId, LocalDate start, LocalDate end) {
         Reservation.Status status = Reservation.Status.ACCEPTED;
         return reservationDAO.findByRestaurantAndDateBetweenAndStatus(restaurantId, start, end, status).stream()
-                .map(ReservationDTO::new)
+                .map(reservationMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
@@ -111,15 +111,15 @@ public class ReservationService {
         }
         if (start != null && end != null) {
             return reservationDAO.findByRestaurantAndDateBetweenAndStatus(restaurantId, start, end, status).stream()
-                    .map(ReservationDTO::new)
+                    .map(reservationMapper::toDTO)
                     .collect(Collectors.toList());
         } else if (start != null) {
             return reservationDAO.findByRestaurantAndDateAndStatus(restaurantId, start, status).stream()
-                    .map(ReservationDTO::new)
+                    .map(reservationMapper::toDTO)
                     .collect(Collectors.toList());
         } else {
             return reservationDAO.findByRestaurantIdAndStatus(restaurantId, status).stream()
-                    .map(ReservationDTO::new)
+                    .map(reservationMapper::toDTO)
                     .collect(Collectors.toList());
         }
     }
@@ -127,7 +127,7 @@ public class ReservationService {
     public Page<ReservationDTO> getReservationsPageable(Long restaurantId, LocalDate start, LocalDate end,
             Pageable pageable) {
         return reservationDAO.findReservationsByRestaurantAndDateRange(restaurantId, start, end, pageable)
-                .map(ReservationDTO::new);
+                .map(reservationMapper::toDTO);
     }
 
     public Page<ReservationDTO> getPendingReservationsPageable(Long restaurantId, LocalDate start, LocalDate end,
@@ -138,7 +138,7 @@ public class ReservationService {
         }
         // TODO: Implement actual query or use existing methods
         return reservationDAO.findByRestaurantAndDateBetweenAndStatus(restaurantId, start, end, status, pageable)
-                .map(ReservationDTO::new);
+                .map(reservationMapper::toDTO);
     }
 
     public Page<ReservationDTO> getAcceptedReservationsPageable(Long restaurantId, LocalDate start, LocalDate end,
@@ -148,7 +148,7 @@ public class ReservationService {
             throw new IllegalArgumentException("restaurantId cannot be null");
         }
         return reservationDAO.findByRestaurantAndDateBetweenAndStatus(restaurantId, start, end, status, pageable)
-                .map(ReservationDTO::new);
+                .map(reservationMapper::toDTO);
     }
 
     
@@ -228,7 +228,7 @@ public class ReservationService {
                 .build();
         reservation = reservationDAO.save(reservation);
         
-        return new ReservationDTO(reservation);
+        return reservationMapper.toDTO(reservation);
     }
 
     @Cacheable(value = "closedDays", key = "#idRestaurant")
@@ -243,7 +243,7 @@ public class ReservationService {
 
     public List<ReservationDTO> getDayReservations(Restaurant restaurant, LocalDate date) {
         return reservationDAO.findDayReservation(restaurant.getId(), date).stream()
-                .map(ReservationDTO::new).collect(Collectors.toList());
+                .map(reservationMapper::toDTO).collect(Collectors.toList());
     }
  
 
