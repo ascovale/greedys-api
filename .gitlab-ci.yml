@@ -175,15 +175,6 @@ publish:
         echo "Client $GROUP completato!"
       done
 
-    # FIX per _deepEquality - sostituisci con const DeepCollectionEquality()
-    - |
-      for GROUP in $API_GROUPS; do
-        OUTPUT_DIR="./${GROUP}_api"
-        echo "Applico fix _deepEquality in $OUTPUT_DIR..."
-        find "$OUTPUT_DIR" -name "*.dart" -type f -exec sed -i 's/_deepEquality/const DeepCollectionEquality()/g' {} \;
-      done
-    - echo "Fix _deepEquality completato!"
-
     # COMMIT E PUSH
     - echo ""
     - echo "Commit e push delle modifiche..."
