@@ -154,6 +154,15 @@ publish:
         
         echo "Client $GROUP generato con successo"
 
+        # Aggiorna versioni di build_runner e test in pubspec.yaml
+        PUBSPEC="$OUTPUT_DIR/pubspec.yaml"
+        if [ -f "$PUBSPEC" ]; then
+          echo "Aggiornamento versioni build_runner e test in pubspec.yaml..."
+          sed -i 's/build_runner:.*/build_runner: ">=2.4.0"/' "$PUBSPEC"
+          sed -i 's/test:.*/test: ">=1.24.0"/' "$PUBSPEC"
+          echo "Versioni aggiornate"
+        fi
+
         rm "$SPEC_FILE"
         echo "Client $GROUP completato!"
       done
