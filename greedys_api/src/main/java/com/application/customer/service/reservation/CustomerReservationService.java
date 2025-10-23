@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.application.common.persistence.mapper.ReservationMapper;
 import com.application.common.persistence.model.reservation.Reservation;
 import com.application.common.persistence.model.reservation.Reservation.Status;
 import com.application.common.persistence.model.reservation.ReservationRequest;
@@ -30,6 +31,7 @@ public class CustomerReservationService {
     private final ReservationRequestDAO reservationRequestDAO;
     private final ReservationService reservationService;
     private final SlotDAO slotDAO;
+    private final ReservationMapper reservationMapper;
 
     public ReservationDTO createReservation(CustomerNewReservationDTO reservationDto, Customer customer) {
         Slot slot = slotDAO.getReferenceById(reservationDto.getIdSlot());
@@ -53,7 +55,7 @@ public class CustomerReservationService {
         
         // 🎯 USA IL SERVICE COMUNE CHE PUBBLICA L'EVENTO
         Reservation savedReservation = reservationService.createNewReservation(reservation);
-        return new ReservationDTO(savedReservation);
+        return reservationMapper.toDTO(savedReservation);
     }
 
     @Transactional
@@ -83,19 +85,19 @@ public class CustomerReservationService {
 
     public Collection<ReservationDTO> findAllCustomerReservations(Long customerId) {
         return reservationDAO.findByCustomer(customerId).stream()
-                .map(ReservationDTO::new).collect(Collectors.toList());
+                .map(reservationMapper::toDTO).collect(Collectors.toList());
     }
 
     public Collection<ReservationDTO> findAcceptedCustomerReservations(Long customerId) {
         Status status = Reservation.Status.ACCEPTED;
         return reservationDAO.findByCustomerAndStatus(customerId, status).stream()
-                .map(ReservationDTO::new).collect(Collectors.toList());
+                .map(reservationMapper::toDTO).collect(Collectors.toList());
     }
 
     public Collection<ReservationDTO> findPendingCustomerReservations(Long customerId) {
         Status status = Reservation.Status.NOT_ACCEPTED;
         return reservationDAO.findByCustomerAndStatus(customerId, status).stream()
-                .map(ReservationDTO::new).collect(Collectors.toList());
+                .map(reservationMapper::toDTO).collect(Collectors.toList());
     }
 
     @Transactional
@@ -115,7 +117,7 @@ public class CustomerReservationService {
 
     public ReservationDTO findReservationById(Long reservationId) {
         return reservationDAO.findById(reservationId)
-                .map(ReservationDTO::new)
+                .map(reservationMapper::toDTO)
                 .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
     }
 
