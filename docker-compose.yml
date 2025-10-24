@@ -19,7 +19,6 @@ services:
     ports:
       - "80:80"      # HTTP (redirect a HTTPS)
       - "443:443"    # HTTPS (Let's Encrypt)
-      - "8080:8080"  # Dashboard Traefik
     environment:
       - TRAEFIK_API_DASHBOARD=true
       - TRAEFIK_API_DEBUG=false
