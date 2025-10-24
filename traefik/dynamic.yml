@@ -44,36 +44,8 @@ http:
         average: 50
         period: 1m
     
-    # Basic Auth per admin/dashboard
-    admin-auth:
-      basicAuth:
-        users:
-          - "admin:$2y$10$yourhashpassword"  # Genera con: htpasswd -nb admin yourpassword
-
-tls:
-  certificates:
-    # Certificato self-signed per IP locale
-    - certFile: /certs/localhost.crt
-      keyFile: /certs/localhost.key
-      stores:
-        - default
-  
-  stores:
-    default:
-      defaultCertificate:
-        certFile: /certs/localhost.crt
-        keyFile: /certs/localhost.key
-  
-  options:
-    default:
-      sslProtocols:
-        - "TLSv1.2"
-        - "TLSv1.3"
-      cipherSuites:
-        - "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"
-        - "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305"
-        - "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"
-      curvePreferences:
-        - "CurveP521"
-        - "CurveP384"
-      minVersion: "VersionTLS12"
+    # Basic Auth per admin/dashboard (disabilitato per ora)
+    # admin-auth:
+    #   basicAuth:
+    #     users:
+    #       - "admin:$2y$10$yourhashpassword"
