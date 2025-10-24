@@ -3,7 +3,7 @@ variables:
   TAG_LATEST: ${CI_REGISTRY_IMAGE}:latest
   TAG_COMMIT: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}
   DART_REPO: https://gitlab.com/GreedysGroup/greedys_api_dart_lib.git
-  API_DOCS_BASE: "http://api.greedys.it:8080/v3/api-docs"
+  API_DOCS_BASE: "https://api.greedys.it/v3/api-docs"
   API_GROUPS: "restaurant admin customer"
   # Generator OpenAPI standard (no custom wrappers needed)
   OPENAPI_GENERATOR_VERSION: "7.10.0"
@@ -55,18 +55,12 @@ deploy:
     - tr -d '\r' < deploy/id_key > deploy/id_key.clean && mv deploy/id_key.clean deploy/id_key
     - chmod 600 deploy/id_key
     - mkdir -p ~/.ssh && ssh-keyscan -H "$SERVER_IP" >> ~/.ssh/known_hosts
-    - echo "== Key sanity ==" && head -1 deploy/id_key && tail -1 deploy/id_key
-    - ssh-keygen -lf deploy/id_key
-    - ssh-keygen -y -f deploy/id_key > deploy/id_key.pub
-    - |
-      echo "== Match con authorized_keys su deployer =="
-      ssh -o BatchMode=yes -o IdentitiesOnly=yes -i deploy/id_key deployer@"$SERVER_IP" \
-        "grep -F -x -q \"$(cat deploy/id_key.pub)\" ~/.ssh/authorized_keys && echo MATCH || echo NO_MATCH"
+    - echo "SSH Key loaded and ready"
   script:
-    - ssh -o IdentitiesOnly=yes -i deploy/id_key deployer@"$SERVER_IP" 'mkdir -p ~/greedys_api/'
-    - scp -o IdentitiesOnly=yes -i deploy/id_key docker-compose.yml deploy.sh deployer@"$SERVER_IP":~/greedys_api/
-    - printf '%s' "$CI_JOB_TOKEN" | ssh -o IdentitiesOnly=yes -i deploy/id_key deployer@"$SERVER_IP" "docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY"
-    - ssh -o IdentitiesOnly=yes -i deploy/id_key deployer@"$SERVER_IP" 'cd ~/greedys_api/ && chmod +x ./deploy.sh && ./deploy.sh'
+    - ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i deploy/id_key root@"$SERVER_IP" 'mkdir -p /opt/greedys_api/'
+    - scp -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i deploy/id_key docker-compose.yml deploy.sh root@"$SERVER_IP":/opt/greedys_api/
+    - printf '%s' "$CI_JOB_TOKEN" | ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i deploy/id_key root@"$SERVER_IP" "docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY"
+    - ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i deploy/id_key root@"$SERVER_IP" 'cd /opt/greedys_api/ && chmod +x ./deploy.sh && bash ./deploy.sh'
   only: [main]
 
 publish:
