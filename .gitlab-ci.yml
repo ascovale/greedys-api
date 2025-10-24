@@ -57,10 +57,10 @@ deploy:
     - mkdir -p ~/.ssh && ssh-keyscan -H "$SERVER_IP" >> ~/.ssh/known_hosts
     - echo "SSH Key loaded and ready"
   script:
-    - ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i deploy/id_key root@"$SERVER_IP" 'mkdir -p /opt/greedys_api/'
-    - scp -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i deploy/id_key docker-compose.yml deploy.sh root@"$SERVER_IP":/opt/greedys_api/
-    - printf '%s' "$CI_JOB_TOKEN" | ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i deploy/id_key root@"$SERVER_IP" "docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY"
-    - ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i deploy/id_key root@"$SERVER_IP" 'cd /opt/greedys_api/ && chmod +x ./deploy.sh && bash ./deploy.sh'
+    - ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i deploy/id_key deployer@"$SERVER_IP" 'mkdir -p ~/greedys_api/'
+    - scp -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i deploy/id_key docker-compose.yml deploy.sh deployer@"$SERVER_IP":~/greedys_api/
+    - printf '%s' "$CI_JOB_TOKEN" | ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i deploy/id_key deployer@"$SERVER_IP" "docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY"
+    - ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i deploy/id_key deployer@"$SERVER_IP" 'cd ~/greedys_api/ && chmod +x ./deploy.sh && bash ./deploy.sh'
   only: [main]
 
 publish:
