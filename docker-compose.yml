@@ -1,8 +1,48 @@
+version: '3.8'
+
 services:
+  # ===== TRAEFIK (Reverse Proxy + SSL/TLS con Let's Encrypt) =====
+  traefik:
+    image: traefik:v3.0
+    restart: always
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager  # Traefik sempre su manager
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+    networks:
+      - app-network
+    ports:
+      - "80:80"      # HTTP (redirect a HTTPS)
+      - "443:443"    # HTTPS (Let's Encrypt)
+      - "8080:8080"  # Dashboard Traefik
+    environment:
+      - TRAEFIK_API_DASHBOARD=true
+      - TRAEFIK_API_DEBUG=false
+      - TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_EMAIL=beeinggreedy@gmail.com
+      - TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_STORAGE=/acme.json
+      - TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_HTTPCHALLENGE_ENTRYPOINT=web
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/traefik.yml:/traefik.yml:ro
+      - ./traefik/dynamic.yml:/dynamic.yml:ro
+      - ./traefik/acme.json:/acme.json
+    labels:
+      # Dashboard Traefik
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.greedys.it`) || Path(`/dashboard`)"
+      - "traefik.http.routers.traefik.entrypoints=web,websecure"
+      - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.traefik.middlewares=admin-auth@file"
+
+  # ===== SPRING BOOT API =====
   spring-app:
     image: registry.gitlab.com/greedysgroup/greedys_api:latest
-    ports:
-      - "8080:8080"  # HTTP diretto (no più HTTPS interno)
     deploy:
       replicas: 1
       update_config:
@@ -17,26 +57,30 @@ services:
       - db
     networks:
       - app-network
+    ports:
+      - "8080:8080"  # HTTP diretto (interno, no HTTPS)
     environment:
-      SPRING_PROFILES_ACTIVE: "docker"  # Profilo di configurazione attivo per Docker
-      # Override per HTTP interno (non più HTTPS)
+      SPRING_PROFILES_ACTIVE: "docker"
       SERVER_PORT: 8080
-      SERVER_SSL_ENABLED: "false"
+      SERVER_SSL_ENABLED: "false"  # NO HTTPS interno (Traefik gestisce)
     secrets:
       - db_password
       - email_password
       - service_account
       - jwt_secret
+    labels:
+      # API Router con HTTPS
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`api.greedys.it`)"
+      - "traefik.http.routers.api.entrypoints=web,websecure"
+      - "traefik.http.routers.api.service=api"
+      - "traefik.http.routers.api.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.api.middlewares=cors@file,security@file,rate-limit@file"
+      - "traefik.http.services.api.loadbalancer.server.port=8080"
 
+  # ===== MySQL DATABASE =====
   db:
     image: mysql:8.0
-    environment:
-      MYSQL_DATABASE: greedys_v1
-      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_password
-    ports:
-      - "3309:3306"
-    volumes:
-      - db_data:/var/lib/mysql
     deploy:
       replicas: 1
       placement:
@@ -48,13 +92,21 @@ services:
         max_attempts: 3
     networks:
       - app-network
+    ports:
+      - "3309:3306"
+    environment:
+      MYSQL_DATABASE: greedys_v1
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_password
+      MYSQL_INITDB_SKIP_TZINFO: "yes"
+    volumes:
+      - db_data:/var/lib/mysql
+    secrets:
+      - db_password
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p\"$$(cat /run/secrets/db_password)\" || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
-    secrets:
-      - db_password
 
 networks:
   app-network:
