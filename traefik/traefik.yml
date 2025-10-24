@@ -28,7 +28,7 @@ providers:
     exposedByDefault: false
     network: traefik
   file:
-    filename: /etc/traefik/dynamic.yml
+    filename: /dynamic.yml
     watch: true
 
 # Certificate Resolvers (Let's Encrypt)
@@ -36,7 +36,7 @@ certificatesResolvers:
   letsencrypt:
     acme:
       email: beeinggreedy@gmail.com  # ✅ Email aggiornata!
-      storage: /ssl-certs/acme.json
+      storage: /acme.json
       httpChallenge:
         entryPoint: web
       # Per wildcard certificates usa DNS challenge:

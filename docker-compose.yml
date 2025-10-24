@@ -31,13 +31,8 @@ services:
       - ./traefik/dynamic.yml:/dynamic.yml:ro
       - ./traefik/acme.json:/acme.json
     labels:
-      # Dashboard Traefik
+      # Dashboard Traefik (disabilitato - usa file provider)
       - "traefik.enable=true"
-      - "traefik.http.routers.traefik.rule=Host(`traefik.greedys.it`) || Path(`/dashboard`)"
-      - "traefik.http.routers.traefik.entrypoints=web,websecure"
-      - "traefik.http.routers.traefik.service=api@internal"
-      - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.traefik.middlewares=admin-auth@file"
 
   # ===== SPRING BOOT API =====
   spring-app:
@@ -74,7 +69,6 @@ services:
       - "traefik.http.routers.api.entrypoints=web,websecure"
       - "traefik.http.routers.api.service=api"
       - "traefik.http.routers.api.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.api.middlewares=cors@file,security@file,rate-limit@file"
       - "traefik.http.services.api.loadbalancer.server.port=8080"
 
   # ===== MySQL DATABASE =====
