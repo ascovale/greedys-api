@@ -9,6 +9,7 @@ import com.application.customer.persistence.model.Customer;
 import com.application.restaurant.persistence.model.Restaurant;
 
 import io.swagger.v3.oas.annotations.Hidden;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -96,6 +97,7 @@ public class Reservation {
     private LocalDateTime modifiedAt;
 
     // Rimuoviamo @CreatedBy e @LastModifiedBy perché gestiti dal CustomAuditingEntityListener
+    @Schema(hidden = true)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by_user_id", updatable = false)
     private AbstractUser createdBy;
@@ -104,6 +106,7 @@ public class Reservation {
     @Enumerated(EnumType.STRING)
     private UserType createdByUserType;
 
+    @Schema(hidden = true)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "modified_by_user_id")
     private AbstractUser modifiedBy;
@@ -112,6 +115,7 @@ public class Reservation {
     @Enumerated(EnumType.STRING)
     private UserType modifiedByUserType;
 
+    @Schema(hidden = true)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "accepted_by_user_id")
     private AbstractUser acceptedBy;
