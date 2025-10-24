@@ -12,6 +12,7 @@ stages:
   - build
   - deploy
   - publish
+  - test
 
 cache:
   paths:
@@ -59,6 +60,7 @@ deploy:
   script:
     - ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i deploy/id_key deployer@"$SERVER_IP" 'mkdir -p ~/greedys_api/'
     - scp -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i deploy/id_key docker-compose.yml deploy.sh deployer@"$SERVER_IP":~/greedys_api/
+    - scp -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -r -i deploy/id_key traefik/ deployer@"$SERVER_IP":~/greedys_api/
     - printf '%s' "$CI_JOB_TOKEN" | ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i deploy/id_key deployer@"$SERVER_IP" "docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY"
     - ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i deploy/id_key deployer@"$SERVER_IP" 'cd ~/greedys_api/ && chmod +x ./deploy.sh && bash ./deploy.sh'
   only: [main]
@@ -92,11 +94,12 @@ publish:
     - echo "Attendo che l'API sia pronta..."
     - sleep 10
     
-    # Test connessione API
+    # Test connessione API (usa HTTP:8080 mentre aspetta che Traefik/HTTPS siano pronti)
     - |
+      API_TEST_URL="http://api.greedys.it:8080/v3/api-docs/restaurant-api"
       for i in {1..30}; do
-        echo "Tentativo $i/30: Testing ${API_DOCS_BASE}/restaurant-api"
-        if curl -f --max-time 15 "${API_DOCS_BASE}/restaurant-api" >/dev/null 2>&1; then
+        echo "Tentativo $i/30: Testing $API_TEST_URL"
+        if curl -f --max-time 15 "$API_TEST_URL" >/dev/null 2>&1; then
           echo "API docs pronte!"
           break
         fi
@@ -182,5 +185,42 @@ publish:
         echo "Client v${OPENAPI_GENERATOR_VERSION} pushati con successo!"
       fi
 
+  only:
+    - main
+
+test:
+  image: alpine:3.18
+  stage: test
+  before_script:
+    - apk add --no-cache curl
+  script:
+    - echo "Attendo che Let's Encrypt certificato sia pronto (5-10 minuti)..."
+    - sleep 30
+    
+    # Test HTTPS connectivity
+    - |
+      HTTPS_URL="https://api.greedys.it/v3/api-docs/restaurant-api"
+      echo "Testing HTTPS endpoint: $HTTPS_URL"
+      for i in {1..10}; do
+        echo "Tentativo $i/10: Testing $HTTPS_URL"
+        if curl -f --max-time 15 --insecure "$HTTPS_URL" >/dev/null 2>&1; then
+          echo "✅ HTTPS funziona! Certificato pronto!"
+          curl -v --max-time 15 "$HTTPS_URL" 2>&1 | grep -i "ssl\|certificate\|https" || true
+          break
+        fi
+        sleep 10
+        if [ $i -eq 10 ]; then
+          echo "⚠️ HTTPS non ancora pronto, potrebbe essere in fase di setup (Let's Encrypt)"
+          echo "Verificare i log di Traefik per i dettagli del certificato"
+        fi
+      done
+    
+    # Verifica servizi
+    - echo "Verifica dello stato dei servizi..."
+    - |
+      echo "Se il certificato non è pronto, controllare:"
+      echo "  1. docker service logs greedys_api_traefik | grep -i certificate"
+      echo "  2. Attendere 5-10 minuti per Let's Encrypt"
+      echo "  3. Verificare acme.json sul server"
   only:
     - main
