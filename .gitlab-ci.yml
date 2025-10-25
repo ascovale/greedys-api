@@ -10,6 +10,7 @@ variables:
 
 stages:
   - build
+  - build-flutter
   - deploy
   - publish
   - test
@@ -46,9 +47,36 @@ build:
     - echo "Cleaning up Docker resources..."
     - docker system prune -f
 
+build_flutter_app:
+  image: cirrusci/flutter:stable
+  stage: build-flutter
+  script:
+    # Setup pub cache con credenziali per private packages
+    - mkdir -p ~/.pub-cache
+    - |
+      echo '{
+        "https://gitlab.com": {
+          "token": "'"${CI_JOB_TOKEN}"'"
+        }
+      }' > ~/.pub-cache/credentials.json
+    
+    # Build restaurant app per web
+    - cd restaurant_app
+    - flutter pub get
+    - flutter analyze
+    - flutter build web --release
+  artifacts:
+    paths:
+      - restaurant_app/build/web
+    expire_in: 30 days
+  only:
+    - main
+
 deploy:
   image: alpine:3.18
   stage: deploy
+  dependencies:
+    - build_flutter_app
   before_script:
     - apk add --no-cache openssh-client openssh-keygen
     - mkdir -p deploy
@@ -58,9 +86,10 @@ deploy:
     - mkdir -p ~/.ssh && ssh-keyscan -H "$SERVER_IP" >> ~/.ssh/known_hosts
     - echo "SSH Key loaded and ready"
   script:
-    - ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i deploy/id_key deployer@"$SERVER_IP" 'mkdir -p ~/greedys_api/'
-    - scp -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i deploy/id_key docker-compose.yml deploy.sh deployer@"$SERVER_IP":~/greedys_api/
+    - ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i deploy/id_key deployer@"$SERVER_IP" 'mkdir -p ~/greedys_api/ /var/www/restaurant-app'
+    - scp -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i deploy/id_key docker-compose.yml deploy.sh nginx.conf deployer@"$SERVER_IP":~/greedys_api/
     - scp -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -r -i deploy/id_key traefik/ deployer@"$SERVER_IP":~/greedys_api/
+    - scp -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -r -i deploy/id_key restaurant_app/build/web/* deployer@"$SERVER_IP":/var/www/restaurant-app/
     - printf '%s' "$CI_JOB_TOKEN" | ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i deploy/id_key deployer@"$SERVER_IP" "docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY"
     - ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i deploy/id_key deployer@"$SERVER_IP" 'cd ~/greedys_api/ && chmod +x ./deploy.sh && bash ./deploy.sh'
   only: [main]
