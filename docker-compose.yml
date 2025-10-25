@@ -71,6 +71,34 @@ services:
       - "traefik.http.routers.api.tls.certresolver=letsencrypt"
       - "traefik.http.services.api.loadbalancer.server.port=8080"
 
+  # ===== FLUTTER APP (Nginx) =====
+  flutter-app:
+    image: nginx:latest
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 5s
+        failure_action: rollback
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+    networks:
+      - app-network
+    # NO ports exposed - Traefik farà il routing interno
+    volumes:
+      - ~/restaurant-app:/usr/share/nginx/html:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    labels:
+      # Flutter App Router con HTTPS
+      - "traefik.enable=true"
+      - "traefik.http.routers.flutter-app.rule=Host(`app.greedys.it`)"
+      - "traefik.http.routers.flutter-app.entrypoints=web,websecure"
+      - "traefik.http.routers.flutter-app.service=flutter-app"
+      - "traefik.http.routers.flutter-app.tls.certresolver=letsencrypt"
+      - "traefik.http.services.flutter-app.loadbalancer.server.port=80"
+
   # ===== MySQL DATABASE =====
   db:
     image: mysql:8.0
