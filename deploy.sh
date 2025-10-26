@@ -15,8 +15,8 @@ if [ ! -f traefik/acme.json ]; then
 fi
 
 echo "Checking and creating Flutter app directory..."
-mkdir -p /var/www/restaurant-app
-chmod 755 /var/www/restaurant-app
+mkdir -p ~/restaurant-app
+chmod 755 ~/restaurant-app
 
 echo "Removing the existing stack..."
 docker stack rm greedys_api || echo "Stack not found, skipping removal."
