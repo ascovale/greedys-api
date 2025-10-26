@@ -92,23 +92,36 @@ publish:
 
   script:
     - echo "Attendo che l'API sia pronta..."
-    - sleep 10
+    - sleep 20
     
-    # Test connessione API (usa HTTP:8080 mentre aspetta che Traefik/HTTPS siano pronti)
+    # Test connessione API (usa HTTP:8080 con retry e timeout aumentato)
     - |
       API_TEST_URL="http://api.greedys.it:8080/v3/api-docs/restaurant-api"
-      for i in {1..30}; do
-        echo "Tentativo $i/30: Testing $API_TEST_URL"
-        if curl -f --max-time 15 "$API_TEST_URL" >/dev/null 2>&1; then
-          echo "API docs pronte!"
+      MAX_ATTEMPTS=40
+      ATTEMPT=1
+      API_READY=false
+      
+      while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
+        echo "Tentativo $ATTEMPT/$MAX_ATTEMPTS: Testing $API_TEST_URL"
+        
+        # Try to fetch the URL with increased timeout
+        if curl -s --connect-timeout 10 --max-time 20 "$API_TEST_URL" -o /dev/null -w "%{http_code}" 2>/dev/null | grep -q "200"; then
+          echo "✅ API docs pronte!"
+          API_READY=true
           break
+        else
+          HTTP_CODE=$(curl -s --connect-timeout 10 --max-time 20 "$API_TEST_URL" -o /dev/null -w "%{http_code}" 2>/dev/null)
+          echo "⏳ API risponde con codice $HTTP_CODE, attendo..."
         fi
+        
         sleep 10
-        if [ $i -eq 30 ]; then
-          echo "TIMEOUT: API non risponde"
-          exit 1
-        fi
+        ATTEMPT=$((ATTEMPT + 1))
       done
+      
+      if [ "$API_READY" != "true" ]; then
+        echo "❌ TIMEOUT: API non risponde dopo $MAX_ATTEMPTS tentativi"
+        exit 1
+      fi
     
     - echo "Pulisco cartelle client API precedenti..."
     - rm -rf restaurant_api admin_api customer_api
@@ -122,12 +135,29 @@ publish:
         echo ""
         echo ">>> Generazione client $GROUP <<<"
         
-        # Scarica spec OpenAPI
+        # Scarica spec OpenAPI con retry
         echo "Scarico spec da ${API_DOCS_BASE}/${GROUP}-api"
-        if curl -sSfk -o "$SPEC_FILE" "${API_DOCS_BASE}/${GROUP}-api"; then
-          echo "Spec scaricata: $(wc -c < "$SPEC_FILE") bytes"
-        else
-          echo "ERRORE: Impossibile scaricare spec per $GROUP"
+        SPEC_URL="${API_DOCS_BASE}/${GROUP}-api"
+        SPEC_RETRY=0
+        SPEC_MAX_RETRY=5
+        
+        while [ $SPEC_RETRY -lt $SPEC_MAX_RETRY ]; do
+          if curl -sSLk --connect-timeout 10 --max-time 30 -o "$SPEC_FILE" "$SPEC_URL"; then
+            SPEC_SIZE=$(wc -c < "$SPEC_FILE" 2>/dev/null || echo "0")
+            if [ "$SPEC_SIZE" -gt 0 ]; then
+              echo "✅ Spec scaricata: $SPEC_SIZE bytes"
+              break
+            fi
+          fi
+          SPEC_RETRY=$((SPEC_RETRY + 1))
+          if [ $SPEC_RETRY -lt $SPEC_MAX_RETRY ]; then
+            echo "⏳ Retry $SPEC_RETRY/$SPEC_MAX_RETRY in 10 secondi..."
+            sleep 10
+          fi
+        done
+        
+        if [ ! -f "$SPEC_FILE" ] || [ "$(wc -c < "$SPEC_FILE" 2>/dev/null || echo 0)" -eq 0 ]; then
+          echo "❌ ERRORE: Impossibile scaricare spec per $GROUP dopo $SPEC_MAX_RETRY tentativi"
           exit 1
         fi
 
