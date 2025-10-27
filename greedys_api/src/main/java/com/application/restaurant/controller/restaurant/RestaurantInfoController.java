@@ -1,6 +1,7 @@
 package com.application.restaurant.controller.restaurant;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -61,13 +62,15 @@ public class RestaurantInfoController extends BaseController {
 	@Operation(summary = "Get open days of the authenticated restaurant", description = "Retrieve the open days of the authenticated restaurant")
 	@ReadApiResponses
 	public ResponseEntity<List<String>> getOpenDays(
-			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) java.time.LocalDate start,
-			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) java.time.LocalDate end,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end,
 			@AuthenticationPrincipal RUser rUser) {
 		return executeList("get open days", () -> {
 			Long restaurantId = rUser.getRestaurant().getId();
-			log.info("Getting open days for restaurant ID: {} from {} to {}", restaurantId, start, end);
-			Collection<String> openDays = restaurantService.getOpenDays(restaurantId, start, end);
+			LocalDate startDate = start != null ? start.toLocalDate() : null;
+			LocalDate endDate = end != null ? end.toLocalDate() : null;
+			log.info("Getting open days for restaurant ID: {} from {} to {}", restaurantId, startDate, endDate);
+			Collection<String> openDays = restaurantService.getOpenDays(restaurantId, startDate, endDate);
 			return List.copyOf(openDays);
 		});
 	}
@@ -77,13 +80,15 @@ public class RestaurantInfoController extends BaseController {
 	@ReadApiResponses
 	
     public ResponseEntity<List<LocalDate>> getClosedDays(
-			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) java.time.LocalDate start,
-			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) java.time.LocalDate end,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end,
 			@AuthenticationPrincipal RUser rUser) {
 		return executeList("get closed days", () -> {
 			Long restaurantId = rUser.getRestaurant().getId();
-			log.info("Getting closed days for restaurant ID: {} from {} to {}", restaurantId, start, end);
-			Collection<LocalDate> closedDays = restaurantService.getClosedDays(restaurantId, start, end);
+			LocalDate startDate = start != null ? start.toLocalDate() : null;
+			LocalDate endDate = end != null ? end.toLocalDate() : null;
+			log.info("Getting closed days for restaurant ID: {} from {} to {}", restaurantId, startDate, endDate);
+			Collection<LocalDate> closedDays = restaurantService.getClosedDays(restaurantId, startDate, endDate);
 			return List.copyOf(closedDays);
 		});
 	}
@@ -92,13 +97,15 @@ public class RestaurantInfoController extends BaseController {
 	@Operation(summary = "Get active and enabled services of the authenticated restaurant for a specific period", description = "Retrieve the services of the authenticated restaurant that are active and enabled in a given date range")
 	@ReadApiResponses
     public ResponseEntity<List<ServiceDTO>> getActiveEnabledServicesInPeriod(
-			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) java.time.LocalDate start,
-			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) java.time.LocalDate end,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end,
 			@AuthenticationPrincipal RUser rUser) {
 		return executeList("get active services in period", () -> {
 			Long restaurantId = rUser.getRestaurant().getId();
-			log.info("Getting active enabled services for restaurant ID: {} from {} to {}", restaurantId, start, end);
-			Collection<ServiceDTO> services = restaurantService.findActiveEnabledServicesInPeriod(restaurantId, start, end);
+			LocalDate startDate = start != null ? start.toLocalDate() : null;
+			LocalDate endDate = end != null ? end.toLocalDate() : null;
+			log.info("Getting active enabled services for restaurant ID: {} from {} to {}", restaurantId, startDate, endDate);
+			Collection<ServiceDTO> services = restaurantService.findActiveEnabledServicesInPeriod(restaurantId, startDate, endDate);
 			return List.copyOf(services);
 		});
 	}
@@ -107,12 +114,13 @@ public class RestaurantInfoController extends BaseController {
 	@Operation(summary = "Get active and enabled services of the authenticated restaurant for a specific date", description = "Retrieve the services of the authenticated restaurant that are active and enabled on a given date")
 	@ReadApiResponses
     public ResponseEntity<List<ServiceDTO>> getActiveEnabledServicesInDate(
-			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) java.time.LocalDate date,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime date,
 			@AuthenticationPrincipal RUser rUser) {
 		return executeList("get active services in date", () -> {
 			Long restaurantId = rUser.getRestaurant().getId();
-			log.info("Getting active enabled services for restaurant ID: {} on date: {}", restaurantId, date);
-			Collection<ServiceDTO> services = restaurantService.getActiveEnabledServices(restaurantId, date);
+			LocalDate dateAsLocalDate = date != null ? date.toLocalDate() : null;
+			log.info("Getting active enabled services for restaurant ID: {} on date: {}", restaurantId, dateAsLocalDate);
+			Collection<ServiceDTO> services = restaurantService.getActiveEnabledServices(restaurantId, dateAsLocalDate);
 			return List.copyOf(services); // Converte Collection in List
 		});
 	}
