@@ -3,7 +3,7 @@ variables:
   TAG_LATEST: ${CI_REGISTRY_IMAGE}:latest
   TAG_COMMIT: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}
   DART_REPO: https://gitlab.com/GreedysGroup/greedys_api_dart_lib.git
-  API_DOCS_BASE: "https://api.greedys.it/v3/api-docs"
+  API_DOCS_BASE: "http://api.greedys.it:8080/v3/api-docs"
   API_GROUPS: "restaurant admin customer"
   # Generator OpenAPI standard (no custom wrappers needed)
   OPENAPI_GENERATOR_VERSION: "7.10.0"
@@ -93,31 +93,32 @@ publish:
   script:
     - echo "Attendo che l'API sia pronta..."
     - sleep 20
-    
-    # Test connessione API (usa HTTPS con retry e timeout aumentato)
+
+    # Test connessione API (usa HTTP:8080 con retry e timeout aumentato)
     - |
-      API_TEST_URL="https://api.greedys.it/v3/api-docs/restaurant-api"
+      API_TEST_URL="http://api.greedys.it:8080/v3/api-docs/restaurant-api"
       MAX_ATTEMPTS=40
       ATTEMPT=1
       API_READY=false
-      
+
       while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
         echo "Tentativo $ATTEMPT/$MAX_ATTEMPTS: Testing $API_TEST_URL"
-        
-        # Try to fetch the URL with increased timeout
-        if curl -s --connect-timeout 10 --max-time 20 "$API_TEST_URL" -o /dev/null -w "%{http_code}" 2>/dev/null | grep -q "200"; then
+
+        # Use curl to get HTTP code and avoid pipe-induced failures
+        HTTP_CODE=$(curl -s --connect-timeout 10 --max-time 20 -o /dev/null -w "%{http_code}" "$API_TEST_URL" 2>/dev/null || echo "000")
+
+        if [ "$HTTP_CODE" = "200" ]; then
           echo "✅ API docs pronte!"
           API_READY=true
           break
         else
-          HTTP_CODE=$(curl -s --connect-timeout 10 --max-time 20 "$API_TEST_URL" -o /dev/null -w "%{http_code}" 2>/dev/null)
           echo "⏳ API risponde con codice $HTTP_CODE, attendo..."
         fi
-        
+
         sleep 10
         ATTEMPT=$((ATTEMPT + 1))
       done
-      
+
       if [ "$API_READY" != "true" ]; then
         echo "❌ TIMEOUT: API non risponde dopo $MAX_ATTEMPTS tentativi"
         exit 1
