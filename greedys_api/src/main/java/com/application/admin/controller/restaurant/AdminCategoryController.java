@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.CreateApiResponses;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.service.RestaurantCategoryService;
 import com.application.common.web.dto.restaurant.RestaurantCategoryDTO;
 
@@ -37,6 +38,7 @@ public class AdminCategoryController extends BaseController {
 	@GetMapping(value = "{restaurantId}/categories")
 	@Operation(summary = "Get types of a restaurant", description = "Retrieve the types of a restaurant")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
+	@ReadApiResponses
     public ResponseEntity<List<String>> getRestaurantTypesNames(@PathVariable Long restaurantId) {
 		return execute("get restaurant types", () -> {
 			return restaurantCategoryService.getRestaurantTypesNames(restaurantId);
@@ -45,7 +47,7 @@ public class AdminCategoryController extends BaseController {
 
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
 	@Operation(summary = "Create category", description = "Create a new category for the specified restaurant")
-@CreateApiResponses
+	@CreateApiResponses
 	@PostMapping("/category/new")
 	public ResponseEntity<String> createCategory(@RequestBody RestaurantCategoryDTO restaurantCategoryDto) {
 		return executeCreate("create category", "Category created successfully", () -> {
@@ -57,6 +59,7 @@ public class AdminCategoryController extends BaseController {
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
 	@Operation(summary = "Delete category", description = "Delete a category by its ID")
 	@DeleteMapping("/category/{categoryId}/delete")
+	@ReadApiResponses
 	public ResponseEntity<String> deleteCategory(@PathVariable Long categoryId) {
 		return execute("delete category", () -> {
 			restaurantCategoryService.deleteRestaurantCategory(categoryId);
@@ -67,6 +70,7 @@ public class AdminCategoryController extends BaseController {
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
 	@Operation(summary = "Update category", description = "Update an existing category by its ID")
 	@PutMapping("/category/{categoryId}/update")
+	@ReadApiResponses
 	public ResponseEntity<RestaurantCategoryDTO> updateCategory(@PathVariable Long categoryId,
 			@RequestBody RestaurantCategoryDTO restaurantCategoryDto) {
 		return execute("update category", () -> {

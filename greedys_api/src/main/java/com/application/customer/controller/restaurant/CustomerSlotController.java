@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.web.dto.restaurant.SlotDTO;
 import com.application.restaurant.service.SlotService;
 
@@ -28,12 +29,14 @@ public class CustomerSlotController extends BaseController {
 
 	@GetMapping("/{restaurantId}/slots")
 	@Operation(summary = "Get all slots by restaurant ID", description = "Retrieve all available slots for a specific restaurant")
+	@ReadApiResponses
 	
     public ResponseEntity<List<SlotDTO>> getAllSlotsByRestaurantId(@PathVariable Long restaurantId) {
 		return executeList("get all slots by restaurant", () -> slotService.findSlotsByRestaurantId(restaurantId));
 	}
 
 	@Operation(summary = "Get slot by id", description = "Retrieve a slot by its ID")
+	@ReadApiResponses
 	@GetMapping("/slot/{slotId}")
 	
     public ResponseEntity<SlotDTO> getSlotById(@PathVariable Long slotId) {

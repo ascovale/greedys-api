@@ -17,6 +17,7 @@ import com.application.admin.controller.utils.AdminControllerUtils;
 import com.application.admin.persistence.model.Admin;
 import com.application.admin.service.AdminService;
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.web.dto.security.UpdatePasswordDTO;
 import com.application.common.web.error.InvalidOldPasswordException;
 
@@ -40,6 +41,7 @@ public class AdminController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_ADMIN_WRITE')")
     @Operation(summary = "Block user", description = "Blocks a user by their ID")
     @PutMapping("/{adminId}/block")
+    @ReadApiResponses
     public ResponseEntity<Void> blockUser(@PathVariable Long adminId) {
         return executeVoid("block admin", () -> {
             adminService.updateAdminStatus(adminId, Admin.Status.BLOCKED);
@@ -49,6 +51,7 @@ public class AdminController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_ADMIN_WRITE')")
     @Operation(summary = "Enable user", description = "Enables a user by their ID")
     @PutMapping("/{adminId}/enable")
+    @ReadApiResponses
     public ResponseEntity<Void> enableUser(@PathVariable Long adminId) {
         return executeVoid("enable admin", () -> {
             adminService.updateAdminStatus(adminId, Admin.Status.ENABLED);
@@ -58,6 +61,7 @@ public class AdminController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_ADMIN_WRITE')")
     @Operation(summary = "Delete admin user", description = "Deletes an admin user by their ID")
     @PutMapping("/{adminId}/delete")
+    @ReadApiResponses
     public ResponseEntity<Void> deleteAdminUser(@PathVariable Long adminId) {
         return executeVoid("delete admin", () -> {
             adminService.updateAdminStatus(adminId, Admin.Status.DELETED);
@@ -66,6 +70,7 @@ public class AdminController extends BaseController {
 
     @Operation(summary = "Generate new token for password change", description = "Changes the user's password after verifying the old password")
     @PostMapping(value = "/password/new_token")
+    @ReadApiResponses
     public ResponseEntity<Void> changeUserPassword(
             @Parameter(description = "Locale for response messages") final Locale locale,
             @Parameter(description = "DTO containing the old and new password", required = true) @RequestBody @Valid UpdatePasswordDTO passwordDto,
@@ -80,6 +85,7 @@ public class AdminController extends BaseController {
 
     @Operation(summary = "Get Admin ID", description = "Retrieves the ID of the current admin")
     @GetMapping("/id")
+    @ReadApiResponses
     public ResponseEntity<Long> getAdminIdEndpoint() {
         return execute("get admin id", () -> AdminControllerUtils.getCurrentAdmin().getId());
     }

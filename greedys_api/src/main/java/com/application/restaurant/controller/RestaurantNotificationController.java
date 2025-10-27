@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.web.dto.notification.RestaurantNotificationDTO;
 import com.application.restaurant.persistence.model.user.RUser;
 import com.application.restaurant.service.RestaurantNotificationService;
@@ -35,6 +36,7 @@ public class RestaurantNotificationController extends BaseController {
     private final RestaurantNotificationService restaurantNotificationService;
 
     @Operation(summary = "Get unread notifications", description = "Returns a pageable list of unread notifications")
+    @ReadApiResponses
     @GetMapping("/unread/{page}/{size}")
     public ResponseEntity<Page<RestaurantNotificationDTO>> getUnreadNotifications(
             @PathVariable int page,
@@ -46,6 +48,7 @@ public class RestaurantNotificationController extends BaseController {
     }
 
     @Operation(summary = "Set notification as read", description = "Sets the notification with the given ID as the given read boolean")
+    @ReadApiResponses
     @PutMapping("/read")
     public ResponseEntity<RestaurantNotificationDTO> setNotificationAsRead(
             @RequestParam Long notificationId, @RequestParam Boolean read) {
@@ -54,6 +57,7 @@ public class RestaurantNotificationController extends BaseController {
     }
 
     @Operation(summary = "Get all notifications", description = "Returns a pageable list of all notifications")
+    @ReadApiResponses
     @GetMapping("/all/{page}/{size}")
     public ResponseEntity<Page<RestaurantNotificationDTO>> getAllNotifications(
             @PathVariable int page,
@@ -65,6 +69,7 @@ public class RestaurantNotificationController extends BaseController {
     }
 
     @Operation(summary = "Get a specific notification", description = "Returns the notification with the given ID")
+    @ReadApiResponses
     @GetMapping("/{notificationId}")
     public ResponseEntity<RestaurantNotificationDTO> getRestaurantNotification(
             @PathVariable Long notificationId) {

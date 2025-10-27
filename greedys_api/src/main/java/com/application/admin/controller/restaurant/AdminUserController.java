@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.restaurant.persistence.model.user.RUser;
 import com.application.restaurant.service.RUserService;
 
@@ -29,6 +30,7 @@ public class AdminUserController extends BaseController {
 
 	@PostMapping("/{RUserId}/accept")
 	@Operation(summary = "Accept a user", description = "Accept a user for a specific restaurant")
+	@ReadApiResponses
     public ResponseEntity<String> acceptUser(@PathVariable Long RUserId) {
 		return execute("accept user", () -> {
 			rUserService.acceptRUser(RUserId);
@@ -38,6 +40,7 @@ public class AdminUserController extends BaseController {
 
 	@PostMapping("/enable")
 	@Operation(summary = "Enable restaurant user by email", description = "Enables all restaurant users with the specified email address")
+	@ReadApiResponses
     public ResponseEntity<String> enableByEmail(@RequestParam String email) {
 		return execute("enable user by email", () -> {
 			rUserService.updateRUserStatusByEmail(email, RUser.Status.ENABLED);

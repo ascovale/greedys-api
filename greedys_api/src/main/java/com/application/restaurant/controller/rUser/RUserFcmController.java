@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.CreateApiResponses;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.web.dto.shared.FcmTokenDTO;
 import com.application.restaurant.persistence.model.user.RUserFcmToken;
 import com.application.restaurant.service.RUserFcmTokenService;
@@ -43,6 +44,7 @@ public class RUserFcmController extends BaseController {
 
     @GetMapping("/{deviceId}")
     @Operation(summary = "Get FCM token by device ID", description = "Retrieves the FCM token associated with a specific device ID")
+    @ReadApiResponses
     public ResponseEntity<RUserFcmToken> getFcmTokenByDeviceId(@PathVariable String deviceId) {
         return execute("get FCM token by device ID", () -> {
             RUserFcmToken token = tokenService.getTokenByDeviceId(deviceId);

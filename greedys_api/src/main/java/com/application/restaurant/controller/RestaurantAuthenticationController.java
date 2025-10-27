@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.security.jwt.JwtUtil;
 import com.application.common.web.dto.restaurant.RestaurantDTO;
 import com.application.common.web.dto.security.AuthResponseDTO;
@@ -45,6 +46,7 @@ public class RestaurantAuthenticationController extends BaseController {
     private final RestaurantAuthenticationService restaurantAuthenticationService;
 
     @Operation(summary = "Get list of restaurants for hub user", description = "Given a hub JWT, returns the list of restaurants associated with the hub user")
+    @ReadApiResponses
     @GetMapping(value = "/restaurants", produces = "application/json")
     
     public ResponseEntity<Page<RestaurantDTO>> restaurants(
@@ -72,6 +74,7 @@ public class RestaurantAuthenticationController extends BaseController {
 
     @PreAuthorize("hasAuthority('PRIVILEGE_HUB')")
     @Operation(summary = "Select a restaurant after intermediate login", description = "Given a hub JWT and a restaurantId, returns a JWT for the selected restaurant user")
+    @ReadApiResponses
     @GetMapping(value = "/select-restaurant", produces = "application/json")
     public ResponseEntity<AuthResponseDTO> selectRestaurant(@RequestParam Long restaurantId) {
         return execute("select restaurant", () -> {

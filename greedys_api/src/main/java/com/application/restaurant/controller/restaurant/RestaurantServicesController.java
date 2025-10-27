@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.CreateApiResponses;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.service.RestaurantService;
 import com.application.common.web.dto.restaurant.ServiceDTO;
 import com.application.common.web.dto.restaurant.ServiceTypeDto;
@@ -43,6 +45,7 @@ public class RestaurantServicesController extends BaseController {
     private final RestaurantService restaurantService;
 
     @Operation(summary = "Create a new service", description = "This method creates a new service in the system.")
+    @CreateApiResponses
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_WRITE')")
     @PostMapping("/new")
     public ResponseEntity<ServiceDTO> newService(@RequestBody RestaurantNewServiceDTO servicesDto) {
@@ -54,7 +57,7 @@ public class RestaurantServicesController extends BaseController {
     }
 
     @Operation(summary = "Delete a service", description = "This method deletes a service by its ID.")
-    
+    @ReadApiResponses
     @PreAuthorize("authentication.principal.isEnabled() & hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_WRITE')")
     @DeleteMapping("/{serviceId}/delete")
     public ResponseEntity<String> deleteService(@PathVariable Long serviceId) {

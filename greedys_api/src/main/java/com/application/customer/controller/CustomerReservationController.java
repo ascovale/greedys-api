@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.CreateApiResponses;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.web.dto.reservations.ReservationDTO;
 import com.application.customer.persistence.model.Customer;
 import com.application.customer.service.reservation.CustomerReservationService;
@@ -38,6 +40,7 @@ public class CustomerReservationController extends BaseController {
 	private final CustomerReservationService customerReservationService;
 
 	@Operation(summary = "The customer user asks for a reservation", description = "Endpoint for the customer to request a reservation")
+	@CreateApiResponses
 	@PostMapping("/ask")
 	public ResponseEntity<ReservationDTO> askReservation(@RequestBody CustomerNewReservationDTO DTO, @AuthenticationPrincipal Customer customer) {
 		return executeCreate("askReservation", "Reservation requested successfully", () -> {
@@ -48,6 +51,7 @@ public class CustomerReservationController extends BaseController {
 
 	@PreAuthorize("@securityCustomerService.hasPermissionOnReservation(#reservationId)")
 	@Operation(summary = "The customer user deletes a reservation", description = "Endpoint for the customer to delete a reservation")
+	@ReadApiResponses
 	@DeleteMapping("/{reservationId}/delete")
 	public ResponseEntity<String> deleteReservation(@PathVariable Long reservationId) {
 		return execute("deleteReservation", () -> {
@@ -58,6 +62,7 @@ public class CustomerReservationController extends BaseController {
 
 	@PreAuthorize("@securityCustomerService.hasPermissionOnReservation(#reservationId)")
 	@Operation(summary = "The customer user requests a reservation modification", description = "Endpoint for the customer to request a reservation modification")
+	@ReadApiResponses
 	@PostMapping("/{reservationId}/request_modify")
 	public ResponseEntity<String> requestModifyReservation(@PathVariable Long reservationId,
 			@RequestBody CustomerNewReservationDTO DTO,
@@ -70,6 +75,7 @@ public class CustomerReservationController extends BaseController {
 
 	@PreAuthorize("@securityCustomerService.hasPermissionOnReservation(#reservationId)")
 	@Operation(summary = "The customer user rejects a reservation", description = "Endpoint for the customer to reject a reservation created by the restaurant or admin")
+	@ReadApiResponses
 	@PutMapping("/{reservationId}/reject")
 	public ResponseEntity<String> rejectReservationCreatedByAdminOrRestaurant(@PathVariable Long reservationId) {
 		return execute("rejectReservation", () -> {
@@ -79,6 +85,7 @@ public class CustomerReservationController extends BaseController {
 	}
 
 	@Operation(summary = "Get user's reservations", description = "Retrieve the list of reservations for the user")
+	@ReadApiResponses
 	@GetMapping("/reservations")
 	
     public ResponseEntity<List<ReservationDTO>> getCustomerReservations(@AuthenticationPrincipal Customer customer) {
@@ -90,7 +97,7 @@ public class CustomerReservationController extends BaseController {
 
 	@PreAuthorize("@securityCustomerService.hasPermissionOnReservation(#reservationId)")
 	@Operation(summary = "Get a single reservation by ID", description = "Retrieve a specific reservation for the user by its ID")
-	
+	@ReadApiResponses
 	@GetMapping("/{reservationId}")
     public ResponseEntity<ReservationDTO> getReservationById(@PathVariable Long reservationId) {
 		return execute("getReservationById", () -> customerReservationService.findReservationById(reservationId));

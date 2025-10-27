@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.CreateApiResponses;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.service.RestaurantService;
 import com.application.common.web.dto.restaurant.RestaurantDTO;
 import com.application.common.web.dto.security.AuthResponseDTO;
@@ -40,6 +42,7 @@ public class RestaurantRegistrationController extends BaseController {
     private final RestaurantAuthenticationService restaurantAuthenticationService;
 
     @Operation(summary = "Request to register a new restaurant", description = "Request to register a new restaurant")
+    @CreateApiResponses
     @PostMapping(value = "/new")
     public ResponseEntity<RestaurantDTO> registerRestaurant(@RequestBody NewRestaurantDTO restaurantDto) {
         return executeCreate("register restaurant", "Restaurant registered successfully", () -> {
@@ -51,6 +54,7 @@ public class RestaurantRegistrationController extends BaseController {
     //TODO richiesta verifica email
     
     @Operation(summary = "Resend registration token", description = "Resends the registration token")
+    @ReadApiResponses
     @GetMapping(value = "/resend_token")
     @ResponseBody
     public ResponseEntity<String> resendRegistrationToken(final HttpServletRequest request,
@@ -62,6 +66,7 @@ public class RestaurantRegistrationController extends BaseController {
     }
 
     @Operation(summary = "Request password reset", description = "Sends a password reset token to the restaurant user's email")
+    @ReadApiResponses
     @PostMapping(value = "/password/forgot")
     public ResponseEntity<String> forgotPassword(@RequestParam("email") final String userEmail,
             final HttpServletRequest request) {

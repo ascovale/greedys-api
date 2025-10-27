@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.web.dto.menu.MenuDTO;
 import com.application.common.web.dto.menu.MenuDishDTO;
 import com.application.restaurant.service.RestaurantMenuService;
@@ -32,6 +33,7 @@ public class CustomerMenuController extends BaseController {
     private final RestaurantMenuService restaurantMenuService;
 
     @Operation(summary = "Get menus by restaurant ID", description = "Retrieve all menus for a specific restaurant by its ID")
+    @ReadApiResponses
     @GetMapping("/{restaurantId}/menus")
     
     public ResponseEntity<List<MenuDTO>> getMenusByRestaurantId(@PathVariable Long restaurantId) {
@@ -42,6 +44,7 @@ public class CustomerMenuController extends BaseController {
     }
 
     @Operation(summary = "Get menus with services valid in a period", description = "Retrieve menus for a restaurant with services valid in a given period")
+    @ReadApiResponses
     @GetMapping("/{restaurantId}/menus/period")
     
     public ResponseEntity<List<MenuDTO>> getMenusWithServicesValidInPeriod(
@@ -55,6 +58,7 @@ public class CustomerMenuController extends BaseController {
     }
     
     @Operation(summary = "Get dishes by menu ID", description = "Retrieve all dishes for a specific menu by its ID")
+    @ReadApiResponses
     @GetMapping("/menus/{menuId}/dishes")
     
     public ResponseEntity<List<MenuDishDTO>> getDishesByMenuId(@PathVariable Long menuId) {
@@ -65,6 +69,7 @@ public class CustomerMenuController extends BaseController {
     }
 
     @Operation(summary = "Get menu details by ID", description = "Retrieve details of a specific menu by its ID")
+    @ReadApiResponses
     @GetMapping("/menus/{menuId}")
     
     public ResponseEntity<MenuDTO> getMenuDetailsById(@PathVariable Long menuId) {
@@ -72,6 +77,7 @@ public class CustomerMenuController extends BaseController {
     }
 
     @Operation(summary = "Get menus by service ID that are active and enabled in a date", description = "Retrieve all menus for a specific service that are active and enabled in a given date")
+    @ReadApiResponses
     @GetMapping("/service/{serviceId}/menus/active-enabled")
     
     public ResponseEntity<List<MenuDTO>> getActiveEnabledMenusByServiceId(
@@ -84,6 +90,7 @@ public class CustomerMenuController extends BaseController {
     }
 
     @Operation(summary = "Get menus by service ID that are active and enabled in a period", description = "Retrieve all menus for a specific service that are active and enabled in a given period")
+    @ReadApiResponses
     @GetMapping("/service/{serviceId}/menus/active-enabled/period")
     
     public ResponseEntity<List<MenuDTO>> getActiveEnabledMenusByServiceIdAndPeriod(

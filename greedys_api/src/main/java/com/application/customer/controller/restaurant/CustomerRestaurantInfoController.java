@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.service.RestaurantService;
 import com.application.common.web.dto.restaurant.RestaurantDTO;
 import com.application.common.web.dto.restaurant.SlotDTO;
@@ -35,6 +36,7 @@ public class CustomerRestaurantInfoController extends BaseController {
 	private final RestaurantService restaurantService;
 
 	@Operation(summary = "Get all restaurants", description = "Retrieve all restaurants")
+	@ReadApiResponses
 	@GetMapping("")
 	
     public ResponseEntity<Page<RestaurantDTO>> getRestaurants(
@@ -44,6 +46,7 @@ public class CustomerRestaurantInfoController extends BaseController {
 
 	@GetMapping("/{restaurantId}/open-days")
 	@Operation(summary = "Get open days of a restaurant", description = "Retrieve the open days of a restaurant")
+	@ReadApiResponses
 	public ResponseEntity<List<String>> getOpenDays(
 			@PathVariable Long restaurantId,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
@@ -56,6 +59,7 @@ public class CustomerRestaurantInfoController extends BaseController {
 
 	@GetMapping("/{restaurantId}/closed-days")
 	@Operation(summary = "Get closed days of a restaurant", description = "Retrieve the closed days of a restaurant")
+	@ReadApiResponses
 	
     public ResponseEntity<List<LocalDate>> getClosedDays(
 			@PathVariable Long restaurantId,
@@ -69,6 +73,7 @@ public class CustomerRestaurantInfoController extends BaseController {
 
 	@GetMapping("/{restaurantId}/day-slots")
 	@Operation(summary = "Get day slots of a restaurant", description = "Retrieve the daily slots of a restaurant")
+	@ReadApiResponses
 	
     public ResponseEntity<List<SlotDTO>> getDaySlots(
 			@PathVariable Long restaurantId,
@@ -80,6 +85,7 @@ public class CustomerRestaurantInfoController extends BaseController {
 	}
 
 	@Operation(summary = "Search restaurants by name", description = "Search for restaurants by name")
+	@ReadApiResponses
 	@GetMapping("/search")
 	
     public ResponseEntity<List<RestaurantDTO>> searchRestaurants(@RequestParam String name) {
@@ -91,6 +97,7 @@ public class CustomerRestaurantInfoController extends BaseController {
 
 	@GetMapping("/{restaurantId}/types")
 	@Operation(summary = "Get types of a restaurant", description = "Retrieve the types of a restaurant")
+	@ReadApiResponses
 	public ResponseEntity<List<String>> getRestaurantTypesNames(@PathVariable Long restaurantId) {
 		return executeList("get restaurant types", () -> {
 			Collection<String> types = restaurantService.getRestaurantTypesNames(restaurantId);

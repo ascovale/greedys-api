@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.web.dto.customer.CustomerDTO;
 import com.application.common.web.dto.customer.CustomerStatisticsDTO;
 import com.application.common.web.dto.security.UpdatePasswordDTO;
@@ -45,6 +46,7 @@ public class CustomerController extends BaseController {
     //TODO: Implementare tutti i metodi per la configurazione delle notifiche del customer
 
     @Operation(summary = "Get Customer ID", description = "Retrieves the ID of the current customer")
+    @ReadApiResponses
     @GetMapping("/id")
     
     public ResponseEntity<Long> getCustomerId(@AuthenticationPrincipal Customer customer) {
@@ -53,6 +55,7 @@ public class CustomerController extends BaseController {
         });
     }
     @Operation(summary = "Update customer phone number", description = "Updates the phone number of a specific customer by their ID")
+    @ReadApiResponses
     @PutMapping("/update/phone")
     public ResponseEntity<CustomerDTO> updatePhone(@RequestParam String phone,@AuthenticationPrincipal Customer customer) {
         return execute("updatePhone", "Phone number updated successfully", () -> {
@@ -61,6 +64,7 @@ public class CustomerController extends BaseController {
     }
 
     @Operation(summary = "Update customer date of birth", description = "Updates the date of birth of a specific customer by their ID")
+    @ReadApiResponses
     @PutMapping("/update/dateOfBirth")
     public ResponseEntity<CustomerDTO> updateDateOfBirth(@RequestParam Date dateOfBirth,@AuthenticationPrincipal Customer customer) {
         return execute("updateDateOfBirth", "Date of birth updated successfully", () -> {

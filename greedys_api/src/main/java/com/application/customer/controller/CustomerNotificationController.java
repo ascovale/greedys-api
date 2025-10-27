@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.CreateApiResponses;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.web.dto.notification.CustomerNotificationDTO;
 import com.application.common.web.dto.shared.FcmTokenDTO;
 import com.application.customer.service.CustomerFcmTokenService;
@@ -63,6 +65,7 @@ public class CustomerNotificationController extends BaseController {
      */
 
     @Operation(summary = "Get unread notifications", description = "Returns a pageable list of unread notifications")
+    @ReadApiResponses
     @GetMapping("/unread/{page}/{size}")
     public ResponseEntity<Page<CustomerNotificationDTO>> getUnreadNotifications(@PathVariable int page,
             @PathVariable int size) {
@@ -71,6 +74,7 @@ public class CustomerNotificationController extends BaseController {
     }
 
     @Operation(summary = "Get all notifications", description = "Returns a pageable list of all notifications")
+    @ReadApiResponses
     @GetMapping("/all/{page}/{size}")
     public ResponseEntity<Page<CustomerNotificationDTO>> getAllNotifications(@PathVariable int page,
             @PathVariable int size) {
@@ -79,12 +83,14 @@ public class CustomerNotificationController extends BaseController {
     }
 
     @Operation(summary = "Set notification as read", description = "Sets the notification with the given ID as the given read boolean")
+    @ReadApiResponses
     @PutMapping("/read")
     public ResponseEntity<CustomerNotificationDTO> setNotificationAsRead(@RequestParam Long notificationId, @RequestParam Boolean read) {
         return execute("setNotificationAsRead", () -> notificationService.markAsReadAndReturn(notificationId));
     }
 
     @Operation(summary = "Register a user's FCM token", description = "Registers a user's FCM token")
+    @CreateApiResponses
     @PostMapping("/token")
     
     public ResponseEntity<String> registerUserFcmToken(@RequestBody FcmTokenDTO userFcmToken) {
@@ -95,6 +101,7 @@ public class CustomerNotificationController extends BaseController {
     }
 
     @Operation(summary = "Check if a device's token is present", description = "Checks if a device's token is present")
+    @ReadApiResponses
     @GetMapping("/token/present")
     public ResponseEntity<String> isDeviceTokenPresent(@RequestParam String deviceId) {
         return execute("isDeviceTokenPresent", () -> {
@@ -107,6 +114,7 @@ public class CustomerNotificationController extends BaseController {
     }
 
     @Operation(summary = "Verify a device's token", description = "Verifies a device's token and returns the status")
+    @ReadApiResponses
     @GetMapping("/token/verify")
     public ResponseEntity<String> verifyToken(@RequestParam String deviceId) {
         return execute("verifyToken", () -> customerFcmTokenRepository.verifyTokenByDeviceId(deviceId));

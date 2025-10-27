@@ -14,6 +14,8 @@ import com.application.admin.service.AdminRegistrationService;
 import com.application.admin.web.dto.admin.AdminDTO;
 import com.application.admin.web.dto.admin.NewAdminDTO;
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.CreateApiResponses;
+import com.application.common.controller.annotation.ReadApiResponses;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -35,6 +37,7 @@ public class AdminRegistrationController extends BaseController {
     @Operation(summary = "Register a new admin")
     
     @PostMapping("/")
+    @CreateApiResponses
     public ResponseEntity<AdminDTO> registerUserAccount(@Valid @RequestBody NewAdminDTO accountDto, HttpServletRequest request) {
         return executeCreate("register new admin",  () -> {
             return adminRegistrationService.registerNewAdmin(accountDto, request);
@@ -43,6 +46,7 @@ public class AdminRegistrationController extends BaseController {
 
     @Operation(summary = "Confirm admin registration")
     @GetMapping(value = "/confirm")
+    @ReadApiResponses
     public ResponseEntity<String> confirmRegistration(final HttpServletRequest request, @RequestParam final String token) {
         return execute("confirm admin registration", () -> {
             return adminRegistrationService.confirmRegistrationAndAuthenticate(token, request.getLocale());
@@ -52,6 +56,7 @@ public class AdminRegistrationController extends BaseController {
     @Operation(summary = "Resend verification token")
     @RequestMapping(value = "/resend_token", method = RequestMethod.GET)
     @ResponseBody
+    @ReadApiResponses
     public ResponseEntity<String> resendRegistrationToken(final HttpServletRequest request, @RequestParam("token") final String existingToken) {
         return execute("resend verification token", () -> {
             return adminRegistrationService.resendVerificationToken(existingToken, request, request.getLocale());

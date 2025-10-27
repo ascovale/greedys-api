@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.CreateApiResponses;
 import com.application.common.persistence.model.reservation.Reservation;
 import com.application.common.service.reservation.ReservationService;
 import com.application.common.web.dto.reservations.ReservationDTO;
@@ -52,6 +53,7 @@ public class RestaurantReservationController extends BaseController {
 
 	//TODO: Aggiungere verifica che lo slot sia del ristorante
 	@Operation(summary = "Create a new reservation", description = "Endpoint to create a new reservation")
+	@CreateApiResponses
 	@PostMapping("/new")
 	@PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_RESERVATION_WRITE') && @securityRUserService.isSlotOwnedByAuthenticatedUser(#dto.idSlot)")
 	public ResponseEntity<ReservationDTO> createReservation(@RequestBody RestaurantNewReservationDTO dto,
