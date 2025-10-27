@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.application.admin.service.authentication.AdminAuthenticationService;
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.web.dto.security.AuthRequestDTO;
 import com.application.common.web.dto.security.AuthResponseDTO;
 import com.application.common.web.dto.security.RefreshTokenRequestDTO;
@@ -28,6 +29,7 @@ public class AdminAuthenticationController extends BaseController {
 
     @Operation(summary = "Generate an authentication token", description = "Authenticates a user and returns a JWT token")
     @PostMapping(value = "/login", produces = "application/json")
+    @ReadApiResponses
     public ResponseEntity<AuthResponseDTO> createAuthenticationToken(
             @RequestBody AuthRequestDTO authenticationRequest) {
         return execute("admin login", () -> adminAuthenticationService.login(authenticationRequest));
@@ -35,6 +37,7 @@ public class AdminAuthenticationController extends BaseController {
 
     @Operation(summary = "Refresh authentication token", description = "Refresh an admin JWT token using a refresh token")
     @PostMapping(value = "/refresh", produces = "application/json")
+    @ReadApiResponses
     public ResponseEntity<AuthResponseDTO> refreshToken(@RequestBody RefreshTokenRequestDTO refreshRequest) {
         return execute("admin refresh token", () -> 
             adminAuthenticationService.refreshToken(refreshRequest.getRefreshToken())

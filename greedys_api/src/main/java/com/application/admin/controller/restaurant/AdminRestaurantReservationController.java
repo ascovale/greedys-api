@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.service.reservation.ReservationService;
 import com.application.common.web.dto.reservations.ReservationDTO;
 
@@ -38,7 +39,7 @@ public class AdminRestaurantReservationController extends BaseController {
 	@Operation(summary = "Get all reservations of a restaurant", description = "Retrieve all reservations of a restaurant")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_RESTAURANT_READ')")
 	@GetMapping(value = "{restaurantId}/reservation")
-	
+	@ReadApiResponses
     public ResponseEntity<Page<ReservationDTO>> getReservations(
 			@PathVariable Long restaurantId,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
@@ -50,7 +51,7 @@ public class AdminRestaurantReservationController extends BaseController {
 	@Operation(summary = "Get all accepted reservations of a restaurant", description = "Retrieve all accepted reservations of a restaurant")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_RESTAURANT_READ')")
 	@GetMapping(value = "{restaurantId}/reservation/accepted")
-	
+	@ReadApiResponses
     public ResponseEntity<Page<ReservationDTO>> getAcceptedReservations(
 			@PathVariable Long restaurantId,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
@@ -62,6 +63,7 @@ public class AdminRestaurantReservationController extends BaseController {
 	@Operation(summary = "Get all reservations of a restaurant with pagination", description = "Retrieve all reservations of a restaurant with pagination")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_RESTAURANT_READ')")
 	@GetMapping(value = "{restaurantId}/reservation/pageable")
+	@ReadApiResponses
 	public ResponseEntity<Page<ReservationDTO>> getReservationsPageable(
 			@PathVariable Long restaurantId,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
@@ -75,7 +77,7 @@ public class AdminRestaurantReservationController extends BaseController {
 	@Operation(summary = "Get all pending reservations of a restaurant", description = "Retrieve all pending reservations of a restaurant")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_RESTAURANT_READ')")
 	@GetMapping(value = "{restaurantId}/reservation/pending")
-	
+	@ReadApiResponses
     public ResponseEntity<Page<ReservationDTO>> getPendingReservations(
 			@PathVariable Long restaurantId,
 			@RequestParam(required = false) LocalDate start,
@@ -87,6 +89,7 @@ public class AdminRestaurantReservationController extends BaseController {
 	@Operation(summary = "Get all pending reservations of a restaurant with pagination", description = "Retrieve all pending reservations of a restaurant with pagination")
 	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_RESTAURANT_READ')")
 	@GetMapping(value = "{restaurantId}/reservation/pending/pageable")
+	@ReadApiResponses
 	public ResponseEntity<Page<ReservationDTO>> getPendingReservationsPageable(
 		@PathVariable Long restaurantId,
 		@RequestParam(required = false) LocalDate start,

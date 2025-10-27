@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.CreateApiResponses;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.web.dto.restaurant.TableDTO;
 import com.application.restaurant.service.TableService;
 import com.application.restaurant.web.dto.restaurant.NewTableDTO;
@@ -35,6 +37,7 @@ public class RestaurantTableController extends BaseController {
 
 	@GetMapping(value = "/room/{roomId}")
 	@Operation(summary = "Get tables of a room", description = "Retrieve the tables of a specific room")
+	@ReadApiResponses
 	
     public ResponseEntity<List<TableDTO>> getTables(@PathVariable Long roomId) {
 		return executeList("get tables for room", () -> {
@@ -46,6 +49,7 @@ public class RestaurantTableController extends BaseController {
 
 	@PostMapping
 	@Operation(summary = "Add a table to a room", description = "Add a new table to a specific room")
+	@CreateApiResponses
 
     public ResponseEntity<TableDTO> addTable(@RequestBody NewTableDTO tableDto) {
 		return executeCreate("add table", "Table added successfully", () -> {
@@ -56,6 +60,7 @@ public class RestaurantTableController extends BaseController {
 
 	@DeleteMapping(value = "/remove/{tableId}")
 	@Operation(summary = "Remove a table", description = "Remove a specific table by its ID")
+	@ReadApiResponses
 	public ResponseEntity<String> removeTable(@PathVariable Long tableId) {
 		return execute("remove table", () -> {
 			log.info("Removing table with ID: {}", tableId);

@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.CreateApiResponses;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.web.dto.restaurant.SlotDTO;
 import com.application.restaurant.persistence.model.user.RUser;
 import com.application.restaurant.service.SlotService;
@@ -32,7 +34,7 @@ public class RestaurantSlotController extends BaseController {
     private final SlotService slotService;
 
     @Operation(summary = "Create a new slot", description = "This method creates a new slot.")
-    
+    @CreateApiResponses
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SLOT_WRITE')")
     @PostMapping("/new")
     public ResponseEntity<SlotDTO> newSlot(@RequestBody RestaurantNewSlotDTO slotDto,
@@ -43,7 +45,7 @@ public class RestaurantSlotController extends BaseController {
     }
 
     @Operation(summary = "Cancel a slot", description = "This method cancels an existing slot.")
-    
+    @ReadApiResponses
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SLOT_WRITE')")
     @DeleteMapping("/cancel/{slotId}")
     public ResponseEntity<String> cancelSlot(@PathVariable Long slotId,@AuthenticationPrincipal RUser rUser) {

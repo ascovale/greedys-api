@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.service.RestaurantService;
 import com.application.common.web.dto.restaurant.ServiceDTO;
 import com.application.restaurant.persistence.model.user.RUser;
@@ -36,6 +37,7 @@ public class RestaurantInfoController extends BaseController {
 
 	@PostMapping(value = "/no-show-time-limit")
 	@Operation(summary = "Set no-show time limit", description = "Set the time limit for no-show reservations")
+	@ReadApiResponses
 	public ResponseEntity<String> setNoShowTimeLimit(@RequestParam int minutes, @AuthenticationPrincipal RUser rUser) {
 		return execute("set no-show time limit", () -> {
 			Long restaurantId = rUser.getRestaurant().getId();
@@ -47,6 +49,7 @@ public class RestaurantInfoController extends BaseController {
 
 	@GetMapping(value = "/types")
 	@Operation(summary = "Get types of a restaurant", description = "Retrieve the types of a restaurant")
+	@ReadApiResponses
 	public ResponseEntity<List<String>> getRestaurantTypesNames() {
 		return executeList("get restaurant types", () -> {
 			log.info("Getting restaurant types");
@@ -56,6 +59,7 @@ public class RestaurantInfoController extends BaseController {
 
 	@GetMapping(value = "/open-days")
 	@Operation(summary = "Get open days of the authenticated restaurant", description = "Retrieve the open days of the authenticated restaurant")
+	@ReadApiResponses
 	public ResponseEntity<List<String>> getOpenDays(
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate start,
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate end,
@@ -70,6 +74,7 @@ public class RestaurantInfoController extends BaseController {
 
 	@GetMapping(value = "/closed-days")
 	@Operation(summary = "Get closed days of the authenticated restaurant", description = "Retrieve the closed days of the authenticated restaurant")
+	@ReadApiResponses
 	
     public ResponseEntity<List<LocalDate>> getClosedDays(
 			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate start,

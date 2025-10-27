@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.CreateApiResponses;
 import com.application.restaurant.service.google.RestaurantGooglePlacesService;
 import com.application.restaurant.service.google.after.RestaurantGoogleVerificationService;
 import com.application.restaurant.web.dto.google.RestaurantAuthorizationResult;
@@ -41,6 +42,7 @@ public class GoogleBusinessVerificationController extends BaseController {
     @Operation(summary = "Get managed restaurants", 
                description = "Gets the list of all restaurants that the user can manage (STEP 1). " +
                            "Requires Access Token with scopes: userinfo.email, userinfo.profile, business.manage")
+    @CreateApiResponses
     @PostMapping("/get-restaurants")
     public ResponseEntity<RestaurantAuthorizationResult> getUserRestaurants(
             @RequestBody UserRestaurantsRequestDTO request) {

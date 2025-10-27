@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.CreateApiResponses;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.service.AllergyService;
 import com.application.common.web.dto.customer.AllergyDTO;
 import com.application.common.web.dto.customer.NewAllergyDTO;
@@ -43,6 +44,7 @@ public class AdminAllergyController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_WRITE')")
     @Operation(summary = "Delete allergy", description = "Deletes an allergy by its ID")
     @DeleteMapping("/{allergyId}/delete")
+    @ReadApiResponses
     public ResponseEntity<String> deleteAllergy(@PathVariable Long allergyId) {
         return execute("delete allergy", "Allergy deleted successfully", () -> {
             allergyService.deleteAllergy(allergyId);
@@ -53,6 +55,7 @@ public class AdminAllergyController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_CUSTOMER_WRITE')")
     @Operation(summary = "Modify allergy", description = "Modifies an existing allergy")
     @PutMapping("/{allergyId}/modify")
+    @ReadApiResponses
     public ResponseEntity<AllergyDTO> modifyAllergy(@PathVariable Long allergyId, @RequestBody NewAllergyDTO allergyDto) {
         return execute("modify allergy", () -> {
             return allergyService.modifyAllergyAndReturn(allergyId, allergyDto);

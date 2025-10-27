@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.CreateApiResponses;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.service.AllergyService;
 import com.application.common.web.dto.customer.AllergyDTO;
 import com.application.customer.persistence.model.Customer;
@@ -36,6 +38,7 @@ public class CustomerAllergyController extends BaseController {
     private final AllergyService allergyService;
 
     @Operation(summary = "Add allergy to customer", description = "Adds an allergy to the currently authenticated customer using the allergy ID")
+    @CreateApiResponses
     @PostMapping("/add/{allergyId}")
     public ResponseEntity<String> addAllergyToCustomer(@PathVariable Long allergyId) {
         return executeCreate("addAllergyToCustomer", "Allergy added successfully", () -> {
@@ -45,6 +48,7 @@ public class CustomerAllergyController extends BaseController {
     }
 
     @Operation(summary = "Remove allergy from customer", description = "Removes an allergy from the currently authenticated customer using the allergy ID")
+    @ReadApiResponses
     @DeleteMapping("/remove/{allergyId}")
     public ResponseEntity<String> removeAllergyFromUser(@PathVariable Long allergyId) {
         return execute("removeAllergyFromUser", () -> {
@@ -54,6 +58,7 @@ public class CustomerAllergyController extends BaseController {
     }
 
     @Operation(summary = "Get allergies of customer", description = "Returns all allergies of the currently authenticated customer")
+    @ReadApiResponses
     @GetMapping("/allergies")
     
     public ResponseEntity<List<AllergyDTO>> getAllergiesOfCustomer(@AuthenticationPrincipal Customer customer) {
@@ -61,12 +66,14 @@ public class CustomerAllergyController extends BaseController {
     }
 
     @Operation(summary = "Get paginated allergies of customer", description = "Returns paginated allergies of the currently authenticated customer")
+    @ReadApiResponses
     @GetMapping("/paginated")
     public ResponseEntity<Page<AllergyDTO>> getPaginatedAllergiesOfCustomer(@RequestParam int page, @RequestParam int size) {
         return executePaginated("getPaginatedAllergiesOfCustomer", () -> customerService.getPaginatedAllergies(page, size));
     }
 
     @Operation(summary = "Get allergy by ID", description = "Returns a specific allergy of the currently authenticated customer using the allergy ID")
+    @ReadApiResponses
     @GetMapping("/{allergyId}")
     public ResponseEntity<AllergyDTO> getAllergyById(@PathVariable Long allergyId) {
         return execute("getAllergyById", () -> allergyService.getAllergyById(allergyId));

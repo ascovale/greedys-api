@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.web.dto.restaurant.TableDTO;
 import com.application.restaurant.service.TableService;
 
@@ -30,6 +31,7 @@ public class CustomerTableController extends BaseController {
 	@GetMapping("/room/{roomId}/tables")
 	
 	@Operation(summary = "Get tables of a room", description = "Retrieve the tables of a room")
+	@ReadApiResponses
     public ResponseEntity<Page<TableDTO>> getTables(
     		@PathVariable Long roomId,
     		@PageableDefault(size = 10, sort = "id") Pageable pageable) {

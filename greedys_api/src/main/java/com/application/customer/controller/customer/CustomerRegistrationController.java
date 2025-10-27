@@ -22,6 +22,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.CreateApiResponses;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.web.dto.customer.CustomerDTO;
 import com.application.common.web.dto.security.AuthRequestGoogleDTO;
 import com.application.common.web.dto.security.AuthResponseDTO;
@@ -52,6 +54,7 @@ public class CustomerRegistrationController extends BaseController {
     private final CustomerAuthenticationService customerAuthenticationService;
 
     @Operation(summary = "Register a new customer", description = "Registers a new customer account and sends a verification email.")
+    @CreateApiResponses
     @PostMapping("/new")
     public ResponseEntity<CustomerDTO> registerCustomerAccount(@Valid @RequestBody NewCustomerDTO accountDto,
             HttpServletRequest request) {
@@ -61,6 +64,7 @@ public class CustomerRegistrationController extends BaseController {
     }
 
     @Operation(summary = "Send password reset email", description = "Sends an email with a password reset token to the specified customer.")
+    @ReadApiResponses
     @PostMapping("/password/forgot")
     public ResponseEntity<String> sendPasswordResetEmail(@RequestParam String email, HttpServletRequest request) {
         return execute("Send password reset email", () -> {
@@ -70,6 +74,7 @@ public class CustomerRegistrationController extends BaseController {
     }
 
     @Operation(summary = "Confirm password change with token", description = "Confirms the password change using a token")
+    @ReadApiResponses
     @PutMapping(value = "/password/confirm")
     public ResponseEntity<String> confirmPasswordChange(
             @Parameter(description = "Password reset token") @RequestParam final String token) {
@@ -80,6 +85,7 @@ public class CustomerRegistrationController extends BaseController {
     }
 
     @Operation(summary = "Confirm customer registration", description = "Validates the registration token and activates the customer account.")
+    @ReadApiResponses
     @RequestMapping(value = "/confirm", method = RequestMethod.GET)
     @ResponseBody
     public ResponseEntity<String> confirmRegistrationResponse(final HttpServletRequest request,
@@ -98,6 +104,7 @@ public class CustomerRegistrationController extends BaseController {
     }
 
     @Operation(summary = "Resend registration token", description = "Generates and sends a new registration token to the customer.")
+    @ReadApiResponses
     @RequestMapping(value = "/resend_token", method = RequestMethod.GET)
     @ResponseBody
     public ResponseEntity<String> resendRegistrationToken(final HttpServletRequest request,

@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.CreateApiResponses;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.restaurant.service.verification.RestaurantTwilioVerificationService;
 import com.application.restaurant.web.dto.verification.VerificationRequestDTO;
 import com.application.restaurant.web.dto.verification.VerificationResponseDTO;
@@ -46,6 +48,7 @@ public class TwilioRestaurantVerificationController extends BaseController {
     )
     
     @PostMapping("/initiate")
+    @CreateApiResponses
     public ResponseEntity<VerificationResponseDTO> initiateVerification(
             @Valid @RequestBody VerificationRequestDTO request) {
         
@@ -61,6 +64,7 @@ public class TwilioRestaurantVerificationController extends BaseController {
     )
     
     @PostMapping("/{restaurantId}/verify")
+    @CreateApiResponses
     public ResponseEntity<VerificationResponseDTO> verifyCode(
             @Parameter(description = "Restaurant ID") 
             @PathVariable @NotNull Long restaurantId,
@@ -80,6 +84,7 @@ public class TwilioRestaurantVerificationController extends BaseController {
     )
     
     @GetMapping("/{restaurantId}/status")
+    @ReadApiResponses
     public ResponseEntity<VerificationResponseDTO> getVerificationStatus(
             @Parameter(description = "Restaurant ID") 
             @PathVariable @NotNull Long restaurantId) {
@@ -96,6 +101,7 @@ public class TwilioRestaurantVerificationController extends BaseController {
     )
     
     @PostMapping("/{restaurantId}/cancel")
+    @CreateApiResponses
     public ResponseEntity<VerificationResponseDTO> cancelVerification(
             @Parameter(description = "Restaurant ID") 
             @PathVariable @NotNull Long restaurantId) {

@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.web.dto.menu.DishDTO;
 import com.application.common.web.dto.menu.MenuDTO;
 import com.application.common.web.dto.menu.MenuDishDTO;
@@ -39,7 +40,7 @@ public class RestaurantMenuController extends BaseController {
     private final RestaurantMenuService restaurantMenuService;
 
     @Operation(summary = "Retrieve all menus", description = "Retrieve all menus for the current restaurant")
-    
+    @ReadApiResponses
     @GetMapping("/all")
     public ResponseEntity<List<MenuDTO>> getRestaurantMenus(@AuthenticationPrincipal RUser rUser) {
         return executeList("get restaurant menus", () -> {
@@ -49,7 +50,7 @@ public class RestaurantMenuController extends BaseController {
     }
 
     @Operation(summary = "Get dishes of a menu", description = "Retrieve all dishes of a specific menu")
-    
+    @ReadApiResponses
     @PreAuthorize("@securityRUserService.isMenuOwnedByAuthenticatedUser(#menuId)")
     @GetMapping("/{menuId}/dishes")
     public ResponseEntity<List<MenuDishDTO>> getMenuDishes(@PathVariable Long menuId) {
@@ -57,7 +58,7 @@ public class RestaurantMenuController extends BaseController {
     }
 
     @Operation(summary = "Get menu details", description = "Retrieve details of a specific menu")
-    
+    @ReadApiResponses
     @PreAuthorize("@securityRUserService.isMenuOwnedByAuthenticatedUser(#menuId)")
     @GetMapping("/{menuId}")
     public ResponseEntity<MenuDTO> getMenuDetails(@PathVariable Long menuId) {
@@ -65,6 +66,7 @@ public class RestaurantMenuController extends BaseController {
     }
 
     @Operation(summary = "Retrieve all dishes", description = "Retrieve all dishes for the current restaurant")
+    @ReadApiResponses
     @GetMapping("/dishes/all")
     public ResponseEntity<List<DishDTO>> getDishes(@AuthenticationPrincipal RUser rUser) {
         return executeList("get restaurant dishes", () -> {

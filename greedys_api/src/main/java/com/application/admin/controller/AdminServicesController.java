@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.CreateApiResponses;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.web.dto.restaurant.ServiceTypeDto;
 import com.application.restaurant.service.ServiceService;
 
@@ -38,6 +39,7 @@ public class AdminServicesController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_READ')")
     @GetMapping("/types")
     @Operation(summary = "Get all service types", description = "Retrieve all service types.")
+    @ReadApiResponses
     public ResponseEntity<Page<ServiceTypeDto>> getServiceTypes(
             @PageableDefault(size = 10, sort = "id") Pageable pageable) {
         return executePaginated("get service types", () -> serviceService.getServiceTypes(pageable));
@@ -57,6 +59,7 @@ public class AdminServicesController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
     @Operation(summary = "Update a service type", description = "This method updates an existing service type.")
     @PutMapping("/type/{typeId}/update")
+    @ReadApiResponses
     public ResponseEntity<ServiceTypeDto> updateServiceType(@PathVariable Long typeId, @RequestBody String serviceTypeString) {
         return execute("update service type", () -> {
             return serviceService.updateServiceTypeAndReturn(typeId, serviceTypeString);
@@ -66,6 +69,7 @@ public class AdminServicesController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_WRITE')")
     @Operation(summary = "Delete a service type", description = "This method deletes a service type by its ID.")
     @DeleteMapping("/type/{typeId}/delete")
+    @ReadApiResponses
     public ResponseEntity<String> deleteServiceType(@PathVariable Long typeId) {
         return execute("delete service type", () -> {
             serviceService.deleteServiceType(typeId);

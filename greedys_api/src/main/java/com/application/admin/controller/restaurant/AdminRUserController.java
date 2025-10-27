@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.application.admin.service.authentication.AdminRUserAuthenticationService;
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.web.dto.restaurant.RUserDTO;
 import com.application.common.web.dto.security.AuthResponseDTO;
 import com.application.restaurant.persistence.model.user.RUser;
@@ -39,6 +40,7 @@ public class AdminRUserController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_USER_WRITE')")
     @Operation(summary = "Block restaurant user", description = "Blocks a restaurant user by their ID")
     @PutMapping("/{RUserId}/block")
+    @ReadApiResponses
     public ResponseEntity<String> blockRUser(@PathVariable Long RUserId) {
         return execute("block restaurant user", () -> {
             RUserService.updateRUserStatus(RUserId, RUser.Status.BLOCKED);
@@ -49,6 +51,7 @@ public class AdminRUserController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_USER_WRITE')")
     @Operation(summary = "Enable restaurant user", description = "Enables a restaurant user by their ID")
     @PutMapping("/{RUserId}/enable")
+    @ReadApiResponses
     public ResponseEntity<String> enableRUser(@PathVariable Long RUserId) {
         return execute("enable restaurant user", () -> {
             RUserService.updateRUserStatus(RUserId, RUser.Status.ENABLED);
@@ -59,6 +62,7 @@ public class AdminRUserController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_USER_WRITE')")
     @Operation(summary = "Change restaurant owner", description = "Changes the owner of a restaurant")
     @PutMapping("/{restaurantId}/changeOwner/{idOldOwner}/{idNewOwner}")
+    @ReadApiResponses
     public ResponseEntity<String> changeRestaurantOwner(@PathVariable Long restaurantId, @PathVariable Long idOldOwner,
             @PathVariable Long idNewOwner) {
         return execute("change restaurant owner", () -> {
@@ -70,6 +74,7 @@ public class AdminRUserController extends BaseController {
     //@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_SWITCH_TO_RESTAURANT_USER')")
     @GetMapping("/login/{RUserId}")
     @Operation(summary = "Get JWT Token of a restaurant user", description = "Returns the JWT token of a restaurant user")
+    @ReadApiResponses
     public ResponseEntity<AuthResponseDTO> loginHasRUser(@PathVariable Long RUserId, HttpServletRequest request) {
         return execute("get restaurant user token", () -> adminRUserAuthenticationService.adminLoginToRUser(RUserId, request));
     }
@@ -77,7 +82,7 @@ public class AdminRUserController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_USER_READ')")
     @Operation(summary = "Get restaurant users", description = "Retrieves the list of users for a specific restaurant")
     @GetMapping("/{restaurantId}/users")
-    
+    @ReadApiResponses
     public ResponseEntity<Page<RUserDTO>> getRUsers(
             @PathVariable Long restaurantId,
             @PageableDefault(size = 10, sort = "id") Pageable pageable) {
@@ -87,7 +92,7 @@ public class AdminRUserController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_USER_READ')")
     @Operation(summary = "Get restaurant user by email", description = "Retrieves a restaurant user by email address")
     @GetMapping("/by-email/{email}")
-    
+    @ReadApiResponses
     public ResponseEntity<RUserDTO> getRUserByEmail(@PathVariable String email) {
         return execute("get restaurant user by email", () -> RUserService.getRUserByEmail(email));
     }
@@ -95,7 +100,7 @@ public class AdminRUserController extends BaseController {
     @PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESTAURANT_USER_READ')")
     @Operation(summary = "Get all restaurant users", description = "Retrieves all restaurant users in the system")
     @GetMapping("/all")
-    
+    @ReadApiResponses
     public ResponseEntity<Page<RUserDTO>> getAllRUsers(
             @PageableDefault(size = 10, sort = "id") Pageable pageable) {
         return executePaginated("get all restaurant users", () -> RUserService.getAllRUsers(pageable));

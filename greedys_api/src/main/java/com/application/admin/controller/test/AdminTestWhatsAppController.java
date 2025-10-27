@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.service.WhatsAppService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,6 +28,7 @@ public class AdminTestWhatsAppController extends BaseController {
     @Operation(summary = "Send WhatsApp message", description = "Sends a WhatsApp message to the specified phone number")
     
     @PostMapping("/send-message")
+    @ReadApiResponses
     public ResponseEntity<String> sendMessage(@RequestBody MessageRequest request) {
         return execute("send whatsapp message", () -> {
             whatsappService.sendWhatsAppMessage(request.getPhoneNumber(), request.getMessage());

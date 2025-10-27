@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.CreateApiResponses;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.persistence.model.reservation.ReservationRequest;
 import com.application.common.web.dto.reservations.ReservationDTO;
 import com.application.restaurant.service.google.after.GoogleReserveService;
@@ -38,6 +40,7 @@ public class GoogleReserveController extends BaseController {
         description = "Crea una nuova prenotazione del ristorante tramite Google Reserve API. " +
                      "Restituisce i dettagli della prenotazione e l'ID di conferma."
     )
+    @CreateApiResponses
     @PostMapping("/book")
     public ResponseEntity<ReservationDTO> createReservation(
             @RequestBody ReservationRequest reservationRequest) {
@@ -59,6 +62,7 @@ public class GoogleReserveController extends BaseController {
         description = "Modifica una prenotazione esistente con nuovi dettagli. " +
                      "Può cambiare data, ora, numero di persone e richieste speciali."
     )
+    @ReadApiResponses
     @PutMapping("/{reservationId}")
     public ResponseEntity<ReservationDTO> modifyReservation(
             @PathVariable String reservationId,
@@ -80,6 +84,7 @@ public class GoogleReserveController extends BaseController {
         summary = "Cancella prenotazione", 
         description = "Cancella una prenotazione esistente. Richiede l'ID della prenotazione e un motivo opzionale."
     )
+    @ReadApiResponses
     @DeleteMapping("/{reservationId}")
     public ResponseEntity<Boolean> cancelReservation(
             @PathVariable String reservationId,
