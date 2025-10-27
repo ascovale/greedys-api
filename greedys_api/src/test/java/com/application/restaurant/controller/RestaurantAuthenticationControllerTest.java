@@ -29,8 +29,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.application.common.security.jwt.JwtUtil;
-import com.application.common.web.dto.restaurant.RestaurantDTO;
 import com.application.common.web.dto.restaurant.RUserDTO;
+import com.application.common.web.dto.restaurant.RestaurantDTO;
 import com.application.common.web.dto.security.AuthRequestDTO;
 import com.application.common.web.dto.security.AuthRequestGoogleDTO;
 import com.application.common.web.dto.security.AuthResponseDTO;
