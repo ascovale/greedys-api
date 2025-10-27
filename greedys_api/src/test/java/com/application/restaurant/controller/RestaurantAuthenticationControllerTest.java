@@ -30,6 +30,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.application.common.security.jwt.JwtUtil;
 import com.application.common.web.dto.restaurant.RestaurantDTO;
+import com.application.common.web.dto.restaurant.RUserDTO;
 import com.application.common.web.dto.security.AuthRequestDTO;
 import com.application.common.web.dto.security.AuthRequestGoogleDTO;
 import com.application.common.web.dto.security.AuthResponseDTO;
@@ -100,10 +101,16 @@ class RestaurantAuthenticationControllerTest {
         );
 
         // Setup DTOs with correct AuthResponseDTO properties (jwt, refreshToken, user)
+        RUserDTO mockUserDTO = RUserDTO.builder()
+                .id(1L)
+                .username("test@restaurant.com")
+                .restaurantId(1L)
+                .build();
+        
         authResponse = AuthResponseDTO.builder()
                 .jwt("test-jwt-token")
                 .refreshToken("test-refresh-token")
-                .user("test-user")
+                .user(mockUserDTO)
                 .build();
     }
 

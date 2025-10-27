@@ -2,6 +2,7 @@ package com.application.common.web.dto.customer;
 
 import com.application.common.controller.validators.PasswordMatches;
 import com.application.common.controller.validators.ValidEmail;
+import com.application.common.web.dto.security.UserAuthResponse;
 import com.application.customer.persistence.model.Customer;
 import com.application.customer.persistence.model.Customer.Status;
 
@@ -11,15 +12,17 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @PasswordMatches
 @Schema(name = "CustomerDTO", description = "DTO for customer details")
-public class CustomerDTO {
+public class CustomerDTO extends UserAuthResponse {
 
     @Schema(description = "ID of the customer", example = "1")
     @NotNull

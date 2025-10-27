@@ -156,7 +156,12 @@ public class CustomerAuthenticationService {
 								.build();
 						return registerNewCustomerAccount(accountDto);
 					},
-					jwtUtil::generateToken);
+					customer -> {
+						// Build response with proper DTO conversion
+						String jwt = jwtUtil.generateToken(customer);
+						CustomerDTO customerDTO = customerMapper.toDTO(customer);
+						return new AuthResponseDTO(jwt, customerDTO);
+					});
 		} catch (Exception e) {
 			log.error("Google authentication failed: {}", e.getMessage(), e);
 			throw new RuntimeException("Google authentication failed: " + e.getMessage());

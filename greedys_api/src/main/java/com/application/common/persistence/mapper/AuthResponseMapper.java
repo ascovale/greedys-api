@@ -1,15 +1,16 @@
 package com.application.common.persistence.mapper;
 
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
 
-import com.application.common.web.dto.security.AuthResponseDTO;
-
 /**
  * MapStruct mapper per la conversione di AuthResponseDTO
- * Questo mapper è principalmente utilizzato per la creazione di response di autenticazione
+ * 
+ * NOTE: This mapper is no longer needed as AuthResponseDTO now has proper constructors
+ * that accept UserAuthResponse types directly. Kept for backward compatibility reference.
+ * 
+ * @deprecated Use AuthResponseDTO constructors directly instead
  */
 @Mapper(
     componentModel = "spring",
@@ -17,11 +18,5 @@ import com.application.common.web.dto.security.AuthResponseDTO;
     unmappedTargetPolicy = ReportingPolicy.WARN
 )
 public interface AuthResponseMapper {
-
-    /**
-     * Crea un AuthResponseDTO con JWT e user object
-     */
-    @Mapping(target = "jwt", source = "jwt")
-    @Mapping(target = "user", source = "user")
-    AuthResponseDTO createAuthResponse(String jwt, Object user);
+    // Deprecated - use AuthResponseDTO constructors instead
 }

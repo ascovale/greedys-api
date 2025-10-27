@@ -41,11 +41,12 @@ public class GoogleAuthService {
 
     /**
      * Authenticates a user with Google OAuth2 and returns an authentication response.
+     * The caller is responsible for converting the retrieved/created user object to AuthResponseDTO.
      *
      * @param authRequest the authentication request containing the Google token
      * @param userFun function to retrieve user details by email
      * @param createUserFun function to create a new user if not found
-     * @param genToken function to generate JWT token for the authenticated user
+     * @param responseBuilder function that builds the AuthResponseDTO from the user object
      * @return AuthResponseDTO containing JWT and user details
      * @throws Exception if token verification fails or any other error occurs
      */
@@ -53,7 +54,7 @@ public class GoogleAuthService {
             AuthRequestGoogleDTO authRequest, 
             Function<String, U> userFun, 
             BiFunction<String, GoogleIdToken, U> createUserFun,
-            Function<U, String> genToken)
+            Function<U, AuthResponseDTO> responseBuilder)
             throws Exception {
         log.warn("Received Google authentication request: token hash={}", authRequest.getToken() != null ? authRequest.getToken().hashCode() : "null");
         GoogleIdToken idToken = verifyGoogleToken(authRequest.getToken());
@@ -67,8 +68,8 @@ public class GoogleAuthService {
             if (customer == null) {
                 customer = createUserFun.apply(email, idToken);
             }
-            String jwt = genToken.apply(customer);
-            return new AuthResponseDTO(jwt, customer);
+            // Let the caller build the response with proper type conversion
+            return responseBuilder.apply(customer);
         } else {
             log.warn("Google token verification failed.");
             throw new Exception("Google token verification failed.");

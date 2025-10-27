@@ -20,10 +20,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 
+import com.application.common.persistence.mapper.RUserHubMapper;
 import com.application.common.persistence.mapper.RUserMapper;
 import com.application.common.security.jwt.JwtUtil;
 import com.application.common.service.EmailService;
 import com.application.common.service.authentication.GoogleAuthService;
+import com.application.common.web.dto.restaurant.RUserHubDTO;
 import com.application.common.web.dto.restaurant.RestaurantDTO;
 import com.application.common.web.dto.security.AuthRequestDTO;
 import com.application.common.web.dto.security.AuthRequestGoogleDTO;
@@ -63,6 +65,7 @@ public class RestaurantAuthenticationService {
     private final RUserHubDAO RUserHubDAO;
     private final PasswordEncoder passwordEncoder;
     private final RUserMapper rUserMapper;
+    private final RUserHubMapper rUserHubMapper;
 
 
     public ResponseEntity<String> createPasswordResetTokenForRUser(final RUser ru,
@@ -292,13 +295,9 @@ public class RestaurantAuthenticationService {
             
             if (authenticationRequest.isRememberMe()) {
                 final String hubRefreshToken = jwtUtil.generateHubRefreshToken(user);
-                return AuthResponseDTO.builder()
-                        .jwt(hubJwt)            // Token hub normale da 1 ora
-                        .refreshToken(hubRefreshToken)  // Refresh token da 7 giorni
-                        .user(user)
-                        .build();
+                return new AuthResponseDTO(hubJwt, hubRefreshToken, rUserHubMapper.toDTO(user));
             } else {
-                return new AuthResponseDTO(hubJwt, user);
+                return new AuthResponseDTO(hubJwt, rUserHubMapper.toDTO(user));
             }
         }
     }
@@ -328,11 +327,7 @@ public class RestaurantAuthenticationService {
             
             log.debug("New hub tokens generated for email: {}", email);
             
-            return AuthResponseDTO.builder()
-                    .jwt(newHubJwt)
-                    .refreshToken(newHubRefreshToken)
-                    .user(hubUser)
-                    .build();
+            return new AuthResponseDTO(newHubJwt, newHubRefreshToken, rUserHubMapper.toDTO(hubUser));
                     
         } catch (Exception e) {
             log.error("Hub refresh token validation failed: {}", e.getMessage());
@@ -415,7 +410,12 @@ public class RestaurantAuthenticationService {
                         newUser.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
                         return RUserHubDAO.save(newUser);
                     },
-                    jwtUtil::generateHubToken
+                    hub -> {
+                        // Build response with proper DTO conversion
+                        String jwt = jwtUtil.generateHubToken(hub);
+                        RUserHubDTO hubDTO = rUserHubMapper.toDTO(hub);
+                        return new AuthResponseDTO(jwt, hubDTO);
+                    }
 					);
 		} catch (Exception e) {
 			log.error("Google authentication failed: {}", e.getMessage(), e);

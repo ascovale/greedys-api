@@ -60,11 +60,7 @@ public class AdminAuthenticationService {
             final String refreshToken = jwtUtil.generateRefreshToken(adminDetails);
             log.debug("Remember me enabled: refresh token generated for admin: {}", authenticationRequest.getUsername());
             
-            return AuthResponseDTO.builder()
-                    .jwt(jwt)
-                    .refreshToken(refreshToken)
-                    .user(new AdminDTO(adminDetails))
-                    .build();
+            return new AuthResponseDTO(jwt, refreshToken, new AdminDTO(adminDetails));
         } else {
             return new AuthResponseDTO(jwt, new AdminDTO(adminDetails));
         }
@@ -107,11 +103,7 @@ public class AdminAuthenticationService {
             
             log.debug("New admin tokens generated for username: {}", username);
             
-            return AuthResponseDTO.builder()
-                    .jwt(newJwt)
-                    .refreshToken(newRefreshToken)
-                    .user(new AdminDTO(adminDetails))
-                    .build();
+            return new AuthResponseDTO(newJwt, newRefreshToken, new AdminDTO(adminDetails));
                     
         } catch (Exception e) {
             log.error("Admin refresh token validation failed: {}", e.getMessage());
