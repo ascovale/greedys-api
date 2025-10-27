@@ -94,9 +94,9 @@ publish:
     - echo "Attendo che l'API sia pronta..."
     - sleep 20
     
-    # Test connessione API (usa HTTP:8080 con retry e timeout aumentato)
+    # Test connessione API (usa HTTPS con retry e timeout aumentato)
     - |
-      API_TEST_URL="http://api.greedys.it:8080/v3/api-docs/restaurant-api"
+      API_TEST_URL="https://api.greedys.it/v3/api-docs/restaurant-api"
       MAX_ATTEMPTS=40
       ATTEMPT=1
       API_READY=false
