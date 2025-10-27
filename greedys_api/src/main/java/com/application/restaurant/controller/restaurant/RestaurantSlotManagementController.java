@@ -41,7 +41,7 @@ public class RestaurantSlotManagementController extends BaseController {
 	@ReadApiResponses
 	
     public ResponseEntity<List<SlotDTO>> getDaySlots(
-			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate date,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) java.time.LocalDate date,
 			@AuthenticationPrincipal RUser rUser) {
 		return executeList("get day slots", () -> {
 			Long restaurantId = rUser.getId();

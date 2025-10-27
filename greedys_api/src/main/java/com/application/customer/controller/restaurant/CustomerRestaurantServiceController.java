@@ -37,7 +37,7 @@ public class CustomerRestaurantServiceController extends BaseController {
     
     public ResponseEntity<List<ServiceDTO>> getActiveEnabledServicesInDate(
             @PathVariable Long restaurantId,
-            @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate date) {
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         return executeList("get active services in date", () -> {
             Collection<ServiceDTO> services = restaurantService.getActiveEnabledServices(restaurantId, date);
             return services instanceof List ? (List<ServiceDTO>) services : List.copyOf(services);
@@ -49,8 +49,8 @@ public class CustomerRestaurantServiceController extends BaseController {
     @ReadApiResponses
     public ResponseEntity<List<ServiceDTO>> getActiveEnabledServicesInPeriod(
             @PathVariable Long restaurantId,
-            @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
-            @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end) {
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
         return executeList("get active services in period", () -> {
             Collection<ServiceDTO> services = restaurantService.findActiveEnabledServicesInPeriod(restaurantId, start, end);
             return services instanceof List ? (List<ServiceDTO>) services : List.copyOf(services);

@@ -77,6 +77,7 @@ public class RestaurantRegistrationController extends BaseController {
     }
 
     @Operation(summary = "Change restaurant and get a new JWT", description = "Switches the restaurant and returns a new JWT for the specified restaurant ID")
+    @ReadApiResponses
     @PreAuthorize("@securityRUserService.hasPermissionForRestaurant(#restaurantId)")
     @PostMapping(value = "/change-restaurant", produces = "application/json")
     public ResponseEntity<AuthResponseDTO> changeRestaurant(@RequestParam Long restaurantId) {
@@ -84,6 +85,7 @@ public class RestaurantRegistrationController extends BaseController {
     }
 
     @Operation(summary = "Confirm restaurant user registration", description = "Conferma la registrazione")
+    @ReadApiResponses
     @GetMapping(value = "/confirm")
     public ResponseEntity<String> confirmRUserRegistration(final HttpServletRequest request,
             @RequestParam final String token) throws UnsupportedEncodingException {
@@ -95,6 +97,7 @@ public class RestaurantRegistrationController extends BaseController {
     }
 
     @Operation(summary = "Confirm password change with token", description = "Confirms the password change using a token")
+    @ReadApiResponses
     @PutMapping(value = "/password/confirm")
     public ResponseEntity<String> confirmPasswordChange(
             @Parameter(description = "Password reset token") @RequestParam final String token) {

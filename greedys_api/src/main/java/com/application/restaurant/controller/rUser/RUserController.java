@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.CreateApiResponses;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.persistence.mapper.RUserMapper;
 import com.application.common.web.dto.restaurant.RUserDTO;
 import com.application.common.web.error.InvalidOldPasswordException;
@@ -53,6 +55,7 @@ public class RUserController extends BaseController {
      * @return ResponseEntity containing the updated user details.
      */
     @Operation(summary = "Add a role to a restaurant user", description = "Assign a specific role to an existing restaurant user")
+    @ReadApiResponses
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_' + #role.toUpperCase() + '_WRITE')")
     @PostMapping(value = "/add_role")
     public ResponseEntity<RUserDTO> addRoleToRUser(
@@ -72,6 +75,7 @@ public class RUserController extends BaseController {
      * @return ResponseEntity containing the updated user details.
      */
     @Operation(summary = "Remove a role from a restaurant user", description = "Remove a specific role from an existing restaurant user")
+    @ReadApiResponses
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_' + #role.toUpperCase() + '_WRITE')")
     @PostMapping(value = "/remove_role")
     public ResponseEntity<RUserDTO> removeRoleFromRUser(
@@ -102,6 +106,7 @@ public class RUserController extends BaseController {
      * @return ResponseEntity with HTTP status.
      */
     @Operation(summary = "Disable a restaurant user", description = "Disable a restaurant user")
+    @ReadApiResponses
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_MANAGER_WRITE')")
     @DeleteMapping(value = "/disable_user/{RUserId}")
     public ResponseEntity<String> disableRUser(@PathVariable Long RUserId,@AuthenticationPrincipal RUser rUser) {
@@ -121,6 +126,7 @@ public class RUserController extends BaseController {
      * @return GenericResponse indicating the result of the operation.
      */
     @Operation(summary = "Generate new token for password change", description = "Changes the user's password after verifying the old password")
+    @ReadApiResponses
     @PostMapping(value = "/password/new_token")
     public ResponseEntity<String> changeUserPassword(
             @Parameter(description = "Locale for response messages") final Locale locale,
@@ -145,6 +151,7 @@ public class RUserController extends BaseController {
      */
     @PostMapping(value = "/new")
     @Operation(summary = "Add a user to a restaurant", description = "Add a new user to a restaurant")
+    @CreateApiResponses
     public ResponseEntity<RUserDTO> addRUserToRestaurant(
             @RequestBody NewRUserDTO RUserDTO,
             @AuthenticationPrincipal RUser rUser) {
@@ -156,6 +163,7 @@ public class RUserController extends BaseController {
      * Retrieves details of the current restaurant user.
      */
     @Operation(summary = "Get restaurant user details", description = "Retrieve details of the current restaurant user")
+    @ReadApiResponses
     @GetMapping("/get")
     public ResponseEntity<RUserDTO> getRUserDetails(@AuthenticationPrincipal RUser rUser) {
         return execute("get user details", () -> {
@@ -172,6 +180,7 @@ public class RUserController extends BaseController {
      * @return Lista dei permessi dell'utente corrente.
      */
     @Operation(summary = "Get user authorities", description = "Restituisce i permessi dell'utente autenticato")
+    @ReadApiResponses
     @GetMapping("/authorities")
     public ResponseEntity<List<String>> getRUserAuthorities() {
         return executeList("get user authorities", () -> {

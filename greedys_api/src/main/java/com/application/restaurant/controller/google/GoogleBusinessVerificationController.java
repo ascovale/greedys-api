@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.CreateApiResponses;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.restaurant.service.google.RestaurantGooglePlacesService;
 import com.application.restaurant.service.google.after.RestaurantGoogleVerificationService;
 import com.application.restaurant.web.dto.google.RestaurantAuthorizationResult;
@@ -64,6 +65,7 @@ public class GoogleBusinessVerificationController extends BaseController {
     @Operation(summary = "Select restaurant", 
                description = "Select and verify a specific restaurant via placeId (STEP 2). " +
                            "Uses the same Access Token from STEP 1")
+    @CreateApiResponses
     @PostMapping("/select-restaurant")
     public ResponseEntity<RestaurantVerificationResult> selectRestaurant(
             @RequestBody RestaurantSelectionRequestDTO request) {
@@ -81,6 +83,7 @@ public class GoogleBusinessVerificationController extends BaseController {
 
     @Operation(summary = "Search restaurant", 
                description = "Search for a restaurant on Google Maps without OAuth verification (for testing only)")
+    @ReadApiResponses
     @PostMapping("/search")
     public ResponseEntity<RestaurantSearchResult> searchRestaurant(
             @RequestBody SearchRequestDTO request) {

@@ -61,8 +61,8 @@ public class RestaurantInfoController extends BaseController {
 	@Operation(summary = "Get open days of the authenticated restaurant", description = "Retrieve the open days of the authenticated restaurant")
 	@ReadApiResponses
 	public ResponseEntity<List<String>> getOpenDays(
-			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate start,
-			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate end,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) java.time.LocalDate start,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) java.time.LocalDate end,
 			@AuthenticationPrincipal RUser rUser) {
 		return executeList("get open days", () -> {
 			Long restaurantId = rUser.getRestaurant().getId();
@@ -77,8 +77,8 @@ public class RestaurantInfoController extends BaseController {
 	@ReadApiResponses
 	
     public ResponseEntity<List<LocalDate>> getClosedDays(
-			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate start,
-			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate end,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) java.time.LocalDate start,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) java.time.LocalDate end,
 			@AuthenticationPrincipal RUser rUser) {
 		return executeList("get closed days", () -> {
 			Long restaurantId = rUser.getRestaurant().getId();
@@ -90,10 +90,10 @@ public class RestaurantInfoController extends BaseController {
 
 	@GetMapping(value = "/active-services-in-period")
 	@Operation(summary = "Get active and enabled services of the authenticated restaurant for a specific period", description = "Retrieve the services of the authenticated restaurant that are active and enabled in a given date range")
-	
+	@ReadApiResponses
     public ResponseEntity<List<ServiceDTO>> getActiveEnabledServicesInPeriod(
-			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate start,
-			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate end,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) java.time.LocalDate start,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) java.time.LocalDate end,
 			@AuthenticationPrincipal RUser rUser) {
 		return executeList("get active services in period", () -> {
 			Long restaurantId = rUser.getRestaurant().getId();
@@ -105,9 +105,9 @@ public class RestaurantInfoController extends BaseController {
 
 	@GetMapping(value = "/active-services-in-date")
 	@Operation(summary = "Get active and enabled services of the authenticated restaurant for a specific date", description = "Retrieve the services of the authenticated restaurant that are active and enabled on a given date")
-	
+	@ReadApiResponses
     public ResponseEntity<List<ServiceDTO>> getActiveEnabledServicesInDate(
-			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") java.time.LocalDate date,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) java.time.LocalDate date,
 			@AuthenticationPrincipal RUser rUser) {
 		return executeList("get active services in date", () -> {
 			Long restaurantId = rUser.getRestaurant().getId();

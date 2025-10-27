@@ -70,7 +70,7 @@ public class RestaurantServicesController extends BaseController {
     }
 
     @Operation(summary = "Get service by ID", description = "Retrieve a service by its ID.")
-    
+    @ReadApiResponses
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_READ')")
     @GetMapping("/{serviceId}")
     public ResponseEntity<ServiceDTO> getServiceById(@PathVariable Long serviceId) {
@@ -78,7 +78,7 @@ public class RestaurantServicesController extends BaseController {
     }
 
     @Operation(summary = "Get all slots of a service", description = "Retrieve all slots associated with a specific service by its ID.")
-    
+    @ReadApiResponses
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_READ')")
     @GetMapping("/{serviceId}/slots")
     public ResponseEntity<List<SlotDTO>> getSlots(@PathVariable long serviceId) {
@@ -89,6 +89,7 @@ public class RestaurantServicesController extends BaseController {
     }
 
     @Operation(summary = "Get all service types", description = "Retrieve all service types.")
+    @ReadApiResponses
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SERVICE_READ')")
     @GetMapping("/types")
     public ResponseEntity<List<ServiceTypeDto>> getServiceTypes() {
@@ -99,6 +100,7 @@ public class RestaurantServicesController extends BaseController {
     }
 
     @Operation(summary = "Get services of a restaurant", description = "Retrieve the services of a restaurant")
+    @ReadApiResponses
     @GetMapping(value = "/services")
     public ResponseEntity<List<ServiceDTO>> getServices(@AuthenticationPrincipal RUser rUser) {
         return executeList("get restaurant services", () -> {

@@ -49,8 +49,8 @@ public class CustomerRestaurantInfoController extends BaseController {
 	@ReadApiResponses
 	public ResponseEntity<List<String>> getOpenDays(
 			@PathVariable Long restaurantId,
-			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
-			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end) {
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
 		return executeList("get open days", () -> {
 			Collection<String> openDays = restaurantService.getOpenDays(restaurantId, start, end);
 			return openDays instanceof List ? (List<String>) openDays : List.copyOf(openDays);
@@ -63,8 +63,8 @@ public class CustomerRestaurantInfoController extends BaseController {
 	
     public ResponseEntity<List<LocalDate>> getClosedDays(
 			@PathVariable Long restaurantId,
-			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
-			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end) {
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
 		return executeList("get closed days", () -> {
 			Collection<LocalDate> closedDays = restaurantService.getClosedDays(restaurantId, start, end);
 			return closedDays instanceof List ? (List<LocalDate>) closedDays : List.copyOf(closedDays);
@@ -77,7 +77,7 @@ public class CustomerRestaurantInfoController extends BaseController {
 	
     public ResponseEntity<List<SlotDTO>> getDaySlots(
 			@PathVariable Long restaurantId,
-			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate date) {
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
 		return executeList("get day slots", () -> {
 			Collection<SlotDTO> slots = restaurantService.getDaySlots(restaurantId, date);
 			return slots instanceof List ? (List<SlotDTO>) slots : List.copyOf(slots);
