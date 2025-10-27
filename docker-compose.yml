@@ -69,10 +69,6 @@ services:
       - "traefik.http.routers.api.entrypoints=web,websecure"
       - "traefik.http.routers.api.service=api"
       - "traefik.http.routers.api.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.api.middlewares=api-redirect"
-      - "traefik.http.middlewares.api-redirect.redirectregex.regex=^https://api\\.greedys\\.it/?$$"
-      - "traefik.http.middlewares.api-redirect.redirectregex.replacement=https://api.greedys.it/swagger-ui/index.html"
-      - "traefik.http.middlewares.api-redirect.redirectregex.permanent=true"
       - "traefik.http.services.api.loadbalancer.server.port=8080"
 
   # ===== FLUTTER APP (Nginx) =====
