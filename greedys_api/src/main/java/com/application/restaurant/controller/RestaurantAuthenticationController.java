@@ -109,6 +109,14 @@ public class RestaurantAuthenticationController extends BaseController {
     @PostMapping(value = "/refresh/hub", produces = "application/json")
     public ResponseEntity<AuthResponseDTO> refreshHubToken(
             @RequestBody RefreshTokenRequestDTO refreshRequest) {
+                if (refreshRequest == null || refreshRequest.getRefreshToken() == null || refreshRequest.getRefreshToken().isBlank()) {
+                    throw new IllegalArgumentException("Missing refresh token");
+                }
+                Claims claims = jwtUtil.extractAllClaims(refreshRequest.getRefreshToken());
+                String type = claims.get("type", String.class);
+                if (!"hub".equals(type)) {
+                    throw new SecurityException("Refresh token does not belong to a hub user");
+                }
         return execute("refresh hub token",
                 () -> restaurantAuthenticationService.refreshHubToken(refreshRequest.getRefreshToken()));
     }
@@ -117,6 +125,14 @@ public class RestaurantAuthenticationController extends BaseController {
     @PostMapping(value = "/refresh", produces = "application/json")
     public ResponseEntity<AuthResponseDTO> refreshRUserToken(
             @RequestBody RefreshTokenRequestDTO refreshRequest) {
+                if (refreshRequest == null || refreshRequest.getRefreshToken() == null || refreshRequest.getRefreshToken().isBlank()) {
+                    throw new IllegalArgumentException("Missing refresh token");
+                }
+                Claims claims = jwtUtil.extractAllClaims(refreshRequest.getRefreshToken());
+                String type = claims.get("type", String.class);
+                if ("hub".equals(type)) {
+                    throw new SecurityException("Refresh token does not belong to a restaurant user");
+                }
         return execute("refresh restaurant user token",
                 () -> restaurantAuthenticationService.refreshRUserToken(refreshRequest.getRefreshToken()));
     }

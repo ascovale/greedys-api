@@ -34,7 +34,7 @@ public class MockGoogleAuthService extends GoogleAuthService {
             AuthRequestGoogleDTO authRequest, 
             Function<String, U> userFun, 
             BiFunction<String, GoogleIdToken, U> createUserFun,
-            Function<U, String> genToken) throws Exception {
+            Function<U, AuthResponseDTO> responseBuilder) throws Exception {
         
         log.info("🔧 MOCK: Google authentication chiamato");
         log.info("   🎫 Token: {}", authRequest.getToken() != null ? 
@@ -62,12 +62,8 @@ public class MockGoogleAuthService extends GoogleAuthService {
             log.info("✅ MOCK: Utente esistente trovato");
         }
         
-        // Genera JWT token
-        String jwt = genToken.apply(user);
-        log.info("🔧 MOCK: JWT generato: {}...", jwt.substring(0, Math.min(20, jwt.length())));
-        
         log.info("✅ MOCK: Autenticazione Google completata con successo");
-        return new AuthResponseDTO(jwt, user);
+        return responseBuilder.apply(user);
     }
 
     /**

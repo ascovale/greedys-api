@@ -105,6 +105,7 @@ public class JwtUtil {
 
     public String generateRefreshToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
+        claims.put("type", "ruser");  // Tipo di token per distinguerlo da hub
         claims.put("access_type", "refresh");
         claims.put("user_type", determineUserType(userDetails));
         claims.put("email", userDetails.getUsername());
