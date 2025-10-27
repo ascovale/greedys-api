@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.CreateApiResponses;
+import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.persistence.model.reservation.Reservation;
 import com.application.common.service.reservation.ReservationService;
 import com.application.common.web.dto.reservations.ReservationDTO;
@@ -68,6 +69,7 @@ public class RestaurantReservationController extends BaseController {
 
 	@PutMapping("/{reservationId}/accept")
 	@Operation(summary = "Accept a reservation", description = "Endpoint to accept a reservation by its ID")
+	@ReadApiResponses
 	@PreAuthorize("@securityRUserService.hasPermissionOnReservation(#reservationId)")
 	public ResponseEntity<ReservationDTO> acceptReservation(@PathVariable Long reservationId) {
 		return execute("accept reservation", () -> reservationService.setStatus(reservationId, Reservation.Status.ACCEPTED));
@@ -75,34 +77,39 @@ public class RestaurantReservationController extends BaseController {
 
 	@PutMapping("/{reservationId}/reject")
 	@Operation(summary = "Reject a reservation", description = "Endpoint to reject a reservation by its ID")
+	@ReadApiResponses
 	public ResponseEntity<ReservationDTO> rejectReservation(@PathVariable Long reservationId) {
 		return execute("reject reservation", () -> reservationService.setStatus(reservationId, Reservation.Status.REJECTED));
 	}
 
 	@PutMapping("/{reservationId}/no_show")
 	@Operation(summary = "Mark a reservation as no show", description = "Endpoint to mark a reservation as no show by its ID")
+	@ReadApiResponses
 	public ResponseEntity<ReservationDTO> markReservationNoShow(@PathVariable Long reservationId) {
 		return execute("mark reservation no show", () -> reservationService.setStatus(reservationId, Reservation.Status.NO_SHOW));
 	}
 
 	@PutMapping("/{reservationId}/seated")
 	@Operation(summary = "Mark a reservation as seated", description = "Endpoint to mark a reservation as seated by its ID")
+	@ReadApiResponses
 	public ResponseEntity<ReservationDTO> markReservationSeated(@PathVariable Long reservationId) {
 		return execute("mark reservation seated", () -> reservationService.setStatus(reservationId, Reservation.Status.SEATED));
 	}
 
 	@Operation(summary = "Accept a reservation modification request", description = "Endpoint to accept a reservation modification request by its ID")
+	@ReadApiResponses
 	@PutMapping("/accept_modification/{modId}")
 	public ResponseEntity<ReservationDTO> acceptReservationModificationRequest(@PathVariable Long modId) {
 		return execute("accept reservation modification", () -> reservationService.AcceptReservatioModifyRequestAndReturnDTO(modId));
 	}
 
 	@Operation(summary = "Get all reservations of a restaurant", description = "Retrieve all reservations of a restaurant")
+	@ReadApiResponses
 	@GetMapping(value = "/reservations")
 	
 	public ResponseEntity<List<ReservationDTO>> getReservations(
-			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
-			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
 			@AuthenticationPrincipal RUser rUser) {
 		return executeList("get reservations", () -> {
 			Long restaurantId = rUser.getRestaurant().getId();
@@ -113,11 +120,12 @@ public class RestaurantReservationController extends BaseController {
 	}
 
 	@Operation(summary = "Get all accepted reservations of a restaurant", description = "Retrieve all accepted reservations of a restaurant")
+	@ReadApiResponses
 	@GetMapping(value = "/accepted/get")
 	
 	public ResponseEntity<List<ReservationDTO>> getAcceptedReservations(
-			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
-			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
 			@AuthenticationPrincipal RUser rUser) {
 		return executeList("get accepted reservations", () -> {
 			Long restaurantId = rUser.getRestaurant().getId();
@@ -129,11 +137,12 @@ public class RestaurantReservationController extends BaseController {
 	}
 
 	@Operation(summary = "Get all reservations of a restaurant with pagination", description = "Retrieve all reservations of a restaurant with pagination")
+	@ReadApiResponses
 	@GetMapping(value = "/pageable")
 	public ResponseEntity<Page<ReservationDTO>> getReservationsPageable(
 			@AuthenticationPrincipal RUser rUser,
-			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
-			@RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
 			@RequestParam int page,
 			@RequestParam int size) {
 		return executePaginated("get reservations pageable", () -> {
@@ -144,11 +153,12 @@ public class RestaurantReservationController extends BaseController {
 	}
 
 	@Operation(summary = "Get all pending reservations of a restaurant", description = "Retrieve all pending reservations of a restaurant with optional date filtering")
+	@ReadApiResponses
 	@GetMapping(value = "/pending/get")
 	
 	public ResponseEntity<List<ReservationDTO>> getPendingReservations(
-			@RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate start,
-			@RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate end,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
 			@AuthenticationPrincipal RUser rUser) {
 		return executeList("get pending reservations", () -> {
 			Long restaurantId = rUser.getRestaurant().getId();

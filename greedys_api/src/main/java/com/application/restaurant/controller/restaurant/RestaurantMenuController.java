@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
+import com.application.common.controller.annotation.CreateApiResponses;
 import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.web.dto.menu.DishDTO;
 import com.application.common.web.dto.menu.MenuDTO;
@@ -76,7 +77,7 @@ public class RestaurantMenuController extends BaseController {
     }
 
     @Operation(summary = "Create a menu", description = "Create a new menu for the current restaurant")
-    
+    @CreateApiResponses
     @PostMapping("/create")
     
     public ResponseEntity<MenuDTO> createMenu(@RequestBody NewMenuDTO newMenu) {
@@ -86,7 +87,7 @@ public class RestaurantMenuController extends BaseController {
     }
 
     @Operation(summary = "Add a dish to a menu", description = "Add a priced dish to an existing menu")
-    
+    @CreateApiResponses
     @PreAuthorize("@securityRUserService.isMenuOwnedByAuthenticatedUser(#newMenuItem.menuId)")
     @PostMapping("/dishes/add")
     public ResponseEntity<MenuDishDTO> addDishToMenu(@RequestBody NewMenuDishDTO newMenuItem) {
@@ -96,6 +97,7 @@ public class RestaurantMenuController extends BaseController {
     }
 
     @Operation(summary = "Create a dish", description = "Create a new dish for the current restaurant")
+    @CreateApiResponses
     @PostMapping("/dishes/create")
     public ResponseEntity<DishDTO> createDish(@RequestBody NewDishDTO newItem, @AuthenticationPrincipal RUser rUser) {
         return executeCreate("create dish", "Dish created successfully", () -> {

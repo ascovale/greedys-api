@@ -109,6 +109,7 @@ public class RestaurantAuthenticationController extends BaseController {
     }
 
     @Operation(summary = "Refresh hub token", description = "Refresh a hub JWT token using a hub refresh token")
+    @ReadApiResponses
     @PostMapping(value = "/refresh/hub", produces = "application/json")
     public ResponseEntity<AuthResponseDTO> refreshHubToken(
             @RequestBody RefreshTokenRequestDTO refreshRequest) {
@@ -125,6 +126,7 @@ public class RestaurantAuthenticationController extends BaseController {
     }
 
     @Operation(summary = "Refresh restaurant user token", description = "Refresh a restaurant user JWT token using a refresh token")
+    @ReadApiResponses
     @PostMapping(value = "/refresh", produces = "application/json")
     public ResponseEntity<AuthResponseDTO> refreshRUserToken(
             @RequestBody RefreshTokenRequestDTO refreshRequest) {
