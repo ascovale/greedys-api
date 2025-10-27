@@ -1,6 +1,7 @@
 package com.application.restaurant.controller;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -124,13 +125,15 @@ public class RestaurantReservationController extends BaseController {
 	@GetMapping(value = "/accepted/get")
 	
 	public ResponseEntity<List<ReservationDTO>> getAcceptedReservations(
-			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
-			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end,
 			@AuthenticationPrincipal RUser rUser) {
 		return executeList("get accepted reservations", () -> {
 			Long restaurantId = rUser.getRestaurant().getId();
-			Collection<ReservationDTO> reservations = reservationService.getAcceptedReservations(restaurantId, start,
-					end);
+			LocalDate startDate = start != null ? start.toLocalDate() : null;
+			LocalDate endDate = end != null ? end.toLocalDate() : null;
+			Collection<ReservationDTO> reservations = reservationService.getAcceptedReservations(restaurantId, startDate,
+					endDate);
 			return reservations instanceof List ? (List<ReservationDTO>) reservations
 					: new java.util.ArrayList<>(reservations);
 		});
@@ -141,14 +144,16 @@ public class RestaurantReservationController extends BaseController {
 	@GetMapping(value = "/pageable")
 	public ResponseEntity<Page<ReservationDTO>> getReservationsPageable(
 			@AuthenticationPrincipal RUser rUser,
-			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
-			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end,
 			@RequestParam int page,
 			@RequestParam int size) {
 		return executePaginated("get reservations pageable", () -> {
 			Long restaurantId = rUser.getRestaurant().getId();
 			Pageable pageable = PageRequest.of(page, size);
-			return reservationService.getReservationsPageable(restaurantId, start, end, pageable);
+			LocalDate startDate = start != null ? start.toLocalDate() : null;
+			LocalDate endDate = end != null ? end.toLocalDate() : null;
+			return reservationService.getReservationsPageable(restaurantId, startDate, endDate, pageable);
 		});
 	}
 

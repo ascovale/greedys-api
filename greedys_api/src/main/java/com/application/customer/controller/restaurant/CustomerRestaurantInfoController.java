@@ -1,6 +1,7 @@
 package com.application.customer.controller.restaurant;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -49,10 +50,12 @@ public class CustomerRestaurantInfoController extends BaseController {
 	@ReadApiResponses
 	public ResponseEntity<List<String>> getOpenDays(
 			@PathVariable Long restaurantId,
-			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
-			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
 		return executeList("get open days", () -> {
-			Collection<String> openDays = restaurantService.getOpenDays(restaurantId, start, end);
+			LocalDate startDate = start != null ? start.toLocalDate() : null;
+			LocalDate endDate = end != null ? end.toLocalDate() : null;
+			Collection<String> openDays = restaurantService.getOpenDays(restaurantId, startDate, endDate);
 			return openDays instanceof List ? (List<String>) openDays : List.copyOf(openDays);
 		});
 	}
@@ -63,10 +66,12 @@ public class CustomerRestaurantInfoController extends BaseController {
 	
     public ResponseEntity<List<LocalDate>> getClosedDays(
 			@PathVariable Long restaurantId,
-			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
-			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
 		return executeList("get closed days", () -> {
-			Collection<LocalDate> closedDays = restaurantService.getClosedDays(restaurantId, start, end);
+			LocalDate startDate = start != null ? start.toLocalDate() : null;
+			LocalDate endDate = end != null ? end.toLocalDate() : null;
+			Collection<LocalDate> closedDays = restaurantService.getClosedDays(restaurantId, startDate, endDate);
 			return closedDays instanceof List ? (List<LocalDate>) closedDays : List.copyOf(closedDays);
 		});
 	}
@@ -77,9 +82,10 @@ public class CustomerRestaurantInfoController extends BaseController {
 	
     public ResponseEntity<List<SlotDTO>> getDaySlots(
 			@PathVariable Long restaurantId,
-			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime date) {
 		return executeList("get day slots", () -> {
-			Collection<SlotDTO> slots = restaurantService.getDaySlots(restaurantId, date);
+			LocalDate dateAsLocalDate = date != null ? date.toLocalDate() : null;
+			Collection<SlotDTO> slots = restaurantService.getDaySlots(restaurantId, dateAsLocalDate);
 			return slots instanceof List ? (List<SlotDTO>) slots : List.copyOf(slots);
 		});
 	}

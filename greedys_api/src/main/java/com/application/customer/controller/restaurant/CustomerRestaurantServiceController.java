@@ -1,6 +1,7 @@
 package com.application.customer.controller.restaurant;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -37,9 +38,10 @@ public class CustomerRestaurantServiceController extends BaseController {
     
     public ResponseEntity<List<ServiceDTO>> getActiveEnabledServicesInDate(
             @PathVariable Long restaurantId,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime date) {
         return executeList("get active services in date", () -> {
-            Collection<ServiceDTO> services = restaurantService.getActiveEnabledServices(restaurantId, date);
+            LocalDate dateAsLocalDate = date != null ? date.toLocalDate() : null;
+            Collection<ServiceDTO> services = restaurantService.getActiveEnabledServices(restaurantId, dateAsLocalDate);
             return services instanceof List ? (List<ServiceDTO>) services : List.copyOf(services);
         });
     }
@@ -49,10 +51,12 @@ public class CustomerRestaurantServiceController extends BaseController {
     @ReadApiResponses
     public ResponseEntity<List<ServiceDTO>> getActiveEnabledServicesInPeriod(
             @PathVariable Long restaurantId,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
         return executeList("get active services in period", () -> {
-            Collection<ServiceDTO> services = restaurantService.findActiveEnabledServicesInPeriod(restaurantId, start, end);
+            LocalDate startDate = start != null ? start.toLocalDate() : null;
+            LocalDate endDate = end != null ? end.toLocalDate() : null;
+            Collection<ServiceDTO> services = restaurantService.findActiveEnabledServicesInPeriod(restaurantId, startDate, endDate);
             return services instanceof List ? (List<ServiceDTO>) services : List.copyOf(services);
         });
     }
