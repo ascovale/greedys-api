@@ -1,0 +1,202 @@
+{
+	"info": {
+		"_postman_id": "check-test-restaurants",
+		"name": "Check Restaurants for test@test.it",
+		"description": "Query the API to see how many restaurants are associated with test@test.it",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Step 1: Admin Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log('\\n🔐 ADMIN LOGIN');",
+							"if (pm.response.code === 200) {",
+							"    var jsonData = pm.response.json();",
+							"    pm.environment.set('testAdminToken', jsonData.jwt);",
+							"    pm.environment.set('testAdminId', jsonData.user.id);",
+							"    console.log('✅ Admin token saved');",
+							"    console.log('Admin ID:', jsonData.user.id);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [{"key": "Content-Type", "value": "application/json"}],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"username\": \"{{adminEmail}}\", \"password\": \"{{adminPassword}}\", \"rememberMe\": true}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/admin/auth/login",
+					"host": ["{{baseUrl}}"],
+					"path": ["admin", "auth", "login"]
+				}
+			}
+		},
+		{
+			"name": "Step 2: Get RUser by Email (test@test.it)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log('\\n🔍 GET RUSER BY EMAIL');",
+							"console.log('Status:', pm.response.code);",
+							"",
+							"if (pm.response.code === 200 || pm.response.code === 201) {",
+							"    try {",
+							"        var jsonData = pm.response.json();",
+							"        console.log('Response:', JSON.stringify(jsonData, null, 2));",
+							"        ",
+							"        if (jsonData.data) {",
+							"            console.log('✅ Found RUser:');",
+							"            console.log('  ID:', jsonData.data.id);",
+							"            console.log('  Email:', jsonData.data.username);",
+							"            console.log('  Restaurant ID:', jsonData.data.restaurantId);",
+							"        } else if (jsonData.id) {",
+							"            console.log('✅ Found RUser:');",
+							"            console.log('  ID:', jsonData.id);",
+							"            console.log('  Email:', jsonData.username);",
+							"            console.log('  Restaurant ID:', jsonData.restaurantId);",
+							"            pm.environment.set('testRUserId', jsonData.id);",
+							"            pm.environment.set('testRestaurantId', jsonData.restaurantId);",
+							"        }",
+							"    } catch(e) {",
+							"        console.log('Error:', e);",
+							"    }",
+							"} else {",
+							"    console.log('❌ Failed - Status:', pm.response.code);",
+							"    console.log('Response:', pm.response.text());",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [{"key": "Authorization", "value": "Bearer {{testAdminToken}}"}],
+				"url": {
+					"raw": "{{baseUrl}}/admin/restaurant/user/by-email/test@test.it",
+					"host": ["{{baseUrl}}"],
+					"path": ["admin", "restaurant", "user", "by-email", "test@test.it"]
+				}
+			}
+		},
+		{
+			"name": "Step 3: Query All Restaurants via RUserHub",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// This endpoint returns all restaurants for a given email via RUserHub"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log('\\n🏪 GET ALL RESTAURANTS FOR EMAIL');",
+							"console.log('Status:', pm.response.code);",
+							"console.log('Endpoint: /restaurant/by-email/test@test.it');",
+							"",
+							"if (pm.response.code === 200 || pm.response.code === 201) {",
+							"    try {",
+							"        var jsonData = pm.response.json();",
+							"        console.log('Raw response:', JSON.stringify(jsonData, null, 2).substring(0, 1000));",
+							"        ",
+							"        if (Array.isArray(jsonData)) {",
+							"            console.log('✅ Found ' + jsonData.length + ' restaurants');",
+							"            jsonData.forEach(function(r, idx) {",
+							"                console.log('  [' + (idx + 1) + '] ID: ' + r.id + ', Name: ' + r.name + ', Email: ' + r.email);",
+							"            });",
+							"        } else if (Array.isArray(jsonData.data)) {",
+							"            console.log('✅ Found ' + jsonData.data.length + ' restaurants (wrapped)');",
+							"            jsonData.data.forEach(function(r, idx) {",
+							"                console.log('  [' + (idx + 1) + '] ID: ' + r.id + ', Name: ' + r.name + ', Email: ' + r.email);",
+							"            });",
+							"        } else {",
+							"            console.log('Response structure:', Object.keys(jsonData));",
+							"            console.log('Content:', JSON.stringify(jsonData, null, 2));",
+							"        }",
+							"    } catch(e) {",
+							"        console.log('Parse error:', e);",
+							"    }",
+							"} else {",
+							"    console.log('❌ Failed - Status:', pm.response.code);",
+							"    console.log('Response:', pm.response.text());",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [{"key": "Authorization", "value": "Bearer {{testAdminToken}}"}],
+				"url": {
+					"raw": "{{baseUrl}}/restaurant/by-email/test@test.it",
+					"host": ["{{baseUrl}}"],
+					"path": ["restaurant", "by-email", "test@test.it"]
+				}
+			}
+		},
+		{
+			"name": "Step 4: Direct DB Query - Get Restaurant by ID (testRestaurantId)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log('\\n📋 GET RESTAURANT DETAILS');",
+							"console.log('Status:', pm.response.code);",
+							"console.log('Endpoint: /restaurant/' + pm.environment.get('testRestaurantId'));",
+							"",
+							"if (pm.response.code === 200 || pm.response.code === 201) {",
+							"    try {",
+							"        var jsonData = pm.response.json();",
+							"        console.log('\\n✅ Restaurant found:');",
+							"        if (jsonData.data) {",
+							"            console.log('  ID: ' + jsonData.data.id);",
+							"            console.log('  Name: ' + jsonData.data.name);",
+							"            console.log('  Email: ' + jsonData.data.email);",
+							"            console.log('  Address: ' + jsonData.data.address);",
+							"        } else if (jsonData.id) {",
+							"            console.log('  ID: ' + jsonData.id);",
+							"            console.log('  Name: ' + jsonData.name);",
+							"            console.log('  Email: ' + jsonData.email);",
+							"            console.log('  Address: ' + jsonData.address);",
+							"        }",
+							"    } catch(e) {",
+							"        console.log('Error:', e);",
+							"    }",
+							"} else {",
+							"    console.log('❌ Failed - Status:', pm.response.code);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [{"key": "Authorization", "value": "Bearer {{testAdminToken}}"}],
+				"url": {
+					"raw": "{{baseUrl}}/admin/restaurant/{{testRestaurantId}}",
+					"host": ["{{baseUrl}}"],
+					"path": ["admin", "restaurant", "{{testRestaurantId}}"]
+				}
+			}
+		}
+	]
+}

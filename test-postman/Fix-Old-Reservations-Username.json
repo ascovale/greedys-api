@@ -1,0 +1,154 @@
+{
+  "info": {
+    "_postman_id": "fix-old-reservations",
+    "name": "Fix Old Reservations - Fill Username",
+    "description": "Admin endpoint to fix old reservations by filling missing userName",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Step 1: Admin Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log('\\n🔐 ADMIN LOGIN');",
+              "if (pm.response.code === 200) {",
+              "    var jsonData = pm.response.json();",
+              "    pm.environment.set('adminToken', jsonData.jwt);",
+              "    console.log('✅ Admin token saved');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"username\": \"{{adminEmail}}\",\n    \"password\": \"{{adminPassword}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/admin/auth/login",
+          "host": ["{{baseUrl}}"],
+          "path": ["admin", "auth", "login"]
+        }
+      }
+    },
+    {
+      "name": "Step 2: Fix Old Reservations - Fill Username",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log('\\n🔧 FIX OLD RESERVATIONS');",
+              "console.log('Status:', pm.response.code);",
+              "if (pm.response.code === 200) {",
+              "    try {",
+              "        var data = pm.response.json();",
+              "        console.log('✅ Result:', data);",
+              "    } catch(e) {",
+              "        var text = pm.response.text();",
+              "        console.log('Response:', text);",
+              "    }",
+              "} else {",
+              "    console.log('❌ Error:', pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Authorization", "value": "Bearer {{adminToken}}"},
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/admin/reservation/fix/fill-username",
+          "host": ["{{baseUrl}}"],
+          "path": ["admin", "reservation", "fix", "fill-username"]
+        }
+      }
+    },
+    {
+      "name": "Step 3: Verify - Get Reservation 1 (should have userName)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log('\\n📋 VERIFICATION - RESERVATION 1');",
+              "if (pm.response.code === 200) {",
+              "    var data = pm.response.json();",
+              "    console.log('ID:', data.id);",
+              "    console.log('Name (userName):', data.name);",
+              "    console.log('Email:', data.email);",
+              "    console.log('Pax:', data.pax);",
+              "    console.log('Status:', data.status);",
+              "    if (data.name && data.name.startsWith('Guest')) {",
+              "        console.log('✅ userName FIXED:', data.name);",
+              "    }",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {"key": "Authorization", "value": "Bearer {{adminToken}}"}
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/admin/reservation/1",
+          "host": ["{{baseUrl}}"],
+          "path": ["admin", "reservation", "1"]
+        }
+      }
+    },
+    {
+      "name": "Step 4: Verify - Get Reservation 5 (should have userName)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log('\\n📋 VERIFICATION - RESERVATION 5');",
+              "if (pm.response.code === 200) {",
+              "    var data = pm.response.json();",
+              "    console.log('ID:', data.id);",
+              "    console.log('Name (userName):', data.name);",
+              "    console.log('Email:', data.email);",
+              "    console.log('Pax:', data.pax);",
+              "    console.log('Status:', data.status);",
+              "    if (data.name && data.name.startsWith('Guest')) {",
+              "        console.log('✅ userName FIXED:', data.name);",
+              "    }",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {"key": "Authorization", "value": "Bearer {{adminToken}}"}
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/admin/reservation/5",
+          "host": ["{{baseUrl}}"],
+          "path": ["admin", "reservation", "5"]
+        }
+      }
+    }
+  ]
+}

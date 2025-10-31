@@ -1,0 +1,376 @@
+{
+	"info": {
+		"_postman_id": "restaurant-registration-flow-v2",
+		"name": "Greedy's Restaurant Enablement Flow (Existing Restaurant)",
+		"description": "Workflow for enabling an existing restaurant (test@test.it) - NO CREATION, just enablement through admin approval",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Step 1: Admin Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// === STEP 1: ADMIN LOGIN ===",
+							"console.log('\\n📋 STEP 1: ADMIN LOGIN');",
+							"console.log('='.repeat(60));",
+							"",
+							"pm.test(\"✅ Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"✅ JWT token received\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    console.log('📊 Admin Login Response Keys:', Object.keys(jsonData));",
+							"    ",
+							"    // Response è diretto: {jwt, refreshToken, user}",
+							"    pm.expect(jsonData).to.have.property('jwt');",
+							"    pm.expect(jsonData).to.have.property('refreshToken');",
+							"    ",
+							"    // Store admin token",
+							"    pm.environment.set('adminTokenV2', jsonData.jwt);",
+							"    console.log('💾 Saved adminTokenV2:', jsonData.jwt.substring(0, 50) + '...');",
+							"});",
+							"",
+							"pm.test(\"✅ Admin user data returned\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('user');",
+							"    pm.expect(jsonData.user).to.have.property('id');",
+							"    ",
+							"    // Save admin ID",
+							"    pm.environment.set('adminIdV2', jsonData.user.id);",
+							"    console.log('💾 Saved adminIdV2:', jsonData.user.id);",
+							"    console.log('👤 Admin:', jsonData.user.email);",
+							"});",
+							"",
+							"console.log('\\n✨ STEP 1 COMPLETED: Admin logged in');",
+							"console.log('Next: Proceed to STEP 2 - Get Restaurant User by Email');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"{{adminEmail}}\",\n    \"password\": \"{{adminPassword}}\",\n    \"rememberMe\": true\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/admin/auth/login",
+					"host": ["{{baseUrl}}"],
+					"path": ["admin", "auth", "login"]
+				}
+			},
+			"description": "🔐 **Step 1: Admin Login**\n\n- Login con le credenziali admin dall'environment\n- Estrae e salva il token JWT\n- Salva l'admin ID\n\n**Status**: 200 OK"
+		},
+		{
+			"name": "Step 2: Get Restaurant User by Email (test@test.it)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var token = pm.environment.get('adminTokenV2');",
+							"console.log('🔐 Token available: ' + !!token);",
+							"if (token) {",
+							"    console.log('Token value: ' + token.substring(0, 50) + '...');",
+							"} else {",
+							"    console.log('⚠️ MISSING TOKEN');",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// === STEP 2: GET RESTAURANT USER BY EMAIL ===",
+							"console.log('\\n📋 STEP 2: GET RESTAURANT USER BY EMAIL');",
+							"console.log('='.repeat(60));",
+							"",
+							"pm.test(\"✅ Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"✅ Restaurant user found with email test@test.it\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    console.log('📊 User Response:', JSON.stringify(jsonData, null, 2));",
+							"    ",
+							"    // Response è diretto: {id, username, restaurantId}",
+							"    pm.expect(jsonData).to.have.property('id');",
+							"    pm.expect(jsonData).to.have.property('username');",
+							"    pm.expect(jsonData).to.have.property('restaurantId');",
+							"});",
+							"",
+							"pm.test(\"✅ Store Restaurant User ID and Restaurant ID\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    ",
+							"    pm.environment.set('rUserIdV2', jsonData.id);",
+							"    pm.environment.set('restaurantIdV2', jsonData.restaurantId);",
+							"    ",
+							"    console.log('💾 Saved rUserIdV2:', jsonData.id);",
+							"    console.log('💾 Saved restaurantIdV2:', jsonData.restaurantId);",
+							"    console.log('📧 User email:', jsonData.username);",
+							"});",
+							"",
+							"console.log('\\n✨ STEP 2 COMPLETED: Found restaurant user');",
+							"console.log('Next: Proceed to STEP 3 - Enable Restaurant User');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{adminTokenV2}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/admin/restaurant/user/by-email/test@test.it",
+					"host": ["{{baseUrl}}"],
+					"path": ["admin", "restaurant", "user", "by-email", "test@test.it"]
+				}
+			},
+			"description": "🔍 **Step 2: Get Restaurant User by Email**\n\n- Ricerca l'utente ristorante con email `test@test.it`\n- Salva il `rUserIdV2` per l'abilitazione\n- Salva il `restaurantIdV2` del ristorante\n\n**Status**: 200 OK"
+		},
+		{
+			"name": "Step 3: Enable Restaurant User (test@test.it)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var token = pm.environment.get('adminTokenV2');",
+							"var rUserId = pm.environment.get('rUserIdV2');",
+							"console.log('🔐 Token available: ' + !!token);",
+							"console.log('RUserId available: ' + !!rUserId);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// === STEP 3: ENABLE RESTAURANT USER ===",
+							"console.log('\\n📋 STEP 3: ENABLE RESTAURANT USER');",
+							"console.log('='.repeat(60));",
+							"",
+							"pm.test(\"✅ Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"✅ Restaurant user enabled successfully\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    console.log('📊 Enable Response:', JSON.stringify(jsonData, null, 2));",
+							"    ",
+							"    // Verify response structure",
+							"    if (jsonData.message) {",
+							"        console.log('✅ Message:', jsonData.message);",
+							"    }",
+							"    if (jsonData.success) {",
+							"        pm.expect(jsonData.success).to.eql(true);",
+							"    }",
+							"});",
+							"",
+							"console.log('\\n✨ STEP 3 COMPLETED: Restaurant User enabled');",
+							"console.log('Next: Proceed to STEP 4 - Enable Restaurant');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{adminTokenV2}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/admin/restaurant/user/enable?email=test@test.it",
+					"host": ["{{baseUrl}}"],
+					"path": ["admin", "restaurant", "user", "enable"],
+					"query": [
+						{
+							"key": "email",
+							"value": "test@test.it"
+						}
+					]
+				}
+			},
+			"description": "✅ **Step 3: Enable Restaurant User**\n\n- Abilita l'utente ristorante con email `test@test.it`\n- L'admin autorizza l'accesso del gestore del ristorante\n\n**Status**: 200 OK"
+		},
+		{
+			"name": "Step 4: Enable Restaurant",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var token = pm.environment.get('adminTokenV2');",
+							"var restaurantId = pm.environment.get('restaurantIdV2');",
+							"var baseUrl = pm.environment.get('baseUrl');",
+							"console.log('🔐 Token available: ' + !!token);",
+							"console.log('RestaurantId available: ' + !!restaurantId);",
+							"if (baseUrl && restaurantId) {",
+							"    var url = baseUrl + '/admin/restaurant/' + restaurantId + '/enable_restaurant';",
+							"    console.log('URL will be: ' + url);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// === STEP 4: ENABLE RESTAURANT ===",
+							"console.log('\\n📋 STEP 4: ENABLE RESTAURANT');",
+							"console.log('='.repeat(60));",
+							"",
+							"pm.test(\"✅ Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"✅ Restaurant enabled successfully\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    console.log('📊 Enable Restaurant Response:', JSON.stringify(jsonData, null, 2));",
+							"    ",
+							"    // Verify response",
+							"    if (jsonData.message) {",
+							"        console.log('✅ Message:', jsonData.message);",
+							"    }",
+							"    if (jsonData.success) {",
+							"        pm.expect(jsonData.success).to.eql(true);",
+							"    }",
+							"});",
+							"",
+							"console.log('\\n✨ STEP 4 COMPLETED: Restaurant enabled');",
+							"console.log('Next: Proceed to STEP 5 - Verify Restaurant User Login');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{adminTokenV2}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/admin/restaurant/{{restaurantIdV2}}/enable_restaurant",
+					"host": ["{{baseUrl}}"],
+					"path": ["admin", "restaurant", "{{restaurantIdV2}}", "enable_restaurant"]
+				}
+			},
+			"description": "✅ **Step 4: Enable Restaurant**\n\n- L'admin abilita il ristorante con ID `{{restaurantIdV2}}`\n- Rende il ristorante visibile e operativo nel sistema\n\n**Status**: 200 OK"
+		},
+		{
+			"name": "Step 5: Restaurant User Login (Verification)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// === STEP 5: RESTAURANT USER LOGIN (VERIFICATION) ===",
+							"console.log('\\n📋 STEP 5: RESTAURANT USER LOGIN - VERIFICATION');",
+							"console.log('='.repeat(60));",
+							"",
+							"pm.test(\"✅ Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"✅ JWT token received for restaurant user\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    console.log('📊 Login Response Keys:', Object.keys(jsonData));",
+							"    ",
+							"    // Response è diretto: {jwt, refreshToken, user} oppure {accessToken, refreshToken, user}",
+							"    var token = jsonData.jwt || jsonData.accessToken;",
+							"    pm.expect(token).to.not.be.undefined;",
+							"    ",
+							"    pm.environment.set('restaurantTokenV2', token);",
+							"    console.log('💾 Saved restaurantTokenV2:', token.substring(0, 50) + '...');",
+							"});",
+							"",
+							"pm.test(\"✅ User and restaurant info returned\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    if (jsonData.user) {",
+							"        console.log('👤 User:', jsonData.user.username || jsonData.user.email);",
+							"        console.log('🏪 Restaurant ID:', jsonData.user.restaurantId);",
+							"    }",
+							"});",
+							"",
+							"console.log('\\n🎉 COMPLETE: Restaurant Enablement Flow Successful!');",
+							"console.log('═'.repeat(60));",
+							"console.log('✅ Admin ha abilitato l\\'utente ristorante (test@test.it)');",
+							"console.log('✅ Admin ha abilitato il ristorante');",
+							"console.log('✅ Utente ristorante può ora fare login');",
+							"console.log('═'.repeat(60));"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"test@test.it\",\n    \"password\": \"TestPass123!\",\n    \"rememberMe\": true\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/restaurant/user/auth/login",
+					"host": ["{{baseUrl}}"],
+					"path": ["restaurant", "user", "auth", "login"]
+				}
+			},
+			"description": "🔐 **Step 5: Restaurant User Login (Verification)**\n\n- Verifica che l'utente ristorante può fare login\n- Conferma che il flusso di abilitazione è completo\n\n**Credenziali:**\n- Email: `test@test.it`\n- Password: `TestPass123!`\n\n**Status**: 200 OK"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Pre-request validation",
+					"const authHeader = pm.request.headers.get('Authorization');",
+					"if (authHeader && authHeader.includes('Bearer')) {",
+					"    console.log('🔐 Authenticated request');",
+					"}"
+				]
+			}
+		}
+	]
+}

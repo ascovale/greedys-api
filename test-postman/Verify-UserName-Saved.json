@@ -1,0 +1,124 @@
+{
+  "info": {
+    "_postman_id": "verify-username",
+    "name": "Verify UserName Saved in Database",
+    "description": "Query the latest reservations to verify userName field is saved",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Step 1: Admin Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log('\\n🔐 ADMIN LOGIN');",
+              "if (pm.response.code === 200) {",
+              "    var jsonData = pm.response.json();",
+              "    pm.environment.set('adminToken', jsonData.jwt);",
+              "    console.log('✅ Admin token saved');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"username\": \"{{adminEmail}}\",\n    \"password\": \"{{adminPassword}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/admin/auth/login",
+          "host": ["{{baseUrl}}"],
+          "path": ["admin", "auth", "login"]
+        }
+      }
+    },
+    {
+      "name": "Step 2: Get Reservation 77 (with userName)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log('\\n📋 RESERVATION 77');",
+              "if (pm.response.code === 200) {",
+              "    var data = pm.response.json();",
+              "    console.log('ID:', data.id);",
+              "    console.log('Name (userName):', data.name);",
+              "    console.log('Email:', data.email);",
+              "    console.log('Phone:', data.phone);",
+              "    console.log('Pax:', data.pax);",
+              "    console.log('Date:', data.reservationDay);",
+              "    console.log('Status:', data.status);",
+              "    if (data.name) {",
+              "        console.log('✅ userName SAVED in database:', data.name);",
+              "    } else {",
+              "        console.log('❌ userName is EMPTY!');",
+              "    }",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {"key": "Authorization", "value": "Bearer {{adminToken}}"}
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/admin/reservation/77",
+          "host": ["{{baseUrl}}"],
+          "path": ["admin", "reservation", "77"]
+        }
+      }
+    },
+    {
+      "name": "Step 3: Get Reservation 78 (with userName)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log('\\n📋 RESERVATION 78');",
+              "if (pm.response.code === 200) {",
+              "    var data = pm.response.json();",
+              "    console.log('ID:', data.id);",
+              "    console.log('Name (userName):', data.name);",
+              "    console.log('Email:', data.email);",
+              "    console.log('Phone:', data.phone);",
+              "    console.log('Pax:', data.pax);",
+              "    console.log('Date:', data.reservationDay);",
+              "    console.log('Status:', data.status);",
+              "    if (data.name) {",
+              "        console.log('✅ userName SAVED in database:', data.name);",
+              "    } else {",
+              "        console.log('❌ userName is EMPTY!');",
+              "    }",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {"key": "Authorization", "value": "Bearer {{adminToken}}"}
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/admin/reservation/78",
+          "host": ["{{baseUrl}}"],
+          "path": ["admin", "reservation", "78"]
+        }
+      }
+    }
+  ]
+}

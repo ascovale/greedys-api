@@ -4,7 +4,7 @@
 	"values": [
 		{
 			"key": "baseUrl",
-			"value": "https://172.17.48.81",
+			"value": "https://api.greedys.it",
 			"description": "Base URL for all API endpoints",
 			"enabled": true
 		},
