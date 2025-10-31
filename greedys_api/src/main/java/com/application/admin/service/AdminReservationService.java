@@ -188,4 +188,36 @@ public class AdminReservationService {
         Reservation saved = reservationDAO.save(reservation);
         return reservationMapper.toDTO(saved);
     }
+
+    /**
+     * Fix old reservations by filling missing userName with default value (Guest + ID)
+     * @return message with count of updated reservations
+     */
+    public String fixMissingUsernames() {
+        // Get all reservations with NULL or empty userName
+        Collection<Reservation> reservationsToFix = reservationDAO.findAll().stream()
+                .filter(r -> r.getUserName() == null || r.getUserName().trim().isEmpty())
+                .collect(Collectors.toList());
+        
+        long count = reservationsToFix.size();
+        
+        if (count == 0) {
+            log.info("✅ No reservations need fixing - all have userName");
+            return "No reservations need fixing - all have userName already";
+        }
+        
+        log.info("🔄 Found {} reservations without userName, updating...", count);
+        
+        // Update each reservation
+        for (Reservation reservation : reservationsToFix) {
+            reservation.setUserName("Guest " + reservation.getId());
+        }
+        
+        // Save all at once
+        reservationDAO.saveAll(reservationsToFix);
+        
+        String message = "✅ Fixed " + count + " reservations with default userName";
+        log.info(message);
+        return message;
+    }
 }

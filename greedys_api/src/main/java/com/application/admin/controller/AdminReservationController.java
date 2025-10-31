@@ -106,5 +106,14 @@ public class AdminReservationController extends BaseController {
 			return adminReservationService.modifyReservation(reservationId, reservationDto);
 		});
 	}
+
+	@Operation(summary = "Fix old reservations - fill missing userName", description = "Update all reservations with NULL or empty userName with default value (Guest + ID)")
+	@PostMapping("/fix/fill-username")
+	@PreAuthorize("hasAuthority('PRIVILEGE_ADMIN_RESERVATION_CUSTOMER_WRITE')")
+	public ResponseEntity<String> fixOldReservationsUsername() {
+		return execute("fix old reservations username", "Reservations fixed successfully", () -> {
+			return adminReservationService.fixMissingUsernames();
+		});
+	}
 }
 

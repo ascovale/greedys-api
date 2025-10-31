@@ -1,0 +1,558 @@
+{
+	"info": {
+		"_postman_id": "restaurant-services-slots-flow",
+		"name": "Greedy's Restaurant Services & Slots Creation Flow",
+		"description": "Workflow for creating Services (Colazione, Pranzo, Cena) and Slots for the restaurant test@test.it",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Step 1: Restaurant User Login (test@test.it)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// === STEP 1: RESTAURANT USER LOGIN ===",
+							"console.log('\\n📋 STEP 1: RESTAURANT USER LOGIN');",
+							"console.log('='.repeat(60));",
+							"",
+							"pm.test(\"✅ Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"✅ JWT token received for restaurant user\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    console.log('📊 Login Response Keys:', Object.keys(jsonData));",
+							"    ",
+							"    // Response è diretto: {jwt, refreshToken, user}",
+							"    var token = jsonData.jwt || jsonData.accessToken;",
+							"    pm.expect(token).to.not.be.undefined;",
+							"    ",
+							"    pm.environment.set('restaurantTokenV3', token);",
+							"    console.log('💾 Saved restaurantTokenV3:', token.substring(0, 50) + '...');",
+							"});",
+							"",
+							"pm.test(\"✅ Get Restaurant ID from user data\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    if (jsonData.user && jsonData.user.restaurantId) {",
+							"        pm.environment.set('restaurantIdV3', jsonData.user.restaurantId);",
+							"        console.log('💾 Saved restaurantIdV3:', jsonData.user.restaurantId);",
+							"        console.log('👤 User email:', jsonData.user.username || jsonData.user.email);",
+							"    }",
+							"});",
+							"",
+							"console.log('\\n✨ STEP 1 COMPLETED: Restaurant user logged in');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"test@test.it\",\n    \"password\": \"TestPass123!\",\n    \"rememberMe\": true\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/restaurant/user/auth/login",
+					"host": ["{{baseUrl}}"],
+					"path": ["restaurant", "user", "auth", "login"]
+				}
+			},
+			"description": "🔐 **Step 1: Restaurant User Login**\n\n- Login del gestore ristorante test@test.it\n- Recupera il token JWT e l'ID del ristorante\n\n**Status**: 200 OK"
+		},
+		{
+			"name": "Step 2: Create Service - Colazione (Breakfast)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var token = pm.environment.get('restaurantTokenV3');",
+							"var restaurantId = pm.environment.get('restaurantIdV3');",
+							"console.log('🔐 Token available: ' + !!token);",
+							"console.log('RestaurantId available: ' + !!restaurantId);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// === STEP 2: CREATE SERVICE COLAZIONE ===",
+							"console.log('\\n📋 STEP 2: CREATE SERVICE - COLAZIONE (BREAKFAST)');",
+							"console.log('='.repeat(60));",
+							"",
+							"pm.test(\"✅ Status code is 200 or 201\", function () {",
+							"    pm.response.to.have.status.oneOf([200, 201]);",
+							"});",
+							"",
+							"pm.test(\"✅ Service Colazione created successfully\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    console.log('📊 Service Response:', JSON.stringify(jsonData, null, 2));",
+							"    ",
+							"    if (jsonData.id) {",
+							"        pm.environment.set('serviceIdColazione', jsonData.id);",
+							"        console.log('💾 Saved serviceIdColazione:', jsonData.id);",
+							"    }",
+							"    if (jsonData.serviceType && jsonData.serviceType.id) {",
+							"        pm.environment.set('serviceTypeIdColazione', jsonData.serviceType.id);",
+							"        console.log('💾 Saved serviceTypeIdColazione:', jsonData.serviceType.id);",
+							"    }",
+							"});",
+							"",
+							"console.log('\\n✨ STEP 2 COMPLETED: Service Colazione created');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{restaurantTokenV3}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"serviceType\": \"Breakfast\",\n    \"validFrom\": \"2024-08-08\",\n    \"validTo\": \"2025-12-31\",\n    \"description\": \"Servizio di Colazione - dalle 7:00 alle 11:00\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/restaurant/service/create",
+					"host": ["{{baseUrl}}"],
+					"path": ["restaurant", "service", "create"]
+				}
+			},
+			"description": "➕ **Step 2: Create Service - Colazione**\n\n- Crea il servizio Colazione (Breakfast)\n- Orari: 7:00 - 11:00\n- Valido dal 2024-08-08 al 2025-12-31\n\n**Status**: 201 Created"
+		},
+		{
+			"name": "Step 3: Create Service - Pranzo (Lunch)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var token = pm.environment.get('restaurantTokenV3');",
+							"console.log('🔐 Token available: ' + !!token);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// === STEP 3: CREATE SERVICE PRANZO ===",
+							"console.log('\\n📋 STEP 3: CREATE SERVICE - PRANZO (LUNCH)');",
+							"console.log('='.repeat(60));",
+							"",
+							"pm.test(\"✅ Status code is 200 or 201\", function () {",
+							"    pm.response.to.have.status.oneOf([200, 201]);",
+							"});",
+							"",
+							"pm.test(\"✅ Service Pranzo created successfully\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    console.log('📊 Service Response:', JSON.stringify(jsonData, null, 2));",
+							"    ",
+							"    if (jsonData.id) {",
+							"        pm.environment.set('serviceIdPranzo', jsonData.id);",
+							"        console.log('💾 Saved serviceIdPranzo:', jsonData.id);",
+							"    }",
+							"});",
+							"",
+							"console.log('\\n✨ STEP 3 COMPLETED: Service Pranzo created');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{restaurantTokenV3}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"serviceType\": \"Lunch\",\n    \"validFrom\": \"2024-08-08\",\n    \"validTo\": \"2025-12-31\",\n    \"description\": \"Servizio di Pranzo - dalle 11:30 alle 16:00\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/restaurant/service/create",
+					"host": ["{{baseUrl}}"],
+					"path": ["restaurant", "service", "create"]
+				}
+			},
+			"description": "➕ **Step 3: Create Service - Pranzo**\n\n- Crea il servizio Pranzo (Lunch)\n- Orari: 11:30 - 16:00\n- Valido dal 2024-08-08 al 2025-12-31\n\n**Status**: 201 Created"
+		},
+		{
+			"name": "Step 4: Create Service - Cena (Dinner)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var token = pm.environment.get('restaurantTokenV3');",
+							"console.log('🔐 Token available: ' + !!token);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// === STEP 4: CREATE SERVICE CENA ===",
+							"console.log('\\n📋 STEP 4: CREATE SERVICE - CENA (DINNER)');",
+							"console.log('='.repeat(60));",
+							"",
+							"pm.test(\"✅ Status code is 200 or 201\", function () {",
+							"    pm.response.to.have.status.oneOf([200, 201]);",
+							"});",
+							"",
+							"pm.test(\"✅ Service Cena created successfully\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    console.log('📊 Service Response:', JSON.stringify(jsonData, null, 2));",
+							"    ",
+							"    if (jsonData.id) {",
+							"        pm.environment.set('serviceIdCena', jsonData.id);",
+							"        console.log('💾 Saved serviceIdCena:', jsonData.id);",
+							"    }",
+							"});",
+							"",
+							"console.log('\\n✨ STEP 4 COMPLETED: Service Cena created');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{restaurantTokenV3}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"serviceType\": \"Dinner\",\n    \"validFrom\": \"2024-08-08\",\n    \"validTo\": \"2025-12-31\",\n    \"description\": \"Servizio di Cena - dalle 19:00 alle 23:00\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/restaurant/service/create",
+					"host": ["{{baseUrl}}"],
+					"path": ["restaurant", "service", "create"]
+				}
+			},
+			"description": "➕ **Step 4: Create Service - Cena**\n\n- Crea il servizio Cena (Dinner)\n- Orari: 19:00 - 23:00\n- Valido dal 2024-08-08 al 2025-12-31\n\n**Status**: 201 Created"
+		},
+		{
+			"name": "Step 5: Create Slots for Colazione (07:00-11:00)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var token = pm.environment.get('restaurantTokenV3');",
+							"var serviceId = pm.environment.get('serviceIdColazione');",
+							"console.log('🔐 Token available: ' + !!token);",
+							"console.log('ServiceId Colazione available: ' + !!serviceId);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// === STEP 5: CREATE SLOTS FOR COLAZIONE ===",
+							"console.log('\\n📋 STEP 5: CREATE SLOTS FOR COLAZIONE');",
+							"console.log('='.repeat(60));",
+							"",
+							"pm.test(\"✅ Status code is 200 or 201\", function () {",
+							"    pm.response.to.have.status.oneOf([200, 201]);",
+							"});",
+							"",
+							"pm.test(\"✅ Slots for Colazione created successfully\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    console.log('📊 Slots Response:', JSON.stringify(jsonData, null, 2));",
+							"    ",
+							"    if (Array.isArray(jsonData)) {",
+							"        console.log('✅ Number of slots created:', jsonData.length);",
+							"        pm.environment.set('slotsCountColazione', jsonData.length);",
+							"    } else if (jsonData.id) {",
+							"        console.log('💾 Slots batch ID:', jsonData.id);",
+							"    }",
+							"});",
+							"",
+							"console.log('\\n✨ STEP 5 COMPLETED: Slots Colazione created');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{restaurantTokenV3}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"serviceId\": \"{{serviceIdColazione}}\",\n    \"startTime\": \"07:00\",\n    \"endTime\": \"11:00\",\n    \"slotDuration\": 30,\n    \"daysOfWeek\": [\"MONDAY\", \"TUESDAY\", \"WEDNESDAY\", \"THURSDAY\", \"FRIDAY\", \"SATURDAY\", \"SUNDAY\"],\n    \"notes\": \"Slot di colazione - 30 minuti per turno\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/restaurant/slot/create-batch",
+					"host": ["{{baseUrl}}"],
+					"path": ["restaurant", "slot", "create-batch"]
+				}
+			},
+			"description": "⏰ **Step 5: Create Slots for Colazione**\n\n- Crea gli slot per il servizio Colazione\n- Orari: 07:00 - 11:00 (slot di 30 minuti)\n- Tutti i giorni della settimana\n- Tot. slot: 8 fasce orarie × 7 giorni = 56 slot\n\n**Status**: 201 Created"
+		},
+		{
+			"name": "Step 6: Create Slots for Pranzo (11:30-16:00)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var token = pm.environment.get('restaurantTokenV3');",
+							"var serviceId = pm.environment.get('serviceIdPranzo');",
+							"console.log('🔐 Token available: ' + !!token);",
+							"console.log('ServiceId Pranzo available: ' + !!serviceId);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// === STEP 6: CREATE SLOTS FOR PRANZO ===",
+							"console.log('\\n📋 STEP 6: CREATE SLOTS FOR PRANZO');",
+							"console.log('='.repeat(60));",
+							"",
+							"pm.test(\"✅ Status code is 200 or 201\", function () {",
+							"    pm.response.to.have.status.oneOf([200, 201]);",
+							"});",
+							"",
+							"pm.test(\"✅ Slots for Pranzo created successfully\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    console.log('📊 Slots Response:', JSON.stringify(jsonData, null, 2));",
+							"    ",
+							"    if (Array.isArray(jsonData)) {",
+							"        console.log('✅ Number of slots created:', jsonData.length);",
+							"        pm.environment.set('slotsCountPranzo', jsonData.length);",
+							"    } else if (jsonData.id) {",
+							"        console.log('💾 Slots batch ID:', jsonData.id);",
+							"    }",
+							"});",
+							"",
+							"console.log('\\n✨ STEP 6 COMPLETED: Slots Pranzo created');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{restaurantTokenV3}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"serviceId\": \"{{serviceIdPranzo}}\",\n    \"startTime\": \"11:30\",\n    \"endTime\": \"16:00\",\n    \"slotDuration\": 30,\n    \"daysOfWeek\": [\"MONDAY\", \"TUESDAY\", \"WEDNESDAY\", \"THURSDAY\", \"FRIDAY\", \"SATURDAY\", \"SUNDAY\"],\n    \"notes\": \"Slot di pranzo - 30 minuti per turno\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/restaurant/slot/create-batch",
+					"host": ["{{baseUrl}}"],
+					"path": ["restaurant", "slot", "create-batch"]
+				}
+			},
+			"description": "⏰ **Step 6: Create Slots for Pranzo**\n\n- Crea gli slot per il servizio Pranzo\n- Orari: 11:30 - 16:00 (slot di 30 minuti)\n- Tutti i giorni della settimana\n- Tot. slot: 9 fasce orarie × 7 giorni = 63 slot\n\n**Status**: 201 Created"
+		},
+		{
+			"name": "Step 7: Create Slots for Cena (19:00-23:00)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var token = pm.environment.get('restaurantTokenV3');",
+							"var serviceId = pm.environment.get('serviceIdCena');",
+							"console.log('🔐 Token available: ' + !!token);",
+							"console.log('ServiceId Cena available: ' + !!serviceId);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// === STEP 7: CREATE SLOTS FOR CENA ===",
+							"console.log('\\n📋 STEP 7: CREATE SLOTS FOR CENA');",
+							"console.log('='.repeat(60));",
+							"",
+							"pm.test(\"✅ Status code is 200 or 201\", function () {",
+							"    pm.response.to.have.status.oneOf([200, 201]);",
+							"});",
+							"",
+							"pm.test(\"✅ Slots for Cena created successfully\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    console.log('📊 Slots Response:', JSON.stringify(jsonData, null, 2));",
+							"    ",
+							"    if (Array.isArray(jsonData)) {",
+							"        console.log('✅ Number of slots created:', jsonData.length);",
+							"        pm.environment.set('slotsCountCena', jsonData.length);",
+							"    } else if (jsonData.id) {",
+							"        console.log('💾 Slots batch ID:', jsonData.id);",
+							"    }",
+							"});",
+							"",
+							"console.log('\\n✨ STEP 7 COMPLETED: Slots Cena created');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{restaurantTokenV3}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"serviceId\": \"{{serviceIdCena}}\",\n    \"startTime\": \"19:00\",\n    \"endTime\": \"23:00\",\n    \"slotDuration\": 30,\n    \"daysOfWeek\": [\"MONDAY\", \"TUESDAY\", \"WEDNESDAY\", \"THURSDAY\", \"FRIDAY\", \"SATURDAY\", \"SUNDAY\"],\n    \"notes\": \"Slot di cena - 30 minuti per turno\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/restaurant/slot/create-batch",
+					"host": ["{{baseUrl}}"],
+					"path": ["restaurant", "slot", "create-batch"]
+				}
+			},
+			"description": "⏰ **Step 7: Create Slots for Cena**\n\n- Crea gli slot per il servizio Cena\n- Orari: 19:00 - 23:00 (slot di 30 minuti)\n- Tutti i giorni della settimana\n- Tot. slot: 8 fasce orarie × 7 giorni = 56 slot\n\n**Status**: 201 Created"
+		},
+		{
+			"name": "Step 8: Verify Services and Slots Created",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var token = pm.environment.get('restaurantTokenV3');",
+							"console.log('🔐 Token available: ' + !!token);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// === STEP 8: VERIFY SERVICES AND SLOTS ===",
+							"console.log('\\n📋 STEP 8: VERIFY SERVICES AND SLOTS');",
+							"console.log('='.repeat(60));",
+							"",
+							"pm.test(\"✅ Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"✅ Services retrieved successfully\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    console.log('📊 Services Response:', JSON.stringify(jsonData, null, 2));",
+							"    ",
+							"    if (Array.isArray(jsonData)) {",
+							"        console.log('✅ Total services for restaurant:', jsonData.length);",
+							"        var serviceTypes = jsonData.map(s => s.serviceType?.name || 'Unknown').join(', ');",
+							"        console.log('📝 Service Types:', serviceTypes);",
+							"    }",
+							"});",
+							"",
+							"console.log('\\n🎉 COMPLETE: Services and Slots Workflow Successful!');",
+							"console.log('═'.repeat(60));",
+							"console.log('✅ Creati 3 servizi: Colazione, Pranzo, Cena');",
+							"console.log('✅ Creati slot per tutti i servizi (56 + 63 + 56 = 175 slot totali)');",
+							"console.log('✅ Ristorante test@test.it è pronto per le prenotazioni');",
+							"console.log('═'.repeat(60));"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{restaurantTokenV3}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/restaurant/service/list",
+					"host": ["{{baseUrl}}"],
+					"path": ["restaurant", "service", "list"]
+				}
+			},
+			"description": "✅ **Step 8: Verify Services and Slots Created**\n\n- Recupera la lista di tutti i servizi del ristorante\n- Verifica che i tre servizi siano stati creati correttamente\n- Conferma il completamento del workflow\n\n**Status**: 200 OK"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Pre-request validation",
+					"const authHeader = pm.request.headers.get('Authorization');",
+					"if (authHeader && authHeader.includes('Bearer')) {",
+					"    console.log('🔐 Authenticated request');",
+					"}"
+				]
+			}
+		}
+	]
+}

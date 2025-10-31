@@ -1,0 +1,244 @@
+{
+	"info": {
+		"_postman_id": "test-restaurant-reservation",
+		"name": "Test Restaurant Reservation Creation",
+		"description": "Simple test for creating reservations from restaurant side using our created slots",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Step 1: Restaurant User Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log('\\n📋 STEP 1: LOGIN');",
+							"console.log('Status:', pm.response.code);",
+							"",
+							"if (pm.response.code === 200) {",
+							"    try {",
+							"        var jsonData = pm.response.json();",
+							"        if (jsonData.jwt) {",
+							"            pm.environment.set('restaurantToken', jsonData.jwt);",
+							"            console.log('💾 Token saved');",
+							"        }",
+							"        if (jsonData.user && jsonData.user.restaurantId) {",
+							"            pm.environment.set('restaurantId', jsonData.user.restaurantId);",
+							"            console.log('💾 Restaurant ID:', jsonData.user.restaurantId);",
+							"        }",
+							"    } catch(e) {",
+							"        console.log('Error:', e);",
+							"    }",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{"key": "Content-Type", "value": "application/json"}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"test@test.it\",\n    \"password\": \"TestPass123!\",\n    \"rememberMe\": true\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/restaurant/user/auth/login",
+					"host": ["{{baseUrl}}"],
+					"path": ["restaurant", "user", "auth", "login"]
+				}
+			}
+		},
+		{
+			"name": "Step 2: Create Reservation - Slot 202 (Colazione MONDAY 07:00-11:00)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var tomorrow = new Date();",
+							"tomorrow.setDate(tomorrow.getDate() + 1);",
+							"var dateStr = tomorrow.getFullYear() + '-' + String(tomorrow.getMonth() + 1).padStart(2, '0') + '-' + String(tomorrow.getDate()).padStart(2, '0');",
+							"pm.environment.set('resDate1', dateStr);",
+							"console.log('🗓️ Reservation date:', dateStr);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log('\\n📋 STEP 2: CREATE RESERVATION');",
+							"console.log('Status:', pm.response.code);",
+							"console.log('Response:', pm.response.text().substring(0, 200));",
+							"",
+							"pm.test('Reservation created', function() {",
+							"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+							"});",
+							"",
+							"if (pm.response.code === 201 || pm.response.code === 200) {",
+							"    try {",
+							"        var jsonData = pm.response.json();",
+							"        if (jsonData.id) {",
+							"            pm.environment.set('res1Id', jsonData.id);",
+							"            console.log('✅ Reservation 1 created - ID:', jsonData.id);",
+							"        }",
+							"    } catch(e) {",
+							"        console.log('Error parsing:', e);",
+							"    }",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{"key": "Authorization", "value": "Bearer {{restaurantToken}}"},
+					{"key": "Content-Type", "value": "application/json"}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"userName\": \"Marco Rossi\",\n    \"userEmail\": \"marco@example.com\",\n    \"userPhoneNumber\": \"+39 333 1234567\",\n    \"idSlot\": 202,\n    \"pax\": 2,\n    \"kids\": 0,\n    \"notes\": \"Colazione - Test 1\",\n    \"reservationDay\": \"{{resDate1}}\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/restaurant/reservation/new",
+					"host": ["{{baseUrl}}"],
+					"path": ["restaurant", "reservation", "new"]
+				}
+			}
+		},
+		{
+			"name": "Step 3: Create Reservation 2 - Slot 202 (Different Date)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var in3days = new Date();",
+							"in3days.setDate(in3days.getDate() + 3);",
+							"var dateStr = in3days.getFullYear() + '-' + String(in3days.getMonth() + 1).padStart(2, '0') + '-' + String(in3days.getDate()).padStart(2, '0');",
+							"pm.environment.set('resDate2', dateStr);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log('\\n📋 STEP 3: CREATE RESERVATION 2');",
+							"console.log('Status:', pm.response.code);",
+							"pm.test('Reservation 2 created', function() {",
+							"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+							"});",
+							"if (pm.response.code === 201 || pm.response.code === 200) {",
+							"    var jsonData = pm.response.json();",
+							"    if (jsonData.id) console.log('✅ Reservation 2 created - ID:', jsonData.id);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{"key": "Authorization", "value": "Bearer {{restaurantToken}}"},
+					{"key": "Content-Type", "value": "application/json"}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"userName\": \"Giovanni Verdi\",\n    \"userEmail\": \"giovanni@example.com\",\n    \"userPhoneNumber\": \"+39 333 7654321\",\n    \"idSlot\": 202,\n    \"pax\": 4,\n    \"kids\": 2,\n    \"notes\": \"Colazione in famiglia\",\n    \"reservationDay\": \"{{resDate2}}\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/restaurant/reservation/new",
+					"host": ["{{baseUrl}}"],
+					"path": ["restaurant", "reservation", "new"]
+				}
+			}
+		},
+		{
+			"name": "Step 4: Get All Reservations",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Calculate date range for query (past 10 days to future 90 days)",
+							"var start = new Date();",
+							"start.setDate(start.getDate() - 10);",
+							"var end = new Date();",
+							"end.setDate(end.getDate() + 90);",
+							"",
+							"var startStr = start.getFullYear() + '-' + String(start.getMonth() + 1).padStart(2, '0') + '-' + String(start.getDate()).padStart(2, '0');",
+							"var endStr = end.getFullYear() + '-' + String(end.getMonth() + 1).padStart(2, '0') + '-' + String(end.getDate()).padStart(2, '0');",
+							"",
+							"pm.environment.set('queryStart', startStr);",
+							"pm.environment.set('queryEnd', endStr);",
+							"",
+							"console.log('📅 Query range:', startStr, 'to', endStr);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log('\\n📋 STEP 4: GET ALL RESERVATIONS');",
+							"console.log('Status:', pm.response.code);",
+							"console.log('Request URL:', pm.request.url.toString());",
+							"",
+							"pm.test('Get reservations success', function() {",
+							"    pm.expect(pm.response.code).to.be.oneOf([200, 206]);",
+							"});",
+							"",
+							"try {",
+							"    var jsonData = pm.response.json();",
+							"    if (Array.isArray(jsonData)) {",
+							"        console.log('✅ Found ' + jsonData.length + ' reservations');",
+							"        jsonData.forEach(function(res, idx) {",
+							"            console.log('  [' + idx + '] ID: ' + res.id + ', Status: ' + res.status + ', Pax: ' + res.pax + ', Date: ' + res.date);",
+							"        });",
+							"    } else if (jsonData.data && Array.isArray(jsonData.data)) {",
+							"        console.log('✅ Found ' + jsonData.data.length + ' reservations (wrapped response)');",
+							"        jsonData.data.forEach(function(res, idx) {",
+							"            console.log('  [' + idx + '] ID: ' + res.id + ', Status: ' + res.status + ', Pax: ' + res.pax + ', Date: ' + res.date);",
+							"        });",
+							"    } else {",
+							"        console.log('Response type:', typeof jsonData);",
+							"        console.log('Response:', JSON.stringify(jsonData, null, 2).substring(0, 400));",
+							"    }",
+							"} catch(e) {",
+							"    console.log('Error:', e);",
+							"    console.log('Response:', pm.response.text().substring(0, 300));",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{"key": "Authorization", "value": "Bearer {{restaurantToken}}"}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/restaurant/reservation/reservations?start={{queryStart}}&end={{queryEnd}}",
+					"host": ["{{baseUrl}}"],
+					"path": ["restaurant", "reservation", "reservations"],
+					"query": [
+						{"key": "start", "value": "{{queryStart}}"},
+						{"key": "end", "value": "{{queryEnd}}"}
+					]
+				}
+			}
+		}
+	]
+}

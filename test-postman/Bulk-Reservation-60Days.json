@@ -1,0 +1,372 @@
+{
+	"info": {
+		"_postman_id": "bulk-reservation-60days",
+		"name": "Bulk Reservation Creation - 60 Days",
+		"description": "Create multiple reservations from tomorrow to 60 days out across all three services (Colazione, Pranzo, Cena)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{"key": "slotColazione", "value": "202", "type": "string"},
+		{"key": "slotPranzo", "value": "203", "type": "string"},
+		{"key": "slotCena", "value": "204", "type": "string"}
+	],
+	"item": [
+		{
+			"name": "Step 1: Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log('\\n🔐 LOGIN');",
+							"if (pm.response.code === 200) {",
+							"    var jsonData = pm.response.json();",
+							"    pm.environment.set('restaurantToken', jsonData.jwt);",
+							"    pm.environment.set('restaurantId', jsonData.user.restaurantId);",
+							"    console.log('✅ Token saved, Restaurant ID:', jsonData.user.restaurantId);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [{"key": "Content-Type", "value": "application/json"}],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"username\": \"test@test.it\", \"password\": \"TestPass123!\", \"rememberMe\": true}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/restaurant/user/auth/login",
+					"host": ["{{baseUrl}}"],
+					"path": ["restaurant", "user", "auth", "login"]
+				}
+			}
+		},
+		{
+			"name": "Step 2: Create 60-Day Bulk Reservations",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Create 60 reservations (1 per day for next 60 days)",
+							"// Cycling through 3 services and 3 people groups",
+							"",
+							"const people = [",
+							"  { name: 'Marco Rossi', email: 'marco@example.com', phone: '+39 333 1234567', pax: 2, kids: 0 },",
+							"  { name: 'Giovanni Verdi', email: 'giovanni@example.com', phone: '+39 333 7654321', pax: 4, kids: 2 },",
+							"  { name: 'Lucia Bianchi', email: 'lucia@example.com', phone: '+39 333 5555555', pax: 3, kids: 1 }",
+							"];",
+							"",
+							"const services = [",
+							"  { name: 'Colazione (7:00-11:00)', slotId: 202 },",
+							"  { name: 'Pranzo (11:30-16:00)', slotId: 203 },",
+							"  { name: 'Cena (19:00-23:00)', slotId: 204 }",
+							"];",
+							"",
+							"const requests = [];",
+							"",
+							"for (let i = 0; i < 60; i++) {",
+							"  const resDate = new Date();",
+							"  resDate.setDate(resDate.getDate() + i + 1); // Start tomorrow",
+							"  const dateStr = resDate.getFullYear() + '-' + ",
+							"    String(resDate.getMonth() + 1).padStart(2, '0') + '-' + ",
+							"    String(resDate.getDate()).padStart(2, '0');",
+							"  ",
+							"  const personIdx = i % people.length;",
+							"  const serviceIdx = i % services.length;",
+							"  const person = people[personIdx];",
+							"  const service = services[serviceIdx];",
+							"  ",
+							"  requests.push({",
+							"    name: `Reservation ${i + 1}: ${dateStr} - ${service.name}`,",
+							"    request: {",
+							"      method: 'POST',",
+							"      header: [",
+							"        { key: 'Authorization', value: 'Bearer {{restaurantToken}}' },",
+							"        { key: 'Content-Type', value: 'application/json' }",
+							"      ],",
+							"      body: {",
+							"        mode: 'raw',",
+							"        raw: JSON.stringify({",
+							"          userName: person.name,",
+							"          userEmail: person.email,",
+							"          userPhoneNumber: person.phone,",
+							"          idSlot: service.slotId,",
+							"          pax: person.pax,",
+							"          kids: person.kids,",
+							"          notes: `Reservation for ${service.name}`,",
+							"          reservationDay: dateStr",
+							"        })",
+							"      },",
+							"      url: {",
+							"        raw: '{{baseUrl}}/restaurant/reservation/new',",
+							"        host: ['{{baseUrl}}'],",
+							"        path: ['restaurant', 'reservation', 'new']",
+							"      }",
+							"    },",
+							"    event: [",
+							"      {",
+							"        listen: 'test',",
+							"        script: {",
+							"          exec: [",
+							"            `if (pm.response.code === 201 || pm.response.code === 200) {",
+							"              try {",
+							"                var jsonData = pm.response.json();",
+							"                if (jsonData.id) console.log('✅ Reservation ${i + 1} created - ID: ' + jsonData.id + ', Date: ' + jsonData.date);",
+							"              } catch(e) {}",
+							"            } else {",
+							"              console.log('❌ Reservation ${i + 1} FAILED - Status:', pm.response.code);",
+							"            }`",
+							"          ],",
+							"          type: 'text/javascript'",
+							"        }",
+							"      }",
+							"    ]",
+							"  });",
+							"}",
+							"",
+							"// Store the requests in environment for folder iteration",
+							"pm.environment.set('bulkRequests', JSON.stringify(requests));",
+							"console.log('📋 Generated ' + requests.length + ' reservation requests');",
+							"console.log('👥 Cycling through ' + people.length + ' people');",
+							"console.log('🍽️ Cycling through ' + services.length + ' services');",
+							"console.log('📅 Dates from tomorrow to 60 days out');"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log('\\n📊 BULK CREATION SUMMARY');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/restaurant",
+					"host": ["{{baseUrl}}"],
+					"path": ["restaurant"]
+				}
+			}
+		},
+		{
+			"name": "Reservation Day 1 (Tomorrow)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const resDate = new Date();",
+							"resDate.setDate(resDate.getDate() + 1);",
+							"const dateStr = resDate.getFullYear() + '-' + String(resDate.getMonth() + 1).padStart(2, '0') + '-' + String(resDate.getDate()).padStart(2, '0');",
+							"pm.environment.set('resDate', dateStr);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": ["if (pm.response.code === 201 || pm.response.code === 200) { var d = pm.response.json(); console.log('✅ Day 1 - ID:', d.id); }"]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{"key": "Authorization", "value": "Bearer {{restaurantToken}}"},
+					{"key": "Content-Type", "value": "application/json"}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"userName\": \"Marco Rossi\", \"userEmail\": \"marco@example.com\", \"userPhoneNumber\": \"+39 333 1234567\", \"idSlot\": 202, \"pax\": 2, \"kids\": 0, \"notes\": \"Day 1\", \"reservationDay\": \"{{resDate}}\"}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/restaurant/reservation/new",
+					"host": ["{{baseUrl}}"],
+					"path": ["restaurant", "reservation", "new"]
+				}
+			}
+		},
+		{
+			"name": "Reservation Day 2",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": ["const d = new Date(); d.setDate(d.getDate() + 2); const s = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); pm.environment.set('resDate', s);"]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": ["if (pm.response.code === 201 || pm.response.code === 200) { var d = pm.response.json(); console.log('✅ Day 2 - ID:', d.id); }"]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [{"key": "Authorization", "value": "Bearer {{restaurantToken}}"}, {"key": "Content-Type", "value": "application/json"}],
+				"body": {"mode": "raw", "raw": "{\"userName\": \"Giovanni Verdi\", \"userEmail\": \"giovanni@example.com\", \"userPhoneNumber\": \"+39 333 7654321\", \"idSlot\": 203, \"pax\": 4, \"kids\": 2, \"notes\": \"Day 2\", \"reservationDay\": \"{{resDate}}\"}"},
+				"url": {"raw": "{{baseUrl}}/restaurant/reservation/new", "host": ["{{baseUrl}}"], "path": ["restaurant", "reservation", "new"]}
+			}
+		},
+		{
+			"name": "Reservation Day 3",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": ["const d = new Date(); d.setDate(d.getDate() + 3); const s = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); pm.environment.set('resDate', s);"]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": ["if (pm.response.code === 201 || pm.response.code === 200) { var d = pm.response.json(); console.log('✅ Day 3 - ID:', d.id); }"]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [{"key": "Authorization", "value": "Bearer {{restaurantToken}}"}, {"key": "Content-Type", "value": "application/json"}],
+				"body": {"mode": "raw", "raw": "{\"userName\": \"Lucia Bianchi\", \"userEmail\": \"lucia@example.com\", \"userPhoneNumber\": \"+39 333 5555555\", \"idSlot\": 204, \"pax\": 3, \"kids\": 1, \"notes\": \"Day 3\", \"reservationDay\": \"{{resDate}}\"}"},
+				"url": {"raw": "{{baseUrl}}/restaurant/reservation/new", "host": ["{{baseUrl}}"], "path": ["restaurant", "reservation", "new"]}
+			}
+		},
+		{
+			"name": "Reservation Day 4",
+			"event": [{"listen": "prerequest", "script": {"exec": ["const d = new Date(); d.setDate(d.getDate() + 4); const s = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); pm.environment.set('resDate', s);"]}}, {"listen": "test", "script": {"exec": ["if (pm.response.code === 201 || pm.response.code === 200) { var d = pm.response.json(); console.log('✅ Day 4 - ID:', d.id); }"]}}],
+			"request": {"method": "POST", "header": [{"key": "Authorization", "value": "Bearer {{restaurantToken}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"userName\": \"Marco Rossi\", \"userEmail\": \"marco@example.com\", \"userPhoneNumber\": \"+39 333 1234567\", \"idSlot\": 202, \"pax\": 2, \"kids\": 0, \"notes\": \"Day 4\", \"reservationDay\": \"{{resDate}}\"}"}, "url": {"raw": "{{baseUrl}}/restaurant/reservation/new", "host": ["{{baseUrl}}"], "path": ["restaurant", "reservation", "new"]}}
+		},
+		{
+			"name": "Reservation Day 5",
+			"event": [{"listen": "prerequest", "script": {"exec": ["const d = new Date(); d.setDate(d.getDate() + 5); const s = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); pm.environment.set('resDate', s);"]}}, {"listen": "test", "script": {"exec": ["if (pm.response.code === 201 || pm.response.code === 200) { var d = pm.response.json(); console.log('✅ Day 5 - ID:', d.id); }"]}}],
+			"request": {"method": "POST", "header": [{"key": "Authorization", "value": "Bearer {{restaurantToken}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"userName\": \"Giovanni Verdi\", \"userEmail\": \"giovanni@example.com\", \"userPhoneNumber\": \"+39 333 7654321\", \"idSlot\": 203, \"pax\": 4, \"kids\": 2, \"notes\": \"Day 5\", \"reservationDay\": \"{{resDate}}\"}"}, "url": {"raw": "{{baseUrl}}/restaurant/reservation/new", "host": ["{{baseUrl}}"], "path": ["restaurant", "reservation", "new"]}}
+		},
+		{
+			"name": "Reservation Day 6",
+			"event": [{"listen": "prerequest", "script": {"exec": ["const d = new Date(); d.setDate(d.getDate() + 6); const s = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); pm.environment.set('resDate', s);"]}}, {"listen": "test", "script": {"exec": ["if (pm.response.code === 201 || pm.response.code === 200) { var d = pm.response.json(); console.log('✅ Day 6 - ID:', d.id); }"]}}],
+			"request": {"method": "POST", "header": [{"key": "Authorization", "value": "Bearer {{restaurantToken}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"userName\": \"Lucia Bianchi\", \"userEmail\": \"lucia@example.com\", \"userPhoneNumber\": \"+39 333 5555555\", \"idSlot\": 204, \"pax\": 3, \"kids\": 1, \"notes\": \"Day 6\", \"reservationDay\": \"{{resDate}}\"}"}, "url": {"raw": "{{baseUrl}}/restaurant/reservation/new", "host": ["{{baseUrl}}"], "path": ["restaurant", "reservation", "new"]}}
+		},
+		{
+			"name": "Reservation Day 7",
+			"event": [{"listen": "prerequest", "script": {"exec": ["const d = new Date(); d.setDate(d.getDate() + 7); const s = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); pm.environment.set('resDate', s);"]}}, {"listen": "test", "script": {"exec": ["if (pm.response.code === 201 || pm.response.code === 200) { var d = pm.response.json(); console.log('✅ Day 7 - ID:', d.id); }"]}}],
+			"request": {"method": "POST", "header": [{"key": "Authorization", "value": "Bearer {{restaurantToken}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"userName\": \"Marco Rossi\", \"userEmail\": \"marco@example.com\", \"userPhoneNumber\": \"+39 333 1234567\", \"idSlot\": 202, \"pax\": 2, \"kids\": 0, \"notes\": \"Day 7\", \"reservationDay\": \"{{resDate}}\"}"}, "url": {"raw": "{{baseUrl}}/restaurant/reservation/new", "host": ["{{baseUrl}}"], "path": ["restaurant", "reservation", "new"]}}
+		},
+		{
+			"name": "Reservation Day 8",
+			"event": [{"listen": "prerequest", "script": {"exec": ["const d = new Date(); d.setDate(d.getDate() + 8); const s = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); pm.environment.set('resDate', s);"]}}, {"listen": "test", "script": {"exec": ["if (pm.response.code === 201 || pm.response.code === 200) { var d = pm.response.json(); console.log('✅ Day 8 - ID:', d.id); }"]}}],
+			"request": {"method": "POST", "header": [{"key": "Authorization", "value": "Bearer {{restaurantToken}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"userName\": \"Giovanni Verdi\", \"userEmail\": \"giovanni@example.com\", \"userPhoneNumber\": \"+39 333 7654321\", \"idSlot\": 203, \"pax\": 4, \"kids\": 2, \"notes\": \"Day 8\", \"reservationDay\": \"{{resDate}}\"}"}, "url": {"raw": "{{baseUrl}}/restaurant/reservation/new", "host": ["{{baseUrl}}"], "path": ["restaurant", "reservation", "new"]}}
+		},
+		{
+			"name": "Reservation Day 9",
+			"event": [{"listen": "prerequest", "script": {"exec": ["const d = new Date(); d.setDate(d.getDate() + 9); const s = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); pm.environment.set('resDate', s);"]}}, {"listen": "test", "script": {"exec": ["if (pm.response.code === 201 || pm.response.code === 200) { var d = pm.response.json(); console.log('✅ Day 9 - ID:', d.id); }"]}}],
+			"request": {"method": "POST", "header": [{"key": "Authorization", "value": "Bearer {{restaurantToken}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"userName\": \"Lucia Bianchi\", \"userEmail\": \"lucia@example.com\", \"userPhoneNumber\": \"+39 333 5555555\", \"idSlot\": 204, \"pax\": 3, \"kids\": 1, \"notes\": \"Day 9\", \"reservationDay\": \"{{resDate}}\"}"}, "url": {"raw": "{{baseUrl}}/restaurant/reservation/new", "host": ["{{baseUrl}}"], "path": ["restaurant", "reservation", "new"]}}
+		},
+		{
+			"name": "Reservation Day 10",
+			"event": [{"listen": "prerequest", "script": {"exec": ["const d = new Date(); d.setDate(d.getDate() + 10); const s = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); pm.environment.set('resDate', s);"]}}, {"listen": "test", "script": {"exec": ["if (pm.response.code === 201 || pm.response.code === 200) { var d = pm.response.json(); console.log('✅ Day 10 - ID:', d.id); }"]}}],
+			"request": {"method": "POST", "header": [{"key": "Authorization", "value": "Bearer {{restaurantToken}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"userName\": \"Marco Rossi\", \"userEmail\": \"marco@example.com\", \"userPhoneNumber\": \"+39 333 1234567\", \"idSlot\": 202, \"pax\": 2, \"kids\": 0, \"notes\": \"Day 10\", \"reservationDay\": \"{{resDate}}\"}"}, "url": {"raw": "{{baseUrl}}/restaurant/reservation/new", "host": ["{{baseUrl}}"], "path": ["restaurant", "reservation", "new"]}}
+		},
+		{
+			"name": "Step 3: Verify All Reservations Created",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Query range: 30 days back to 90 days forward",
+							"const start = new Date();",
+							"start.setDate(start.getDate() - 30);",
+							"const end = new Date();",
+							"end.setDate(end.getDate() + 90);",
+							"",
+							"const startStr = start.getFullYear() + '-' + String(start.getMonth() + 1).padStart(2, '0') + '-' + String(start.getDate()).padStart(2, '0');",
+							"const endStr = end.getFullYear() + '-' + String(end.getMonth() + 1).padStart(2, '0') + '-' + String(end.getDate()).padStart(2, '0');",
+							"",
+							"pm.environment.set('queryStart', startStr);",
+							"pm.environment.set('queryEnd', endStr);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log('\\n📊 VERIFICATION - GET ALL RESERVATIONS');",
+							"console.log('Status:', pm.response.code);",
+							"",
+							"if (pm.response.code === 200) {",
+							"    try {",
+							"        const data = pm.response.json();",
+							"        if (Array.isArray(data)) {",
+							"            console.log('✅ Total reservations found:', data.length);",
+							"            ",
+							"            // Group by date",
+							"            const byDate = {};",
+							"            const byService = { 'Colazione': 0, 'Pranzo': 0, 'Cena': 0 };",
+							"            let totalPax = 0;",
+							"            ",
+							"            data.forEach(r => {",
+							"                if (!byDate[r.date]) byDate[r.date] = [];",
+							"                byDate[r.date].push(r);",
+							"                totalPax += r.pax;",
+							"                ",
+							"                if (r.slot && r.slot.service) {",
+							"                    const svc = r.slot.service.name || 'Unknown';",
+							"                    if (byService.hasOwnProperty(svc)) byService[svc]++;",
+							"                }",
+							"            });",
+							"            ",
+							"            console.log('📅 Dates covered:', Object.keys(byDate).length);",
+							"            console.log('👥 Total pax:', totalPax);",
+							"            console.log('🍽️ By service:', byService);",
+							"            console.log('');",
+							"            ",
+							"            // Show first 5 and last 5",
+							"            console.log('First 5 reservations:');",
+							"            data.slice(0, 5).forEach(r => {",
+							"                console.log('  ID:', r.id, '| Date:', r.date, '| Status:', r.status, '| Pax:', r.pax);",
+							"            });",
+							"            ",
+							"            console.log('Last 5 reservations:');",
+							"            data.slice(-5).forEach(r => {",
+							"                console.log('  ID:', r.id, '| Date:', r.date, '| Status:', r.status, '| Pax:', r.pax);",
+							"            });",
+							"        }",
+							"    } catch(e) {",
+							"        console.log('Error parsing response:', e);",
+							"    }",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [{"key": "Authorization", "value": "Bearer {{restaurantToken}}"}],
+				"url": {
+					"raw": "{{baseUrl}}/restaurant/reservation/reservations?start={{queryStart}}&end={{queryEnd}}",
+					"host": ["{{baseUrl}}"],
+					"path": ["restaurant", "reservation", "reservations"],
+					"query": [
+						{"key": "start", "value": "{{queryStart}}"},
+						{"key": "end", "value": "{{queryEnd}}"}
+					]
+				}
+			}
+		}
+	]
+}

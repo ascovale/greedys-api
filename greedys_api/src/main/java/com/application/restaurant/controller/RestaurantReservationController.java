@@ -174,6 +174,5 @@ public class RestaurantReservationController extends BaseController {
 		});
 	}
 
-
 }
 

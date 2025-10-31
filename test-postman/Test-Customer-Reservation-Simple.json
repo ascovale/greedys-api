@@ -1,0 +1,208 @@
+{
+	"info": {
+		"_postman_id": "test-customer-reservation-simple",
+		"name": "Simple Customer Reservation Test",
+		"description": "Test creating a reservation for a customer using slots we created",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Step 1: Register Test Customer",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log('\\n📋 STEP 1: REGISTER CUSTOMER');",
+							"console.log('Status:', pm.response.code);",
+							"console.log('Response:', pm.response.text());",
+							"",
+							"if (pm.response.code === 201 || pm.response.code === 200) {",
+							"    try {",
+							"        var jsonData = pm.response.json();",
+							"        console.log('Parsed:', JSON.stringify(jsonData, null, 2));",
+							"        if (jsonData.id) {",
+							"            pm.environment.set('testCustomerId', jsonData.id);",
+							"            console.log('💾 Customer ID:', jsonData.id);",
+							"        }",
+							"    } catch(e) {",
+							"        console.log('Error parsing response:', e);",
+							"    }",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{"key": "Content-Type", "value": "application/json"}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"firstName\": \"Test\",\n    \"lastName\": \"Customer\",\n    \"email\": \"testcustomer@greedys.it\",\n    \"username\": \"testcustomer@greedys.it\",\n    \"password\": \"TestPass123!\",\n    \"phone\": \"+39 3333333333\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/customer/auth/new",
+					"host": ["{{baseUrl}}"],
+					"path": ["customer", "auth", "new"]
+				}
+			}
+		},
+		{
+			"name": "Step 2: Login as Customer",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log('\\n📋 STEP 2: LOGIN CUSTOMER');",
+							"console.log('Status:', pm.response.code);",
+							"",
+							"if (pm.response.code === 200) {",
+							"    try {",
+							"        var jsonData = pm.response.json();",
+							"        if (jsonData.jwt) {",
+							"            pm.environment.set('testCustomerToken', jsonData.jwt);",
+							"            console.log('💾 Token saved');",
+							"        }",
+							"        if (jsonData.user && jsonData.user.id) {",
+							"            pm.environment.set('testCustomerId', jsonData.user.id);",
+							"            console.log('💾 Customer ID:', jsonData.user.id);",
+							"        }",
+							"    } catch(e) {",
+							"        console.log('Error parsing:', e);",
+							"        console.log('Response:', pm.response.text());",
+							"    }",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{"key": "Content-Type", "value": "application/json"}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"testcustomer@greedys.it\",\n    \"password\": \"TestPass123!\",\n    \"rememberMe\": true\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/customer/auth/login",
+					"host": ["{{baseUrl}}"],
+					"path": ["customer", "auth", "login"]
+				}
+			}
+		},
+		{
+			"name": "Step 3: Create Reservation - Use Slot 202 (Colazione MONDAY)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var token = pm.environment.get('testCustomerToken');",
+							"var slotId = 202;  // Da Step 5 del Services/Slots workflow",
+							"var tomorrow = new Date();",
+							"tomorrow.setDate(tomorrow.getDate() + 1);",
+							"var dateStr = tomorrow.getFullYear() + '-' + String(tomorrow.getMonth() + 1).padStart(2, '0') + '-' + String(tomorrow.getDate()).padStart(2, '0');",
+							"pm.environment.set('reservationDate', dateStr);",
+							"console.log('🗓️ Reservation date:', dateStr);",
+							"console.log('🎫 Slot ID:', slotId);",
+							"console.log('🔐 Token available:', !!token);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log('\\n📋 STEP 3: CREATE RESERVATION');",
+							"console.log('Status:', pm.response.code);",
+							"console.log('Response:', pm.response.text());",
+							"",
+							"pm.test('Reservation created', function() {",
+							"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+							"});",
+							"",
+							"if (pm.response.code === 201 || pm.response.code === 200) {",
+							"    try {",
+							"        var jsonData = pm.response.json();",
+							"        console.log('✅ Reservation response:', JSON.stringify(jsonData, null, 2));",
+							"        if (jsonData.id) {",
+							"            pm.environment.set('reservationId', jsonData.id);",
+							"            console.log('💾 Reservation ID:', jsonData.id);",
+							"        }",
+							"    } catch(e) {",
+							"        console.log('Error parsing:', e);",
+							"    }",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{"key": "Authorization", "value": "Bearer {{testCustomerToken}}"},
+					{"key": "Content-Type", "value": "application/json"}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"userName\": \"Test Customer\",\n    \"idSlot\": 202,\n    \"pax\": 2,\n    \"kids\": 0,\n    \"notes\": \"Test reservation\",\n    \"reservationDay\": \"{{reservationDate}}\",\n    \"restaurantId\": 3\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/customer/reservation/ask",
+					"host": ["{{baseUrl}}"],
+					"path": ["customer", "reservation", "ask"]
+				}
+			}
+		},
+		{
+			"name": "Step 4: Get All Customer Reservations",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log('\\n📋 STEP 4: GET RESERVATIONS');",
+							"console.log('Status:', pm.response.code);",
+							"",
+							"try {",
+							"    var jsonData = pm.response.json();",
+							"    if (Array.isArray(jsonData)) {",
+							"        console.log('✅ Found ' + jsonData.length + ' reservations');",
+							"        jsonData.forEach(function(res, idx) {",
+							"            console.log('  [' + idx + '] ID: ' + res.id + ', Status: ' + res.status + ', Pax: ' + res.pax);",
+							"        });",
+							"    } else {",
+							"        console.log('Response structure:', JSON.stringify(jsonData, null, 2));",
+							"    }",
+							"} catch(e) {",
+							"    console.log('Error:', e);",
+							"    console.log('Response:', pm.response.text());",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{"key": "Authorization", "value": "Bearer {{testCustomerToken}}"}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/customer/reservation/all",
+					"host": ["{{baseUrl}}"],
+					"path": ["customer", "reservation", "all"]
+				}
+			}
+		}
+	]
+}

@@ -1,0 +1,669 @@
+{
+	"info": {
+		"_postman_id": "restaurant-reservations-bulk-flow",
+		"name": "Greedy's Restaurant Bulk Reservations Creation Flow",
+		"description": "Workflow for creating multiple test reservations for the next 2 months for restaurant test@test.it",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Step 1: Customer Login (or Create)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// === STEP 1: CUSTOMER LOGIN ===",
+							"console.log('\\n📋 STEP 1: CUSTOMER LOGIN');",
+							"console.log('='.repeat(60));",
+							"",
+							"pm.test(\"✅ Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"✅ JWT token received for customer\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    console.log('📊 Login Response Keys:', Object.keys(jsonData));",
+							"    ",
+							"    var token = jsonData.jwt || jsonData.accessToken;",
+							"    pm.expect(token).to.not.be.undefined;",
+							"    ",
+							"    pm.environment.set('customerTokenV4', token);",
+							"    console.log('💾 Saved customerTokenV4:', token.substring(0, 50) + '...');",
+							"});",
+							"",
+							"pm.test(\"✅ Get Customer ID\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    if (jsonData.user && jsonData.user.id) {",
+							"        pm.environment.set('customerIdV4', jsonData.user.id);",
+							"        console.log('💾 Saved customerIdV4:', jsonData.user.id);",
+							"        console.log('👤 Customer email:', jsonData.user.email || jsonData.user.username);",
+							"    }",
+							"});",
+							"",
+							"console.log('\\n✨ STEP 1 COMPLETED: Customer logged in');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"marco.rossi@email.it\",\n    \"password\": \"TestPass123!\",\n    \"rememberMe\": true\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/customer/auth/login",
+					"host": ["{{baseUrl}}"],
+					"path": ["customer", "auth", "login"]
+				}
+			},
+			"description": "🔐 **Step 1: Customer Login**\n\n- Login del cliente Marco Rossi\n- Recupera token JWT e ID cliente\n\n**Status**: 200 OK"
+		},
+		{
+			"name": "Step 2: Get La Soffitta Restaurant ID",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var token = pm.environment.get('customerTokenV4');",
+							"console.log('🔐 Token available: ' + !!token);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// === STEP 2: GET RESTAURANT ID ===",
+							"console.log('\\n📋 STEP 2: GET LA SOFFITTA RESTAURANT ID');",
+							"console.log('='.repeat(60));",
+							"",
+							"pm.test(\"✅ Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"✅ Restaurant found\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    console.log('📊 Restaurant Response:', JSON.stringify(jsonData, null, 2));",
+							"    ",
+							"    if (jsonData.id) {",
+							"        pm.environment.set('targetRestaurantIdV4', jsonData.id);",
+							"        console.log('💾 Saved targetRestaurantIdV4:', jsonData.id);",
+							"        console.log('🏪 Restaurant name:', jsonData.name);",
+							"    }",
+							"});",
+							"",
+							"console.log('\\n✨ STEP 2 COMPLETED: Restaurant found');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{customerTokenV4}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/restaurant/search?name=test@test.it",
+					"host": ["{{baseUrl}}"],
+					"path": ["restaurant", "search"],
+					"query": [
+						{
+							"key": "name",
+							"value": "test@test.it"
+						}
+					]
+				}
+			},
+			"description": "🔍 **Step 2: Get La Soffitta Restaurant ID**\n\n- Ricerca il ristorante (test@test.it)\n- Recupera l'ID del ristorante\n\n**Status**: 200 OK"
+		},
+		{
+			"name": "Step 3: Get Restaurant Availability (Services & Slots)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var token = pm.environment.get('customerTokenV4');",
+							"var restaurantId = pm.environment.get('targetRestaurantIdV4');",
+							"console.log('🔐 Token available: ' + !!token);",
+							"console.log('RestaurantId available: ' + !!restaurantId);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// === STEP 3: GET RESTAURANT AVAILABILITY ===",
+							"console.log('\\n📋 STEP 3: GET RESTAURANT AVAILABILITY');",
+							"console.log('='.repeat(60));",
+							"",
+							"pm.test(\"✅ Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"✅ Availability data retrieved\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    console.log('📊 Availability Response:', JSON.stringify(jsonData, null, 2));",
+							"    ",
+							"    if (Array.isArray(jsonData) && jsonData.length > 0) {",
+							"        console.log('✅ Number of available services/slots:', jsonData.length);",
+							"        if (jsonData[0].id) {",
+							"            pm.environment.set('firstSlotIdV4', jsonData[0].id);",
+							"        }",
+							"    }",
+							"});",
+							"",
+							"console.log('\\n✨ STEP 3 COMPLETED: Availability retrieved');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{customerTokenV4}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/restaurant/{{targetRestaurantIdV4}}/availability",
+					"host": ["{{baseUrl}}"],
+					"path": ["restaurant", "{{targetRestaurantIdV4}}", "availability"]
+				}
+			},
+			"description": "📅 **Step 3: Get Restaurant Availability**\n\n- Recupera i servizi e gli slot disponibili\n- Verifica i tempi disponibili per le prenotazioni\n\n**Status**: 200 OK"
+		},
+		{
+			"name": "Step 4: Create Reservation - Day 1",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var token = pm.environment.get('customerTokenV4');",
+							"var customerId = pm.environment.get('customerIdV4');",
+							"var restaurantId = pm.environment.get('targetRestaurantIdV4');",
+							"console.log('🔐 Token available: ' + !!token);",
+							"console.log('CustomerId available: ' + !!customerId);",
+							"console.log('RestaurantId available: ' + !!restaurantId);",
+							"",
+							"// Calculate date - today + 3 days",
+							"var today = new Date();",
+							"var reservationDate = new Date(today);",
+							"reservationDate.setDate(reservationDate.getDate() + 3);",
+							"var dateStr = reservationDate.getFullYear() + '-' + ",
+							"    String(reservationDate.getMonth() + 1).padStart(2, '0') + '-' +",
+							"    String(reservationDate.getDate()).padStart(2, '0');",
+							"pm.environment.set('reservationDate1', dateStr);",
+							"console.log('📅 Reservation Date 1:', dateStr);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// === STEP 4: CREATE RESERVATION 1 ===",
+							"console.log('\\n📋 STEP 4: CREATE RESERVATION - DAY 1');",
+							"console.log('='.repeat(60));",
+							"",
+							"pm.test(\"✅ Status code is 200 or 201\", function () {",
+							"    pm.response.to.have.status.oneOf([200, 201]);",
+							"});",
+							"",
+							"pm.test(\"✅ Reservation created successfully\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    console.log('📊 Reservation Response:', JSON.stringify(jsonData, null, 2));",
+							"    ",
+							"    if (jsonData.id) {",
+							"        pm.environment.set('reservationId1', jsonData.id);",
+							"        console.log('💾 Saved reservationId1:', jsonData.id);",
+							"    }",
+							"    if (jsonData.date) {",
+							"        console.log('📅 Reservation date:', jsonData.date);",
+							"    }",
+							"    if (jsonData.numberOfPax) {",
+							"        console.log('👥 Number of people:', jsonData.numberOfPax);",
+							"    }",
+							"});",
+							"",
+							"console.log('\\n✨ STEP 4 COMPLETED: Reservation 1 created');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{customerTokenV4}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"restaurantId\": {{targetRestaurantIdV4}},\n    \"customerId\": {{customerIdV4}},\n    \"date\": \"{{reservationDate1}}\",\n    \"time\": \"12:00\",\n    \"numberOfPax\": 2,\n    \"numberOfKids\": 0,\n    \"notes\": \"Prenotazione di test - Pranzo 1\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/reservation/create",
+					"host": ["{{baseUrl}}"],
+					"path": ["reservation", "create"]
+				}
+			},
+			"description": "📅 **Step 4: Create Reservation - Day 1**\n\n- Crea una prenotazione per 2 persone\n- Data: tra 3 giorni\n- Orario: 12:00 (Pranzo)\n\n**Status**: 201 Created"
+		},
+		{
+			"name": "Step 5: Create Reservation - Day 7",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var token = pm.environment.get('customerTokenV4');",
+							"console.log('🔐 Token available: ' + !!token);",
+							"",
+							"// Calculate date - today + 10 days",
+							"var today = new Date();",
+							"var reservationDate = new Date(today);",
+							"reservationDate.setDate(reservationDate.getDate() + 10);",
+							"var dateStr = reservationDate.getFullYear() + '-' + ",
+							"    String(reservationDate.getMonth() + 1).padStart(2, '0') + '-' +",
+							"    String(reservationDate.getDate()).padStart(2, '0');",
+							"pm.environment.set('reservationDate2', dateStr);",
+							"console.log('📅 Reservation Date 2:', dateStr);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// === STEP 5: CREATE RESERVATION 2 ===",
+							"console.log('\\n📋 STEP 5: CREATE RESERVATION - DAY 7');",
+							"console.log('='.repeat(60));",
+							"",
+							"pm.test(\"✅ Status code is 200 or 201\", function () {",
+							"    pm.response.to.have.status.oneOf([200, 201]);",
+							"});",
+							"",
+							"pm.test(\"✅ Reservation created successfully\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    console.log('📊 Reservation Response:', JSON.stringify(jsonData, null, 2));",
+							"    ",
+							"    if (jsonData.id) {",
+							"        pm.environment.set('reservationId2', jsonData.id);",
+							"        console.log('💾 Saved reservationId2:', jsonData.id);",
+							"    }",
+							"});",
+							"",
+							"console.log('\\n✨ STEP 5 COMPLETED: Reservation 2 created');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{customerTokenV4}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"restaurantId\": {{targetRestaurantIdV4}},\n    \"customerId\": {{customerIdV4}},\n    \"date\": \"{{reservationDate2}}\",\n    \"time\": \"20:00\",\n    \"numberOfPax\": 4,\n    \"numberOfKids\": 1,\n    \"notes\": \"Prenotazione di test - Cena con famiglia\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/reservation/create",
+					"host": ["{{baseUrl}}"],
+					"path": ["reservation", "create"]
+				}
+			},
+			"description": "📅 **Step 5: Create Reservation - Day 7**\n\n- Crea una prenotazione per 4 adulti + 1 bambino\n- Data: tra 10 giorni\n- Orario: 20:00 (Cena)\n\n**Status**: 201 Created"
+		},
+		{
+			"name": "Step 6: Create Reservation - Day 14",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var token = pm.environment.get('customerTokenV4');",
+							"console.log('🔐 Token available: ' + !!token);",
+							"",
+							"// Calculate date - today + 17 days",
+							"var today = new Date();",
+							"var reservationDate = new Date(today);",
+							"reservationDate.setDate(reservationDate.getDate() + 17);",
+							"var dateStr = reservationDate.getFullYear() + '-' + ",
+							"    String(reservationDate.getMonth() + 1).padStart(2, '0') + '-' +",
+							"    String(reservationDate.getDate()).padStart(2, '0');",
+							"pm.environment.set('reservationDate3', dateStr);",
+							"console.log('📅 Reservation Date 3:', dateStr);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// === STEP 6: CREATE RESERVATION 3 ===",
+							"console.log('\\n📋 STEP 6: CREATE RESERVATION - DAY 14');",
+							"console.log('='.repeat(60));",
+							"",
+							"pm.test(\"✅ Status code is 200 or 201\", function () {",
+							"    pm.response.to.have.status.oneOf([200, 201]);",
+							"});",
+							"",
+							"pm.test(\"✅ Reservation created successfully\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    console.log('📊 Reservation Response:', JSON.stringify(jsonData, null, 2));",
+							"    ",
+							"    if (jsonData.id) {",
+							"        pm.environment.set('reservationId3', jsonData.id);",
+							"        console.log('💾 Saved reservationId3:', jsonData.id);",
+							"    }",
+							"});",
+							"",
+							"console.log('\\n✨ STEP 6 COMPLETED: Reservation 3 created');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{customerTokenV4}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"restaurantId\": {{targetRestaurantIdV4}},\n    \"customerId\": {{customerIdV4}},\n    \"date\": \"{{reservationDate3}}\",\n    \"time\": \"08:00\",\n    \"numberOfPax\": 2,\n    \"numberOfKids\": 0,\n    \"notes\": \"Prenotazione di test - Colazione\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/reservation/create",
+					"host": ["{{baseUrl}}"],
+					"path": ["reservation", "create"]
+				}
+			},
+			"description": "📅 **Step 6: Create Reservation - Day 14**\n\n- Crea una prenotazione per 2 persone\n- Data: tra 17 giorni\n- Orario: 08:00 (Colazione)\n\n**Status**: 201 Created"
+		},
+		{
+			"name": "Step 7: Create Reservation - Day 30",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var token = pm.environment.get('customerTokenV4');",
+							"console.log('🔐 Token available: ' + !!token);",
+							"",
+							"// Calculate date - today + 33 days",
+							"var today = new Date();",
+							"var reservationDate = new Date(today);",
+							"reservationDate.setDate(reservationDate.getDate() + 33);",
+							"var dateStr = reservationDate.getFullYear() + '-' + ",
+							"    String(reservationDate.getMonth() + 1).padStart(2, '0') + '-' +",
+							"    String(reservationDate.getDate()).padStart(2, '0');",
+							"pm.environment.set('reservationDate4', dateStr);",
+							"console.log('📅 Reservation Date 4:', dateStr);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// === STEP 7: CREATE RESERVATION 4 ===",
+							"console.log('\\n📋 STEP 7: CREATE RESERVATION - DAY 30');",
+							"console.log('='.repeat(60));",
+							"",
+							"pm.test(\"✅ Status code is 200 or 201\", function () {",
+							"    pm.response.to.have.status.oneOf([200, 201]);",
+							"});",
+							"",
+							"pm.test(\"✅ Reservation created successfully\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    console.log('📊 Reservation Response:', JSON.stringify(jsonData, null, 2));",
+							"    ",
+							"    if (jsonData.id) {",
+							"        pm.environment.set('reservationId4', jsonData.id);",
+							"        console.log('💾 Saved reservationId4:', jsonData.id);",
+							"    }",
+							"});",
+							"",
+							"console.log('\\n✨ STEP 7 COMPLETED: Reservation 4 created');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{customerTokenV4}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"restaurantId\": {{targetRestaurantIdV4}},\n    \"customerId\": {{customerIdV4}},\n    \"date\": \"{{reservationDate4}}\",\n    \"time\": \"13:30\",\n    \"numberOfPax\": 6,\n    \"numberOfKids\": 2,\n    \"notes\": \"Prenotazione di test - Pranzo in gruppo\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/reservation/create",
+					"host": ["{{baseUrl}}"],
+					"path": ["reservation", "create"]
+				}
+			},
+			"description": "📅 **Step 7: Create Reservation - Day 30**\n\n- Crea una prenotazione per 6 adulti + 2 bambini\n- Data: tra 33 giorni (1 mese)\n- Orario: 13:30 (Pranzo)\n\n**Status**: 201 Created"
+		},
+		{
+			"name": "Step 8: Create Reservation - Day 50",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var token = pm.environment.get('customerTokenV4');",
+							"console.log('🔐 Token available: ' + !!token);",
+							"",
+							"// Calculate date - today + 53 days",
+							"var today = new Date();",
+							"var reservationDate = new Date(today);",
+							"reservationDate.setDate(reservationDate.getDate() + 53);",
+							"var dateStr = reservationDate.getFullYear() + '-' + ",
+							"    String(reservationDate.getMonth() + 1).padStart(2, '0') + '-' +",
+							"    String(reservationDate.getDate()).padStart(2, '0');",
+							"pm.environment.set('reservationDate5', dateStr);",
+							"console.log('📅 Reservation Date 5:', dateStr);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// === STEP 8: CREATE RESERVATION 5 ===",
+							"console.log('\\n📋 STEP 8: CREATE RESERVATION - DAY 50');",
+							"console.log('='.repeat(60));",
+							"",
+							"pm.test(\"✅ Status code is 200 or 201\", function () {",
+							"    pm.response.to.have.status.oneOf([200, 201]);",
+							"});",
+							"",
+							"pm.test(\"✅ Reservation created successfully\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    console.log('📊 Reservation Response:', JSON.stringify(jsonData, null, 2));",
+							"    ",
+							"    if (jsonData.id) {",
+							"        pm.environment.set('reservationId5', jsonData.id);",
+							"        console.log('💾 Saved reservationId5:', jsonData.id);",
+							"    }",
+							"});",
+							"",
+							"console.log('\\n✨ STEP 8 COMPLETED: Reservation 5 created');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{customerTokenV4}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"restaurantId\": {{targetRestaurantIdV4}},\n    \"customerId\": {{customerIdV4}},\n    \"date\": \"{{reservationDate5}}\",\n    \"time\": \"20:30\",\n    \"numberOfPax\": 3,\n    \"numberOfKids\": 0,\n    \"notes\": \"Prenotazione di test - Cena fine mese\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/reservation/create",
+					"host": ["{{baseUrl}}"],
+					"path": ["reservation", "create"]
+				}
+			},
+			"description": "📅 **Step 8: Create Reservation - Day 50**\n\n- Crea una prenotazione per 3 persone\n- Data: tra 53 giorni (~2 mesi)\n- Orario: 20:30 (Cena)\n\n**Status**: 201 Created"
+		},
+		{
+			"name": "Step 9: Get All Reservations - Verification",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var token = pm.environment.get('customerTokenV4');",
+							"console.log('🔐 Token available: ' + !!token);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// === STEP 9: GET ALL RESERVATIONS ===",
+							"console.log('\\n📋 STEP 9: GET ALL RESERVATIONS - VERIFICATION');",
+							"console.log('='.repeat(60));",
+							"",
+							"pm.test(\"✅ Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"✅ Reservations retrieved successfully\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    console.log('📊 Reservations Response Type:', typeof jsonData);",
+							"    ",
+							"    var reservationCount = 0;",
+							"    if (Array.isArray(jsonData)) {",
+							"        reservationCount = jsonData.length;",
+							"        console.log('✅ Total reservations:', reservationCount);",
+							"        jsonData.forEach(function(res, index) {",
+							"            console.log('  ' + (index + 1) + '. ID: ' + res.id + ' | Date: ' + res.date + ' | Time: ' + (res.time || res.slotTime) + ' | Pax: ' + res.numberOfPax);",
+							"        });",
+							"    } else if (jsonData.content && Array.isArray(jsonData.content)) {",
+							"        reservationCount = jsonData.content.length;",
+							"        console.log('✅ Total reservations (paginated):', reservationCount);",
+							"        jsonData.content.forEach(function(res, index) {",
+							"            console.log('  ' + (index + 1) + '. ID: ' + res.id + ' | Date: ' + res.date + ' | Time: ' + (res.time || res.slotTime) + ' | Pax: ' + res.numberOfPax);",
+							"        });",
+							"    }",
+							"});",
+							"",
+							"console.log('\\n🎉 COMPLETE: Bulk Reservations Workflow Successful!');",
+							"console.log('═'.repeat(60));",
+							"console.log('✅ Creati 5 prenotazioni di test');",
+							"console.log('✅ Distribuite sui prossimi 2 mesi');",
+							"console.log('✅ Vari orari e dimensioni di gruppo');",
+							"console.log('✅ Ristorante test@test.it pronto per i test');",
+							"console.log('═'.repeat(60));"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{customerTokenV4}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/reservation/my-reservations",
+					"host": ["{{baseUrl}}"],
+					"path": ["reservation", "my-reservations"]
+				}
+			},
+			"description": "✅ **Step 9: Get All Reservations - Verification**\n\n- Recupera tutte le prenotazioni del cliente\n- Verifica che tutte le 5 prenotazioni siano state create\n- Conferma il completamento del workflow\n\n**Status**: 200 OK"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Pre-request validation",
+					"const authHeader = pm.request.headers.get('Authorization');",
+					"if (authHeader && authHeader.includes('Bearer')) {",
+					"    console.log('🔐 Authenticated request');",
+					"}"
+				]
+			}
+		}
+	]
+}
