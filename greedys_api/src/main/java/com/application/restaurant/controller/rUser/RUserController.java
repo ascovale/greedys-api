@@ -22,6 +22,7 @@ import com.application.common.controller.annotation.CreateApiResponses;
 import com.application.common.controller.annotation.ReadApiResponses;
 import com.application.common.persistence.mapper.RUserMapper;
 import com.application.common.web.dto.restaurant.RUserDTO;
+import com.application.common.web.dto.restaurant.RestaurantDTO;
 import com.application.common.web.error.InvalidOldPasswordException;
 import com.application.restaurant.persistence.dao.RestaurantRoleDAO;
 import com.application.restaurant.persistence.model.user.RUser;
@@ -191,6 +192,23 @@ public class RUserController extends BaseController {
             return authentication.getAuthorities().stream()
                     .map(a -> a.getAuthority())
                     .toList();
+        });
+    }
+
+    /**
+     * Restituisce i dati completi del ristorante dell'utente autenticato.
+     *
+     * @return RestaurantDTO con tutti i dati del ristorante (nome, email, indirizzo, etc.)
+     */
+    @Operation(summary = "Get restaurant details", description = "Retrieve complete restaurant information for the authenticated restaurant user")
+    @ReadApiResponses
+    @GetMapping("/restaurant")
+    public ResponseEntity<RestaurantDTO> getRestaurantDetails(@AuthenticationPrincipal RUser rUser) {
+        return execute("get restaurant details", () -> {
+            if (rUser == null || rUser.getRestaurant() == null) {
+                throw new IllegalStateException("Restaurant not found for user");
+            }
+            return RUserService.getRestaurantDetails(rUser.getRestaurant().getId());
         });
     }
 }

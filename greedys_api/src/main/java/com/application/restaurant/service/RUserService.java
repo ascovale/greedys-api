@@ -436,4 +436,27 @@ public class RUserService {
         return rUserMapper.toDTO(ru);
     }
 
+    /**
+     * Retrieves complete restaurant details (RestaurantDTO) for a restaurant ID.
+     * This is used to return restaurant information to the authenticated restaurant user.
+     *
+     * @param restaurantId The ID of the restaurant
+     * @return RestaurantDTO with all restaurant details (name, email, address, etc.)
+     * @throws IllegalArgumentException if restaurant not found
+     */
+    public com.application.common.web.dto.restaurant.RestaurantDTO getRestaurantDetails(Long restaurantId) {
+        Restaurant restaurant = restaurantDAO.findById(restaurantId)
+                .orElseThrow(() -> new IllegalArgumentException("Restaurant not found with ID: " + restaurantId));
+        
+        // Map Restaurant entity to RestaurantDTO
+        return com.application.common.web.dto.restaurant.RestaurantDTO.builder()
+                .id(restaurant.getId())
+                .name(restaurant.getName())
+                .email(restaurant.getEmail())
+                .address(restaurant.getAddress())
+                .post_code(restaurant.getPostCode())
+                .vatNumber(restaurant.getVatNumber())
+                .build();
+    }
+
 }
