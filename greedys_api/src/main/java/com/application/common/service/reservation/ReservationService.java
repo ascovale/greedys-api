@@ -216,6 +216,7 @@ public class ReservationService {
             throw new IllegalArgumentException("Slot is deleted");
         }
         var reservation = Reservation.builder()
+                .userName(reservationDto.getUserName())
                 .pax(reservationDto.getPax())
                 .kids(reservationDto.getKids())
                 .notes(reservationDto.getNotes())
