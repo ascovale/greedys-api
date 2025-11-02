@@ -1,0 +1,185 @@
+{
+  "info": {
+    "_postman_id": "test-reservations-corrected",
+    "name": "Test Reservations - Corrected Slots",
+    "description": "Create 10 test reservations with correct slot IDs",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    var jsonData = pm.response.json();",
+              "    pm.environment.set('restaurantToken', jsonData.jwt);",
+              "    pm.environment.set('restaurantId', jsonData.user.restaurantId);",
+              "    console.log('✅ Token saved, Restaurant ID:', jsonData.user.restaurantId);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"username\": \"test@test.it\", \"password\": \"TestPass123!\", \"rememberMe\": true}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/restaurant/user/auth/login",
+          "host": ["{{baseUrl}}"],
+          "path": ["restaurant", "user", "auth", "login"]
+        }
+      }
+    },
+    {
+      "name": "Day 1: Colazione",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "const d = new Date();",
+              "d.setDate(d.getDate() + 1);",
+              "const s = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');",
+              "pm.environment.set('resDate', s);"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201 || pm.response.code === 200) {",
+              "  console.log('✅ Day 1 - Colazione created');",
+              "} else {",
+              "  console.log('❌ Day 1 FAILED - Status: ' + pm.response.code);",
+              "  console.log('Error:', pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Authorization", "value": "Bearer {{restaurantToken}}"},
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"userName\": \"Marco Rossi\", \"userEmail\": \"marco@example.com\", \"userPhoneNumber\": \"+39 333 1234567\", \"idSlot\": 252, \"pax\": 2, \"kids\": 0, \"notes\": \"Day 1 - Colazione\", \"reservationDay\": \"{{resDate}}\"}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/restaurant/reservation/new",
+          "host": ["{{baseUrl}}"],
+          "path": ["restaurant", "reservation", "new"]
+        }
+      }
+    },
+    {
+      "name": "Day 2: Pranzo",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "const d = new Date();",
+              "d.setDate(d.getDate() + 2);",
+              "const s = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');",
+              "pm.environment.set('resDate', s);"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201 || pm.response.code === 200) {",
+              "  console.log('✅ Day 2 - Pranzo created');", 
+              "} else {",
+              "  console.log('❌ Day 2 FAILED - Status: ' + pm.response.code);",
+              "  console.log('Error:', pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Authorization", "value": "Bearer {{restaurantToken}}"},
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"userName\": \"Luigi Bianchi\", \"userEmail\": \"luigi@example.com\", \"userPhoneNumber\": \"+39 333 7654321\", \"idSlot\": 253, \"pax\": 4, \"kids\": 1, \"notes\": \"Day 2 - Pranzo\", \"reservationDay\": \"{{resDate}}\"}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/restaurant/reservation/new",
+          "host": ["{{baseUrl}}"],
+          "path": ["restaurant", "reservation", "new"]
+        }
+      }
+    },
+    {
+      "name": "Day 3: Cena",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "const d = new Date();",
+              "d.setDate(d.getDate() + 3);",
+              "const s = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');",
+              "pm.environment.set('resDate', s);"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201 || pm.response.code === 200) {",
+              "  console.log('✅ Day 3 - Cena created');",
+              "} else {",
+              "  console.log('❌ Day 3 FAILED - Status: ' + pm.response.code);",
+              "  console.log('Error:', pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Authorization", "value": "Bearer {{restaurantToken}}"},
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"userName\": \"Anna Verdi\", \"userEmail\": \"anna@example.com\", \"userPhoneNumber\": \"+39 333 9876543\", \"idSlot\": 254, \"pax\": 3, \"kids\": 0, \"notes\": \"Day 3 - Cena\", \"reservationDay\": \"{{resDate}}\"}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/restaurant/reservation/new",
+          "host": ["{{baseUrl}}"],
+          "path": ["restaurant", "reservation", "new"]
+        }
+      }
+    }
+  ]
+}
