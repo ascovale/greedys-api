@@ -1,0 +1,1384 @@
+{
+  "info": {
+    "_postman_id": "27-reservations-mondays",
+    "name": "27 Reservations - Monday Only (Corrected)",
+    "description": "Create 27 reservations for 9 Mondays with 3 services each (slot IDs: 252, 253, 254)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Step 1: Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log(\"\\n\ud83d\udd10 LOGIN\");",
+              "if (pm.response.code === 200) {",
+              "    var jsonData = pm.response.json();",
+              "    pm.environment.set(\"restaurantToken\", jsonData.jwt);",
+              "    pm.environment.set(\"restaurantId\", jsonData.user.restaurantId);",
+              "    console.log(\"\u2705 Token saved, Restaurant ID:\", jsonData.user.restaurantId);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"username\": \"test@test.it\", \"password\": \"TestPass123!\", \"rememberMe\": true}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/restaurant/user/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "restaurant",
+            "user",
+            "auth",
+            "login"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Week 1 - Colazione (2025-11-03)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201 || pm.response.code === 200) {",
+              "  console.log(\"\u2705 Week 1 - Colazione created for 2025-11-03\");",
+              "} else {",
+              "  console.log(\"\u274c Week 1 - Colazione FAILED - Status: \" + pm.response.code);",
+              "  console.log(\"Error:\", pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{restaurantToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"userName\": \"Marco Rossi\", \"userEmail\": \"marcorossi@example.com\", \"userPhoneNumber\": \"+39 333 1000001\", \"idSlot\": 252, \"pax\": 3, \"kids\": 1, \"notes\": \"Week 1 - Colazione - Prenotazione automatica per 2025-11-03\", \"reservationDay\": \"2025-11-03\"}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/restaurant/reservation/new",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "restaurant",
+            "reservation",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Week 1 - Pranzo (2025-11-03)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201 || pm.response.code === 200) {",
+              "  console.log(\"\u2705 Week 1 - Pranzo created for 2025-11-03\");",
+              "} else {",
+              "  console.log(\"\u274c Week 1 - Pranzo FAILED - Status: \" + pm.response.code);",
+              "  console.log(\"Error:\", pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{restaurantToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"userName\": \"Luigi Bianchi\", \"userEmail\": \"luigibianchi@example.com\", \"userPhoneNumber\": \"+39 333 1000002\", \"idSlot\": 253, \"pax\": 4, \"kids\": 2, \"notes\": \"Week 1 - Pranzo - Prenotazione automatica per 2025-11-03\", \"reservationDay\": \"2025-11-03\"}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/restaurant/reservation/new",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "restaurant",
+            "reservation",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Week 1 - Cena (2025-11-03)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201 || pm.response.code === 200) {",
+              "  console.log(\"\u2705 Week 1 - Cena created for 2025-11-03\");",
+              "} else {",
+              "  console.log(\"\u274c Week 1 - Cena FAILED - Status: \" + pm.response.code);",
+              "  console.log(\"Error:\", pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{restaurantToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"userName\": \"Anna Verdi\", \"userEmail\": \"annaverdi@example.com\", \"userPhoneNumber\": \"+39 333 1000003\", \"idSlot\": 254, \"pax\": 5, \"kids\": 0, \"notes\": \"Week 1 - Cena - Prenotazione automatica per 2025-11-03\", \"reservationDay\": \"2025-11-03\"}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/restaurant/reservation/new",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "restaurant",
+            "reservation",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Week 2 - Colazione (2025-11-10)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201 || pm.response.code === 200) {",
+              "  console.log(\"\u2705 Week 2 - Colazione created for 2025-11-10\");",
+              "} else {",
+              "  console.log(\"\u274c Week 2 - Colazione FAILED - Status: \" + pm.response.code);",
+              "  console.log(\"Error:\", pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{restaurantToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"userName\": \"Giuseppe Romano\", \"userEmail\": \"giusepperomano@example.com\", \"userPhoneNumber\": \"+39 333 1000004\", \"idSlot\": 252, \"pax\": 2, \"kids\": 1, \"notes\": \"Week 2 - Colazione - Prenotazione automatica per 2025-11-10\", \"reservationDay\": \"2025-11-10\"}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/restaurant/reservation/new",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "restaurant",
+            "reservation",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Week 2 - Pranzo (2025-11-10)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201 || pm.response.code === 200) {",
+              "  console.log(\"\u2705 Week 2 - Pranzo created for 2025-11-10\");",
+              "} else {",
+              "  console.log(\"\u274c Week 2 - Pranzo FAILED - Status: \" + pm.response.code);",
+              "  console.log(\"Error:\", pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{restaurantToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"userName\": \"Maria Ferrari\", \"userEmail\": \"mariaferrari@example.com\", \"userPhoneNumber\": \"+39 333 1000005\", \"idSlot\": 253, \"pax\": 3, \"kids\": 2, \"notes\": \"Week 2 - Pranzo - Prenotazione automatica per 2025-11-10\", \"reservationDay\": \"2025-11-10\"}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/restaurant/reservation/new",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "restaurant",
+            "reservation",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Week 2 - Cena (2025-11-10)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201 || pm.response.code === 200) {",
+              "  console.log(\"\u2705 Week 2 - Cena created for 2025-11-10\");",
+              "} else {",
+              "  console.log(\"\u274c Week 2 - Cena FAILED - Status: \" + pm.response.code);",
+              "  console.log(\"Error:\", pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{restaurantToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"userName\": \"Francesco Esposito\", \"userEmail\": \"francescoesposito@example.com\", \"userPhoneNumber\": \"+39 333 1000006\", \"idSlot\": 254, \"pax\": 4, \"kids\": 0, \"notes\": \"Week 2 - Cena - Prenotazione automatica per 2025-11-10\", \"reservationDay\": \"2025-11-10\"}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/restaurant/reservation/new",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "restaurant",
+            "reservation",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Week 3 - Colazione (2025-11-17)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201 || pm.response.code === 200) {",
+              "  console.log(\"\u2705 Week 3 - Colazione created for 2025-11-17\");",
+              "} else {",
+              "  console.log(\"\u274c Week 3 - Colazione FAILED - Status: \" + pm.response.code);",
+              "  console.log(\"Error:\", pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{restaurantToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"userName\": \"Giulia Russo\", \"userEmail\": \"giuliarusso@example.com\", \"userPhoneNumber\": \"+39 333 1000007\", \"idSlot\": 252, \"pax\": 5, \"kids\": 1, \"notes\": \"Week 3 - Colazione - Prenotazione automatica per 2025-11-17\", \"reservationDay\": \"2025-11-17\"}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/restaurant/reservation/new",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "restaurant",
+            "reservation",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Week 3 - Pranzo (2025-11-17)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201 || pm.response.code === 200) {",
+              "  console.log(\"\u2705 Week 3 - Pranzo created for 2025-11-17\");",
+              "} else {",
+              "  console.log(\"\u274c Week 3 - Pranzo FAILED - Status: \" + pm.response.code);",
+              "  console.log(\"Error:\", pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{restaurantToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"userName\": \"Alessandro Marino\", \"userEmail\": \"alessandromarino@example.com\", \"userPhoneNumber\": \"+39 333 1000008\", \"idSlot\": 253, \"pax\": 2, \"kids\": 2, \"notes\": \"Week 3 - Pranzo - Prenotazione automatica per 2025-11-17\", \"reservationDay\": \"2025-11-17\"}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/restaurant/reservation/new",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "restaurant",
+            "reservation",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Week 3 - Cena (2025-11-17)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201 || pm.response.code === 200) {",
+              "  console.log(\"\u2705 Week 3 - Cena created for 2025-11-17\");",
+              "} else {",
+              "  console.log(\"\u274c Week 3 - Cena FAILED - Status: \" + pm.response.code);",
+              "  console.log(\"Error:\", pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{restaurantToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"userName\": \"Francesca Greco\", \"userEmail\": \"francescagreco@example.com\", \"userPhoneNumber\": \"+39 333 1000009\", \"idSlot\": 254, \"pax\": 3, \"kids\": 0, \"notes\": \"Week 3 - Cena - Prenotazione automatica per 2025-11-17\", \"reservationDay\": \"2025-11-17\"}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/restaurant/reservation/new",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "restaurant",
+            "reservation",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Week 4 - Colazione (2025-11-24)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201 || pm.response.code === 200) {",
+              "  console.log(\"\u2705 Week 4 - Colazione created for 2025-11-24\");",
+              "} else {",
+              "  console.log(\"\u274c Week 4 - Colazione FAILED - Status: \" + pm.response.code);",
+              "  console.log(\"Error:\", pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{restaurantToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"userName\": \"Davide Costa\", \"userEmail\": \"davidecosta@example.com\", \"userPhoneNumber\": \"+39 333 1000010\", \"idSlot\": 252, \"pax\": 4, \"kids\": 1, \"notes\": \"Week 4 - Colazione - Prenotazione automatica per 2025-11-24\", \"reservationDay\": \"2025-11-24\"}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/restaurant/reservation/new",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "restaurant",
+            "reservation",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Week 4 - Pranzo (2025-11-24)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201 || pm.response.code === 200) {",
+              "  console.log(\"\u2705 Week 4 - Pranzo created for 2025-11-24\");",
+              "} else {",
+              "  console.log(\"\u274c Week 4 - Pranzo FAILED - Status: \" + pm.response.code);",
+              "  console.log(\"Error:\", pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{restaurantToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"userName\": \"Marco Rossi\", \"userEmail\": \"marcorossi@example.com\", \"userPhoneNumber\": \"+39 333 1000011\", \"idSlot\": 253, \"pax\": 5, \"kids\": 2, \"notes\": \"Week 4 - Pranzo - Prenotazione automatica per 2025-11-24\", \"reservationDay\": \"2025-11-24\"}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/restaurant/reservation/new",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "restaurant",
+            "reservation",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Week 4 - Cena (2025-11-24)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201 || pm.response.code === 200) {",
+              "  console.log(\"\u2705 Week 4 - Cena created for 2025-11-24\");",
+              "} else {",
+              "  console.log(\"\u274c Week 4 - Cena FAILED - Status: \" + pm.response.code);",
+              "  console.log(\"Error:\", pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{restaurantToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"userName\": \"Luigi Bianchi\", \"userEmail\": \"luigibianchi@example.com\", \"userPhoneNumber\": \"+39 333 1000012\", \"idSlot\": 254, \"pax\": 2, \"kids\": 0, \"notes\": \"Week 4 - Cena - Prenotazione automatica per 2025-11-24\", \"reservationDay\": \"2025-11-24\"}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/restaurant/reservation/new",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "restaurant",
+            "reservation",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Week 5 - Colazione (2025-12-01)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201 || pm.response.code === 200) {",
+              "  console.log(\"\u2705 Week 5 - Colazione created for 2025-12-01\");",
+              "} else {",
+              "  console.log(\"\u274c Week 5 - Colazione FAILED - Status: \" + pm.response.code);",
+              "  console.log(\"Error:\", pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{restaurantToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"userName\": \"Anna Verdi\", \"userEmail\": \"annaverdi@example.com\", \"userPhoneNumber\": \"+39 333 1000013\", \"idSlot\": 252, \"pax\": 3, \"kids\": 1, \"notes\": \"Week 5 - Colazione - Prenotazione automatica per 2025-12-01\", \"reservationDay\": \"2025-12-01\"}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/restaurant/reservation/new",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "restaurant",
+            "reservation",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Week 5 - Pranzo (2025-12-01)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201 || pm.response.code === 200) {",
+              "  console.log(\"\u2705 Week 5 - Pranzo created for 2025-12-01\");",
+              "} else {",
+              "  console.log(\"\u274c Week 5 - Pranzo FAILED - Status: \" + pm.response.code);",
+              "  console.log(\"Error:\", pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{restaurantToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"userName\": \"Giuseppe Romano\", \"userEmail\": \"giusepperomano@example.com\", \"userPhoneNumber\": \"+39 333 1000014\", \"idSlot\": 253, \"pax\": 4, \"kids\": 2, \"notes\": \"Week 5 - Pranzo - Prenotazione automatica per 2025-12-01\", \"reservationDay\": \"2025-12-01\"}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/restaurant/reservation/new",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "restaurant",
+            "reservation",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Week 5 - Cena (2025-12-01)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201 || pm.response.code === 200) {",
+              "  console.log(\"\u2705 Week 5 - Cena created for 2025-12-01\");",
+              "} else {",
+              "  console.log(\"\u274c Week 5 - Cena FAILED - Status: \" + pm.response.code);",
+              "  console.log(\"Error:\", pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{restaurantToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"userName\": \"Maria Ferrari\", \"userEmail\": \"mariaferrari@example.com\", \"userPhoneNumber\": \"+39 333 1000015\", \"idSlot\": 254, \"pax\": 5, \"kids\": 0, \"notes\": \"Week 5 - Cena - Prenotazione automatica per 2025-12-01\", \"reservationDay\": \"2025-12-01\"}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/restaurant/reservation/new",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "restaurant",
+            "reservation",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Week 6 - Colazione (2025-12-08)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201 || pm.response.code === 200) {",
+              "  console.log(\"\u2705 Week 6 - Colazione created for 2025-12-08\");",
+              "} else {",
+              "  console.log(\"\u274c Week 6 - Colazione FAILED - Status: \" + pm.response.code);",
+              "  console.log(\"Error:\", pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{restaurantToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"userName\": \"Francesco Esposito\", \"userEmail\": \"francescoesposito@example.com\", \"userPhoneNumber\": \"+39 333 1000016\", \"idSlot\": 252, \"pax\": 2, \"kids\": 1, \"notes\": \"Week 6 - Colazione - Prenotazione automatica per 2025-12-08\", \"reservationDay\": \"2025-12-08\"}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/restaurant/reservation/new",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "restaurant",
+            "reservation",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Week 6 - Pranzo (2025-12-08)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201 || pm.response.code === 200) {",
+              "  console.log(\"\u2705 Week 6 - Pranzo created for 2025-12-08\");",
+              "} else {",
+              "  console.log(\"\u274c Week 6 - Pranzo FAILED - Status: \" + pm.response.code);",
+              "  console.log(\"Error:\", pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{restaurantToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"userName\": \"Giulia Russo\", \"userEmail\": \"giuliarusso@example.com\", \"userPhoneNumber\": \"+39 333 1000017\", \"idSlot\": 253, \"pax\": 3, \"kids\": 2, \"notes\": \"Week 6 - Pranzo - Prenotazione automatica per 2025-12-08\", \"reservationDay\": \"2025-12-08\"}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/restaurant/reservation/new",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "restaurant",
+            "reservation",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Week 6 - Cena (2025-12-08)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201 || pm.response.code === 200) {",
+              "  console.log(\"\u2705 Week 6 - Cena created for 2025-12-08\");",
+              "} else {",
+              "  console.log(\"\u274c Week 6 - Cena FAILED - Status: \" + pm.response.code);",
+              "  console.log(\"Error:\", pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{restaurantToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"userName\": \"Alessandro Marino\", \"userEmail\": \"alessandromarino@example.com\", \"userPhoneNumber\": \"+39 333 1000018\", \"idSlot\": 254, \"pax\": 4, \"kids\": 0, \"notes\": \"Week 6 - Cena - Prenotazione automatica per 2025-12-08\", \"reservationDay\": \"2025-12-08\"}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/restaurant/reservation/new",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "restaurant",
+            "reservation",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Week 7 - Colazione (2025-12-15)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201 || pm.response.code === 200) {",
+              "  console.log(\"\u2705 Week 7 - Colazione created for 2025-12-15\");",
+              "} else {",
+              "  console.log(\"\u274c Week 7 - Colazione FAILED - Status: \" + pm.response.code);",
+              "  console.log(\"Error:\", pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{restaurantToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"userName\": \"Francesca Greco\", \"userEmail\": \"francescagreco@example.com\", \"userPhoneNumber\": \"+39 333 1000019\", \"idSlot\": 252, \"pax\": 5, \"kids\": 1, \"notes\": \"Week 7 - Colazione - Prenotazione automatica per 2025-12-15\", \"reservationDay\": \"2025-12-15\"}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/restaurant/reservation/new",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "restaurant",
+            "reservation",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Week 7 - Pranzo (2025-12-15)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201 || pm.response.code === 200) {",
+              "  console.log(\"\u2705 Week 7 - Pranzo created for 2025-12-15\");",
+              "} else {",
+              "  console.log(\"\u274c Week 7 - Pranzo FAILED - Status: \" + pm.response.code);",
+              "  console.log(\"Error:\", pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{restaurantToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"userName\": \"Davide Costa\", \"userEmail\": \"davidecosta@example.com\", \"userPhoneNumber\": \"+39 333 1000020\", \"idSlot\": 253, \"pax\": 2, \"kids\": 2, \"notes\": \"Week 7 - Pranzo - Prenotazione automatica per 2025-12-15\", \"reservationDay\": \"2025-12-15\"}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/restaurant/reservation/new",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "restaurant",
+            "reservation",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Week 7 - Cena (2025-12-15)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201 || pm.response.code === 200) {",
+              "  console.log(\"\u2705 Week 7 - Cena created for 2025-12-15\");",
+              "} else {",
+              "  console.log(\"\u274c Week 7 - Cena FAILED - Status: \" + pm.response.code);",
+              "  console.log(\"Error:\", pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{restaurantToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"userName\": \"Marco Rossi\", \"userEmail\": \"marcorossi@example.com\", \"userPhoneNumber\": \"+39 333 1000021\", \"idSlot\": 254, \"pax\": 3, \"kids\": 0, \"notes\": \"Week 7 - Cena - Prenotazione automatica per 2025-12-15\", \"reservationDay\": \"2025-12-15\"}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/restaurant/reservation/new",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "restaurant",
+            "reservation",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Week 8 - Colazione (2025-12-22)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201 || pm.response.code === 200) {",
+              "  console.log(\"\u2705 Week 8 - Colazione created for 2025-12-22\");",
+              "} else {",
+              "  console.log(\"\u274c Week 8 - Colazione FAILED - Status: \" + pm.response.code);",
+              "  console.log(\"Error:\", pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{restaurantToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"userName\": \"Luigi Bianchi\", \"userEmail\": \"luigibianchi@example.com\", \"userPhoneNumber\": \"+39 333 1000022\", \"idSlot\": 252, \"pax\": 4, \"kids\": 1, \"notes\": \"Week 8 - Colazione - Prenotazione automatica per 2025-12-22\", \"reservationDay\": \"2025-12-22\"}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/restaurant/reservation/new",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "restaurant",
+            "reservation",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Week 8 - Pranzo (2025-12-22)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201 || pm.response.code === 200) {",
+              "  console.log(\"\u2705 Week 8 - Pranzo created for 2025-12-22\");",
+              "} else {",
+              "  console.log(\"\u274c Week 8 - Pranzo FAILED - Status: \" + pm.response.code);",
+              "  console.log(\"Error:\", pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{restaurantToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"userName\": \"Anna Verdi\", \"userEmail\": \"annaverdi@example.com\", \"userPhoneNumber\": \"+39 333 1000023\", \"idSlot\": 253, \"pax\": 5, \"kids\": 2, \"notes\": \"Week 8 - Pranzo - Prenotazione automatica per 2025-12-22\", \"reservationDay\": \"2025-12-22\"}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/restaurant/reservation/new",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "restaurant",
+            "reservation",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Week 8 - Cena (2025-12-22)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201 || pm.response.code === 200) {",
+              "  console.log(\"\u2705 Week 8 - Cena created for 2025-12-22\");",
+              "} else {",
+              "  console.log(\"\u274c Week 8 - Cena FAILED - Status: \" + pm.response.code);",
+              "  console.log(\"Error:\", pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{restaurantToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"userName\": \"Giuseppe Romano\", \"userEmail\": \"giusepperomano@example.com\", \"userPhoneNumber\": \"+39 333 1000024\", \"idSlot\": 254, \"pax\": 2, \"kids\": 0, \"notes\": \"Week 8 - Cena - Prenotazione automatica per 2025-12-22\", \"reservationDay\": \"2025-12-22\"}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/restaurant/reservation/new",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "restaurant",
+            "reservation",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Week 9 - Colazione (2025-12-29)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201 || pm.response.code === 200) {",
+              "  console.log(\"\u2705 Week 9 - Colazione created for 2025-12-29\");",
+              "} else {",
+              "  console.log(\"\u274c Week 9 - Colazione FAILED - Status: \" + pm.response.code);",
+              "  console.log(\"Error:\", pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{restaurantToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"userName\": \"Maria Ferrari\", \"userEmail\": \"mariaferrari@example.com\", \"userPhoneNumber\": \"+39 333 1000025\", \"idSlot\": 252, \"pax\": 3, \"kids\": 1, \"notes\": \"Week 9 - Colazione - Prenotazione automatica per 2025-12-29\", \"reservationDay\": \"2025-12-29\"}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/restaurant/reservation/new",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "restaurant",
+            "reservation",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Week 9 - Pranzo (2025-12-29)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201 || pm.response.code === 200) {",
+              "  console.log(\"\u2705 Week 9 - Pranzo created for 2025-12-29\");",
+              "} else {",
+              "  console.log(\"\u274c Week 9 - Pranzo FAILED - Status: \" + pm.response.code);",
+              "  console.log(\"Error:\", pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{restaurantToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"userName\": \"Francesco Esposito\", \"userEmail\": \"francescoesposito@example.com\", \"userPhoneNumber\": \"+39 333 1000026\", \"idSlot\": 253, \"pax\": 4, \"kids\": 2, \"notes\": \"Week 9 - Pranzo - Prenotazione automatica per 2025-12-29\", \"reservationDay\": \"2025-12-29\"}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/restaurant/reservation/new",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "restaurant",
+            "reservation",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Week 9 - Cena (2025-12-29)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201 || pm.response.code === 200) {",
+              "  console.log(\"\u2705 Week 9 - Cena created for 2025-12-29\");",
+              "} else {",
+              "  console.log(\"\u274c Week 9 - Cena FAILED - Status: \" + pm.response.code);",
+              "  console.log(\"Error:\", pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{restaurantToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"userName\": \"Giulia Russo\", \"userEmail\": \"giuliarusso@example.com\", \"userPhoneNumber\": \"+39 333 1000027\", \"idSlot\": 254, \"pax\": 5, \"kids\": 0, \"notes\": \"Week 9 - Cena - Prenotazione automatica per 2025-12-29\", \"reservationDay\": \"2025-12-29\"}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/restaurant/reservation/new",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "restaurant",
+            "reservation",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Final Verification - Count All Reservations",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log(\"\\n\ud83d\udcca FINAL VERIFICATION\");",
+              "if (pm.response.code === 200) {",
+              "    var jsonData = pm.response.json();",
+              "    if (jsonData.data && Array.isArray(jsonData.data)) {",
+              "        console.log(\"\u2705 Total reservations found:\", jsonData.data.length);",
+              "        var byService = {};",
+              "        jsonData.data.forEach(r => {",
+              "            var service = r.notes ? r.notes.split(\" - \")[1] || \"Unknown\" : \"Unknown\";",
+              "            byService[service] = (byService[service] || 0) + 1;",
+              "        });",
+              "        console.log(\"\ud83d\udcc5 By service:\", byService);",
+              "    } else {",
+              "        console.log(\"\u274c No reservations data found\");",
+              "    }",
+              "} else {",
+              "    console.log(\"\u274c Verification failed - Status:\", pm.response.code);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{restaurantToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/restaurant/reservation/reservations?start=2025-11-01&end=2026-01-31",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "restaurant",
+            "reservation",
+            "reservations"
+          ],
+          "query": [
+            {
+              "key": "start",
+              "value": "2025-11-01"
+            },
+            {
+              "key": "end",
+              "value": "2026-01-31"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
