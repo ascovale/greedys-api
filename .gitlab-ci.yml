@@ -75,7 +75,7 @@ deploy:
   only: [main]
 
 publish:
-  image: openjdk:17-slim
+  image: eclipse-temurin:17-jdk-alpine
   stage: publish
   before_script:
     - echo "Setup ambiente per generazione Dart..."
