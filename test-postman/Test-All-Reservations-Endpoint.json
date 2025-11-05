@@ -1,0 +1,143 @@
+{
+	"info": {
+		"_postman_id": "test-all-reservations-endpoint",
+		"name": "Test All Reservations Endpoint",
+		"description": "Test if /reservations endpoint returns ALL reservations including Giulia's",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Restaurant Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 200) {",
+							"    const responseJson = pm.response.json();",
+							"    if (responseJson.jwt) {",
+							"        pm.environment.set('restaurantToken', responseJson.jwt);",
+							"        console.log('✅ Restaurant login successful');",
+							"    }",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"test@test.it\",\n    \"password\": \"TestPass123!\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/restaurant/user/auth/login",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"restaurant",
+						"user",
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get ALL Reservations",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log('🔍 Testing /reservations endpoint (should return ALL reservations)');",
+							"console.log('Response Status:', pm.response.code);",
+							"",
+							"if (pm.response.code === 200) {",
+							"    const responseJson = pm.response.json();",
+							"    console.log('✅ Endpoint works! Status: 200');",
+							"    console.log('Total reservations found:', responseJson.data ? responseJson.data.length : responseJson.length || 0);",
+							"    ",
+							"    const reservations = responseJson.data || responseJson;",
+							"    if (reservations && reservations.length > 0) {",
+							"        console.log('\\n📋 ALL Reservations by Status:');",
+							"        const statusCounts = {};",
+							"        let giuliaFound = false;",
+							"        ",
+							"        reservations.forEach((reservation, index) => {",
+							"            statusCounts[reservation.status] = (statusCounts[reservation.status] || 0) + 1;",
+							"            console.log(`${index + 1}. ID: ${reservation.id}, Date: ${reservation.reservationDay || reservation.date}, Status: ${reservation.status}, Notes: ${(reservation.notes || '').substring(0, 50)}`);",
+							"            ",
+							"            if (reservation.id === 109) {",
+							"                giuliaFound = true;",
+							"                console.log('  🎯 THIS IS GIULIA\\'S RESERVATION!');",
+							"            }",
+							"        });",
+							"        ",
+							"        console.log('\\n📊 Status Summary:');",
+							"        Object.keys(statusCounts).forEach(status => {",
+							"            console.log(`  ${status}: ${statusCounts[status]} reservations`);",
+							"        });",
+							"        ",
+							"        if (giuliaFound) {",
+							"            console.log('\\n✅ SUCCESS: Giulia\\'s reservation 109 found in ALL reservations list');",
+							"        } else {",
+							"            console.log('\\n❌ Giulia\\'s reservation 109 NOT found in ALL reservations list');",
+							"        }",
+							"    } else {",
+							"        console.log('\\n⚠️ No reservations found at all');",
+							"    }",
+							"} else {",
+							"    console.log('❌ Failed with status:', pm.response.code);",
+							"    console.log('Response:', pm.response.text());",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{restaurantToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/restaurant/reservation/reservations?start=2025-11-01&end=2025-11-30",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"restaurant",
+						"reservation",
+						"reservations"
+					],
+					"query": [
+						{
+							"key": "start",
+							"value": "2025-11-01",
+							"description": "LocalDate format"
+						},
+						{
+							"key": "end",
+							"value": "2025-11-30",
+							"description": "LocalDate format"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

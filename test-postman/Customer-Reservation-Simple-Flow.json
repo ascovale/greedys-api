@@ -1,0 +1,434 @@
+{
+  "info": {
+    "_postman_id": "customer-reservation-simple-flow",
+    "name": "Customer Reservation - Simple Flow (Existing Users)",
+    "description": "Simplified workflow using existing customer accounts to test weekday validation",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "🔐 STEP 1: Admin Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log('\\n🔐 ADMIN LOGIN');",
+              "if (pm.response.code === 200) {",
+              "    var jsonData = pm.response.json();",
+              "    pm.environment.set('adminToken', jsonData.jwt);",
+              "    console.log('✅ Admin token saved');",
+              "} else {",
+              "    console.log('❌ Admin login failed:', pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"username\": \"{{adminEmail}}\", \"password\": \"{{adminPassword}}\", \"rememberMe\": true}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/admin/auth/login",
+          "host": ["{{baseUrl}}"],
+          "path": ["admin", "auth", "login"]
+        }
+      }
+    },
+    {
+      "name": "🔐 STEP 2.1: Customer Login - Marco Rossi (Existing)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log('\\n🔐 CUSTOMER LOGIN: Marco Rossi (Existing Account)');",
+              "if (pm.response.code === 200) {",
+              "    var jsonData = pm.response.json();",
+              "    pm.environment.set('customer1Token', jsonData.jwt);",
+              "    pm.environment.set('customer1Id', jsonData.user.id);",
+              "    console.log('✅ Customer Marco Rossi logged in, ID:', jsonData.user.id);",
+              "} else if (pm.response.code === 401) {",
+              "    console.log('❌ Customer not enabled or wrong credentials');",
+              "} else {",
+              "    console.log('❌ Customer login failed:', pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"username\": \"{{customerEmail}}\", \"password\": \"{{customerPassword}}\", \"rememberMe\": true}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/customer/user/auth/login",
+          "host": ["{{baseUrl}}"],
+          "path": ["customer", "user", "auth", "login"]
+        }
+      }
+    },
+    {
+      "name": "🔓 STEP 2.2: Admin Enable Customer (if needed)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log('\\n🔓 ADMIN ENABLING CUSTOMER: Marco Rossi');",
+              "if (pm.response.code === 200) {",
+              "    console.log('✅ Customer enabled by admin');",
+              "} else if (pm.response.code === 404) {",
+              "    console.log('ℹ️  Customer not found - may need to be created first');",
+              "} else {",
+              "    console.log('❌ Enable failed:', pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {"key": "Authorization", "value": "Bearer {{adminToken}}"}
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/admin/customer/enable?email={{customerEmail}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["admin", "customer", "enable"],
+          "query": [
+            {"key": "email", "value": "{{customerEmail}}"}
+          ]
+        }
+      }
+    },
+    {
+      "name": "🔐 STEP 3: Customer Login (After Enable)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log('\\n🔐 CUSTOMER LOGIN RETRY: After enable');",
+              "if (pm.response.code === 200) {",
+              "    var jsonData = pm.response.json();",
+              "    pm.environment.set('customer1Token', jsonData.jwt);",
+              "    pm.environment.set('customer1Id', jsonData.user.id);",
+              "    console.log('✅ Customer logged in successfully, ID:', jsonData.user.id);",
+              "} else {",
+              "    console.log('❌ Customer login still failed:', pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"username\": \"{{customerEmail}}\", \"password\": \"{{customerPassword}}\", \"rememberMe\": true}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/customer/user/auth/login",
+          "host": ["{{baseUrl}}"],
+          "path": ["customer", "user", "auth", "login"]
+        }
+      }
+    },
+    {
+      "name": "🍽️ STEP 4: Get Available Services",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log('\\n🍽️ GETTING AVAILABLE SERVICES');",
+              "if (pm.response.code === 200) {",
+              "    var jsonData = pm.response.json();",
+              "    console.log('✅ Available services found:', jsonData.length);",
+              "    ",
+              "    // Save service and slot information for reservations",
+              "    if (jsonData.length > 0) {",
+              "        // Find Colazione service",
+              "        var colazioneService = jsonData.find(s => s.name === 'Colazione');",
+              "        if (colazioneService && colazioneService.slots && colazioneService.slots.length > 0) {",
+              "            pm.environment.set('colazioneSlotId', colazioneService.slots[0].id);",
+              "            console.log('✅ Colazione Slot ID saved:', colazioneService.slots[0].id);",
+              "        }",
+              "        ",
+              "        // Find Pranzo service",
+              "        var pranzoService = jsonData.find(s => s.name === 'Pranzo');",
+              "        if (pranzoService && pranzoService.slots && pranzoService.slots.length > 0) {",
+              "            pm.environment.set('pranzoSlotId', pranzoService.slots[0].id);",
+              "            console.log('✅ Pranzo Slot ID saved:', pranzoService.slots[0].id);",
+              "        }",
+              "        ",
+              "        // Find Cena service",
+              "        var cenaService = jsonData.find(s => s.name === 'Cena');",
+              "        if (cenaService && cenaService.slots && cenaService.slots.length > 0) {",
+              "            pm.environment.set('cenaSlotId', cenaService.slots[0].id);",
+              "            console.log('✅ Cena Slot ID saved:', cenaService.slots[0].id);",
+              "        }",
+              "    }",
+              "} else {",
+              "    console.log('❌ Failed to get services:', pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {"key": "Authorization", "value": "Bearer {{customer1Token}}"}
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/customer/restaurant/3/services",
+          "host": ["{{baseUrl}}"],
+          "path": ["customer", "restaurant", "3", "services"]
+        }
+      }
+    },
+    {
+      "name": "📅 STEP 5.1: TEST - Valid Monday Reservation (Should SUCCEED)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log('\\n📅 TEST RESERVATION: Monday (SHOULD SUCCEED)');",
+              "if (pm.response.code === 200 || pm.response.code === 201) {",
+              "    console.log('✅ SUCCESS: Monday reservation created correctly!');",
+              "    var jsonData = pm.response.json();",
+              "    if (jsonData.id) {",
+              "        console.log('   Reservation ID:', jsonData.id);",
+              "    }",
+              "} else {",
+              "    console.log('❌ UNEXPECTED: Monday reservation failed:', pm.response.text());",
+              "    console.log('   This should have succeeded for Monday');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Content-Type", "value": "application/json"},
+          {"key": "Authorization", "value": "Bearer {{customer1Token}}"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"pax\": 2,\n    \"kids\": 0,\n    \"notes\": \"Valid Monday reservation - should succeed\",\n    \"idSlot\": {{colazioneSlotId}},\n    \"reservationDay\": \"2025-11-10\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/customer/reservation/new",
+          "host": ["{{baseUrl}}"],
+          "path": ["customer", "reservation", "new"]
+        }
+      }
+    },
+    {
+      "name": "📅 STEP 5.2: TEST - Invalid Tuesday Reservation (Should FAIL)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log('\\n📅 TEST RESERVATION: Tuesday (SHOULD FAIL)');",
+              "if (pm.response.code === 400 || pm.response.code === 422) {",
+              "    console.log('✅ SUCCESS: Tuesday reservation correctly rejected!');",
+              "    var jsonData = pm.response.json();",
+              "    if (jsonData.details && jsonData.details.toLowerCase().includes('week')) {",
+              "        console.log('✅ Weekday validation message confirmed:', jsonData.details);",
+              "    } else {",
+              "        console.log('   Response:', jsonData);",
+              "    }",
+              "} else if (pm.response.code === 200 || pm.response.code === 201) {",
+              "    console.log('❌ BUG DETECTED: Tuesday reservation was accepted!');",
+              "    console.log('   This is a serious validation bug!');",
+              "} else {",
+              "    console.log('❓ Unexpected response code:', pm.response.code);",
+              "    console.log('   Response:', pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Content-Type", "value": "application/json"},
+          {"key": "Authorization", "value": "Bearer {{customer1Token}}"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"pax\": 4,\n    \"kids\": 1,\n    \"notes\": \"Invalid Tuesday reservation - should be rejected\",\n    \"idSlot\": {{pranzoSlotId}},\n    \"reservationDay\": \"2025-11-11\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/customer/reservation/new",
+          "host": ["{{baseUrl}}"],
+          "path": ["customer", "reservation", "new"]
+        }
+      }
+    },
+    {
+      "name": "📅 STEP 5.3: TEST - Invalid Wednesday Reservation (Should FAIL)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log('\\n📅 TEST RESERVATION: Wednesday (SHOULD FAIL)');",
+              "if (pm.response.code === 400 || pm.response.code === 422) {",
+              "    console.log('✅ SUCCESS: Wednesday reservation correctly rejected!');",
+              "    var jsonData = pm.response.json();",
+              "    if (jsonData.details && jsonData.details.toLowerCase().includes('week')) {",
+              "        console.log('✅ Weekday validation message confirmed:', jsonData.details);",
+              "    }",
+              "} else if (pm.response.code === 200 || pm.response.code === 201) {",
+              "    console.log('❌ BUG DETECTED: Wednesday reservation was accepted!');",
+              "} else {",
+              "    console.log('❓ Unexpected response:', pm.response.code, pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Content-Type", "value": "application/json"},
+          {"key": "Authorization", "value": "Bearer {{customer1Token}}"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"pax\": 3,\n    \"kids\": 2,\n    \"notes\": \"Invalid Wednesday reservation - should be rejected\",\n    \"idSlot\": {{cenaSlotId}},\n    \"reservationDay\": \"2025-11-12\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/customer/reservation/new",
+          "host": ["{{baseUrl}}"],
+          "path": ["customer", "reservation", "new"]
+        }
+      }
+    },
+    {
+      "name": "📅 STEP 5.4: TEST - Another Valid Monday Reservation (Should SUCCEED)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log('\\n📅 TEST RESERVATION: Another Monday (SHOULD SUCCEED)');",
+              "if (pm.response.code === 200 || pm.response.code === 201) {",
+              "    console.log('✅ SUCCESS: Second Monday reservation created!');",
+              "} else {",
+              "    console.log('❌ UNEXPECTED: Monday reservation failed:', pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Content-Type", "value": "application/json"},
+          {"key": "Authorization", "value": "Bearer {{customer1Token}}"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"pax\": 1,\n    \"kids\": 0,\n    \"notes\": \"Another valid Monday reservation\",\n    \"idSlot\": {{cenaSlotId}},\n    \"reservationDay\": \"2025-11-17\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/customer/reservation/new",
+          "host": ["{{baseUrl}}"],
+          "path": ["customer", "reservation", "new"]
+        }
+      }
+    },
+    {
+      "name": "📊 STEP 6: Summary - Validation Test Results",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log('\\n📊 WEEKDAY VALIDATION TEST COMPLETE');",
+              "console.log('');",
+              "console.log('🎯 Test Results Summary:');",
+              "console.log('✅ Monday reservations should be ACCEPTED (Restaurant allows only Monday)');", 
+              "console.log('❌ Tuesday/Wednesday reservations should be REJECTED');",
+              "console.log('');",
+              "console.log('🔍 Next Steps:');",
+              "console.log('1. Check database: SELECT r_date, DAYNAME(r_date), service FROM reservation WHERE id_restaurant = 3 ORDER BY r_date DESC LIMIT 10;');",
+              "console.log('2. Verify only Monday reservations exist');",
+              "console.log('3. Confirm weekday validation is working correctly');",
+              "console.log('');",
+              "console.log('💡 Expected Database Result: All r_date should be Mondays only');"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/actuator/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["actuator", "health"]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://api.greedys.it",
+      "type": "string"
+    },
+    {
+      "key": "adminEmail", 
+      "value": "ascolesevalentino@gmail.com",
+      "type": "string"
+    },
+    {
+      "key": "adminPassword",
+      "value": "Minosse100%",
+      "type": "string"
+    },
+    {
+      "key": "customerEmail",
+      "value": "marco.rossi@email.it",
+      "type": "string"
+    },
+    {
+      "key": "customerPassword",
+      "value": "TestPass123!",
+      "type": "string"
+    }
+  ]
+}

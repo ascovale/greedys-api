@@ -1,0 +1,785 @@
+{
+  "info": {
+    "_postman_id": "customer-reservation-complete-flow",
+    "name": "Customer Reservation - Complete Flow",
+    "description": "Complete workflow: Create customers → Admin approval → Customer reservations with weekday validation",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "🔐 STEP 1: Admin Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log('\\n🔐 ADMIN LOGIN');",
+              "if (pm.response.code === 200) {",
+              "    var jsonData = pm.response.json();",
+              "    pm.environment.set('adminToken', jsonData.jwt);",
+              "    console.log('✅ Admin token saved');",
+              "} else {",
+              "    console.log('❌ Admin login failed:', pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"username\": \"{{adminEmail}}\", \"password\": \"{{adminPassword}}\", \"rememberMe\": true}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/admin/auth/login",
+          "host": ["{{baseUrl}}"],
+          "path": ["admin", "auth", "login"]
+        }
+      }
+    },
+    {
+      "name": "👤 STEP 2.1: Create Customer 1 - Marco Rossi",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log('\\n👤 CREATING CUSTOMER 1: Marco Rossi');",
+              "var timestamp = Date.now();",
+              "var email1 = 'marco.rossi.' + timestamp + '@example.com';",
+              "pm.environment.set('customer1Email', email1);",
+              "console.log('Generated email:', email1);",
+              "",
+              "if (pm.response.code === 200 || pm.response.code === 201) {",
+              "    console.log('✅ Customer Marco Rossi created successfully');",
+              "} else {",
+              "    console.log('❌ Customer creation failed:', pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"firstName\": \"Marco\",\n    \"lastName\": \"Rossi\",\n    \"email\": \"marco.rossi.{{$timestamp}}@example.com\",\n    \"password\": \"CustomerPass123!\",\n    \"matchingPassword\": \"CustomerPass123!\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/customer/auth/new",
+          "host": ["{{baseUrl}}"],
+          "path": ["customer", "auth", "new"]
+        }
+      }
+    },
+    {
+      "name": "👤 STEP 2.2: Create Customer 2 - Giulia Bianchi",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log('\\n👤 CREATING CUSTOMER 2: Giulia Bianchi');",
+              "if (pm.response.code === 200 || pm.response.code === 201) {",
+              "    console.log('✅ Customer Giulia Bianchi created successfully');",
+              "} else {",
+              "    console.log('❌ Customer creation failed:', pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"firstName\": \"Giulia\",\n    \"lastName\": \"Bianchi\",\n    \"email\": \"giulia.bianchi@example.com\",\n    \"password\": \"CustomerPass123!\",\n    \"matchingPassword\": \"CustomerPass123!\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/customer/auth/new",
+          "host": ["{{baseUrl}}"],
+          "path": ["customer", "auth", "new"]
+        }
+      }
+    },
+    {
+      "name": "👤 STEP 2.3: Create Customer 3 - Andrea Verdi",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log('\\n👤 CREATING CUSTOMER 3: Andrea Verdi');",
+              "if (pm.response.code === 200 || pm.response.code === 201) {",
+              "    console.log('✅ Customer Andrea Verdi created successfully');",
+              "} else {",
+              "    console.log('❌ Customer creation failed:', pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"firstName\": \"Andrea\",\n    \"lastName\": \"Verdi\",\n    \"email\": \"andrea.verdi@example.com\",\n    \"password\": \"CustomerPass123!\",\n    \"matchingPassword\": \"CustomerPass123!\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/customer/auth/new",
+          "host": ["{{baseUrl}}"],
+          "path": ["customer", "auth", "new"]
+        }
+      }
+    },
+    {
+      "name": "👤 STEP 2.4: Create Customer 4 - Francesca Neri",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log('\\n👤 CREATING CUSTOMER 4: Francesca Neri');",
+              "if (pm.response.code === 200 || pm.response.code === 201) {",
+              "    console.log('✅ Customer Francesca Neri created successfully');",
+              "} else {",
+              "    console.log('❌ Customer creation failed:', pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"firstName\": \"Francesca\",\n    \"lastName\": \"Neri\",\n    \"email\": \"francesca.neri@example.com\",\n    \"password\": \"CustomerPass123!\",\n    \"matchingPassword\": \"CustomerPass123!\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/customer/auth/new",
+          "host": ["{{baseUrl}}"],
+          "path": ["customer", "auth", "new"]
+        }
+      }
+    },
+    {
+      "name": "👤 STEP 2.5: Create Customer 5 - Lorenzo Ferrari",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log('\\n👤 CREATING CUSTOMER 5: Lorenzo Ferrari');",
+              "if (pm.response.code === 200 || pm.response.code === 201) {",
+              "    console.log('✅ Customer Lorenzo Ferrari created successfully');",
+              "} else {",
+              "    console.log('❌ Customer creation failed:', pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"firstName\": \"Lorenzo\",\n    \"lastName\": \"Ferrari\",\n    \"email\": \"lorenzo.ferrari@example.com\",\n    \"password\": \"CustomerPass123!\",\n    \"matchingPassword\": \"CustomerPass123!\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/customer/auth/new",
+          "host": ["{{baseUrl}}"],
+          "path": ["customer", "auth", "new"]
+        }
+      }
+    },
+    {
+      "name": "⏳ STEP 3: Wait for Customer Creation",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log('\\n⏳ WAITING 2 seconds for customer creation to complete...');",
+              "setTimeout(function(){}, 2000);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/actuator/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["actuator", "health"]
+        }
+      }
+    },
+    {
+      "name": "🔓 STEP 4.1: Admin Enable Customer - Marco Rossi",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log('\\n🔓 ADMIN ENABLING CUSTOMER: Marco Rossi');",
+              "if (pm.response.code === 200) {",
+              "    console.log('✅ Customer Marco Rossi enabled by admin');",
+              "} else {",
+              "    console.log('❌ Enable failed:', pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {"key": "Content-Type", "value": "application/json"},
+          {"key": "Authorization", "value": "Bearer {{adminToken}}"}
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/admin/customer/enable?email={{customer1Email}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["admin", "customer", "enable"],
+          "query": [
+            {"key": "email", "value": "{{customer1Email}}"}
+          ]
+        }
+      }
+    },
+    {
+      "name": "🔓 STEP 4.2: Admin Enable Customer - Giulia Bianchi",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log('\\n🔓 ADMIN ENABLING CUSTOMER: Giulia Bianchi');",
+              "if (pm.response.code === 200) {",
+              "    console.log('✅ Customer Giulia Bianchi enabled by admin');",
+              "} else {",
+              "    console.log('❌ Enable failed:', pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {"key": "Content-Type", "value": "application/json"},
+          {"key": "Authorization", "value": "Bearer {{adminToken}}"}
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/admin/customer/enable?email=giulia.bianchi@example.com",
+          "host": ["{{baseUrl}}"],
+          "path": ["admin", "customer", "enable"],
+          "query": [
+            {"key": "email", "value": "giulia.bianchi@example.com"}
+          ]
+        }
+      }
+    },
+    {
+      "name": "🔓 STEP 4.3: Admin Enable Customer - Andrea Verdi",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log('\\n🔓 ADMIN ENABLING CUSTOMER: Andrea Verdi');",
+              "if (pm.response.code === 200) {",
+              "    console.log('✅ Customer Andrea Verdi enabled by admin');",
+              "} else {",
+              "    console.log('❌ Enable failed:', pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {"key": "Content-Type", "value": "application/json"},
+          {"key": "Authorization", "value": "Bearer {{adminToken}}"}
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/admin/customer/enable?email=andrea.verdi@example.com",
+          "host": ["{{baseUrl}}"],
+          "path": ["admin", "customer", "enable"],
+          "query": [
+            {"key": "email", "value": "andrea.verdi@example.com"}
+          ]
+        }
+      }
+    },
+    {
+      "name": "🔓 STEP 4.4: Admin Enable Customer - Francesca Neri",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log('\\n🔓 ADMIN ENABLING CUSTOMER: Francesca Neri');",
+              "if (pm.response.code === 200) {",
+              "    console.log('✅ Customer Francesca Neri enabled by admin');",
+              "} else {",
+              "    console.log('❌ Enable failed:', pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {"key": "Content-Type", "value": "application/json"},
+          {"key": "Authorization", "value": "Bearer {{adminToken}}"}
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/admin/customer/enable?email=francesca.neri@example.com",
+          "host": ["{{baseUrl}}"],
+          "path": ["admin", "customer", "enable"],
+          "query": [
+            {"key": "email", "value": "francesca.neri@example.com"}
+          ]
+        }
+      }
+    },
+    {
+      "name": "🔓 STEP 4.5: Admin Enable Customer - Lorenzo Ferrari",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log('\\n🔓 ADMIN ENABLING CUSTOMER: Lorenzo Ferrari');",
+              "if (pm.response.code === 200) {",
+              "    console.log('✅ Customer Lorenzo Ferrari enabled by admin');",
+              "} else {",
+              "    console.log('❌ Enable failed:', pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {"key": "Content-Type", "value": "application/json"},
+          {"key": "Authorization", "value": "Bearer {{adminToken}}"}
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/admin/customer/enable?email=lorenzo.ferrari@example.com",
+          "host": ["{{baseUrl}}"],
+          "path": ["admin", "customer", "enable"],
+          "query": [
+            {"key": "email", "value": "lorenzo.ferrari@example.com"}
+          ]
+        }
+      }
+    },
+    {
+      "name": "🔐 STEP 5.1: Customer Login - Marco Rossi",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log('\\n🔐 CUSTOMER LOGIN: Marco Rossi');",
+              "if (pm.response.code === 200) {",
+              "    var jsonData = pm.response.json();",
+              "    pm.environment.set('customer1Token', jsonData.jwt);",
+              "    pm.environment.set('customer1Id', jsonData.user.id);",
+              "    console.log('✅ Customer Marco Rossi logged in, ID:', jsonData.user.id);",
+              "} else {",
+              "    console.log('❌ Customer login failed:', pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"username\": \"marco.rossi@example.com\", \"password\": \"CustomerPass123!\", \"rememberMe\": true}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/customer/auth/login",
+          "host": ["{{baseUrl}}"],
+          "path": ["customer", "auth", "login"]
+        }
+      }
+    },
+    {
+      "name": "🔐 STEP 5.2: Customer Login - Giulia Bianchi",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log('\\n🔐 CUSTOMER LOGIN: Giulia Bianchi');",
+              "if (pm.response.code === 200 || pm.response.code === 201) {",
+              "    var jsonData = pm.response.json();",
+              "    pm.environment.set('customerToken', jsonData.jwt);",
+              "    pm.environment.set('customerId', jsonData.user.id);",
+              "    pm.environment.set('customer2Token', jsonData.jwt);",
+              "    pm.environment.set('customer2Id', jsonData.user.id);",
+              "    console.log('✅ Customer Giulia Bianchi logged in, ID:', jsonData.user.id);",
+              "    console.log('✅ Token saved as customerToken for reservations');",
+              "} else {",
+              "    console.log('❌ Customer login failed:', pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"username\": \"giulia.bianchi@example.com\", \"password\": \"CustomerPass123!\", \"rememberMe\": true}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/customer/auth/login",
+          "host": ["{{baseUrl}}"],
+          "path": ["customer", "auth", "login"]
+        }
+      }
+    },
+    {
+      "name": "🍽️ STEP 6.1: Get Available Services (Customer 1)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log('\\n🍽️ GETTING AVAILABLE SERVICES for Customer 1');",
+              "if (pm.response.code === 200) {",
+              "    var jsonData = pm.response.json();",
+              "    console.log('✅ Available services found:', jsonData.length);",
+              "    ",
+              "    // Save service and slot information for reservations",
+              "    if (jsonData.length > 0) {",
+              "        // Find Colazione service",
+              "        var colazioneService = jsonData.find(s => s.name === 'Colazione');",
+              "        if (colazioneService && colazioneService.slots && colazioneService.slots.length > 0) {",
+              "            pm.environment.set('colazioneSlotId', colazioneService.slots[0].id);",
+              "            console.log('✅ Colazione Slot ID saved:', colazioneService.slots[0].id);",
+              "        }",
+              "        ",
+              "        // Find Pranzo service",
+              "        var pranzoService = jsonData.find(s => s.name === 'Pranzo');",
+              "        if (pranzoService && pranzoService.slots && pranzoService.slots.length > 0) {",
+              "            pm.environment.set('pranzoSlotId', pranzoService.slots[0].id);",
+              "            console.log('✅ Pranzo Slot ID saved:', pranzoService.slots[0].id);",
+              "        }",
+              "        ",
+              "        // Find Cena service",
+              "        var cenaService = jsonData.find(s => s.name === 'Cena');",
+              "        if (cenaService && cenaService.slots && cenaService.slots.length > 0) {",
+              "            pm.environment.set('cenaSlotId', cenaService.slots[0].id);",
+              "            console.log('✅ Cena Slot ID saved:', cenaService.slots[0].id);",
+              "        }",
+              "    }",
+              "} else {",
+              "    console.log('❌ Failed to get services:', pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {"key": "Authorization", "value": "Bearer {{customerToken}}"}
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/customer/restaurant/3/services",
+          "host": ["{{baseUrl}}"],
+          "path": ["customer", "restaurant", "3", "services"]
+        }
+      }
+    },
+    {
+      "name": "📅 STEP 7.1: Marco - Valid Reservation (Monday - Colazione)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log('\\n📅 CUSTOMER RESERVATION: Marco Rossi - Monday Colazione');",
+              "if (pm.response.code === 200 || pm.response.code === 201) {",
+              "    console.log('✅ Valid Monday reservation created successfully');",
+              "} else {",
+              "    console.log('❌ Reservation failed:', pm.response.text());",
+              "    console.log('This should succeed for Monday (valid weekday)');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Content-Type", "value": "application/json"},
+          {"key": "Authorization", "value": "Bearer {{customerToken}}"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"pax\": 2,\n    \"kids\": 0,\n    \"notes\": \"Reservation by Giulia for Monday morning - using existing slot 252\",\n    \"idSlot\": 252,\n    \"reservationDay\": \"2025-11-10\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/customer/reservation/ask",
+          "host": ["{{baseUrl}}"],
+          "path": ["customer", "reservation", "ask"]
+        }
+      }
+    },
+    {
+      "name": "📅 STEP 7.2: Giulia - INVALID Reservation (Tuesday - Should FAIL)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log('\\n📅 CUSTOMER RESERVATION: Giulia Bianchi - Tuesday (SHOULD FAIL)');",
+              "if (pm.response.code === 400 || pm.response.code === 422) {",
+              "    console.log('✅ Validation working! Tuesday reservation correctly rejected');",
+              "    var jsonData = pm.response.json();",
+              "    if (jsonData.details && jsonData.details.includes('weekday')) {",
+              "        console.log('✅ Weekday validation message found:', jsonData.details);",
+              "    }",
+              "} else if (pm.response.code === 200 || pm.response.code === 201) {",
+              "    console.log('❌ BUG: Tuesday reservation was accepted! This should not happen!');",
+              "} else {",
+              "    console.log('❓ Unexpected response:', pm.response.code, pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Content-Type", "value": "application/json"},
+          {"key": "Authorization", "value": "Bearer {{customerToken}}"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"pax\": 4,\n    \"kids\": 1,\n    \"notes\": \"Trying Tuesday - should be rejected by weekday validation\",\n    \"idSlot\": {{pranzoSlotId}},\n    \"reservationDay\": \"2025-11-11\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/customer/reservation/ask",
+          "host": ["{{baseUrl}}"],
+          "path": ["customer", "reservation", "ask"]
+        }
+      }
+    },
+    {
+      "name": "📅 STEP 7.3: Andrea - Valid Reservation (Monday - Pranzo)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log('\\n📅 CUSTOMER RESERVATION: Andrea Verdi - Monday Pranzo');",
+              "if (pm.response.code === 200 || pm.response.code === 201) {",
+              "    console.log('✅ Valid Monday reservation created successfully');",
+              "} else {",
+              "    console.log('❌ Reservation failed:', pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Content-Type", "value": "application/json"},
+          {"key": "Authorization", "value": "Bearer {{customerToken}}"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"pax\": 3,\n    \"kids\": 0,\n    \"notes\": \"Lunch reservation for Monday\",\n    \"idSlot\": {{pranzoSlotId}},\n    \"reservationDay\": \"2025-11-17\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/customer/reservation/ask",
+          "host": ["{{baseUrl}}"],
+          "path": ["customer", "reservation", "ask"]
+        }
+      }
+    },
+    {
+      "name": "📅 STEP 7.4: Francesca - INVALID Reservation (Wednesday - Should FAIL)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log('\\n📅 CUSTOMER RESERVATION: Francesca Neri - Wednesday (SHOULD FAIL)');",
+              "if (pm.response.code === 400 || pm.response.code === 422) {",
+              "    console.log('✅ Validation working! Wednesday reservation correctly rejected');",
+              "    var jsonData = pm.response.json();",
+              "    if (jsonData.details && jsonData.details.includes('weekday')) {",
+              "        console.log('✅ Weekday validation message found:', jsonData.details);",
+              "    }",
+              "} else if (pm.response.code === 200 || pm.response.code === 201) {",
+              "    console.log('❌ BUG: Wednesday reservation was accepted! This should not happen!');",
+              "} else {",
+              "    console.log('❓ Unexpected response:', pm.response.code, pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Content-Type", "value": "application/json"},
+          {"key": "Authorization", "value": "Bearer {{customerToken}}"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"pax\": 2,\n    \"kids\": 2,\n    \"notes\": \"Trying Wednesday - should be rejected by weekday validation\",\n    \"idSlot\": {{cenaSlotId}},\n    \"reservationDay\": \"2025-11-12\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/customer/reservation/ask",
+          "host": ["{{baseUrl}}"],
+          "path": ["customer", "reservation", "ask"]
+        }
+      }
+    },
+    {
+      "name": "📅 STEP 7.5: Lorenzo - Valid Reservation (Monday - Cena)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log('\\n📅 CUSTOMER RESERVATION: Lorenzo Ferrari - Monday Cena');",
+              "if (pm.response.code === 200 || pm.response.code === 201) {",
+              "    console.log('✅ Valid Monday reservation created successfully');",
+              "} else {",
+              "    console.log('❌ Reservation failed:', pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Content-Type", "value": "application/json"},
+          {"key": "Authorization", "value": "Bearer {{customerToken}}"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"pax\": 5,\n    \"kids\": 1,\n    \"notes\": \"Family dinner for Monday evening\",\n    \"idSlot\": {{cenaSlotId}},\n    \"reservationDay\": \"2025-11-24\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/customer/reservation/ask",
+          "host": ["{{baseUrl}}"],
+          "path": ["customer", "reservation", "ask"]
+        }
+      }
+    },
+    {
+      "name": "📊 STEP 8: Summary - Check Results",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log('\\n📊 WORKFLOW COMPLETE - SUMMARY:');",
+              "console.log('✅ 5 customers created and enabled');",
+              "console.log('✅ 3 valid Monday reservations (should succeed)');", 
+              "console.log('✅ 2 invalid weekday reservations (should be rejected)');",
+              "console.log('');",
+              "console.log('🎯 Expected Results:');",
+              "console.log('  - Monday reservations: ACCEPTED');",
+              "console.log('  - Tuesday/Wednesday: REJECTED with weekday validation error');",
+              "console.log('');",
+              "console.log('🔍 Next: Check database or admin panel to verify only Monday reservations exist');",
+              "console.log('   Query: SELECT r_date, DAYNAME(r_date), service FROM reservation WHERE id_restaurant = 3;');"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/actuator/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["actuator", "health"]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://api.greedys.it",
+      "type": "string"
+    },
+    {
+      "key": "adminEmail", 
+      "value": "admin@greedys.it",
+      "type": "string"
+    },
+    {
+      "key": "adminPassword",
+      "value": "AdminPass123!",
+      "type": "string"
+    }
+  ]
+}

@@ -1,0 +1,295 @@
+{
+  "info": {
+    "_postman_id": "cleanup-duplicate-services",
+    "name": "Cleanup Duplicate Services - DELETE NEW ONES",
+    "description": "Remove NEW duplicate services (152, 153, 154) keeping the OLD ones (102, 103, 104)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "🔐 STEP 1: Admin Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log('\\n🔐 ADMIN LOGIN');",
+              "if (pm.response.code === 200) {",
+              "    var jsonData = pm.response.json();",
+              "    pm.environment.set('adminToken', jsonData.jwt);",
+              "    console.log('✅ Admin token saved');",
+              "} else {",
+              "    console.log('❌ Admin login failed:', pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"username\": \"{{adminEmail}}\", \"password\": \"{{adminPassword}}\", \"rememberMe\": true}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/admin/auth/login",
+          "host": ["{{baseUrl}}"],
+          "path": ["admin", "auth", "login"]
+        }
+      }
+    },
+    {
+      "name": "🗑️ STEP 2: Delete NEW Colazione Service (ID: 152)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log('\\n🗑️ DELETING NEW Colazione Service (ID: 152)');",
+              "if (pm.response.code === 200) {",
+              "    console.log('✅ Service 152 (NEW Colazione) deleted successfully');",
+              "} else if (pm.response.code === 404) {",
+              "    console.log('ℹ️ Service 152 not found (already deleted?)');",
+              "} else {",
+              "    console.log('❌ Failed to delete service 152:', pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {"key": "Authorization", "value": "Bearer {{adminToken}}"}
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/admin/service/152",
+          "host": ["{{baseUrl}}"],
+          "path": ["admin", "service", "152"]
+        }
+      }
+    },
+    {
+      "name": "🗑️ STEP 3: Delete NEW Pranzo Service (ID: 153)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log('\\n🗑️ DELETING NEW Pranzo Service (ID: 153)');",
+              "if (pm.response.code === 200) {",
+              "    console.log('✅ Service 153 (NEW Pranzo) deleted successfully');",
+              "} else if (pm.response.code === 404) {",
+              "    console.log('ℹ️ Service 153 not found (already deleted?)');",
+              "} else {",
+              "    console.log('❌ Failed to delete service 153:', pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {"key": "Authorization", "value": "Bearer {{adminToken}}"}
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/admin/service/153",
+          "host": ["{{baseUrl}}"],
+          "path": ["admin", "service", "153"]
+        }
+      }
+    },
+    {
+      "name": "🗑️ STEP 4: Delete NEW Cena Service (ID: 154)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log('\\n🗑️ DELETING NEW Cena Service (ID: 154)');",
+              "if (pm.response.code === 200) {",
+              "    console.log('✅ Service 154 (NEW Cena) deleted successfully');",
+              "} else if (pm.response.code === 404) {",
+              "    console.log('ℹ️ Service 154 not found (already deleted?)');",
+              "} else {",
+              "    console.log('❌ Failed to delete service 154:', pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {"key": "Authorization", "value": "Bearer {{adminToken}}"}
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/admin/service/154",
+          "host": ["{{baseUrl}}"],
+          "path": ["admin", "service", "154"]
+        }
+      }
+    },
+    {
+      "name": "✅ STEP 5: Verify Services After Cleanup",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log('\\n✅ VERIFYING SERVICES AFTER CLEANUP');",
+              "console.log('='.repeat(50));",
+              "",
+              "if (pm.response.code === 200) {",
+              "    var jsonData = pm.response.json();",
+              "    console.log('📊 Services remaining:', jsonData.length);",
+              "    console.log('');",
+              "    ",
+              "    jsonData.forEach(function(service, index) {",
+              "        console.log('✅ Service ' + (index + 1) + ':');",
+              "        console.log('   ID: ' + service.id);",
+              "        console.log('   Name: ' + service.name);",
+              "        console.log('   Active: ' + service.active);",
+              "        console.log('   Enabled: ' + service.enabled);",
+              "        console.log('');",
+              "    });",
+              "    ",
+              "    var servicesByName = {};",
+              "    var stillHasDuplicates = false;",
+              "    ",
+              "    jsonData.forEach(function(service) {",
+              "        if (!servicesByName[service.name]) {",
+              "            servicesByName[service.name] = 0;",
+              "        }",
+              "        servicesByName[service.name]++;",
+              "    });",
+              "    ",
+              "    console.log('🔍 DUPLICATE CHECK:');",
+              "    Object.keys(servicesByName).forEach(function(name) {",
+              "        var count = servicesByName[name];",
+              "        if (count > 1) {",
+              "            console.log('   ❌ ' + name + ': ' + count + ' duplicates still exist');",
+              "            stillHasDuplicates = true;",
+              "        } else {",
+              "            console.log('   ✅ ' + name + ': Unique service');",
+              "        }",
+              "    });",
+              "    ",
+              "    if (!stillHasDuplicates) {",
+              "        console.log('');",
+              "        console.log('🎉 SUCCESS: All duplicate services have been removed!');",
+              "        console.log('   Now only the OLD services (102, 103, 104) remain.');",
+              "        console.log('   Next step: Create slots for these services to make them active.');",
+              "    }",
+              "} else {",
+              "    console.log('❌ Failed to get services:', pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {"key": "Authorization", "value": "Bearer {{adminToken}}"}
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/admin/restaurant/3/services",
+          "host": ["{{baseUrl}}"],
+          "path": ["admin", "restaurant", "3", "services"]
+        }
+      }
+    },
+    {
+      "name": "👁️ STEP 6: Verify Customer View After Cleanup",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log('\\n👁️ VERIFYING CUSTOMER VIEW AFTER CLEANUP');",
+              "console.log('='.repeat(50));",
+              "",
+              "if (pm.response.code === 200) {",
+              "    var jsonData = pm.response.json();",
+              "    console.log('👁️ Public services visible:', jsonData.length);",
+              "    console.log('');",
+              "    ",
+              "    var publicDuplicates = {};",
+              "    ",
+              "    jsonData.forEach(function(service, index) {",
+              "        console.log('👁️ Public Service ' + (index + 1) + ':');",
+              "        console.log('   ID: ' + service.id);",
+              "        console.log('   Name: ' + service.name);",
+              "        console.log('   Slots: ' + (service.slots ? service.slots.length : 0));",
+              "        console.log('');",
+              "        ",
+              "        if (!publicDuplicates[service.name]) {",
+              "            publicDuplicates[service.name] = 0;",
+              "        }",
+              "        publicDuplicates[service.name]++;",
+              "    });",
+              "    ",
+              "    console.log('🔍 PUBLIC DUPLICATE CHECK:');",
+              "    var hasPublicDuplicates = false;",
+              "    Object.keys(publicDuplicates).forEach(function(name) {",
+              "        var count = publicDuplicates[name];",
+              "        if (count > 1) {",
+              "            console.log('   ❌ ' + name + ': ' + count + ' duplicates visible to customers');",
+              "            hasPublicDuplicates = true;",
+              "        } else {",
+              "            console.log('   ✅ ' + name + ': Single service visible');",
+              "        }",
+              "    });",
+              "    ",
+              "    if (!hasPublicDuplicates) {",
+              "        console.log('');",
+              "        console.log('🎉 EXCELLENT: No duplicate services visible to customers!');",
+              "        console.log('   Original problem resolved: \"test@test.it ha tanti servizi uguali\"');",
+              "    }",
+              "} else {",
+              "    console.log('❌ Failed to get public services:', pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/customer/restaurant/3/services",
+          "host": ["{{baseUrl}}"],
+          "path": ["customer", "restaurant", "3", "services"]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://api.greedys.it",
+      "type": "string"
+    },
+    {
+      "key": "adminEmail", 
+      "value": "ascolesevalentino@gmail.com",
+      "type": "string"
+    },
+    {
+      "key": "adminPassword",
+      "value": "Minosse100%",
+      "type": "string"
+    }
+  ]
+}

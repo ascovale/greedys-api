@@ -50,7 +50,7 @@ public class CustomerReservationService {
                 .customer(customer)
                 .createdBy(customer) // TODO : Test this that it works
                 .createdByUserType(Reservation.UserType.CUSTOMER) // 🔧 FIX: aggiunto campo mancante per auditing
-                .status(Reservation.Status.ACCEPTED)
+                .status(Reservation.Status.NOT_ACCEPTED) // 🔧 FIX: customer reservations should wait for restaurant approval
                 .build();
         
         // 🎯 USA IL SERVICE COMUNE CHE PUBBLICA L'EVENTO

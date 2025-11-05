@@ -58,11 +58,20 @@ deploy:
     - mkdir -p ~/.ssh && ssh-keyscan -H "$SERVER_IP" >> ~/.ssh/known_hosts
     - echo "SSH Key loaded and ready"
   script:
+    - echo "Fermando stack Teatrik e DB prima del deploy..."
+    - ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i deploy/id_key deployer@"$SERVER_IP" 'docker stack rm teatrik || echo "Stack teatrik non trovato"'
+    - ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i deploy/id_key deployer@"$SERVER_IP" 'docker stack rm db || echo "Stack db non trovato"'
+    - echo "Attendendo rimozione stack esterni..."
+    - ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i deploy/id_key deployer@"$SERVER_IP" 'sleep 15'
     - ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i deploy/id_key deployer@"$SERVER_IP" 'mkdir -p ~/greedys_api/'
     - scp -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i deploy/id_key docker-compose.yml deploy.sh nginx.conf deployer@"$SERVER_IP":~/greedys_api/
     - scp -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -r -i deploy/id_key traefik/ deployer@"$SERVER_IP":~/greedys_api/
     - printf '%s' "$CI_JOB_TOKEN" | ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i deploy/id_key deployer@"$SERVER_IP" "docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY"
     - ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i deploy/id_key deployer@"$SERVER_IP" 'cd ~/greedys_api/ && chmod +x ./deploy.sh && bash ./deploy.sh'
+    - echo "Riavviando stack Teatrik..."
+    - ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i deploy/id_key deployer@"$SERVER_IP" 'cd ~/teatrik/ && docker stack deploy -c docker-compose.yml teatrik || echo "Teatrik stack non configurato"'
+    - echo "Riavviando stack Database..."
+    - ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i deploy/id_key deployer@"$SERVER_IP" 'cd ~/db/ && docker stack deploy -c docker-compose.yml db || echo "DB stack non configurato"'
   only: [main]
 
 publish:

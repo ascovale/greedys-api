@@ -1,0 +1,292 @@
+{
+	"info": {
+		"_postman_id": "test-restaurant-pending-reservations",
+		"name": "Test Restaurant Pending Reservations",
+		"description": "Test collection for restaurant pending reservations endpoint",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Restaurant Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 201) {",
+							"    const responseJson = pm.response.json();",
+							"    if (responseJson.success && responseJson.data && responseJson.data.accessToken) {",
+							"        pm.environment.set('restaurantToken', responseJson.data.accessToken);",
+							"        console.log('✅ Restaurant login successful, token saved');",
+							"    } else {",
+							"        console.log('❌ Login response missing token data');",
+							"    }",
+							"} else {",
+							"    console.log('❌ Restaurant login failed with status:', pm.response.code);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"ascolesevalentino@gmail.com\",\n    \"password\": \"Minosse100%\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/restaurant/user/auth/authenticate",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"restaurant",
+						"user",
+						"auth",
+						"authenticate"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Pending Reservations - Date Format 1 (LocalDate)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log('Response Status:', pm.response.code);",
+							"console.log('Response Body:', pm.response.text());",
+							"",
+							"if (pm.response.code === 200) {",
+							"    const responseJson = pm.response.json();",
+							"    console.log('✅ Test 1 (LocalDate format) - Success!');",
+							"    console.log('Pending reservations found:', responseJson.data ? responseJson.data.length : 0);",
+							"    if (responseJson.data && responseJson.data.length > 0) {",
+							"        responseJson.data.forEach((reservation, index) => {",
+							"            console.log(`Reservation ${index + 1}: ID=${reservation.id}, Status=${reservation.status}, Date=${reservation.date}`);",
+							"        });",
+							"    }",
+							"} else {",
+							"    console.log('❌ Test 1 (LocalDate format) - Failed with status:', pm.response.code);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{restaurantToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/restaurant/reservation/pending/get?start=2025-11-01&end=2025-11-30",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"restaurant",
+						"reservation",
+						"pending",
+						"get"
+					],
+					"query": [
+						{
+							"key": "start",
+							"value": "2025-11-01"
+						},
+						{
+							"key": "end",
+							"value": "2025-11-30"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Pending Reservations - Date Format 2 (DateTime)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log('Response Status:', pm.response.code);",
+							"console.log('Response Body:', pm.response.text());",
+							"",
+							"if (pm.response.code === 200) {",
+							"    const responseJson = pm.response.json();",
+							"    console.log('✅ Test 2 (DateTime format) - Success!');",
+							"    console.log('Pending reservations found:', responseJson.data ? responseJson.data.length : 0);",
+							"} else {",
+							"    console.log('❌ Test 2 (DateTime format) - Failed with status:', pm.response.code);",
+							"    console.log('This is expected to fail due to format mismatch');",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{restaurantToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/restaurant/reservation/pending/get?start=2025-11-10T00:00:00.000Z&end=2025-11-30T23:59:59.999Z",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"restaurant",
+						"reservation",
+						"pending",
+						"get"
+					],
+					"query": [
+						{
+							"key": "start",
+							"value": "2025-11-10T00:00:00.000Z"
+						},
+						{
+							"key": "end",
+							"value": "2025-11-30T23:59:59.999Z"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Pending Reservations - No Date Filter",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log('Response Status:', pm.response.code);",
+							"console.log('Response Body:', pm.response.text());",
+							"",
+							"if (pm.response.code === 200) {",
+							"    const responseJson = pm.response.json();",
+							"    console.log('✅ Test 3 (No date filter) - Success!');",
+							"    console.log('All pending reservations found:', responseJson.data ? responseJson.data.length : 0);",
+							"    if (responseJson.data && responseJson.data.length > 0) {",
+							"        responseJson.data.forEach((reservation, index) => {",
+							"            console.log(`Reservation ${index + 1}: ID=${reservation.id}, Status=${reservation.status}, Date=${reservation.date}, Customer=${reservation.customerName || 'N/A'}`);",
+							"        });",
+							"    }",
+							"} else {",
+							"    console.log('❌ Test 3 (No date filter) - Failed with status:', pm.response.code);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{restaurantToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/restaurant/reservation/pending/get",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"restaurant",
+						"reservation",
+						"pending",
+						"get"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get All Reservations - For Comparison",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log('Response Status:', pm.response.code);",
+							"",
+							"if (pm.response.code === 200) {",
+							"    const responseJson = pm.response.json();",
+							"    console.log('✅ All reservations - Success!');",
+							"    console.log('Total reservations found:', responseJson.data ? responseJson.data.length : 0);",
+							"    if (responseJson.data && responseJson.data.length > 0) {",
+							"        console.log('Reservations by status:');",
+							"        const statusCounts = {};",
+							"        responseJson.data.forEach(reservation => {",
+							"            statusCounts[reservation.status] = (statusCounts[reservation.status] || 0) + 1;",
+							"            if (reservation.status === 'NOT_ACCEPTED') {",
+							"                console.log(`  📋 Pending: ID=${reservation.id}, Date=${reservation.date}, Customer=${reservation.customerName || 'N/A'}`);",
+							"            }",
+							"        });",
+							"        Object.keys(statusCounts).forEach(status => {",
+							"            console.log(`  ${status}: ${statusCounts[status]} reservations`);",
+							"        });",
+							"    }",
+							"} else {",
+							"    console.log('❌ All reservations - Failed with status:', pm.response.code);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{restaurantToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/restaurant/reservation/reservations?start=2025-11-01&end=2025-11-30",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"restaurant",
+						"reservation",
+						"reservations"
+					],
+					"query": [
+						{
+							"key": "start",
+							"value": "2025-11-01"
+						},
+						{
+							"key": "end",
+							"value": "2025-11-30"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
