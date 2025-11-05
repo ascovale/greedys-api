@@ -29,6 +29,7 @@ public interface ReservationMapper {
     @Mapping(target = "name", source = "userName")
     @Mapping(target = "reservationDay", source = "date")
     @Mapping(target = "restaurant", source = "slot.service.restaurant.id")
+    @Mapping(target = "customerId", source = "customer.id")
     @Mapping(target = "phone", ignore = true) // Non presente in entità
     @Mapping(target = "email", ignore = true) // Non presente in entità
     @Mapping(target = "slot.service.restaurantId", source = "slot.service.restaurant.id")

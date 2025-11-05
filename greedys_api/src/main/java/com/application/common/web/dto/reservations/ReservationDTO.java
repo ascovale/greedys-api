@@ -32,6 +32,8 @@ public class ReservationDTO {
 	private String notes;
 	private LocalDate reservationDay;
 	private Long restaurant;
+	@Schema(description = "ID of the customer who made the reservation", example = "103")
+	private Long customerId;
 	private Status status;
 	private String createdBy;
 	private String createdByUserType;
