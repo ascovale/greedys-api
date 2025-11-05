@@ -1,0 +1,266 @@
+{
+	"info": {
+		"_postman_id": "test-giulia-reservation-109",
+		"name": "Test Giulia Reservation 109",
+		"description": "Test if reservation 109 (Giulia) appears in restaurant pending reservations",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Restaurant Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 200) {",
+							"    const responseJson = pm.response.json();",
+							"    console.log('Response:', JSON.stringify(responseJson, null, 2));",
+							"    if (responseJson.success && responseJson.data && responseJson.data.jwt) {",
+							"        pm.environment.set('restaurantToken', responseJson.data.jwt);",
+							"        console.log('✅ Restaurant login successful, token saved');",
+							"    } else if (responseJson.jwt) {",
+							"        pm.environment.set('restaurantToken', responseJson.jwt);",
+							"        console.log('✅ Restaurant login successful, JWT saved');",
+							"    } else {",
+							"        console.log('❌ Login response missing token data');",
+							"    }",
+							"} else {",
+							"    console.log('❌ Restaurant login failed with status:', pm.response.code);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"test@test.it\",\n    \"password\": \"TestPass123!\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/restaurant/user/auth/login",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"restaurant",
+						"user",
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Pending Reservations (Correct Format)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log('🔍 Testing Pending Reservations Endpoint');",
+							"console.log('Response Status:', pm.response.code);",
+							"console.log('Response Body:', pm.response.text());",
+							"",
+							"if (pm.response.code === 200) {",
+							"    const responseJson = pm.response.json();",
+							"    console.log('✅ Endpoint works! Status: 200');",
+							"    console.log('Total pending reservations:', responseJson.data ? responseJson.data.length : 0);",
+							"    ",
+							"    if (responseJson.data && responseJson.data.length > 0) {",
+							"        console.log('\\n📋 Pending Reservations Found:');",
+							"        let giuliaFound = false;",
+							"        responseJson.data.forEach((reservation, index) => {",
+							"            console.log(`${index + 1}. ID: ${reservation.id}, Date: ${reservation.date}, Status: ${reservation.status}, Customer: ${reservation.customerName || 'N/A'}`);",
+							"            if (reservation.id === 109) {",
+							"                giuliaFound = true;",
+							"                console.log('🎯 FOUND GIULIA\\'S RESERVATION 109!');",
+							"            }",
+							"        });",
+							"        ",
+							"        if (giuliaFound) {",
+							"            console.log('\\n✅ SUCCESS: Giulia\\'s reservation 109 is correctly showing as pending!');",
+							"        } else {",
+							"            console.log('\\n❌ ISSUE: Giulia\\'s reservation 109 is NOT in the pending list');",
+							"        }",
+							"    } else {",
+							"        console.log('\\n⚠️ No pending reservations found - Giulia\\'s reservation should be here');",
+							"    }",
+							"} else if (pm.response.code === 500) {",
+							"    console.log('❌ ENDPOINT ERROR 500 - Date format issue detected');",
+							"} else {",
+							"    console.log('❌ Unexpected status code:', pm.response.code);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{restaurantToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/restaurant/reservation/pending/get?start=2025-11-01&end=2025-11-30",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"restaurant",
+						"reservation",
+						"pending",
+						"get"
+					],
+					"query": [
+						{
+							"key": "start",
+							"value": "2025-11-01",
+							"description": "Using LocalDate format (YYYY-MM-DD)"
+						},
+						{
+							"key": "end",
+							"value": "2025-11-30",
+							"description": "Using LocalDate format (YYYY-MM-DD)"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Pending Reservations (No Date Filter)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log('🔍 Testing Pending Reservations WITHOUT date filter');",
+							"console.log('Response Status:', pm.response.code);",
+							"",
+							"if (pm.response.code === 200) {",
+							"    const responseJson = pm.response.json();",
+							"    console.log('✅ Endpoint works! Status: 200');",
+							"    console.log('Total pending reservations (all dates):', responseJson.data ? responseJson.data.length : 0);",
+							"    ",
+							"    if (responseJson.data && responseJson.data.length > 0) {",
+							"        console.log('\\n📋 ALL Pending Reservations:');",
+							"        let giuliaFound = false;",
+							"        responseJson.data.forEach((reservation, index) => {",
+							"            console.log(`${index + 1}. ID: ${reservation.id}, Date: ${reservation.date}, Status: ${reservation.status}`);",
+							"            if (reservation.id === 109) {",
+							"                giuliaFound = true;",
+							"                console.log('🎯 GIULIA\\'S RESERVATION 109 FOUND!');",
+							"            }",
+							"        });",
+							"        ",
+							"        if (giuliaFound) {",
+							"            console.log('\\n✅ SUCCESS: Giulia\\'s reservation exists in pending list');",
+							"        } else {",
+							"            console.log('\\n❌ Giulia\\'s reservation 109 not found in pending reservations');",
+							"        }",
+							"    }",
+							"} else {",
+							"    console.log('❌ Failed with status:', pm.response.code);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{restaurantToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/restaurant/reservation/pending/get",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"restaurant",
+						"reservation",
+						"pending",
+						"get"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test with DateTime Format (Should Fail)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log('🔍 Testing with DateTime format (like the app sends)');",
+							"console.log('Response Status:', pm.response.code);",
+							"console.log('Response Body:', pm.response.text());",
+							"",
+							"if (pm.response.code === 500) {",
+							"    console.log('❌ CONFIRMED: DateTime format causes 500 error (as expected)');",
+							"    console.log('This proves the app needs to send LocalDate format, not DateTime');",
+							"} else if (pm.response.code === 200) {",
+							"    console.log('✅ Unexpected: DateTime format worked!');",
+							"} else {",
+							"    console.log('⚠️ Unexpected status:', pm.response.code);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{restaurantToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/restaurant/reservation/pending/get?start=2025-11-10T00:00:00.000Z&end=2025-11-30T23:59:59.999Z",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"restaurant",
+						"reservation",
+						"pending",
+						"get"
+					],
+					"query": [
+						{
+							"key": "start",
+							"value": "2025-11-10T00:00:00.000Z",
+							"description": "DateTime format (like the app sends)"
+						},
+						{
+							"key": "end",
+							"value": "2025-11-30T23:59:59.999Z",
+							"description": "DateTime format (like the app sends)"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

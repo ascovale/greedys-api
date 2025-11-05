@@ -1,0 +1,109 @@
+{
+  "id": "customer-complete-flow-env",
+  "name": "Customer Complete Flow - Environment", 
+  "values": [
+    {
+      "key": "baseUrl",
+      "value": "https://api.greedys.it",
+      "enabled": true,
+      "type": "text"
+    },
+    {
+      "key": "adminEmail",
+      "value": "ascolesevalentino@gmail.com", 
+      "enabled": true,
+      "type": "text"
+    },
+    {
+      "key": "adminPassword",
+      "value": "Minosse100%",
+      "enabled": true, 
+      "type": "secret"
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "enabled": true,
+      "type": "secret"
+    },
+    {
+      "key": "customer1Token",
+      "value": "",
+      "enabled": true,
+      "type": "secret"
+    },
+    {
+      "key": "customer1Id",
+      "value": "",
+      "enabled": true,
+      "type": "text"
+    },
+    {
+      "key": "customer2Token", 
+      "value": "",
+      "enabled": true,
+      "type": "secret"
+    },
+    {
+      "key": "customer2Id",
+      "value": "",
+      "enabled": true,
+      "type": "text"
+    },
+    {
+      "key": "customer3Token",
+      "value": "",
+      "enabled": true, 
+      "type": "secret"
+    },
+    {
+      "key": "customer3Id",
+      "value": "",
+      "enabled": true,
+      "type": "text"
+    },
+    {
+      "key": "customer4Token",
+      "value": "",
+      "enabled": true,
+      "type": "secret"
+    },
+    {
+      "key": "customer4Id", 
+      "value": "",
+      "enabled": true,
+      "type": "text"
+    },
+    {
+      "key": "customer5Token",
+      "value": "",
+      "enabled": true,
+      "type": "secret"
+    },
+    {
+      "key": "customer5Id",
+      "value": "",
+      "enabled": true,
+      "type": "text"
+    },
+    {
+      "key": "colazioneSlotId",
+      "value": "",
+      "enabled": true,
+      "type": "text"
+    },
+    {
+      "key": "pranzoSlotId",
+      "value": "",
+      "enabled": true, 
+      "type": "text"
+    },
+    {
+      "key": "cenaSlotId",
+      "value": "",
+      "enabled": true,
+      "type": "text"
+    }
+  ],
+  "_postman_variable_scope": "environment"
+}

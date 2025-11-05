@@ -13,7 +13,7 @@ echo "🔍 Verifica MySQL locale..."
 # Funzione per verificare e avviare MySQL locale
 check_mysql_local() {
     # Prima prova a connettersi
-    if mysql -u root -pMinosse100% -e "SELECT 1;" &>/dev/null; then
+    if mysql -u root -pMinosseCentoXCento2025 -e "SELECT 1;" &>/dev/null; then
         echo "✅ MySQL locale è già attivo e raggiungibile!"
     else
         echo "⚠️ MySQL locale non è attivo. Tentativo di avvio..."
@@ -33,18 +33,18 @@ check_mysql_local() {
         
         # Verifica di nuovo dopo il tentativo di avvio
         sleep 3
-        if mysql -u root -pMinosse100% -e "SELECT 1;" &>/dev/null; then
+        if mysql -u root -pMinosseCentoXCento2025 -e "SELECT 1;" &>/dev/null; then
             echo "✅ MySQL locale avviato con successo!"
         else
             echo "❌ ERRORE: MySQL locale non è raggiungibile dopo il tentativo di avvio!"
             echo "   Verifica che MySQL sia installato e che la password sia corretta"
-            echo "   Comando di test: mysql -u root -pMinosse100% -e 'SELECT 1;'"
+            echo "   Comando di test: mysql -u root -pMinosseCentoXCento2025 -e 'SELECT 1;'"
             return 1
         fi
     fi
         
     # Verifica/crea database greedys_dev
-    mysql -u root -pMinosse100% -e "CREATE DATABASE IF NOT EXISTS greedys_dev CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>/dev/null
+    mysql -u root -pMinosseCentoXCento2025 -e "CREATE DATABASE IF NOT EXISTS greedys_dev CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>/dev/null
     echo "✅ Database greedys_dev verificato/creato!"
     return 0
 }

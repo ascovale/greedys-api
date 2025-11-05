@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.application.common.controller.BaseController;
 import com.application.common.controller.annotation.ReadApiResponses;
+import com.application.common.web.dto.customer.CustomerDTO;
 import com.application.common.web.dto.customer.CustomerStatisticsDTO;
 import com.application.customer.service.CustomerService;
 
@@ -36,6 +37,16 @@ public class RestaurantCustomerController extends BaseController {
             @Parameter(description = "Customer ID", required = true, example = "1")
             @PathVariable Long idCustomer) {
         return execute("get customer statistics", () -> customerService.getCustomerStatistics(idCustomer));
+    }
+
+    @Operation(summary = "Get customer details", description = "Retrieves complete customer information including name, email, and phone number")
+    @ReadApiResponses
+    @GetMapping("/{idCustomer}/details")
+    
+    public ResponseEntity<CustomerDTO> getCustomerDetails(
+            @Parameter(description = "Customer ID", required = true, example = "1")
+            @PathVariable Long idCustomer) {
+        return execute("get customer details", () -> customerService.findById(idCustomer));
     }
 }
 

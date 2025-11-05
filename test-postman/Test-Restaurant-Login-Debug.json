@@ -1,0 +1,62 @@
+{
+	"info": {
+		"_postman_id": "test-restaurant-login-debug",
+		"name": "Test Restaurant Login Debug",
+		"description": "Debug restaurant login",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Test Restaurant Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log('🔍 Testing Restaurant Login');",
+							"console.log('Request URL:', pm.request.url.toString());",
+							"console.log('Request Body:', JSON.stringify(JSON.parse(pm.request.body.raw), null, 2));",
+							"console.log('Response Status:', pm.response.code);",
+							"console.log('Response Body:', pm.response.text());",
+							"",
+							"if (pm.response.code === 201) {",
+							"    console.log('✅ Login successful!');",
+							"} else if (pm.response.code === 401) {",
+							"    console.log('❌ Login failed - Invalid credentials');",
+							"} else {",
+							"    console.log('⚠️ Unexpected status code');",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"test@test.it\",\n    \"password\": \"TestPass123!\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/restaurant/user/auth/authenticate",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"restaurant",
+						"user",
+						"auth",
+						"authenticate"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
