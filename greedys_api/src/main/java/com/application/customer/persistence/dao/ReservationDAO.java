@@ -126,6 +126,14 @@ public interface ReservationDAO extends JpaRepository<Reservation, Long> {
 
     @Query(value = """
             SELECT r FROM Reservation r
+            WHERE r.slot.id = :slotId 
+                AND r.date >= :fromDate
+                ORDER BY r.date, r.slot.start
+            """)
+    List<Reservation> findFutureReservationsBySlotId(Long slotId, LocalDate fromDate);
+
+    @Query(value = """
+            SELECT r FROM Reservation r
             WHERE r.restaurant.id = :restaurantId
                 AND r.date BETWEEN :startDate AND :endDate
                 AND r.status = :status

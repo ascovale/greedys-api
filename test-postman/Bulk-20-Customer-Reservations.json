@@ -1,0 +1,3084 @@
+{
+  "info": {
+    "_postman_id": "bulk-20-reservations-2025",
+    "name": "Bulk 20 Customer Reservations - Restaurant ID 1",
+    "description": "🍽️ **Collection per creare 20 prenotazioni da diversi customer**\n\n- Crea 20 customer diversi\n- Ogni customer fa una prenotazione per il ristorante ID: 3\n- Le prenotazioni sono in stato NOT_ACCEPTED (richiedono approvazione admin)\n- Usa slot del lunedì per colazione, pranzo e cena\n\n**Flusso:**\n1. Registra 20 customer diversi\n2. Ogni customer fa login\n3. Ogni customer crea una prenotazione via `/customer/reservation/ask`\n4. Admin può poi approvare le prenotazioni\n\n**Data target**: Lunedì 10 Novembre 2025\n\n**Composizione finale:**\n- 20 customer registrati (mario.rossi.1 + 19 generati automaticamente)\n- 60 chiamate totali (20 x 3: registrazione + login + prenotazione)\n- Distribuzione servizi lunedì 13/01/2025:\n  - 🌅 Colazione (slot 252): 7 prenotazioni (Customer 1-7)\n  - 🍝 Pranzo (slot 253): 7 prenotazioni (Customer 8-14) \n  - 🍷 Cena (slot 254): 6 prenotazioni (Customer 15-20)\n\n**Utilizzo:**\n1. Importa in Postman\n2. Imposta environment con base_url = https://api.greedys.it\n3. Esegui Runner su tutta la collezione\n4. Le prenotazioni saranno in stato NOT_ACCEPTED per ristorante 3\n5. Usa admin per approvarle se necessario",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "🏪 Restaurant Login (per info servizi)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set('restaurant_token', response.jwt);",
+              "    console.log('✅ Restaurant token salvato');",
+              "} else {",
+              "    console.log('❌ Login ristorante fallito');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"username\": \"test@test.it\",\n    \"password\": \"TestPass123!\",\n    \"rememberMe\": true\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/restaurant/auth/login",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "restaurant",
+            "auth",
+            "login"
+          ]
+        }
+      }
+    },
+    {
+      "name": "📋 Get Restaurant Services (lunedì 13/01/25)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const services = pm.response.json();",
+              "    console.log('✅ Servizi disponibili:', services.length);",
+              "    ",
+              "    // Salva i primi 3 servizi (colazione, pranzo, cena)",
+              "    if (services.length >= 3) {",
+              "        pm.environment.set('service_1_id', services[0].id);",
+              "        pm.environment.set('service_2_id', services[1].id);",
+              "        pm.environment.set('service_3_id', services[2].id);",
+              "        console.log('Servizi salvati:', services[0].name, services[1].name, services[2].name);",
+              "    }",
+              "} else {",
+              "    console.log('❌ Errore nel recupero servizi');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{restaurant_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/restaurant/1/services?date=2025-01-13",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "restaurant",
+            "3",
+            "services"
+          ],
+          "query": [
+            {
+              "key": "date",
+              "value": "2025-01-13"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "👤 Customer 1 Registration",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set('customer_1_id', response.id);",
+              "    console.log('✅ Customer 1 registrato con ID:', response.id);",
+              "} else {",
+              "    console.log('❌ Registrazione Customer 1 fallita');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"firstName\": \"Mario\",\n    \"lastName\": \"Rossi\",\n    \"email\": \"mario.rossi.1@example.com\",\n    \"password\": \"Password123!\",\n    \"matchingPassword\": \"Password123!\",\n    \"username\": \"mario.rossi.1@example.com\",\n    \"phone\": \"+39 333 1111111\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/auth/register",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "auth",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "🔑 Customer 1 Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set('customer_1_token', response.jwt);",
+              "    console.log('✅ Customer 1 login effettuato');",
+              "} else {",
+              "    console.log('❌ Login Customer 1 fallito');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"username\": \"mario.rossi.1@example.com\",\n    \"password\": \"Password123!\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/auth/login",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "auth",
+            "login"
+          ]
+        }
+      }
+    },
+    {
+      "name": "📅 Customer 1 Reservation Request",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    console.log('✅ Prenotazione Customer 1 creata - Status:', response.status);",
+              "    console.log('   ID Prenotazione:', response.id);",
+              "} else {",
+              "    console.log('❌ Prenotazione Customer 1 fallita');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{customer_1_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"userName\": \"Mario Rossi\",\n    \"idSlot\": 202,\n    \"pax\": 2,\n    \"kids\": 0,\n    \"restaurantId\": 3,\n    \"reservationDay\": \"2025-01-13\",\n    \"notes\": \"Prenotazione di test da Customer 1 - Mario Rossi per colazione\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/reservation/ask",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "reservation",
+            "ask"
+          ]
+        }
+      }
+    },
+    {
+      "name": "👤 Customer 2 Registration",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set('customer_2_id', response.id);",
+              "    console.log('✅ Customer 2 registrato con ID:', response.id);",
+              "} else {",
+              "    console.log('❌ Registrazione Customer 2 fallita');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"firstName\": \"Francesco\",\n    \"lastName\": \"Mancini\",\n    \"email\": \"francesco.mancini.2@example.com\",\n    \"password\": \"Password123!\",\n    \"matchingPassword\": \"Password123!\",\n    \"username\": \"francesco.mancini.2@example.com\",\n    \"phone\": \"+39 333 0000002\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/auth/register",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "auth",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "🔑 Customer 2 Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set('customer_2_token', response.jwt);",
+              "    console.log('✅ Customer 2 login effettuato');",
+              "} else {",
+              "    console.log('❌ Login Customer 2 fallito');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"username\": \"francesco.mancini.2@example.com\",\n    \"password\": \"Password123!\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/auth/login",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "auth",
+            "login"
+          ]
+        }
+      }
+    },
+    {
+      "name": "📅 Customer 2 Reservation Request (colazione)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    console.log('✅ Prenotazione Customer 2 creata - Status:', response.status);",
+              "    console.log('   ID Prenotazione:', response.id);",
+              "} else {",
+              "    console.log('❌ Prenotazione Customer 2 fallita');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{customer_2_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"restaurantId\": 3,\n    \"serviceId\": \"{{service_1_id}}\",\n    \"reservationDate\": \"2025-01-13\",\n    \"numberOfPeople\": 6,\n    \"notes\": \"Prenotazione di test da Customer 2 - Francesco Mancini per colazione\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/reservation/ask",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "reservation",
+            "ask"
+          ]
+        }
+      }
+    },
+    {
+      "name": "👤 Customer 3 Registration",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set('customer_3_id', response.id);",
+              "    console.log('✅ Customer 3 registrato con ID:', response.id);",
+              "} else {",
+              "    console.log('❌ Registrazione Customer 3 fallita');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"firstName\": \"Luca\",\n    \"lastName\": \"Costa\",\n    \"email\": \"luca.costa.3@example.com\",\n    \"password\": \"Password123!\",\n    \"matchingPassword\": \"Password123!\",\n    \"username\": \"luca.costa.3@example.com\",\n    \"phone\": \"+39 333 0000003\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/auth/register",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "auth",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "🔑 Customer 3 Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set('customer_3_token', response.jwt);",
+              "    console.log('✅ Customer 3 login effettuato');",
+              "} else {",
+              "    console.log('❌ Login Customer 3 fallito');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"username\": \"luca.costa.3@example.com\",\n    \"password\": \"Password123!\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/auth/login",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "auth",
+            "login"
+          ]
+        }
+      }
+    },
+    {
+      "name": "📅 Customer 3 Reservation Request (colazione)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    console.log('✅ Prenotazione Customer 3 creata - Status:', response.status);",
+              "    console.log('   ID Prenotazione:', response.id);",
+              "} else {",
+              "    console.log('❌ Prenotazione Customer 3 fallita');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{customer_3_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"restaurantId\": 3,\n    \"serviceId\": \"{{service_1_id}}\",\n    \"reservationDate\": \"2025-01-13\",\n    \"numberOfPeople\": 1,\n    \"notes\": \"Prenotazione di test da Customer 3 - Luca Costa per colazione\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/reservation/ask",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "reservation",
+            "ask"
+          ]
+        }
+      }
+    },
+    {
+      "name": "👤 Customer 4 Registration",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set('customer_4_id', response.id);",
+              "    console.log('✅ Customer 4 registrato con ID:', response.id);",
+              "} else {",
+              "    console.log('❌ Registrazione Customer 4 fallita');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"firstName\": \"Stefano\",\n    \"lastName\": \"Colombo\",\n    \"email\": \"stefano.colombo.4@example.com\",\n    \"password\": \"Password123!\",\n    \"matchingPassword\": \"Password123!\",\n    \"username\": \"stefano.colombo.4@example.com\",\n    \"phone\": \"+39 333 0000004\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/auth/register",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "auth",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "🔑 Customer 4 Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set('customer_4_token', response.jwt);",
+              "    console.log('✅ Customer 4 login effettuato');",
+              "} else {",
+              "    console.log('❌ Login Customer 4 fallito');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"username\": \"stefano.colombo.4@example.com\",\n    \"password\": \"Password123!\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/auth/login",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "auth",
+            "login"
+          ]
+        }
+      }
+    },
+    {
+      "name": "📅 Customer 4 Reservation Request (colazione)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    console.log('✅ Prenotazione Customer 4 creata - Status:', response.status);",
+              "    console.log('   ID Prenotazione:', response.id);",
+              "} else {",
+              "    console.log('❌ Prenotazione Customer 4 fallita');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{customer_4_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"restaurantId\": 3,\n    \"serviceId\": \"{{service_1_id}}\",\n    \"reservationDate\": \"2025-01-13\",\n    \"numberOfPeople\": 5,\n    \"notes\": \"Prenotazione di test da Customer 4 - Stefano Colombo per colazione\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/reservation/ask",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "reservation",
+            "ask"
+          ]
+        }
+      }
+    },
+    {
+      "name": "👤 Customer 5 Registration",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set('customer_5_id', response.id);",
+              "    console.log('✅ Customer 5 registrato con ID:', response.id);",
+              "} else {",
+              "    console.log('❌ Registrazione Customer 5 fallita');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"firstName\": \"Luca\",\n    \"lastName\": \"Colombo\",\n    \"email\": \"luca.colombo.5@example.com\",\n    \"password\": \"Password123!\",\n    \"matchingPassword\": \"Password123!\",\n    \"username\": \"luca.colombo.5@example.com\",\n    \"phone\": \"+39 333 0000005\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/auth/register",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "auth",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "🔑 Customer 5 Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set('customer_5_token', response.jwt);",
+              "    console.log('✅ Customer 5 login effettuato');",
+              "} else {",
+              "    console.log('❌ Login Customer 5 fallito');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"username\": \"luca.colombo.5@example.com\",\n    \"password\": \"Password123!\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/auth/login",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "auth",
+            "login"
+          ]
+        }
+      }
+    },
+    {
+      "name": "📅 Customer 5 Reservation Request (colazione)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    console.log('✅ Prenotazione Customer 5 creata - Status:', response.status);",
+              "    console.log('   ID Prenotazione:', response.id);",
+              "} else {",
+              "    console.log('❌ Prenotazione Customer 5 fallita');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{customer_5_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"restaurantId\": 3,\n    \"serviceId\": \"{{service_1_id}}\",\n    \"reservationDate\": \"2025-01-13\",\n    \"numberOfPeople\": 1,\n    \"notes\": \"Prenotazione di test da Customer 5 - Luca Colombo per colazione\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/reservation/ask",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "reservation",
+            "ask"
+          ]
+        }
+      }
+    },
+    {
+      "name": "👤 Customer 6 Registration",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set('customer_6_id', response.id);",
+              "    console.log('✅ Customer 6 registrato con ID:', response.id);",
+              "} else {",
+              "    console.log('❌ Registrazione Customer 6 fallita');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"firstName\": \"Luca\",\n    \"lastName\": \"Bianchi\",\n    \"email\": \"luca.bianchi.6@example.com\",\n    \"password\": \"Password123!\",\n    \"matchingPassword\": \"Password123!\",\n    \"username\": \"luca.bianchi.6@example.com\",\n    \"phone\": \"+39 333 0000006\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/auth/register",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "auth",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "🔑 Customer 6 Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set('customer_6_token', response.jwt);",
+              "    console.log('✅ Customer 6 login effettuato');",
+              "} else {",
+              "    console.log('❌ Login Customer 6 fallito');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"username\": \"luca.bianchi.6@example.com\",\n    \"password\": \"Password123!\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/auth/login",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "auth",
+            "login"
+          ]
+        }
+      }
+    },
+    {
+      "name": "📅 Customer 6 Reservation Request (colazione)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    console.log('✅ Prenotazione Customer 6 creata - Status:', response.status);",
+              "    console.log('   ID Prenotazione:', response.id);",
+              "} else {",
+              "    console.log('❌ Prenotazione Customer 6 fallita');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{customer_6_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"restaurantId\": 3,\n    \"serviceId\": \"{{service_1_id}}\",\n    \"reservationDate\": \"2025-01-13\",\n    \"numberOfPeople\": 5,\n    \"notes\": \"Prenotazione di test da Customer 6 - Luca Bianchi per colazione\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/reservation/ask",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "reservation",
+            "ask"
+          ]
+        }
+      }
+    },
+    {
+      "name": "👤 Customer 7 Registration",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set('customer_7_id', response.id);",
+              "    console.log('✅ Customer 7 registrato con ID:', response.id);",
+              "} else {",
+              "    console.log('❌ Registrazione Customer 7 fallita');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"firstName\": \"Stefano\",\n    \"lastName\": \"Rizzo\",\n    \"email\": \"stefano.rizzo.7@example.com\",\n    \"password\": \"Password123!\",\n    \"matchingPassword\": \"Password123!\",\n    \"username\": \"stefano.rizzo.7@example.com\",\n    \"phone\": \"+39 333 0000007\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/auth/register",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "auth",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "🔑 Customer 7 Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set('customer_7_token', response.jwt);",
+              "    console.log('✅ Customer 7 login effettuato');",
+              "} else {",
+              "    console.log('❌ Login Customer 7 fallito');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"username\": \"stefano.rizzo.7@example.com\",\n    \"password\": \"Password123!\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/auth/login",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "auth",
+            "login"
+          ]
+        }
+      }
+    },
+    {
+      "name": "📅 Customer 7 Reservation Request (colazione)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    console.log('✅ Prenotazione Customer 7 creata - Status:', response.status);",
+              "    console.log('   ID Prenotazione:', response.id);",
+              "} else {",
+              "    console.log('❌ Prenotazione Customer 7 fallita');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{customer_7_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"restaurantId\": 3,\n    \"serviceId\": \"{{service_1_id}}\",\n    \"reservationDate\": \"2025-01-13\",\n    \"numberOfPeople\": 4,\n    \"notes\": \"Prenotazione di test da Customer 7 - Stefano Rizzo per colazione\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/reservation/ask",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "reservation",
+            "ask"
+          ]
+        }
+      }
+    },
+    {
+      "name": "👤 Customer 8 Registration",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set('customer_8_id', response.id);",
+              "    console.log('✅ Customer 8 registrato con ID:', response.id);",
+              "} else {",
+              "    console.log('❌ Registrazione Customer 8 fallita');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"firstName\": \"Nicola\",\n    \"lastName\": \"Mancini\",\n    \"email\": \"nicola.mancini.8@example.com\",\n    \"password\": \"Password123!\",\n    \"matchingPassword\": \"Password123!\",\n    \"username\": \"nicola.mancini.8@example.com\",\n    \"phone\": \"+39 333 0000008\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/auth/register",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "auth",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "🔑 Customer 8 Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set('customer_8_token', response.jwt);",
+              "    console.log('✅ Customer 8 login effettuato');",
+              "} else {",
+              "    console.log('❌ Login Customer 8 fallito');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"username\": \"nicola.mancini.8@example.com\",\n    \"password\": \"Password123!\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/auth/login",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "auth",
+            "login"
+          ]
+        }
+      }
+    },
+    {
+      "name": "📅 Customer 8 Reservation Request (pranzo)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    console.log('✅ Prenotazione Customer 8 creata - Status:', response.status);",
+              "    console.log('   ID Prenotazione:', response.id);",
+              "} else {",
+              "    console.log('❌ Prenotazione Customer 8 fallita');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{customer_8_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"restaurantId\": 3,\n    \"serviceId\": \"{{service_2_id}}\",\n    \"reservationDate\": \"2025-01-13\",\n    \"numberOfPeople\": 3,\n    \"notes\": \"Prenotazione di test da Customer 8 - Nicola Mancini per pranzo\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/reservation/ask",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "reservation",
+            "ask"
+          ]
+        }
+      }
+    },
+    {
+      "name": "👤 Customer 9 Registration",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set('customer_9_id', response.id);",
+              "    console.log('✅ Customer 9 registrato con ID:', response.id);",
+              "} else {",
+              "    console.log('❌ Registrazione Customer 9 fallita');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"firstName\": \"Alessandro\",\n    \"lastName\": \"Rizzo\",\n    \"email\": \"alessandro.rizzo.9@example.com\",\n    \"password\": \"Password123!\",\n    \"matchingPassword\": \"Password123!\",\n    \"username\": \"alessandro.rizzo.9@example.com\",\n    \"phone\": \"+39 333 0000009\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/auth/register",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "auth",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "🔑 Customer 9 Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set('customer_9_token', response.jwt);",
+              "    console.log('✅ Customer 9 login effettuato');",
+              "} else {",
+              "    console.log('❌ Login Customer 9 fallito');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"username\": \"alessandro.rizzo.9@example.com\",\n    \"password\": \"Password123!\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/auth/login",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "auth",
+            "login"
+          ]
+        }
+      }
+    },
+    {
+      "name": "📅 Customer 9 Reservation Request (pranzo)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    console.log('✅ Prenotazione Customer 9 creata - Status:', response.status);",
+              "    console.log('   ID Prenotazione:', response.id);",
+              "} else {",
+              "    console.log('❌ Prenotazione Customer 9 fallita');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{customer_9_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"restaurantId\": 3,\n    \"serviceId\": \"{{service_2_id}}\",\n    \"reservationDate\": \"2025-01-13\",\n    \"numberOfPeople\": 5,\n    \"notes\": \"Prenotazione di test da Customer 9 - Alessandro Rizzo per pranzo\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/reservation/ask",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "reservation",
+            "ask"
+          ]
+        }
+      }
+    },
+    {
+      "name": "👤 Customer 10 Registration",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set('customer_10_id', response.id);",
+              "    console.log('✅ Customer 10 registrato con ID:', response.id);",
+              "} else {",
+              "    console.log('❌ Registrazione Customer 10 fallita');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"firstName\": \"Luca\",\n    \"lastName\": \"Lombardi\",\n    \"email\": \"luca.lombardi.10@example.com\",\n    \"password\": \"Password123!\",\n    \"matchingPassword\": \"Password123!\",\n    \"username\": \"luca.lombardi.10@example.com\",\n    \"phone\": \"+39 333 0000010\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/auth/register",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "auth",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "🔑 Customer 10 Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set('customer_10_token', response.jwt);",
+              "    console.log('✅ Customer 10 login effettuato');",
+              "} else {",
+              "    console.log('❌ Login Customer 10 fallito');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"username\": \"luca.lombardi.10@example.com\",\n    \"password\": \"Password123!\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/auth/login",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "auth",
+            "login"
+          ]
+        }
+      }
+    },
+    {
+      "name": "📅 Customer 10 Reservation Request (pranzo)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    console.log('✅ Prenotazione Customer 10 creata - Status:', response.status);",
+              "    console.log('   ID Prenotazione:', response.id);",
+              "} else {",
+              "    console.log('❌ Prenotazione Customer 10 fallita');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{customer_10_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"restaurantId\": 3,\n    \"serviceId\": \"{{service_2_id}}\",\n    \"reservationDate\": \"2025-01-13\",\n    \"numberOfPeople\": 1,\n    \"notes\": \"Prenotazione di test da Customer 10 - Luca Lombardi per pranzo\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/reservation/ask",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "reservation",
+            "ask"
+          ]
+        }
+      }
+    },
+    {
+      "name": "👤 Customer 11 Registration",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set('customer_11_id', response.id);",
+              "    console.log('✅ Customer 11 registrato con ID:', response.id);",
+              "} else {",
+              "    console.log('❌ Registrazione Customer 11 fallita');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"firstName\": \"Davide\",\n    \"lastName\": \"Marino\",\n    \"email\": \"davide.marino.11@example.com\",\n    \"password\": \"Password123!\",\n    \"matchingPassword\": \"Password123!\",\n    \"username\": \"davide.marino.11@example.com\",\n    \"phone\": \"+39 333 0000011\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/auth/register",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "auth",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "🔑 Customer 11 Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set('customer_11_token', response.jwt);",
+              "    console.log('✅ Customer 11 login effettuato');",
+              "} else {",
+              "    console.log('❌ Login Customer 11 fallito');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"username\": \"davide.marino.11@example.com\",\n    \"password\": \"Password123!\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/auth/login",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "auth",
+            "login"
+          ]
+        }
+      }
+    },
+    {
+      "name": "📅 Customer 11 Reservation Request (pranzo)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    console.log('✅ Prenotazione Customer 11 creata - Status:', response.status);",
+              "    console.log('   ID Prenotazione:', response.id);",
+              "} else {",
+              "    console.log('❌ Prenotazione Customer 11 fallita');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{customer_11_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"restaurantId\": 3,\n    \"serviceId\": \"{{service_2_id}}\",\n    \"reservationDate\": \"2025-01-13\",\n    \"numberOfPeople\": 6,\n    \"notes\": \"Prenotazione di test da Customer 11 - Davide Marino per pranzo\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/reservation/ask",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "reservation",
+            "ask"
+          ]
+        }
+      }
+    },
+    {
+      "name": "👤 Customer 12 Registration",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set('customer_12_id', response.id);",
+              "    console.log('✅ Customer 12 registrato con ID:', response.id);",
+              "} else {",
+              "    console.log('❌ Registrazione Customer 12 fallita');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"firstName\": \"Marco\",\n    \"lastName\": \"Bianchi\",\n    \"email\": \"marco.bianchi.12@example.com\",\n    \"password\": \"Password123!\",\n    \"matchingPassword\": \"Password123!\",\n    \"username\": \"marco.bianchi.12@example.com\",\n    \"phone\": \"+39 333 0000012\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/auth/register",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "auth",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "🔑 Customer 12 Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set('customer_12_token', response.jwt);",
+              "    console.log('✅ Customer 12 login effettuato');",
+              "} else {",
+              "    console.log('❌ Login Customer 12 fallito');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"username\": \"marco.bianchi.12@example.com\",\n    \"password\": \"Password123!\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/auth/login",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "auth",
+            "login"
+          ]
+        }
+      }
+    },
+    {
+      "name": "📅 Customer 12 Reservation Request (pranzo)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    console.log('✅ Prenotazione Customer 12 creata - Status:', response.status);",
+              "    console.log('   ID Prenotazione:', response.id);",
+              "} else {",
+              "    console.log('❌ Prenotazione Customer 12 fallita');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{customer_12_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"restaurantId\": 3,\n    \"serviceId\": \"{{service_2_id}}\",\n    \"reservationDate\": \"2025-01-13\",\n    \"numberOfPeople\": 4,\n    \"notes\": \"Prenotazione di test da Customer 12 - Marco Bianchi per pranzo\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/reservation/ask",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "reservation",
+            "ask"
+          ]
+        }
+      }
+    },
+    {
+      "name": "👤 Customer 13 Registration",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set('customer_13_id', response.id);",
+              "    console.log('✅ Customer 13 registrato con ID:', response.id);",
+              "} else {",
+              "    console.log('❌ Registrazione Customer 13 fallita');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"firstName\": \"Emanuele\",\n    \"lastName\": \"Costa\",\n    \"email\": \"emanuele.costa.13@example.com\",\n    \"password\": \"Password123!\",\n    \"matchingPassword\": \"Password123!\",\n    \"username\": \"emanuele.costa.13@example.com\",\n    \"phone\": \"+39 333 0000013\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/auth/register",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "auth",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "🔑 Customer 13 Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set('customer_13_token', response.jwt);",
+              "    console.log('✅ Customer 13 login effettuato');",
+              "} else {",
+              "    console.log('❌ Login Customer 13 fallito');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"username\": \"emanuele.costa.13@example.com\",\n    \"password\": \"Password123!\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/auth/login",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "auth",
+            "login"
+          ]
+        }
+      }
+    },
+    {
+      "name": "📅 Customer 13 Reservation Request (pranzo)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    console.log('✅ Prenotazione Customer 13 creata - Status:', response.status);",
+              "    console.log('   ID Prenotazione:', response.id);",
+              "} else {",
+              "    console.log('❌ Prenotazione Customer 13 fallita');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{customer_13_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"restaurantId\": 3,\n    \"serviceId\": \"{{service_2_id}}\",\n    \"reservationDate\": \"2025-01-13\",\n    \"numberOfPeople\": 5,\n    \"notes\": \"Prenotazione di test da Customer 13 - Emanuele Costa per pranzo\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/reservation/ask",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "reservation",
+            "ask"
+          ]
+        }
+      }
+    },
+    {
+      "name": "👤 Customer 14 Registration",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set('customer_14_id', response.id);",
+              "    console.log('✅ Customer 14 registrato con ID:', response.id);",
+              "} else {",
+              "    console.log('❌ Registrazione Customer 14 fallita');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"firstName\": \"Marco\",\n    \"lastName\": \"Ricci\",\n    \"email\": \"marco.ricci.14@example.com\",\n    \"password\": \"Password123!\",\n    \"matchingPassword\": \"Password123!\",\n    \"username\": \"marco.ricci.14@example.com\",\n    \"phone\": \"+39 333 0000014\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/auth/register",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "auth",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "🔑 Customer 14 Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set('customer_14_token', response.jwt);",
+              "    console.log('✅ Customer 14 login effettuato');",
+              "} else {",
+              "    console.log('❌ Login Customer 14 fallito');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"username\": \"marco.ricci.14@example.com\",\n    \"password\": \"Password123!\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/auth/login",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "auth",
+            "login"
+          ]
+        }
+      }
+    },
+    {
+      "name": "📅 Customer 14 Reservation Request (pranzo)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    console.log('✅ Prenotazione Customer 14 creata - Status:', response.status);",
+              "    console.log('   ID Prenotazione:', response.id);",
+              "} else {",
+              "    console.log('❌ Prenotazione Customer 14 fallita');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{customer_14_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"restaurantId\": 3,\n    \"serviceId\": \"{{service_2_id}}\",\n    \"reservationDate\": \"2025-01-13\",\n    \"numberOfPeople\": 1,\n    \"notes\": \"Prenotazione di test da Customer 14 - Marco Ricci per pranzo\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/reservation/ask",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "reservation",
+            "ask"
+          ]
+        }
+      }
+    },
+    {
+      "name": "👤 Customer 15 Registration",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set('customer_15_id', response.id);",
+              "    console.log('✅ Customer 15 registrato con ID:', response.id);",
+              "} else {",
+              "    console.log('❌ Registrazione Customer 15 fallita');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"firstName\": \"Roberto\",\n    \"lastName\": \"Bruno\",\n    \"email\": \"roberto.bruno.15@example.com\",\n    \"password\": \"Password123!\",\n    \"matchingPassword\": \"Password123!\",\n    \"username\": \"roberto.bruno.15@example.com\",\n    \"phone\": \"+39 333 0000015\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/auth/register",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "auth",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "🔑 Customer 15 Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set('customer_15_token', response.jwt);",
+              "    console.log('✅ Customer 15 login effettuato');",
+              "} else {",
+              "    console.log('❌ Login Customer 15 fallito');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"username\": \"roberto.bruno.15@example.com\",\n    \"password\": \"Password123!\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/auth/login",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "auth",
+            "login"
+          ]
+        }
+      }
+    },
+    {
+      "name": "📅 Customer 15 Reservation Request (cena)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    console.log('✅ Prenotazione Customer 15 creata - Status:', response.status);",
+              "    console.log('   ID Prenotazione:', response.id);",
+              "} else {",
+              "    console.log('❌ Prenotazione Customer 15 fallita');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{customer_15_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"restaurantId\": 3,\n    \"serviceId\": \"{{service_3_id}}\",\n    \"reservationDate\": \"2025-01-13\",\n    \"numberOfPeople\": 6,\n    \"notes\": \"Prenotazione di test da Customer 15 - Roberto Bruno per cena\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/reservation/ask",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "reservation",
+            "ask"
+          ]
+        }
+      }
+    },
+    {
+      "name": "👤 Customer 16 Registration",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set('customer_16_id', response.id);",
+              "    console.log('✅ Customer 16 registrato con ID:', response.id);",
+              "} else {",
+              "    console.log('❌ Registrazione Customer 16 fallita');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"firstName\": \"Francesco\",\n    \"lastName\": \"Romano\",\n    \"email\": \"francesco.romano.16@example.com\",\n    \"password\": \"Password123!\",\n    \"matchingPassword\": \"Password123!\",\n    \"username\": \"francesco.romano.16@example.com\",\n    \"phone\": \"+39 333 0000016\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/auth/register",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "auth",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "🔑 Customer 16 Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set('customer_16_token', response.jwt);",
+              "    console.log('✅ Customer 16 login effettuato');",
+              "} else {",
+              "    console.log('❌ Login Customer 16 fallito');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"username\": \"francesco.romano.16@example.com\",\n    \"password\": \"Password123!\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/auth/login",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "auth",
+            "login"
+          ]
+        }
+      }
+    },
+    {
+      "name": "📅 Customer 16 Reservation Request (cena)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    console.log('✅ Prenotazione Customer 16 creata - Status:', response.status);",
+              "    console.log('   ID Prenotazione:', response.id);",
+              "} else {",
+              "    console.log('❌ Prenotazione Customer 16 fallita');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{customer_16_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"restaurantId\": 3,\n    \"serviceId\": \"{{service_3_id}}\",\n    \"reservationDate\": \"2025-01-13\",\n    \"numberOfPeople\": 5,\n    \"notes\": \"Prenotazione di test da Customer 16 - Francesco Romano per cena\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/reservation/ask",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "reservation",
+            "ask"
+          ]
+        }
+      }
+    },
+    {
+      "name": "👤 Customer 17 Registration",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set('customer_17_id', response.id);",
+              "    console.log('✅ Customer 17 registrato con ID:', response.id);",
+              "} else {",
+              "    console.log('❌ Registrazione Customer 17 fallita');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"firstName\": \"Riccardo\",\n    \"lastName\": \"Colombo\",\n    \"email\": \"riccardo.colombo.17@example.com\",\n    \"password\": \"Password123!\",\n    \"matchingPassword\": \"Password123!\",\n    \"username\": \"riccardo.colombo.17@example.com\",\n    \"phone\": \"+39 333 0000017\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/auth/register",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "auth",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "🔑 Customer 17 Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set('customer_17_token', response.jwt);",
+              "    console.log('✅ Customer 17 login effettuato');",
+              "} else {",
+              "    console.log('❌ Login Customer 17 fallito');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"username\": \"riccardo.colombo.17@example.com\",\n    \"password\": \"Password123!\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/auth/login",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "auth",
+            "login"
+          ]
+        }
+      }
+    },
+    {
+      "name": "📅 Customer 17 Reservation Request (cena)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    console.log('✅ Prenotazione Customer 17 creata - Status:', response.status);",
+              "    console.log('   ID Prenotazione:', response.id);",
+              "} else {",
+              "    console.log('❌ Prenotazione Customer 17 fallita');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{customer_17_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"restaurantId\": 3,\n    \"serviceId\": \"{{service_3_id}}\",\n    \"reservationDate\": \"2025-01-13\",\n    \"numberOfPeople\": 3,\n    \"notes\": \"Prenotazione di test da Customer 17 - Riccardo Colombo per cena\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/reservation/ask",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "reservation",
+            "ask"
+          ]
+        }
+      }
+    },
+    {
+      "name": "👤 Customer 18 Registration",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set('customer_18_id', response.id);",
+              "    console.log('✅ Customer 18 registrato con ID:', response.id);",
+              "} else {",
+              "    console.log('❌ Registrazione Customer 18 fallita');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"firstName\": \"Marco\",\n    \"lastName\": \"Marino\",\n    \"email\": \"marco.marino.18@example.com\",\n    \"password\": \"Password123!\",\n    \"matchingPassword\": \"Password123!\",\n    \"username\": \"marco.marino.18@example.com\",\n    \"phone\": \"+39 333 0000018\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/auth/register",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "auth",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "🔑 Customer 18 Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set('customer_18_token', response.jwt);",
+              "    console.log('✅ Customer 18 login effettuato');",
+              "} else {",
+              "    console.log('❌ Login Customer 18 fallito');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"username\": \"marco.marino.18@example.com\",\n    \"password\": \"Password123!\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/auth/login",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "auth",
+            "login"
+          ]
+        }
+      }
+    },
+    {
+      "name": "📅 Customer 18 Reservation Request (cena)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    console.log('✅ Prenotazione Customer 18 creata - Status:', response.status);",
+              "    console.log('   ID Prenotazione:', response.id);",
+              "} else {",
+              "    console.log('❌ Prenotazione Customer 18 fallita');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{customer_18_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"restaurantId\": 3,\n    \"serviceId\": \"{{service_3_id}}\",\n    \"reservationDate\": \"2025-01-13\",\n    \"numberOfPeople\": 3,\n    \"notes\": \"Prenotazione di test da Customer 18 - Marco Marino per cena\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/reservation/ask",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "reservation",
+            "ask"
+          ]
+        }
+      }
+    },
+    {
+      "name": "👤 Customer 19 Registration",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set('customer_19_id', response.id);",
+              "    console.log('✅ Customer 19 registrato con ID:', response.id);",
+              "} else {",
+              "    console.log('❌ Registrazione Customer 19 fallita');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"firstName\": \"Luigi\",\n    \"lastName\": \"Fontana\",\n    \"email\": \"luigi.fontana.19@example.com\",\n    \"password\": \"Password123!\",\n    \"matchingPassword\": \"Password123!\",\n    \"username\": \"luigi.fontana.19@example.com\",\n    \"phone\": \"+39 333 0000019\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/auth/register",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "auth",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "🔑 Customer 19 Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set('customer_19_token', response.jwt);",
+              "    console.log('✅ Customer 19 login effettuato');",
+              "} else {",
+              "    console.log('❌ Login Customer 19 fallito');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"username\": \"luigi.fontana.19@example.com\",\n    \"password\": \"Password123!\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/auth/login",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "auth",
+            "login"
+          ]
+        }
+      }
+    },
+    {
+      "name": "📅 Customer 19 Reservation Request (cena)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    console.log('✅ Prenotazione Customer 19 creata - Status:', response.status);",
+              "    console.log('   ID Prenotazione:', response.id);",
+              "} else {",
+              "    console.log('❌ Prenotazione Customer 19 fallita');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{customer_19_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"restaurantId\": 3,\n    \"serviceId\": \"{{service_3_id}}\",\n    \"reservationDate\": \"2025-01-13\",\n    \"numberOfPeople\": 4,\n    \"notes\": \"Prenotazione di test da Customer 19 - Luigi Fontana per cena\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/reservation/ask",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "reservation",
+            "ask"
+          ]
+        }
+      }
+    },
+    {
+      "name": "👤 Customer 20 Registration",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set('customer_20_id', response.id);",
+              "    console.log('✅ Customer 20 registrato con ID:', response.id);",
+              "} else {",
+              "    console.log('❌ Registrazione Customer 20 fallita');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"firstName\": \"Luca\",\n    \"lastName\": \"Greco\",\n    \"email\": \"luca.greco.20@example.com\",\n    \"password\": \"Password123!\",\n    \"matchingPassword\": \"Password123!\",\n    \"username\": \"luca.greco.20@example.com\",\n    \"phone\": \"+39 333 0000020\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/auth/register",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "auth",
+            "new"
+          ]
+        }
+      }
+    },
+    {
+      "name": "� Admin Login (per verificare customer)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set('admin_token', response.jwt);",
+              "    console.log('✅ Admin token salvato per verifiche customer');",
+              "} else {",
+              "    console.log('❌ Login admin fallito');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"username\": \"ascolesevalentino@gmail.com\",\n    \"password\": \"Minosse100%\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/admin/auth/login",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "admin",
+            "auth",
+            "login"
+          ]
+        }
+      }
+    },
+    {
+      "name": "✅ Admin Verify All Customers (Bulk)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "// Script per verificare tutti i customer in batch",
+              "console.log('🔍 Preparazione verifica customer...');",
+              "// Gli ID customer sono salvati come customer_1_id, customer_2_id, etc."
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Verifica tutti i customer registrati",
+              "const adminToken = pm.environment.get('admin_token');",
+              "const baseUrl = pm.environment.get('base_url');",
+              "",
+              "if (adminToken && baseUrl) {",
+              "    console.log('🔄 Avvio verifica di tutti i customer...');",
+              "    ",
+              "    // Verifica customer 1-20 in sequenza",
+              "    for (let i = 1; i <= 20; i++) {",
+              "        const customerId = pm.environment.get(`customer_${i}_id`);",
+              "        if (customerId) {",
+              "            pm.sendRequest({",
+              "                url: `${baseUrl}/admin/customer/${customerId}/enable`,",
+              "                method: 'PUT',",
+              "                header: {",
+              "                    'Authorization': `Bearer ${adminToken}`,",
+              "                    'Content-Type': 'application/json'",
+              "                }",
+              "            }, function(err, response) {",
+              "                if (err) {",
+              "                    console.log(`❌ Errore abilitazione Customer ${i}:`, err.message);",
+              "                } else if (response.code === 200) {",
+              "                    console.log(`✅ Customer ${i} abilitato (ID: ${customerId})`);",
+              "                } else {",
+              "                    console.log(`⚠️  Customer ${i} - Status:`, response.code);",
+              "                }",
+              "            });",
+              "        }",
+              "    }",
+              "} else {",
+              "    console.log('❌ Token admin o base_url mancanti');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/admin/customer",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "admin",
+            "customer"
+          ]
+        },
+        "description": "Questo è un placeholder. La verifica effettiva avviene nel test script usando pm.sendRequest per verificare tutti i customer in batch."
+      }
+    },
+    {
+      "name": "�🔑 Customer 20 Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set('customer_20_token', response.jwt);",
+              "    console.log('✅ Customer 20 login effettuato');",
+              "} else {",
+              "    console.log('❌ Login Customer 20 fallito');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"username\": \"luca.greco.20@example.com\",\n    \"password\": \"Password123!\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/auth/login",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "auth",
+            "login"
+          ]
+        }
+      }
+    },
+    {
+      "name": "📅 Customer 20 Reservation Request (cena)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    console.log('✅ Prenotazione Customer 20 creata - Status:', response.status);",
+              "    console.log('   ID Prenotazione:', response.id);",
+              "} else {",
+              "    console.log('❌ Prenotazione Customer 20 fallita');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{customer_20_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"restaurantId\": 3,\n    \"serviceId\": \"{{service_3_id}}\",\n    \"reservationDate\": \"2025-01-13\",\n    \"numberOfPeople\": 5,\n    \"notes\": \"Prenotazione di test da Customer 20 - Luca Greco per cena\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/reservation/ask",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "customer",
+            "reservation",
+            "ask"
+          ]
+        }
+      }
+    },
+    {
+      "name": "🔐 Admin Login (per approvazioni)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set('admin_token', response.jwt);",
+              "    console.log('✅ Admin token salvato per approvazioni');",
+              "} else {",
+              "    console.log('❌ Login admin fallito');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"username\": \"ascolesevalentino@gmail.com\",\n    \"password\": \"Minosse100%\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/admin/auth/login",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "admin",
+            "auth",
+            "login"
+          ]
+        }
+      }
+    },
+    {
+      "name": "📋 Get All Pending Reservations",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const reservations = pm.response.json();",
+              "    const pending = reservations.filter(r => r.status === 'NOT_ACCEPTED');",
+              "    console.log('✅ Prenotazioni in attesa:', pending.length);",
+              "    ",
+              "    // Salva gli ID delle prime 20 prenotazioni pending",
+              "    for (let i = 0; i < Math.min(pending.length, 20); i++) {",
+              "        pm.environment.set(`reservation_${i+1}_id`, pending[i].id);",
+              "    }",
+              "    pm.environment.set('pending_count', pending.length);",
+              "} else {",
+              "    console.log('❌ Errore nel recupero prenotazioni');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/admin/reservation/restaurant/3",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "admin",
+            "reservation",
+            "restaurant",
+            "3"
+          ]
+        }
+      }
+    },
+    {
+      "name": "✅ Approve All Reservations (Bulk)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "// Script per approvare tutte le prenotazioni in batch",
+              "const pendingCount = pm.environment.get('pending_count') || 0;",
+              "console.log('Preparazione approvazione per', pendingCount, 'prenotazioni...');"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Questo item serve come placeholder per approvazioni manuali",
+              "console.log('ℹ️  Per approvare le prenotazioni:');",
+              "console.log('1. Usa gli endpoint admin/reservation/{id}/accept');",
+              "console.log('2. O approva manualmente da interfaccia admin');",
+              "console.log('3. Gli ID sono salvati come reservation_X_id nell\\'environment');"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/admin/reservation/restaurant/3",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "admin",
+            "reservation",
+            "restaurant",
+            "3"
+          ]
+        },
+        "description": "Questo è un placeholder. Per approvare effettivamente le prenotazioni, usa gli endpoint individuali admin/reservation/{id}/accept con il token admin."
+      }
+    }
+  ]
+}
