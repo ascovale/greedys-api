@@ -33,7 +33,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\"username\": \"{{adminEmail}}\", \"password\": \"{{adminPassword}}\", \"rememberMe\": true}"
+          "raw": "{\"username\": \"{{adminUsername}}\", \"password\": \"{{adminPassword}}\", \"rememberMe\": true}"
         },
         "url": {
           "raw": "{{baseUrl}}/admin/auth/login",

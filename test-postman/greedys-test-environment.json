@@ -1,0 +1,62 @@
+{
+  "id": "greedys-test-environment",
+  "name": "Greedys Test Environment",
+  "values": [
+    {
+      "key": "baseUrl",
+      "value": "https://api.greedys.it",
+      "enabled": true
+    },
+    {
+      "key": "restaurantId", 
+      "value": "3",
+      "enabled": true
+    },
+    {
+      "key": "adminUsername",
+      "value": "ascolesevalentino@gmail.com",
+      "enabled": true
+    },
+    {
+      "key": "adminPassword",
+      "value": "Minosse100%",
+      "enabled": true
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "customer1_token",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "customer2_token",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "customer3_token",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "customer4_token",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "customer5_token",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "monday_slots",
+      "value": "[]",
+      "enabled": true
+    }
+  ],
+  "_postman_variable_scope": "environment"
+}

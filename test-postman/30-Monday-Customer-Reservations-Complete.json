@@ -1,0 +1,1800 @@
+{
+  "info": {
+    "name": "30 Monday Customer Reservations - Complete",
+    "description": "Crea 30 prenotazioni per i prossimi 6 lunedì utilizzando i 5 customer esistenti",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://api.greedys.it"
+    },
+    {
+      "key": "restaurantId",
+      "value": "3"
+    },
+    {
+      "key": "customer1_token",
+      "value": ""
+    },
+    {
+      "key": "customer2_token",
+      "value": ""
+    },
+    {
+      "key": "customer3_token",
+      "value": ""
+    },
+    {
+      "key": "customer4_token",
+      "value": ""
+    },
+    {
+      "key": "customer5_token",
+      "value": ""
+    },
+    {
+      "key": "monday_slots",
+      "value": "[]"
+    }
+  ],
+  "item": [
+    {
+      "name": "🔐 Step 1: Customer Logins (Existing Customers)",
+      "item": [
+        {
+          "name": "Login Customer 1 - Marco Rossi",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"giulia.bianchi@example.com\",\n  \"password\": \"CustomerPass123!\",\n  \"rememberMe\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customer",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('customer1_token', response.jwt);",
+                  "    console.log('✅ Customer 1 (Mario Rossi) logged in successfully');",
+                  "} else {",
+                  "    console.log('❌ Customer 1 login failed:', pm.response.text());",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login Customer 2 - Giulia Bianchi",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"giulia.bianchi@example.com\",\n  \"password\": \"CustomerPass123!\",\n  \"rememberMe\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customer",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('customer2_token', response.jwt);",
+                  "    console.log('✅ Customer 2 (Giulia Bianchi) logged in successfully');",
+                  "} else {",
+                  "    console.log('❌ Customer 2 login failed:', pm.response.text());",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login Customer 3 - Andrea Verdi",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"andrea.verdi@example.com\",\n  \"password\": \"CustomerPass123!\",\n  \"rememberMe\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customer",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('customer3_token', response.jwt);",
+                  "    console.log('✅ Customer 3 (Andrea Verdi) logged in successfully');",
+                  "} else {",
+                  "    console.log('❌ Customer 3 login failed:', pm.response.text());",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login Customer 4 - Francesca Neri",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"francesca.neri@example.com\",\n  \"password\": \"CustomerPass123!\",\n  \"rememberMe\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customer",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('customer4_token', response.jwt);",
+                  "    console.log('✅ Customer 4 (Francesca Neri) logged in successfully');",
+                  "} else {",
+                  "    console.log('❌ Customer 4 login failed:', pm.response.text());",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login Customer 5 - Lorenzo Ferrari",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"lorenzo.ferrari@example.com\",\n  \"password\": \"CustomerPass123!\",\n  \"rememberMe\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customer",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('customer5_token', response.jwt);",
+                  "    console.log('✅ Customer 5 (Lorenzo Ferrari) logged in successfully');",
+                  "} else {",
+                  "    console.log('❌ Customer 5 login failed:', pm.response.text());",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "📅 Step 2: Get Monday Slots",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{customer1_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/customer/restaurant/{{restaurantId}}/slots",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "customer",
+            "restaurant",
+            "{{restaurantId}}",
+            "slots"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const slots = pm.response.json();",
+              "    console.log('Slots found:', slots.length);",
+              "    ",
+              "    const mondaySlots = [];",
+              "    ",
+              "    slots.forEach(slot => {",
+              "        if (slot.weekday === 'MONDAY' && !slot.deleted) {",
+              "            mondaySlots.push({",
+              "                id: slot.id,",
+              "                start: slot.start,",
+              "                end: slot.end,",
+              "                serviceName: slot.service ? slot.service.name : 'Unknown Service'",
+              "            });",
+              "        }",
+              "    });",
+              "    ",
+              "    if (mondaySlots.length > 0) {",
+              "        pm.collectionVariables.set('monday_slots', JSON.stringify(mondaySlots));",
+              "        console.log('✅ Monday slots found:', mondaySlots.length);",
+              "        mondaySlots.forEach((slot, index) => {",
+              "            console.log(`  ${index + 1}. ${slot.serviceName}: ${slot.start}-${slot.end} (ID: ${slot.id})`);",
+              "        });",
+              "    } else {",
+              "        console.log('❌ No Monday slots found');",
+              "    }",
+              "} else {",
+              "    console.log('❌ Failed to get slots:', pm.response.text());",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "🍽️ Step 3: Create 30 Monday Reservations",
+      "item": [
+        {
+          "name": "Reservation 1 - Marco Rossi (Week 1)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer1_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userName\": \"Marco Rossi\",\n  \"idSlot\": {{slot_id_1}},\n  \"pax\": 2,\n  \"kids\": 0,\n  \"restaurantId\": {{restaurantId}},\n  \"reservationDay\": \"2025-11-10\",\n  \"notes\": \"Cena romantica - Marco Rossi\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/reservation/ask",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customer",
+                "reservation"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Prenotazione 1 per 2025-11-10",
+                  "const mondaySlots = JSON.parse(pm.collectionVariables.get('monday_slots') || '[]');",
+                  "if (mondaySlots.length > 0) {",
+                  "    const slotIndex = 0;",
+                  "    const slot = mondaySlots[slotIndex % mondaySlots.length];",
+                  "    pm.request.body.raw = pm.request.body.raw.replace('\"{{slot_id_1}}\"', `\"${slot.id}\"`);",
+                  "    console.log(`Prenotazione per Customer - Slot: ${slot.start}-${slot.end}`);",
+                  "} else {",
+                  "    console.log('❌ No Monday slots available');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reservation 2 - Giulia Bianchi (Week 1)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer2_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurantId\": \"{{restaurantId}}\",\n  \"pax\": 2,\n  \"note\": \"Pranzo di lavoro - Giulia Bianchi\",\n  \"slotId\": \"{{slot_id_2}}\",\n  \"date\": \"2025-11-10\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/reservation/ask",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customer",
+                "reservation"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Prenotazione 2 per 2025-11-10",
+                  "const mondaySlots = JSON.parse(pm.collectionVariables.get('monday_slots') || '[]');",
+                  "if (mondaySlots.length > 0) {",
+                  "    const slotIndex = 1;",
+                  "    const slot = mondaySlots[slotIndex % mondaySlots.length];",
+                  "    pm.request.body.raw = pm.request.body.raw.replace('\"{{slot_id_2}}\"', `\"${slot.id}\"`);",
+                  "    console.log(`Prenotazione per Customer - Slot: ${slot.start}-${slot.end}`);",
+                  "} else {",
+                  "    console.log('❌ No Monday slots available');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reservation 3 - Andrea Verdi (Week 1)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer3_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurantId\": \"{{restaurantId}}\",\n  \"pax\": 3,\n  \"note\": \"Cena con amici - Andrea Verdi\",\n  \"slotId\": \"{{slot_id_3}}\",\n  \"date\": \"2025-11-10\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/reservation/ask",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customer",
+                "reservation"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Prenotazione 3 per 2025-11-10",
+                  "const mondaySlots = JSON.parse(pm.collectionVariables.get('monday_slots') || '[]');",
+                  "if (mondaySlots.length > 0) {",
+                  "    const slotIndex = 2;",
+                  "    const slot = mondaySlots[slotIndex % mondaySlots.length];",
+                  "    pm.request.body.raw = pm.request.body.raw.replace('\"{{slot_id_3}}\"', `\"${slot.id}\"`);",
+                  "    console.log(`Prenotazione per Customer - Slot: ${slot.start}-${slot.end}`);",
+                  "} else {",
+                  "    console.log('❌ No Monday slots available');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reservation 4 - Francesca Neri (Week 1)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer4_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurantId\": \"{{restaurantId}}\",\n  \"pax\": 4,\n  \"note\": \"Compleanno famiglia - Francesca Neri\",\n  \"slotId\": \"{{slot_id_1}}\",\n  \"date\": \"2025-11-10\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/reservation/ask",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customer",
+                "reservation"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Prenotazione 4 per 2025-11-10",
+                  "const mondaySlots = JSON.parse(pm.collectionVariables.get('monday_slots') || '[]');",
+                  "if (mondaySlots.length > 0) {",
+                  "    const slotIndex = 0;",
+                  "    const slot = mondaySlots[slotIndex % mondaySlots.length];",
+                  "    pm.request.body.raw = pm.request.body.raw.replace('\"{{slot_id_1}}\"', `\"${slot.id}\"`);",
+                  "    console.log(`Prenotazione per Customer - Slot: ${slot.start}-${slot.end}`);",
+                  "} else {",
+                  "    console.log('❌ No Monday slots available');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reservation 5 - Lorenzo Ferrari (Week 1)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer5_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurantId\": \"{{restaurantId}}\",\n  \"pax\": 2,\n  \"note\": \"Appuntamento importante - Lorenzo Ferrari\",\n  \"slotId\": \"{{slot_id_2}}\",\n  \"date\": \"2025-11-10\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/reservation/ask",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customer",
+                "reservation"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Prenotazione 5 per 2025-11-10",
+                  "const mondaySlots = JSON.parse(pm.collectionVariables.get('monday_slots') || '[]');",
+                  "if (mondaySlots.length > 0) {",
+                  "    const slotIndex = 1;",
+                  "    const slot = mondaySlots[slotIndex % mondaySlots.length];",
+                  "    pm.request.body.raw = pm.request.body.raw.replace('\"{{slot_id_2}}\"', `\"${slot.id}\"`);",
+                  "    console.log(`Prenotazione per Customer - Slot: ${slot.start}-${slot.end}`);",
+                  "} else {",
+                  "    console.log('❌ No Monday slots available');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reservation 6 - Marco Rossi (Week 2)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer1_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurantId\": \"{{restaurantId}}\",\n  \"pax\": 5,\n  \"note\": \"Anniversario - Marco Rossi\",\n  \"slotId\": \"{{slot_id_3}}\",\n  \"date\": \"2025-11-17\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/reservation/ask",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customer",
+                "reservation"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Prenotazione 6 per 2025-11-17",
+                  "const mondaySlots = JSON.parse(pm.collectionVariables.get('monday_slots') || '[]');",
+                  "if (mondaySlots.length > 0) {",
+                  "    const slotIndex = 2;",
+                  "    const slot = mondaySlots[slotIndex % mondaySlots.length];",
+                  "    pm.request.body.raw = pm.request.body.raw.replace('\"{{slot_id_3}}\"', `\"${slot.id}\"`);",
+                  "    console.log(`Prenotazione per Customer - Slot: ${slot.start}-${slot.end}`);",
+                  "} else {",
+                  "    console.log('❌ No Monday slots available');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reservation 7 - Giulia Bianchi (Week 2)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer2_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurantId\": \"{{restaurantId}}\",\n  \"pax\": 6,\n  \"note\": \"Cena informale - Giulia Bianchi\",\n  \"slotId\": \"{{slot_id_1}}\",\n  \"date\": \"2025-11-17\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/reservation/ask",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customer",
+                "reservation"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Prenotazione 7 per 2025-11-17",
+                  "const mondaySlots = JSON.parse(pm.collectionVariables.get('monday_slots') || '[]');",
+                  "if (mondaySlots.length > 0) {",
+                  "    const slotIndex = 0;",
+                  "    const slot = mondaySlots[slotIndex % mondaySlots.length];",
+                  "    pm.request.body.raw = pm.request.body.raw.replace('\"{{slot_id_1}}\"', `\"${slot.id}\"`);",
+                  "    console.log(`Prenotazione per Customer - Slot: ${slot.start}-${slot.end}`);",
+                  "} else {",
+                  "    console.log('❌ No Monday slots available');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reservation 8 - Andrea Verdi (Week 2)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer3_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurantId\": \"{{restaurantId}}\",\n  \"pax\": 3,\n  \"note\": \"Pranzo domenicale - Andrea Verdi\",\n  \"slotId\": \"{{slot_id_2}}\",\n  \"date\": \"2025-11-17\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/reservation/ask",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customer",
+                "reservation"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Prenotazione 8 per 2025-11-17",
+                  "const mondaySlots = JSON.parse(pm.collectionVariables.get('monday_slots') || '[]');",
+                  "if (mondaySlots.length > 0) {",
+                  "    const slotIndex = 1;",
+                  "    const slot = mondaySlots[slotIndex % mondaySlots.length];",
+                  "    pm.request.body.raw = pm.request.body.raw.replace('\"{{slot_id_2}}\"', `\"${slot.id}\"`);",
+                  "    console.log(`Prenotazione per Customer - Slot: ${slot.start}-${slot.end}`);",
+                  "} else {",
+                  "    console.log('❌ No Monday slots available');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reservation 9 - Francesca Neri (Week 2)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer4_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurantId\": \"{{restaurantId}}\",\n  \"pax\": 4,\n  \"note\": \"Festeggiamento - Francesca Neri\",\n  \"slotId\": \"{{slot_id_3}}\",\n  \"date\": \"2025-11-17\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/reservation/ask",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customer",
+                "reservation"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Prenotazione 9 per 2025-11-17",
+                  "const mondaySlots = JSON.parse(pm.collectionVariables.get('monday_slots') || '[]');",
+                  "if (mondaySlots.length > 0) {",
+                  "    const slotIndex = 2;",
+                  "    const slot = mondaySlots[slotIndex % mondaySlots.length];",
+                  "    pm.request.body.raw = pm.request.body.raw.replace('\"{{slot_id_3}}\"', `\"${slot.id}\"`);",
+                  "    console.log(`Prenotazione per Customer - Slot: ${slot.start}-${slot.end}`);",
+                  "} else {",
+                  "    console.log('❌ No Monday slots available');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reservation 10 - Lorenzo Ferrari (Week 2)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer5_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurantId\": \"{{restaurantId}}\",\n  \"pax\": 2,\n  \"note\": \"Incontro clienti - Lorenzo Ferrari\",\n  \"slotId\": \"{{slot_id_1}}\",\n  \"date\": \"2025-11-17\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/reservation/ask",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customer",
+                "reservation"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Prenotazione 10 per 2025-11-17",
+                  "const mondaySlots = JSON.parse(pm.collectionVariables.get('monday_slots') || '[]');",
+                  "if (mondaySlots.length > 0) {",
+                  "    const slotIndex = 0;",
+                  "    const slot = mondaySlots[slotIndex % mondaySlots.length];",
+                  "    pm.request.body.raw = pm.request.body.raw.replace('\"{{slot_id_1}}\"', `\"${slot.id}\"`);",
+                  "    console.log(`Prenotazione per Customer - Slot: ${slot.start}-${slot.end}`);",
+                  "} else {",
+                  "    console.log('❌ No Monday slots available');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reservation 11 - Marco Rossi (Week 3)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer1_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurantId\": \"{{restaurantId}}\",\n  \"pax\": 3,\n  \"note\": \"Cena di gruppo - Marco Rossi\",\n  \"slotId\": \"{{slot_id_2}}\",\n  \"date\": \"2025-11-24\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/reservation/ask",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customer",
+                "reservation"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Prenotazione 11 per 2025-11-24",
+                  "const mondaySlots = JSON.parse(pm.collectionVariables.get('monday_slots') || '[]');",
+                  "if (mondaySlots.length > 0) {",
+                  "    const slotIndex = 1;",
+                  "    const slot = mondaySlots[slotIndex % mondaySlots.length];",
+                  "    pm.request.body.raw = pm.request.body.raw.replace('\"{{slot_id_2}}\"', `\"${slot.id}\"`);",
+                  "    console.log(`Prenotazione per Customer - Slot: ${slot.start}-${slot.end}`);",
+                  "} else {",
+                  "    console.log('❌ No Monday slots available');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reservation 12 - Giulia Bianchi (Week 3)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer2_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurantId\": \"{{restaurantId}}\",\n  \"pax\": 4,\n  \"note\": \"Tavolo riservato - Giulia Bianchi\",\n  \"slotId\": \"{{slot_id_3}}\",\n  \"date\": \"2025-11-24\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/reservation/ask",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customer",
+                "reservation"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Prenotazione 12 per 2025-11-24",
+                  "const mondaySlots = JSON.parse(pm.collectionVariables.get('monday_slots') || '[]');",
+                  "if (mondaySlots.length > 0) {",
+                  "    const slotIndex = 2;",
+                  "    const slot = mondaySlots[slotIndex % mondaySlots.length];",
+                  "    pm.request.body.raw = pm.request.body.raw.replace('\"{{slot_id_3}}\"', `\"${slot.id}\"`);",
+                  "    console.log(`Prenotazione per Customer - Slot: ${slot.start}-${slot.end}`);",
+                  "} else {",
+                  "    console.log('❌ No Monday slots available');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reservation 13 - Andrea Verdi (Week 3)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer3_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurantId\": \"{{restaurantId}}\",\n  \"pax\": 2,\n  \"note\": \"Cena romantica - Andrea Verdi\",\n  \"slotId\": \"{{slot_id_1}}\",\n  \"date\": \"2025-11-24\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/reservation/ask",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customer",
+                "reservation"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Prenotazione 13 per 2025-11-24",
+                  "const mondaySlots = JSON.parse(pm.collectionVariables.get('monday_slots') || '[]');",
+                  "if (mondaySlots.length > 0) {",
+                  "    const slotIndex = 0;",
+                  "    const slot = mondaySlots[slotIndex % mondaySlots.length];",
+                  "    pm.request.body.raw = pm.request.body.raw.replace('\"{{slot_id_1}}\"', `\"${slot.id}\"`);",
+                  "    console.log(`Prenotazione per Customer - Slot: ${slot.start}-${slot.end}`);",
+                  "} else {",
+                  "    console.log('❌ No Monday slots available');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reservation 14 - Francesca Neri (Week 3)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer4_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurantId\": \"{{restaurantId}}\",\n  \"pax\": 2,\n  \"note\": \"Pranzo di lavoro - Francesca Neri\",\n  \"slotId\": \"{{slot_id_2}}\",\n  \"date\": \"2025-11-24\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/reservation/ask",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customer",
+                "reservation"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Prenotazione 14 per 2025-11-24",
+                  "const mondaySlots = JSON.parse(pm.collectionVariables.get('monday_slots') || '[]');",
+                  "if (mondaySlots.length > 0) {",
+                  "    const slotIndex = 1;",
+                  "    const slot = mondaySlots[slotIndex % mondaySlots.length];",
+                  "    pm.request.body.raw = pm.request.body.raw.replace('\"{{slot_id_2}}\"', `\"${slot.id}\"`);",
+                  "    console.log(`Prenotazione per Customer - Slot: ${slot.start}-${slot.end}`);",
+                  "} else {",
+                  "    console.log('❌ No Monday slots available');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reservation 15 - Lorenzo Ferrari (Week 3)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer5_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurantId\": \"{{restaurantId}}\",\n  \"pax\": 3,\n  \"note\": \"Cena con amici - Lorenzo Ferrari\",\n  \"slotId\": \"{{slot_id_3}}\",\n  \"date\": \"2025-11-24\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/reservation/ask",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customer",
+                "reservation"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Prenotazione 15 per 2025-11-24",
+                  "const mondaySlots = JSON.parse(pm.collectionVariables.get('monday_slots') || '[]');",
+                  "if (mondaySlots.length > 0) {",
+                  "    const slotIndex = 2;",
+                  "    const slot = mondaySlots[slotIndex % mondaySlots.length];",
+                  "    pm.request.body.raw = pm.request.body.raw.replace('\"{{slot_id_3}}\"', `\"${slot.id}\"`);",
+                  "    console.log(`Prenotazione per Customer - Slot: ${slot.start}-${slot.end}`);",
+                  "} else {",
+                  "    console.log('❌ No Monday slots available');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reservation 16 - Marco Rossi (Week 4)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer1_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurantId\": \"{{restaurantId}}\",\n  \"pax\": 4,\n  \"note\": \"Compleanno famiglia - Marco Rossi\",\n  \"slotId\": \"{{slot_id_1}}\",\n  \"date\": \"2025-12-01\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/reservation/ask",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customer",
+                "reservation"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Prenotazione 16 per 2025-12-01",
+                  "const mondaySlots = JSON.parse(pm.collectionVariables.get('monday_slots') || '[]');",
+                  "if (mondaySlots.length > 0) {",
+                  "    const slotIndex = 0;",
+                  "    const slot = mondaySlots[slotIndex % mondaySlots.length];",
+                  "    pm.request.body.raw = pm.request.body.raw.replace('\"{{slot_id_1}}\"', `\"${slot.id}\"`);",
+                  "    console.log(`Prenotazione per Customer - Slot: ${slot.start}-${slot.end}`);",
+                  "} else {",
+                  "    console.log('❌ No Monday slots available');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reservation 17 - Giulia Bianchi (Week 4)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer2_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurantId\": \"{{restaurantId}}\",\n  \"pax\": 2,\n  \"note\": \"Appuntamento importante - Giulia Bianchi\",\n  \"slotId\": \"{{slot_id_2}}\",\n  \"date\": \"2025-12-01\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/reservation/ask",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customer",
+                "reservation"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Prenotazione 17 per 2025-12-01",
+                  "const mondaySlots = JSON.parse(pm.collectionVariables.get('monday_slots') || '[]');",
+                  "if (mondaySlots.length > 0) {",
+                  "    const slotIndex = 1;",
+                  "    const slot = mondaySlots[slotIndex % mondaySlots.length];",
+                  "    pm.request.body.raw = pm.request.body.raw.replace('\"{{slot_id_2}}\"', `\"${slot.id}\"`);",
+                  "    console.log(`Prenotazione per Customer - Slot: ${slot.start}-${slot.end}`);",
+                  "} else {",
+                  "    console.log('❌ No Monday slots available');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reservation 18 - Andrea Verdi (Week 4)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer3_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurantId\": \"{{restaurantId}}\",\n  \"pax\": 5,\n  \"note\": \"Anniversario - Andrea Verdi\",\n  \"slotId\": \"{{slot_id_3}}\",\n  \"date\": \"2025-12-01\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/reservation/ask",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customer",
+                "reservation"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Prenotazione 18 per 2025-12-01",
+                  "const mondaySlots = JSON.parse(pm.collectionVariables.get('monday_slots') || '[]');",
+                  "if (mondaySlots.length > 0) {",
+                  "    const slotIndex = 2;",
+                  "    const slot = mondaySlots[slotIndex % mondaySlots.length];",
+                  "    pm.request.body.raw = pm.request.body.raw.replace('\"{{slot_id_3}}\"', `\"${slot.id}\"`);",
+                  "    console.log(`Prenotazione per Customer - Slot: ${slot.start}-${slot.end}`);",
+                  "} else {",
+                  "    console.log('❌ No Monday slots available');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reservation 19 - Francesca Neri (Week 4)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer4_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurantId\": \"{{restaurantId}}\",\n  \"pax\": 6,\n  \"note\": \"Cena informale - Francesca Neri\",\n  \"slotId\": \"{{slot_id_1}}\",\n  \"date\": \"2025-12-01\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/reservation/ask",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customer",
+                "reservation"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Prenotazione 19 per 2025-12-01",
+                  "const mondaySlots = JSON.parse(pm.collectionVariables.get('monday_slots') || '[]');",
+                  "if (mondaySlots.length > 0) {",
+                  "    const slotIndex = 0;",
+                  "    const slot = mondaySlots[slotIndex % mondaySlots.length];",
+                  "    pm.request.body.raw = pm.request.body.raw.replace('\"{{slot_id_1}}\"', `\"${slot.id}\"`);",
+                  "    console.log(`Prenotazione per Customer - Slot: ${slot.start}-${slot.end}`);",
+                  "} else {",
+                  "    console.log('❌ No Monday slots available');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reservation 20 - Lorenzo Ferrari (Week 4)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer5_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurantId\": \"{{restaurantId}}\",\n  \"pax\": 3,\n  \"note\": \"Pranzo domenicale - Lorenzo Ferrari\",\n  \"slotId\": \"{{slot_id_2}}\",\n  \"date\": \"2025-12-01\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/reservation/ask",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customer",
+                "reservation"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Prenotazione 20 per 2025-12-01",
+                  "const mondaySlots = JSON.parse(pm.collectionVariables.get('monday_slots') || '[]');",
+                  "if (mondaySlots.length > 0) {",
+                  "    const slotIndex = 1;",
+                  "    const slot = mondaySlots[slotIndex % mondaySlots.length];",
+                  "    pm.request.body.raw = pm.request.body.raw.replace('\"{{slot_id_2}}\"', `\"${slot.id}\"`);",
+                  "    console.log(`Prenotazione per Customer - Slot: ${slot.start}-${slot.end}`);",
+                  "} else {",
+                  "    console.log('❌ No Monday slots available');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reservation 21 - Marco Rossi (Week 5)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer1_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurantId\": \"{{restaurantId}}\",\n  \"pax\": 4,\n  \"note\": \"Festeggiamento - Marco Rossi\",\n  \"slotId\": \"{{slot_id_3}}\",\n  \"date\": \"2025-12-08\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/reservation/ask",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customer",
+                "reservation"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Prenotazione 21 per 2025-12-08",
+                  "const mondaySlots = JSON.parse(pm.collectionVariables.get('monday_slots') || '[]');",
+                  "if (mondaySlots.length > 0) {",
+                  "    const slotIndex = 2;",
+                  "    const slot = mondaySlots[slotIndex % mondaySlots.length];",
+                  "    pm.request.body.raw = pm.request.body.raw.replace('\"{{slot_id_3}}\"', `\"${slot.id}\"`);",
+                  "    console.log(`Prenotazione per Customer - Slot: ${slot.start}-${slot.end}`);",
+                  "} else {",
+                  "    console.log('❌ No Monday slots available');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reservation 22 - Giulia Bianchi (Week 5)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer2_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurantId\": \"{{restaurantId}}\",\n  \"pax\": 2,\n  \"note\": \"Incontro clienti - Giulia Bianchi\",\n  \"slotId\": \"{{slot_id_1}}\",\n  \"date\": \"2025-12-08\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/reservation/ask",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customer",
+                "reservation"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Prenotazione 22 per 2025-12-08",
+                  "const mondaySlots = JSON.parse(pm.collectionVariables.get('monday_slots') || '[]');",
+                  "if (mondaySlots.length > 0) {",
+                  "    const slotIndex = 0;",
+                  "    const slot = mondaySlots[slotIndex % mondaySlots.length];",
+                  "    pm.request.body.raw = pm.request.body.raw.replace('\"{{slot_id_1}}\"', `\"${slot.id}\"`);",
+                  "    console.log(`Prenotazione per Customer - Slot: ${slot.start}-${slot.end}`);",
+                  "} else {",
+                  "    console.log('❌ No Monday slots available');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reservation 23 - Andrea Verdi (Week 5)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer3_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurantId\": \"{{restaurantId}}\",\n  \"pax\": 3,\n  \"note\": \"Cena di gruppo - Andrea Verdi\",\n  \"slotId\": \"{{slot_id_2}}\",\n  \"date\": \"2025-12-08\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/reservation/ask",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customer",
+                "reservation"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Prenotazione 23 per 2025-12-08",
+                  "const mondaySlots = JSON.parse(pm.collectionVariables.get('monday_slots') || '[]');",
+                  "if (mondaySlots.length > 0) {",
+                  "    const slotIndex = 1;",
+                  "    const slot = mondaySlots[slotIndex % mondaySlots.length];",
+                  "    pm.request.body.raw = pm.request.body.raw.replace('\"{{slot_id_2}}\"', `\"${slot.id}\"`);",
+                  "    console.log(`Prenotazione per Customer - Slot: ${slot.start}-${slot.end}`);",
+                  "} else {",
+                  "    console.log('❌ No Monday slots available');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reservation 24 - Francesca Neri (Week 5)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer4_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurantId\": \"{{restaurantId}}\",\n  \"pax\": 4,\n  \"note\": \"Tavolo riservato - Francesca Neri\",\n  \"slotId\": \"{{slot_id_3}}\",\n  \"date\": \"2025-12-08\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/reservation/ask",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customer",
+                "reservation"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Prenotazione 24 per 2025-12-08",
+                  "const mondaySlots = JSON.parse(pm.collectionVariables.get('monday_slots') || '[]');",
+                  "if (mondaySlots.length > 0) {",
+                  "    const slotIndex = 2;",
+                  "    const slot = mondaySlots[slotIndex % mondaySlots.length];",
+                  "    pm.request.body.raw = pm.request.body.raw.replace('\"{{slot_id_3}}\"', `\"${slot.id}\"`);",
+                  "    console.log(`Prenotazione per Customer - Slot: ${slot.start}-${slot.end}`);",
+                  "} else {",
+                  "    console.log('❌ No Monday slots available');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reservation 25 - Lorenzo Ferrari (Week 5)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer5_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurantId\": \"{{restaurantId}}\",\n  \"pax\": 2,\n  \"note\": \"Cena romantica - Lorenzo Ferrari\",\n  \"slotId\": \"{{slot_id_1}}\",\n  \"date\": \"2025-12-08\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/reservation/ask",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customer",
+                "reservation"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Prenotazione 25 per 2025-12-08",
+                  "const mondaySlots = JSON.parse(pm.collectionVariables.get('monday_slots') || '[]');",
+                  "if (mondaySlots.length > 0) {",
+                  "    const slotIndex = 0;",
+                  "    const slot = mondaySlots[slotIndex % mondaySlots.length];",
+                  "    pm.request.body.raw = pm.request.body.raw.replace('\"{{slot_id_1}}\"', `\"${slot.id}\"`);",
+                  "    console.log(`Prenotazione per Customer - Slot: ${slot.start}-${slot.end}`);",
+                  "} else {",
+                  "    console.log('❌ No Monday slots available');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reservation 26 - Marco Rossi (Week 6)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer1_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurantId\": \"{{restaurantId}}\",\n  \"pax\": 2,\n  \"note\": \"Pranzo di lavoro - Marco Rossi\",\n  \"slotId\": \"{{slot_id_2}}\",\n  \"date\": \"2025-12-15\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/reservation/ask",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customer",
+                "reservation"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Prenotazione 26 per 2025-12-15",
+                  "const mondaySlots = JSON.parse(pm.collectionVariables.get('monday_slots') || '[]');",
+                  "if (mondaySlots.length > 0) {",
+                  "    const slotIndex = 1;",
+                  "    const slot = mondaySlots[slotIndex % mondaySlots.length];",
+                  "    pm.request.body.raw = pm.request.body.raw.replace('\"{{slot_id_2}}\"', `\"${slot.id}\"`);",
+                  "    console.log(`Prenotazione per Customer - Slot: ${slot.start}-${slot.end}`);",
+                  "} else {",
+                  "    console.log('❌ No Monday slots available');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reservation 27 - Giulia Bianchi (Week 6)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer2_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurantId\": \"{{restaurantId}}\",\n  \"pax\": 3,\n  \"note\": \"Cena con amici - Giulia Bianchi\",\n  \"slotId\": \"{{slot_id_3}}\",\n  \"date\": \"2025-12-15\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/reservation/ask",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customer",
+                "reservation"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Prenotazione 27 per 2025-12-15",
+                  "const mondaySlots = JSON.parse(pm.collectionVariables.get('monday_slots') || '[]');",
+                  "if (mondaySlots.length > 0) {",
+                  "    const slotIndex = 2;",
+                  "    const slot = mondaySlots[slotIndex % mondaySlots.length];",
+                  "    pm.request.body.raw = pm.request.body.raw.replace('\"{{slot_id_3}}\"', `\"${slot.id}\"`);",
+                  "    console.log(`Prenotazione per Customer - Slot: ${slot.start}-${slot.end}`);",
+                  "} else {",
+                  "    console.log('❌ No Monday slots available');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reservation 28 - Andrea Verdi (Week 6)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer3_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurantId\": \"{{restaurantId}}\",\n  \"pax\": 4,\n  \"note\": \"Compleanno famiglia - Andrea Verdi\",\n  \"slotId\": \"{{slot_id_1}}\",\n  \"date\": \"2025-12-15\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/reservation/ask",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customer",
+                "reservation"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Prenotazione 28 per 2025-12-15",
+                  "const mondaySlots = JSON.parse(pm.collectionVariables.get('monday_slots') || '[]');",
+                  "if (mondaySlots.length > 0) {",
+                  "    const slotIndex = 0;",
+                  "    const slot = mondaySlots[slotIndex % mondaySlots.length];",
+                  "    pm.request.body.raw = pm.request.body.raw.replace('\"{{slot_id_1}}\"', `\"${slot.id}\"`);",
+                  "    console.log(`Prenotazione per Customer - Slot: ${slot.start}-${slot.end}`);",
+                  "} else {",
+                  "    console.log('❌ No Monday slots available');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reservation 29 - Francesca Neri (Week 6)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer4_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurantId\": \"{{restaurantId}}\",\n  \"pax\": 2,\n  \"note\": \"Appuntamento importante - Francesca Neri\",\n  \"slotId\": \"{{slot_id_2}}\",\n  \"date\": \"2025-12-15\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/reservation/ask",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customer",
+                "reservation"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Prenotazione 29 per 2025-12-15",
+                  "const mondaySlots = JSON.parse(pm.collectionVariables.get('monday_slots') || '[]');",
+                  "if (mondaySlots.length > 0) {",
+                  "    const slotIndex = 1;",
+                  "    const slot = mondaySlots[slotIndex % mondaySlots.length];",
+                  "    pm.request.body.raw = pm.request.body.raw.replace('\"{{slot_id_2}}\"', `\"${slot.id}\"`);",
+                  "    console.log(`Prenotazione per Customer - Slot: ${slot.start}-${slot.end}`);",
+                  "} else {",
+                  "    console.log('❌ No Monday slots available');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reservation 30 - Lorenzo Ferrari (Week 6)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer5_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurantId\": \"{{restaurantId}}\",\n  \"pax\": 5,\n  \"note\": \"Anniversario - Lorenzo Ferrari\",\n  \"slotId\": \"{{slot_id_3}}\",\n  \"date\": \"2025-12-15\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/reservation/ask",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customer",
+                "reservation"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Prenotazione 30 per 2025-12-15",
+                  "const mondaySlots = JSON.parse(pm.collectionVariables.get('monday_slots') || '[]');",
+                  "if (mondaySlots.length > 0) {",
+                  "    const slotIndex = 2;",
+                  "    const slot = mondaySlots[slotIndex % mondaySlots.length];",
+                  "    pm.request.body.raw = pm.request.body.raw.replace('\"{{slot_id_3}}\"', `\"${slot.id}\"`);",
+                  "    console.log(`Prenotazione per Customer - Slot: ${slot.start}-${slot.end}`);",
+                  "} else {",
+                  "    console.log('❌ No Monday slots available');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
