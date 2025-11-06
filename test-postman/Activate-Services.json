@@ -1,0 +1,189 @@
+{
+  "info": {
+    "name": "Activate Restaurant Services & Test Reservations",
+    "description": "Attiva i servizi del ristorante 3 e testa le prenotazioni del lunedì"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://api.greedys.it"
+    },
+    {
+      "key": "restaurantId",
+      "value": "3"
+    },
+    {
+      "key": "restaurant_token",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "🔐 Step 1: Restaurant Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"test@test.it\",\n  \"password\": \"TestPass123!\",\n  \"rememberMe\": true\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/restaurant/user/auth/login",
+          "host": ["{{baseUrl}}"],
+          "path": ["restaurant", "user", "auth", "login"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    pm.collectionVariables.set('restaurant_token', response.jwt);",
+              "    console.log('✅ Restaurant user logged in successfully');",
+              "} else {",
+              "    console.log('❌ Restaurant login failed:', pm.response.text());",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "🍳 Step 2.1: Activate Colazione Service",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{restaurant_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/restaurant/service/102/activate",
+          "host": ["{{baseUrl}}"],
+          "path": ["restaurant", "service", "102", "activate"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    console.log('✅ Colazione service activated');",
+              "} else {",
+              "    console.log('❌ Failed to activate Colazione:', pm.response.text());",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "🍽️ Step 2.2: Activate Pranzo Service",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{restaurant_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/restaurant/service/103/activate",
+          "host": ["{{baseUrl}}"],
+          "path": ["restaurant", "service", "103", "activate"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    console.log('✅ Pranzo service activated');",
+              "} else {",
+              "    console.log('❌ Failed to activate Pranzo:', pm.response.text());",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "🌙 Step 2.3: Activate Cena Service",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{restaurant_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/restaurant/service/104/activate",
+          "host": ["{{baseUrl}}"],
+          "path": ["restaurant", "service", "104", "activate"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    console.log('✅ Cena service activated');",
+              "} else {",
+              "    console.log('❌ Failed to activate Cena:', pm.response.text());",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "📅 Step 3: Verify Monday Slots Available",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{restaurant_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/restaurant/slot/all",
+          "host": ["{{baseUrl}}"],
+          "path": ["restaurant", "slot", "all"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const slots = pm.response.json();",
+              "    const mondaySlots = slots.filter(slot => slot.weekday === 'MONDAY');",
+              "    console.log(`✅ Total slots found: ${slots.length}`);",
+              "    console.log(`📅 Monday slots: ${mondaySlots.length}`);",
+              "    mondaySlots.forEach((slot, index) => {",
+              "        console.log(`  ${index + 1}. ${slot.start}-${slot.end} (Service ID: ${slot.serviceId}, Slot ID: ${slot.id})`);",
+              "    });",
+              "} else {",
+              "    console.log('❌ Failed to get slots:', pm.response.text());",
+              "}"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

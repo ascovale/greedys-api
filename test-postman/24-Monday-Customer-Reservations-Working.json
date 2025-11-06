@@ -1,0 +1,452 @@
+{
+  "info": {
+    "name": "24 Monday Customer Reservations - Working",
+    "description": "Collezione semplificata per creare 24 prenotazioni (4 customer × 6 settimane di lunedì)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://api.greedys.it"
+    },
+    {
+      "key": "restaurantId",
+      "value": "3"
+    }
+  ],
+  "item": [
+    {
+      "name": "🔐 Step 1: Customer Logins",
+      "item": [
+        {
+          "name": "Login Customer 1 - Giulia Bianchi",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"giulia.bianchi@example.com\",\n  \"password\": \"CustomerPass123!\",\n  \"rememberMe\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["customer", "auth", "login"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('customer1_token', response.jwt);",
+                  "    console.log('✅ Customer 1 (Giulia Bianchi) logged in successfully');",
+                  "} else {",
+                  "    console.log('❌ Customer 1 login failed:', pm.response.text());",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login Customer 2 - Andrea Verdi",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"andrea.verdi@example.com\",\n  \"password\": \"CustomerPass123!\",\n  \"rememberMe\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["customer", "auth", "login"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('customer2_token', response.jwt);",
+                  "    console.log('✅ Customer 2 (Andrea Verdi) logged in successfully');",
+                  "} else {",
+                  "    console.log('❌ Customer 2 login failed:', pm.response.text());",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login Customer 3 - Francesca Neri",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"francesca.neri@example.com\",\n  \"password\": \"CustomerPass123!\",\n  \"rememberMe\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["customer", "auth", "login"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('customer3_token', response.jwt);",
+                  "    console.log('✅ Customer 3 (Francesca Neri) logged in successfully');",
+                  "} else {",
+                  "    console.log('❌ Customer 3 login failed:', pm.response.text());",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login Customer 4 - Lorenzo Ferrari",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"lorenzo.ferrari@example.com\",\n  \"password\": \"CustomerPass123!\",\n  \"rememberMe\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["customer", "auth", "login"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('customer4_token', response.jwt);",
+                  "    console.log('✅ Customer 4 (Lorenzo Ferrari) logged in successfully');",
+                  "} else {",
+                  "    console.log('❌ Customer 4 login failed:', pm.response.text());",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "📅 Step 2: Get Monday Slots",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{customer1_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/customer/restaurant/{{restaurantId}}/slots",
+          "host": ["{{baseUrl}}"],
+          "path": ["customer", "restaurant", "{{restaurantId}}", "slots"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const slots = pm.response.json();",
+              "    console.log('Slots found:', slots.length);",
+              "    ",
+              "    // Filtra solo i slot del lunedì",
+              "    const mondaySlots = slots.filter(slot => slot.weekday === 'MONDAY');",
+              "    pm.collectionVariables.set('monday_slots', JSON.stringify(mondaySlots));",
+              "    ",
+              "    console.log('✅ Monday slots found:', mondaySlots.length);",
+              "    mondaySlots.forEach((slot, index) => {",
+              "        console.log(`  ${index + 1}. Unknown Service: ${slot.start}-${slot.end} (ID: ${slot.id})`);",
+              "    });",
+              "} else {",
+              "    console.log('❌ Failed to get slots:', pm.response.text());",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "🍽️ Step 3: Create 24 Monday Reservations",
+      "item": [
+        {
+          "name": "Week 1 - Customer 1 - Giulia Bianchi (Slot 252)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer1_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userName\": \"Giulia Bianchi\",\n  \"idSlot\": 252,\n  \"pax\": 2,\n  \"kids\": 0,\n  \"restaurantId\": 3,\n  \"reservationDay\": \"2025-11-11\",\n  \"notes\": \"Week 1 - Giulia Bianchi - Colazione\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/reservation/ask",
+              "host": ["{{baseUrl}}"],
+              "path": ["customer", "reservation", "ask"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    console.log('✅ Reservation created for Giulia Bianchi - Week 1 (Slot 252)');",
+                  "} else {",
+                  "    console.log('❌ Reservation failed for Giulia Bianchi - Week 1:', pm.response.text());",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Week 1 - Customer 2 - Andrea Verdi (Slot 253)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer2_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userName\": \"Andrea Verdi\",\n  \"idSlot\": 253,\n  \"pax\": 3,\n  \"kids\": 1,\n  \"restaurantId\": 3,\n  \"reservationDay\": \"2025-11-11\",\n  \"notes\": \"Week 1 - Andrea Verdi - Pranzo\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/reservation/ask",
+              "host": ["{{baseUrl}}"],
+              "path": ["customer", "reservation", "ask"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    console.log('✅ Reservation created for Andrea Verdi - Week 1 (Slot 253)');",
+                  "} else {",
+                  "    console.log('❌ Reservation failed for Andrea Verdi - Week 1:', pm.response.text());",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Week 1 - Customer 3 - Francesca Neri (Slot 254)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer3_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userName\": \"Francesca Neri\",\n  \"idSlot\": 254,\n  \"pax\": 4,\n  \"kids\": 0,\n  \"restaurantId\": 3,\n  \"reservationDay\": \"2025-11-11\",\n  \"notes\": \"Week 1 - Francesca Neri - Cena\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/reservation/ask",
+              "host": ["{{baseUrl}}"],
+              "path": ["customer", "reservation", "ask"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    console.log('✅ Reservation created for Francesca Neri - Week 1 (Slot 254)');",
+                  "} else {",
+                  "    console.log('❌ Reservation failed for Francesca Neri - Week 1:', pm.response.text());",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Week 1 - Customer 4 - Lorenzo Ferrari (Slot 252)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer4_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userName\": \"Lorenzo Ferrari\",\n  \"idSlot\": 252,\n  \"pax\": 1,\n  \"kids\": 0,\n  \"restaurantId\": 3,\n  \"reservationDay\": \"2025-11-11\",\n  \"notes\": \"Week 1 - Lorenzo Ferrari - Colazione\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/reservation/ask",
+              "host": ["{{baseUrl}}"],
+              "path": ["customer", "reservation", "ask"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    console.log('✅ Reservation created for Lorenzo Ferrari - Week 1 (Slot 252)');",
+                  "} else {",
+                  "    console.log('❌ Reservation failed for Lorenzo Ferrari - Week 1:', pm.response.text());",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Week 2 - Customer 1 - Giulia Bianchi (Slot 253)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer1_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userName\": \"Giulia Bianchi\",\n  \"idSlot\": 253,\n  \"pax\": 2,\n  \"kids\": 0,\n  \"restaurantId\": 3,\n  \"reservationDay\": \"2025-11-18\",\n  \"notes\": \"Week 2 - Giulia Bianchi - Pranzo\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/reservation/ask",
+              "host": ["{{baseUrl}}"],
+              "path": ["customer", "reservation", "ask"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    console.log('✅ Reservation created for Giulia Bianchi - Week 2 (Slot 253)');",
+                  "} else {",
+                  "    console.log('❌ Reservation failed for Giulia Bianchi - Week 2:', pm.response.text());",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Week 2 - Customer 2 - Andrea Verdi (Slot 254)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer2_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userName\": \"Andrea Verdi\",\n  \"idSlot\": 254,\n  \"pax\": 2,\n  \"kids\": 0,\n  \"restaurantId\": 3,\n  \"reservationDay\": \"2025-11-18\",\n  \"notes\": \"Week 2 - Andrea Verdi - Cena\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customer/reservation/ask",
+              "host": ["{{baseUrl}}"],
+              "path": ["customer", "reservation", "ask"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    console.log('✅ Reservation created for Andrea Verdi - Week 2 (Slot 254)');",
+                  "} else {",
+                  "    console.log('❌ Reservation failed for Andrea Verdi - Week 2:', pm.response.text());",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

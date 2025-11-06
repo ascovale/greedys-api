@@ -44,7 +44,7 @@ public class RestaurantSlotManagementController extends BaseController {
 			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) java.time.LocalDate date,
 			@AuthenticationPrincipal RUser rUser) {
 		return executeList("get day slots", () -> {
-			Long restaurantId = rUser.getId();
+			Long restaurantId = rUser.getRestaurant().getId();
 			log.info("Getting day slots for restaurant ID: {} on date: {}", restaurantId, date);
 			Collection<SlotDTO> slots = restaurantService.getDaySlots(restaurantId, date);
 			return List.copyOf(slots);
@@ -57,7 +57,7 @@ public class RestaurantSlotManagementController extends BaseController {
 	
     public ResponseEntity<List<SlotDTO>> getAllSlots(@AuthenticationPrincipal RUser rUser) {
 		return executeList("get all slots", () -> {
-			Long restaurantId = rUser.getId();
+			Long restaurantId = rUser.getRestaurant().getId();
 			log.info("Getting all slots for restaurant ID: {}", restaurantId);
 			return slotService.findSlotsByRestaurantId(restaurantId);
 		});

@@ -1,0 +1,199 @@
+{
+	"info": {
+		"name": "Database Check - What Customers Exist?",
+		"description": "Collezione per verificare quali customer esistono realmente nel database",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://api.greedys.it:8080",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "🔍 Check API Status",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/actuator/health",
+					"host": ["{{baseUrl}}"],
+					"path": ["actuator", "health"]
+				}
+			},
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 200) {",
+							"    console.log('✅ API is running');",
+							"    const health = pm.response.json();",
+							"    console.log('Status:', health.status);",
+							"} else {",
+							"    console.log('❌ API not responding');",
+							"}"
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "🔍 Try Basic Customer Endpoints",
+			"item": [
+				{
+					"name": "Test Customer Registration Endpoint",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Test Customer\",\n  \"email\": \"test@example.com\",\n  \"password\": \"test123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/customer/auth/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["customer", "auth", "register"]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"console.log('Response Code:', pm.response.code);",
+									"console.log('Response:', pm.response.text());",
+									"",
+									"// Non registriamo davvero, solo testiamo l'endpoint"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Test Known Customer Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"giulia.bianchi@test.com\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/customer/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["customer", "auth", "login"]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"console.log('Response Code:', pm.response.code);",
+									"",
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    console.log('✅ Customer giulia.bianchi@test.com exists and can login');",
+									"    pm.collectionVariables.set('test_customer_token', response.accessToken);",
+									"} else {",
+									"    console.log('❌ Customer giulia.bianchi@test.com login failed');",
+									"    console.log('Response:', pm.response.text());",
+									"}"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Try Alternative Customer Emails",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"mario.rossi@test.com\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/customer/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["customer", "auth", "login"]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"console.log('Testing mario.rossi@test.com...');",
+									"console.log('Response Code:', pm.response.code);",
+									"",
+									"if (pm.response.code === 200) {",
+									"    console.log('✅ mario.rossi@test.com exists');",
+									"} else {",
+									"    console.log('❌ mario.rossi@test.com not found');",
+									"}"
+								]
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "📋 Manual Instructions",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"console.log('📋 MANUAL CUSTOMER CHECK INSTRUCTIONS');",
+							"console.log('====================================');",
+							"console.log('');",
+							"console.log('1. Run the API Status check first');",
+							"console.log('2. Try the known customer logins');",
+							"console.log('3. If customers dont exist, create them manually:');",
+							"console.log('');",
+							"console.log('SQL Commands to run on your DB:');",
+							"console.log('--------------------------------');",
+							"console.log('INSERT INTO customer (name, email, password, enabled) VALUES');",
+							"console.log('(\"Mario Rossi\", \"mario.rossi@test.com\", \"$2a$10$...\", true),');", 
+							"console.log('(\"Giulia Bianchi\", \"giulia.bianchi@test.com\", \"$2a$10$...\", true),');",
+							"console.log('(\"Luca Verde\", \"luca.verde@test.com\", \"$2a$10$...\", true),');",
+							"console.log('(\"Anna Neri\", \"anna.neri@test.com\", \"$2a$10$...\", true);');",
+							"console.log('');",
+							"console.log('OR use customer registration endpoint to create them.');",
+							"console.log('Password: password123 (will be hashed automatically)');"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/ping",
+					"host": ["{{baseUrl}}"],
+					"path": ["ping"]
+				}
+			}
+		}
+	]
+}

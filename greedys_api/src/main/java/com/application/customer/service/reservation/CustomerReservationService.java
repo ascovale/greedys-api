@@ -1,5 +1,6 @@
 package com.application.customer.service.reservation;
 
+import java.time.DayOfWeek;
 import java.util.Collection;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.application.common.persistence.mapper.ReservationMapper;
+import com.application.common.persistence.mapper.Mapper.Weekday;
 import com.application.common.persistence.model.reservation.Reservation;
 import com.application.common.persistence.model.reservation.Reservation.Status;
 import com.application.common.persistence.model.reservation.ReservationRequest;
@@ -37,6 +39,17 @@ public class CustomerReservationService {
         Slot slot = slotDAO.getReferenceById(reservationDto.getIdSlot());
         if (slot == null || slot.getDeleted()) {
             throw new IllegalArgumentException("Slot is either null or deleted");
+        }
+        
+        // Validate that the reservation day matches the slot's weekday
+        DayOfWeek reservationDayOfWeek = reservationDto.getReservationDay().getDayOfWeek();
+        Weekday reservationWeekday = convertDayOfWeekToWeekday(reservationDayOfWeek);
+        if (!reservationWeekday.equals(slot.getWeekday())) {
+            throw new IllegalArgumentException(
+                String.format("Reservation day %s (%s) does not match slot weekday %s", 
+                    reservationDto.getReservationDay(), 
+                    reservationWeekday, 
+                    slot.getWeekday()));
         }
         
         Reservation reservation = Reservation.builder()
@@ -119,6 +132,30 @@ public class CustomerReservationService {
         return reservationDAO.findById(reservationId)
                 .map(reservationMapper::toDTO)
                 .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
+    }
+
+    /**
+     * Convert Java DayOfWeek to our custom Weekday enum
+     */
+    private Weekday convertDayOfWeekToWeekday(DayOfWeek dayOfWeek) {
+        switch (dayOfWeek) {
+            case MONDAY:
+                return Weekday.MONDAY;
+            case TUESDAY:
+                return Weekday.TUESDAY;
+            case WEDNESDAY:
+                return Weekday.WEDNESDAY;
+            case THURSDAY:
+                return Weekday.THURSDAY;
+            case FRIDAY:
+                return Weekday.FRIDAY;
+            case SATURDAY:
+                return Weekday.SATURDAY;
+            case SUNDAY:
+                return Weekday.SUNDAY;
+            default:
+                throw new IllegalArgumentException("Invalid day of week: " + dayOfWeek);
+        }
     }
 
 }

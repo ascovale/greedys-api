@@ -1,0 +1,256 @@
+{
+	"info": {
+		"name": "Smart Monday Reservations - Real Customers",
+		"description": "Collezione intelligente che prima recupera i customer reali dal DB, poi crea 30 prenotazioni",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://api.greedys.it:8080",
+			"type": "string"
+		},
+		{
+			"key": "restaurantId",
+			"value": "3",
+			"type": "string"
+		},
+		{
+			"key": "admin_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "customers_data",
+			"value": "[]",
+			"type": "string"
+		},
+		{
+			"key": "monday_slots",
+			"value": "[]",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "🔐 1. Admin Login",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"email\": \"admin@greedys.it\",\n  \"password\": \"admin123\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/admin/auth/login",
+					"host": ["{{baseUrl}}"],
+					"path": ["admin", "auth", "login"]
+				}
+			},
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 200) {",
+							"    const response = pm.response.json();",
+							"    pm.collectionVariables.set('admin_token', response.accessToken);",
+							"    console.log('✅ Admin logged in successfully');",
+							"} else {",
+							"    console.log('❌ Admin login failed');",
+							"    console.log('Response:', pm.response.text());",
+							"}"
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "🔍 2. Get Real Customers from DB",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{admin_token}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/admin/customers",
+					"host": ["{{baseUrl}}"],
+					"path": ["admin", "customers"]
+				}
+			},
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 200) {",
+							"    const customers = pm.response.json();",
+							"    ",
+							"    if (customers && customers.length > 0) {",
+							"        // Prendi i primi 4 customer attivi",
+							"        const activeCustomers = customers.filter(c => c.enabled).slice(0, 4);",
+							"        ",
+							"        if (activeCustomers.length >= 3) {",
+							"            pm.collectionVariables.set('customers_data', JSON.stringify(activeCustomers));",
+							"            console.log('✅ Found', activeCustomers.length, 'active customers');",
+							"            ",
+							"            activeCustomers.forEach((customer, index) => {",
+							"                console.log(`Customer ${index + 1}: ${customer.name} (${customer.email})`);",
+							"            });",
+							"        } else {",
+							"            console.log('❌ Not enough active customers found:', activeCustomers.length);",
+							"        }",
+							"    } else {",
+							"        console.log('❌ No customers found in database');",
+							"    }",
+							"} else {",
+							"    console.log('❌ Failed to get customers');",
+							"    console.log('Response:', pm.response.text());",
+							"}"
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "🎯 3. Get Monday Slots",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization", 
+						"value": "Bearer {{admin_token}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/admin/restaurant/{{restaurantId}}/slots",
+					"host": ["{{baseUrl}}"],
+					"path": ["admin", "restaurant", "{{restaurantId}}", "slots"]
+				}
+			},
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 200) {",
+							"    const slots = pm.response.json();",
+							"    ",
+							"    // Filtra slot del lunedì",
+							"    const mondaySlots = slots.filter(slot => ",
+							"        slot.weekday === 'MONDAY' && !slot.deleted",
+							"    );",
+							"    ",
+							"    if (mondaySlots.length > 0) {",
+							"        pm.collectionVariables.set('monday_slots', JSON.stringify(mondaySlots));",
+							"        console.log('✅ Found', mondaySlots.length, 'Monday slots');",
+							"        ",
+							"        mondaySlots.forEach((slot, index) => {",
+							"            console.log(`Slot ${index + 1}: ${slot.start} - ${slot.end} (ID: ${slot.id})`);",
+							"        });",
+							"    } else {",
+							"        console.log('❌ No Monday slots found');",
+							"    }",
+							"} else {",
+							"    console.log('❌ Failed to get slots');",
+							"    console.log('Response:', pm.response.text());",
+							"}"
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "🚀 4. Generate Customer Logins",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Questo script genera dinamicamente i login per i customer reali",
+							"const customersData = pm.collectionVariables.get('customers_data');",
+							"",
+							"if (customersData && customersData !== '[]') {",
+							"    const customers = JSON.parse(customersData);",
+							"    console.log('🔧 Preparing logins for', customers.length, 'customers');",
+							"    ",
+							"    customers.forEach((customer, index) => {",
+							"        pm.collectionVariables.set(`customer_${index + 1}_email`, customer.email);",
+							"        pm.collectionVariables.set(`customer_${index + 1}_id`, customer.id);",
+							"        pm.collectionVariables.set(`customer_${index + 1}_name`, customer.name);",
+							"    });",
+							"    ",
+							"    console.log('✅ Customer variables set for reservations');",
+							"} else {",
+							"    console.log('❌ No customers data available');",
+							"}"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/ping",
+					"host": ["{{baseUrl}}"],
+					"path": ["ping"]
+				}
+			}
+		},
+		{
+			"name": "📝 5. Show Setup Summary",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const customersData = pm.collectionVariables.get('customers_data');",
+							"const slotsData = pm.collectionVariables.get('monday_slots');",
+							"",
+							"console.log('📊 SETUP SUMMARY');",
+							"console.log('================');",
+							"",
+							"if (customersData && customersData !== '[]') {",
+							"    const customers = JSON.parse(customersData);",
+							"    console.log('✅ Customers:', customers.length);",
+							"    customers.forEach((c, i) => console.log(`   ${i+1}. ${c.name} (${c.email})`));",
+							"} else {",
+							"    console.log('❌ No customers available');",
+							"}",
+							"",
+							"if (slotsData && slotsData !== '[]') {",
+							"    const slots = JSON.parse(slotsData);",
+							"    console.log('✅ Monday Slots:', slots.length);",
+							"    slots.slice(0,3).forEach((s, i) => console.log(`   ${i+1}. ${s.start}-${s.end} (ID:${s.id})`));",
+							"} else {",
+							"    console.log('❌ No Monday slots available');",
+							"}",
+							"",
+							"console.log('');",
+							"console.log('🎯 Ready to generate 30 reservations!');",
+							"console.log('   Use Customer Login requests next, then Bulk Reservations');"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/ping",
+					"host": ["{{baseUrl}}"],
+					"path": ["ping"]
+				}
+			}
+		}
+	]
+}
