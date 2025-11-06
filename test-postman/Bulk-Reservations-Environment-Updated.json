@@ -1,0 +1,49 @@
+{
+  "id": "bulk-reservations-env-2025-updated",
+  "name": "Bulk Reservations Environment (Updated)",
+  "values": [
+    {
+      "key": "base_url",
+      "value": "https://api.greedys.it",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "restaurant_id", 
+      "value": "1",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "target_date",
+      "value": "2025-01-13",
+      "type": "default",
+      "enabled": true,
+      "description": "Lunedì 13 Gennaio 2025"
+    },
+    {
+      "key": "slot_colazione",
+      "value": "1",
+      "type": "default",
+      "enabled": true,
+      "description": "Slot ID per colazione (11:00-11:30)"
+    },
+    {
+      "key": "slot_pranzo", 
+      "value": "2",
+      "type": "default",
+      "enabled": true,
+      "description": "Slot ID per pranzo"
+    },
+    {
+      "key": "slot_cena",
+      "value": "3", 
+      "type": "default",
+      "enabled": true,
+      "description": "Slot ID per cena"
+    }
+  ],
+  "_postman_variable_scope": "environment",
+  "_postman_exported_at": "2025-01-05T22:18:00.000Z",
+  "_postman_exported_using": "Postman/10.0.0"
+}

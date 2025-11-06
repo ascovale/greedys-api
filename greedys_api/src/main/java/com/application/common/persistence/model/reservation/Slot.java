@@ -1,5 +1,6 @@
 package com.application.common.persistence.model.reservation;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 
 import com.application.common.persistence.mapper.Mapper.Weekday;
@@ -47,7 +48,43 @@ public class Slot {
 	@ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "service_id")
 	Service service;
+	
 	@Builder.Default
 	private Boolean deleted = false;
+	
+	/**
+	 * Data da cui questo slot è valido (inclusa)
+	 */
+	@Column(name = "valid_from")
+	@Builder.Default
+	private LocalDate validFrom = LocalDate.of(2024, 1, 1);
+	
+	/**
+	 * Data fino a cui questo slot è valido (inclusa)
+	 */
+	@Column(name = "valid_to")
+	@Builder.Default
+	private LocalDate validTo = LocalDate.of(2099, 12, 31);
+	
+	/**
+	 * Se true, lo slot è attivo e può ricevere nuove prenotazioni
+	 */
+	@Column(name = "active")
+	@Builder.Default
+	private Boolean active = true;
+	
+	/**
+	 * ID dello slot che sostituisce questo (quando viene modificato)
+	 */
+	@Column(name = "superseded_by")
+	private Long supersededBy;
+	
+	/**
+	 * Policy per gestire le modifiche quando ci sono prenotazioni future
+	 */
+	@Column(name = "change_policy")
+	@Enumerated(EnumType.STRING)
+	@Builder.Default
+	private SlotChangePolicy changePolicy = SlotChangePolicy.HARD_CUT;
 	
 }
