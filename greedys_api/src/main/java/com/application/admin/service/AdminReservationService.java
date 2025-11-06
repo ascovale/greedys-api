@@ -1,5 +1,6 @@
 package com.application.admin.service;
 
+import java.time.DayOfWeek;
 import java.util.Collection;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -9,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.application.admin.web.dto.reservation.AdminNewReservationDTO;
 import com.application.common.persistence.mapper.ReservationMapper;
+import com.application.common.persistence.mapper.Mapper.Weekday;
 import com.application.common.persistence.model.reservation.Reservation;
 import com.application.common.persistence.model.reservation.Reservation.Status;
 import com.application.common.persistence.model.reservation.Slot;
@@ -43,6 +45,17 @@ public class AdminReservationService {
                 .orElseThrow(() -> new IllegalArgumentException("Slot not found"));
         if (slot.getDeleted()) {
             throw new IllegalArgumentException("Slot is deleted");
+        }
+        
+        // Validate that the reservation day matches the slot's weekday
+        DayOfWeek reservationDayOfWeek = reservationDto.getReservationDay().getDayOfWeek();
+        Weekday reservationWeekday = convertDayOfWeekToWeekday(reservationDayOfWeek);
+        if (!reservationWeekday.equals(slot.getWeekday())) {
+            throw new IllegalArgumentException(
+                String.format("Reservation day %s (%s) does not match slot weekday %s", 
+                    reservationDto.getReservationDay(), 
+                    reservationWeekday, 
+                    slot.getWeekday()));
         }
         
         // Get restaurant
@@ -150,6 +163,24 @@ public class AdminReservationService {
             reservation.setSlot(slot);
         }
 
+        // Update reservation date if provided
+        if (reservationDto.getReservationDay() != null) {
+            reservation.setDate(reservationDto.getReservationDay());
+        }
+
+        // Validate weekday consistency if both slot and date are set
+        if (reservation.getSlot() != null && reservation.getDate() != null) {
+            DayOfWeek reservationDayOfWeek = reservation.getDate().getDayOfWeek();
+            Weekday reservationWeekday = convertDayOfWeekToWeekday(reservationDayOfWeek);
+            if (!reservationWeekday.equals(reservation.getSlot().getWeekday())) {
+                throw new IllegalArgumentException(
+                    String.format("Reservation day %s (%s) does not match slot weekday %s", 
+                        reservation.getDate(), 
+                        reservationWeekday, 
+                        reservation.getSlot().getWeekday()));
+            }
+        }
+
         // Update restaurant if provided
         if (reservationDto.getRestaurantId() != null) {
             Restaurant restaurant = restaurantDAO.findById(reservationDto.getRestaurantId())
@@ -177,9 +208,6 @@ public class AdminReservationService {
         }
         if (reservationDto.getNotes() != null) {
             reservation.setNotes(reservationDto.getNotes());
-        }
-        if (reservationDto.getReservationDay() != null) {
-            reservation.setDate(reservationDto.getReservationDay());
         }
         if (reservationDto.getStatus() != null) {
             reservation.setStatus(reservationDto.getStatus());
@@ -219,5 +247,29 @@ public class AdminReservationService {
         String message = "✅ Fixed " + count + " reservations with default userName";
         log.info(message);
         return message;
+    }
+
+    /**
+     * Convert Java DayOfWeek to our custom Weekday enum
+     */
+    private Weekday convertDayOfWeekToWeekday(DayOfWeek dayOfWeek) {
+        switch (dayOfWeek) {
+            case MONDAY:
+                return Weekday.MONDAY;
+            case TUESDAY:
+                return Weekday.TUESDAY;
+            case WEDNESDAY:
+                return Weekday.WEDNESDAY;
+            case THURSDAY:
+                return Weekday.THURSDAY;
+            case FRIDAY:
+                return Weekday.FRIDAY;
+            case SATURDAY:
+                return Weekday.SATURDAY;
+            case SUNDAY:
+                return Weekday.SUNDAY;
+            default:
+                throw new IllegalArgumentException("Invalid day of week: " + dayOfWeek);
+        }
     }
 }
