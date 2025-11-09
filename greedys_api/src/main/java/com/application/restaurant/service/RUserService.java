@@ -18,6 +18,7 @@ import com.application.common.service.EmailService;
 import com.application.common.web.dto.restaurant.RUserDTO;
 import com.application.restaurant.persistence.dao.RUserDAO;
 import com.application.restaurant.persistence.dao.RUserHubDAO;
+import com.application.restaurant.persistence.dao.RUserHubVerificationTokenDAO;
 import com.application.restaurant.persistence.dao.RUserPasswordResetTokenDAO;
 import com.application.restaurant.persistence.dao.RUserVerificationTokenDAO;
 import com.application.restaurant.persistence.dao.RestaurantDAO;
@@ -25,6 +26,7 @@ import com.application.restaurant.persistence.dao.RestaurantRoleDAO;
 import com.application.restaurant.persistence.model.Restaurant;
 import com.application.restaurant.persistence.model.user.RUser;
 import com.application.restaurant.persistence.model.user.RUserHub;
+import com.application.restaurant.persistence.model.user.RUserHubVerificationToken;
 import com.application.restaurant.persistence.model.user.RUserPasswordResetToken;
 import com.application.restaurant.persistence.model.user.RUserVerificationToken;
 import com.application.restaurant.persistence.model.user.RestaurantRole;
@@ -41,6 +43,7 @@ public class RUserService {
     public static final String APP_NAME = "SpringRegistration";
 
     private final RUserVerificationTokenDAO tokenDAO;
+    private final RUserHubVerificationTokenDAO hubTokenDAO;
     private final EmailService emailService;
     private final RUserDAO ruDAO;
     private final RestaurantDAO restaurantDAO;
@@ -105,7 +108,19 @@ public class RUserService {
         if (existingUserHub != null) {
             throw new IllegalArgumentException("User hub with email " + userHub.getEmail() + " already exists.");
         }
-        return ruhDAO.save(userHub);
+        
+        // Nuovo Hub inizia sempre in stato VERIFY_TOKEN
+        userHub.setStatus(RUserHub.Status.VERIFY_TOKEN);
+        RUserHub savedHub = ruhDAO.save(userHub);
+        
+        // Genera e invia token di verifica per l'Hub
+        String token = UUID.randomUUID().toString();
+        createVerificationTokenForHub(savedHub, token);
+        
+        // TODO: Inviare email di verifica
+        // emailService.sendHubVerificationEmail(savedHub, token);
+        
+        return savedHub;
     }
 
     public RUser registerRUser(NewRUserDTO RUserDTO, Restaurant restaurant) {
@@ -121,34 +136,38 @@ public class RUserService {
         // Check if a user with the same email already exists
         RUserHub existingUserHub = ruhDAO.findByEmail(RUserDTO.getEmail());
         if (existingUserHub == null) {
-            // Create new RUserHub with encoded password
+            // Create new RUserHub - inizia con verifica email richiesta
             existingUserHub = RUserHub.builder()
                 .email(RUserDTO.getEmail())
                 .firstName(RUserDTO.getFirstName())
                 .lastName(RUserDTO.getLastName())
-                .password(passwordEncoder.encode(RUserDTO.getPassword())) // FIX: Encode password here
+                .password(passwordEncoder.encode(RUserDTO.getPassword()))
+                .status(RUserHub.Status.VERIFY_TOKEN) // Nuovo Hub richiede verifica
                 .build();
-            ruhDAO.save(existingUserHub);
+            existingUserHub = ruhDAO.save(existingUserHub);
+            
+            // Genera token di verifica per il nuovo Hub
+            String hubToken = UUID.randomUUID().toString();
+            createVerificationTokenForHub(existingUserHub, hubToken);
+            // TODO: emailService.sendHubVerificationEmail(existingUserHub, hubToken);
         } else {
-            // If hub already exists, update the information if necessary
+            // Hub già esistente - aggiorna solo informazioni base (non password per sicurezza)
             existingUserHub.setFirstName(RUserDTO.getFirstName());
             existingUserHub.setLastName(RUserDTO.getLastName());
-            // Only update password if it's different (for security)
-            if (!passwordEncoder.matches(RUserDTO.getPassword(), existingUserHub.getPassword())) {
-                existingUserHub.setPassword(passwordEncoder.encode(RUserDTO.getPassword()));
-            }
-            ruhDAO.save(existingUserHub);
+            existingUserHub = ruhDAO.save(existingUserHub);
         }
 
-        // Create RUser with all required fields from RUserHub
+        // Create RUser ereditando lo status dall'Hub
+        RUser.Status rUserStatus = mapHubStatusToUserStatus(existingUserHub.getStatus());
+        
         RUser ru = RUser.builder()
             .RUserHub(existingUserHub)
-            // These fields are required by AbstractUser @NotNull constraints but they are not needed veramente!
             .email(existingUserHub.getEmail())
             .name(existingUserHub.getFirstName())
             .surname(existingUserHub.getLastName())
             .password(existingUserHub.getPassword())
             .restaurant(restaurant)
+            .status(rUserStatus) // Eredita status dall'Hub
             .build();
         Hibernate.initialize(ru.getRoles());
         ru.addRestaurantRole(role);
@@ -337,13 +356,9 @@ public class RUserService {
                 .orElseThrow(() -> new IllegalArgumentException("Invalid restaurant ID: " + restaurantId));
         RUser RUser = registerRUser(RUserDTO, restaurant);
 
-        // Generate and send verification token
-        String token = UUID.randomUUID().toString();
-        createVerificationTokenForRUser(RUser, token);
-        // TODO: Verificare invio mail
-        // final SimpleMailMessage email = constructEmailMessage(event, RUser,
-        // token);
-        // mailSender.send(email);
+        // Non generiamo più token individuali - la verifica è gestita dall'Hub
+        // Se l'Hub è nuovo, il token è già stato generato in registerRUser
+        // Se l'Hub esiste già ed è verificato, l'RUser eredita lo status ENABLED
 
         return rUserMapper.toDTO(RUser);
     }
@@ -457,6 +472,80 @@ public class RUserService {
                 .post_code(restaurant.getPostCode())
                 .vatNumber(restaurant.getVatNumber())
                 .build();
+    }
+
+    // ===== HUB VERIFICATION METHODS =====
+
+    /**
+     * Crea un token di verifica per RUserHub
+     */
+    public void createVerificationTokenForHub(final RUserHub userHub, final String token) {
+        final RUserHubVerificationToken hubToken = new RUserHubVerificationToken(token, userHub);
+        hubTokenDAO.save(hubToken);
+    }
+
+    /**
+     * Valida il token di verifica per RUserHub
+     */
+    public String validateHubVerificationToken(String token) {
+        final RUserHubVerificationToken verificationToken = hubTokenDAO.findByToken(token);
+        if (verificationToken == null) {
+            return TokenValidationConstants.TOKEN_INVALID;
+        }
+
+        final RUserHub userHub = verificationToken.getRUserHub();
+        final LocalDateTime now = LocalDateTime.now();
+        if (verificationToken.getExpiryDate().isBefore(now)) {
+            hubTokenDAO.delete(verificationToken);
+            return TokenValidationConstants.TOKEN_EXPIRED;
+        }
+        if (userHub.getStatus() != RUserHub.Status.VERIFY_TOKEN) {
+            return TokenValidationConstants.TOKEN_INVALID;
+        }
+        
+        // Aggiorna status Hub a ENABLED
+        userHub.setStatus(RUserHub.Status.ENABLED);
+        ruhDAO.save(userHub);
+        
+        // Aggiorna tutti gli RUser associati a questo Hub
+        updateAllRUserStatusByHub(userHub);
+        
+        // Elimina token usato
+        hubTokenDAO.delete(verificationToken);
+        return TokenValidationConstants.TOKEN_VALID;
+    }
+
+    /**
+     * Mappa lo status dell'Hub allo status dell'RUser
+     */
+    private RUser.Status mapHubStatusToUserStatus(RUserHub.Status hubStatus) {
+        switch (hubStatus) {
+            case VERIFY_TOKEN:
+                return RUser.Status.VERIFY_TOKEN;
+            case ENABLED:
+                return RUser.Status.ENABLED;
+            case BLOCKED:
+                return RUser.Status.BLOCKED;
+            case DELETED:
+                return RUser.Status.DELETED;
+            case DISABLED:
+                return RUser.Status.DISABLED;
+            default:
+                return RUser.Status.VERIFY_TOKEN;
+        }
+    }
+
+    /**
+     * Aggiorna lo status di tutti gli RUser associati a un Hub
+     */
+    private void updateAllRUserStatusByHub(RUserHub userHub) {
+        List<RUser> associatedUsers = ruDAO.findAllByRUserHubId(userHub.getId());
+        RUser.Status newStatus = mapHubStatusToUserStatus(userHub.getStatus());
+        
+        for (RUser user : associatedUsers) {
+            user.setStatus(newStatus);
+            ruDAO.save(user);
+        }
     }
 
 }

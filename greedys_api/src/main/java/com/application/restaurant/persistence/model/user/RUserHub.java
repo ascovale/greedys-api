@@ -36,7 +36,7 @@ public class RUserHub {
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     @Builder.Default
-    private Status status = Status.ENABLED;
+    private Status status = Status.VERIFY_TOKEN;
     private String phoneNumber;
     @Column(length = 60)
     private String password;
@@ -50,6 +50,7 @@ public class RUserHub {
     private LocalDate credentialsExpirationDate;
 
     public enum Status {
+        VERIFY_TOKEN,
         BLOCKED,
         DELETED,
         ENABLED,
@@ -60,9 +61,24 @@ public class RUserHub {
         return email;
     }
 
-    
     public boolean isAccountNonExpired() {
+        return status == Status.ENABLED || status == Status.VERIFY_TOKEN;
+    }
+
+    public String getFullName() {
+        return (firstName != null ? firstName : "") + " " + (lastName != null ? lastName : "");
+    }
+
+    public boolean isEnabled() {
         return status == Status.ENABLED;
+    }
+
+    public boolean isAccountNonLocked() {
+        return status != Status.BLOCKED && status != Status.DELETED;
+    }
+
+    public boolean isCredentialsNonExpired() {
+        return credentialsExpirationDate == null || credentialsExpirationDate.isAfter(LocalDate.now());
     }
 
 

@@ -61,6 +61,7 @@ public class Customer extends AbstractUser {
     private Status status = Status.VERIFY_TOKEN;
 
     public enum Status {
+        UNREGISTERED, // Contatto senza password (solo dati anagrafici)
         BLOCKED,
         DELETED,
         ENABLED,
@@ -73,6 +74,7 @@ public class Customer extends AbstractUser {
 
     @Override
     public boolean isEnabled() {
+        // UNREGISTERED customers cannot login (no password)
         return status == Status.ENABLED;
     }
 
@@ -83,12 +85,26 @@ public class Customer extends AbstractUser {
 
     @Override
     public boolean isAccountNonLocked() {
+        // UNREGISTERED customers cannot login (no password)
         return status == Status.ENABLED;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
         return true;
+    }
+
+    @Override
+    public String getPassword() {
+        // UNREGISTERED customers have no password and cannot authenticate
+        return super.getPassword();
+    }
+
+    /**
+     * Check if customer can authenticate (has password and is not UNREGISTERED)
+     */
+    public boolean canAuthenticate() {
+        return status != Status.UNREGISTERED && hasPassword();
     }
 
     @Override

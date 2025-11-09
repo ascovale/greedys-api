@@ -96,6 +96,18 @@ public class RestaurantRegistrationController extends BaseController {
         });
     }
 
+    @Operation(summary = "Confirm restaurant user hub registration", description = "Conferma la registrazione dell'Hub utente")
+    @ReadApiResponses
+    @GetMapping(value = "/confirm-hub")
+    public ResponseEntity<String> confirmRUserHubRegistration(final HttpServletRequest request,
+            @RequestParam final String token) throws UnsupportedEncodingException {
+        return execute("confirm hub registration", () -> {
+            // Esegue la conferma Hub e aggiorna tutti gli RUser associati
+            restaurantAuthenticationService.confirmRUserHubRegistration(request, null, token);
+            return "Hub registration confirmed successfully - all associated users are now enabled";
+        });
+    }
+
     @Operation(summary = "Confirm password change with token", description = "Confirms the password change using a token")
     @ReadApiResponses
     @PutMapping(value = "/password/confirm")

@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import com.application.agency.persistence.model.user.AgencyUserHub;
 import com.application.common.service.SecretManager;
 import com.application.restaurant.persistence.model.user.RUserHub;
 
@@ -125,6 +126,8 @@ public class JwtUtil {
                 return "admin";
             case "RUser":
                 return "restaurant-user";
+            case "AgencyUser":
+                return "agency-user";
             default:
                 throw new IllegalArgumentException("Unknown user type: " + className);
         }
@@ -137,6 +140,16 @@ public class JwtUtil {
         claims.put("email", user.getEmail());
         claims.put("authorities", List.of("PRIVILEGE_REFRESH_ONLY")); // Solo permesso di refresh per Hub
         claims.put("user_type", "restaurant-user-hub"); // Tipo utente specifico per Hub
+        return createToken(claims, user.getEmail(), refreshExpiration);
+    }
+
+    public String generateAgencyHubRefreshToken(AgencyUserHub user) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("type", "agency-hub");
+        claims.put("access_type", "refresh");
+        claims.put("email", user.getEmail());
+        claims.put("authorities", List.of("PRIVILEGE_REFRESH_ONLY")); // Solo permesso di refresh per Agency Hub
+        claims.put("user_type", "agency-user-hub"); // Tipo utente specifico per Agency Hub
         return createToken(claims, user.getEmail(), refreshExpiration);
     }
 
@@ -204,6 +217,33 @@ public class JwtUtil {
         }
     }
 
+    public boolean isAgencyHubToken(String token) {
+        try {
+            Claims claims = extractAllClaims(token);
+            return "agency-hub".equals(claims.get("type")) && "access".equals(claims.get("access_type"));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public boolean isAgencyHubRefreshToken(String token) {
+        try {
+            Claims claims = extractAllClaims(token);
+            return "agency-hub".equals(claims.get("type")) && "refresh".equals(claims.get("access_type"));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    
+    public boolean isAnyAgencyHubToken(String token) {
+        try {
+            Claims claims = extractAllClaims(token);
+            return "agency-hub".equals(claims.get("type"));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     public String generateHubToken(RUserHub user) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("type", "hub");
@@ -214,8 +254,22 @@ public class JwtUtil {
         return createToken(claims, user.getEmail(), expiration);
     }
 
+    public String generateAgencyHubToken(AgencyUserHub user) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("type", "agency-hub");
+        claims.put("access_type", "access");
+        claims.put("authorities", agencyHubPrivileges());
+        claims.put("email", user.getEmail());
+        claims.put("user_type", "agency-user-hub"); // Tipo utente specifico per Agency Hub
+        return createToken(claims, user.getEmail(), expiration);
+    }
+
     private List<String> hubPrivileges() {
         return List.of("PRIVILEGE_HUB", "PRIVILEGE_CHANGE_PASSWORD");
+    }
+
+    private List<String> agencyHubPrivileges() {
+        return List.of("PRIVILEGE_AGENCY_HUB", "PRIVILEGE_CHANGE_PASSWORD");
     }
     
     /**

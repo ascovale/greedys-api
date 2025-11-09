@@ -130,6 +130,23 @@ public class RestaurantAuthenticationService {
         return "redirect:/public/badUser.html?lang=" + locale.getLanguage();
     }
 
+    public String confirmRUserHubRegistration(final HttpServletRequest request, final Model model,
+            final String token) {
+        Locale locale = request.getLocale();
+        final String result = RUserService.validateHubVerificationToken(token);
+
+        if (result.equals("valid")) {
+            // Hub verified successfully - all associated RUsers are now enabled
+            model.addAttribute("message", messages.getMessage("message.hubAccountVerified", null, locale));
+            return "redirect:/console.html?lang=" + locale.getLanguage();
+        }
+
+        model.addAttribute("message", messages.getMessage("auth.message." + result, null, locale));
+        model.addAttribute("expired", "expired".equals(result));
+        model.addAttribute("token", token);
+        return "redirect:/public/badUser.html?lang=" + locale.getLanguage();
+    }
+
     public String confirmPasswordChange(final String token) {
         final String result = securityRUserService.validatePasswordResetToken(token);
         if (result != null) {

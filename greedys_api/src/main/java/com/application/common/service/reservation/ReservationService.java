@@ -24,11 +24,14 @@ import com.application.common.persistence.mapper.Mapper.Weekday;
 import com.application.customer.persistence.dao.CustomerDAO;
 import com.application.customer.persistence.dao.ReservationDAO;
 import com.application.customer.persistence.dao.ReservationRequestDAO;
+import com.application.customer.persistence.model.Customer;
 import com.application.restaurant.persistence.dao.ClosedDayDAO;
 import com.application.restaurant.persistence.dao.ServiceDAO;
 import com.application.restaurant.persistence.dao.SlotDAO;
 import com.application.restaurant.persistence.model.Restaurant;
+import com.application.restaurant.service.agenda.RestaurantAgendaService;
 import com.application.restaurant.web.dto.reservation.RestaurantNewReservationDTO;
+import com.application.restaurant.web.dto.reservation.RestaurantReservationWithExistingCustomerDTO;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -51,6 +54,7 @@ public class ReservationService {
     private final ApplicationEventPublisher eventPublisher;
     private final CustomerDAO customerDAO;
     private final ReservationMapper reservationMapper;
+    private final RestaurantAgendaService restaurantAgendaService;
 
     public void save(Reservation reservation) {
         // Save the reservation
@@ -60,6 +64,7 @@ public class ReservationService {
     public Reservation createNewReservation(Reservation reservation) {
         // Save first to get the ID
         Reservation savedReservation = reservationDAO.save(reservation);
+        
         // 🎯 PUBLISH EVENT FOR NEW RESERVATION
         publishReservationCreatedEvent(savedReservation);
         // Return the saved reservation
@@ -210,10 +215,6 @@ public class ReservationService {
         Slot slot = slotDAO.findById(reservationDto.getIdSlot())
                 .orElseThrow(() -> new IllegalArgumentException("Slot not found"));
 
-        //Customer customer = customerDAO.findByEmail(reservationDto.getUserEmail());
-        //if (customer == null) {
-        //    throw new IllegalArgumentException("Customer not found with email: " + reservationDto.getUserEmail());
-        //}
         if (slot.getDeleted()) {
             throw new IllegalArgumentException("Slot is deleted");
         }
@@ -228,6 +229,13 @@ public class ReservationService {
                     reservationWeekday, 
                     slot.getWeekday()));
         }
+
+        // Create or find customer (UNREGISTERED if new)
+        Customer customer = createOrUpdateCustomerFromReservation(
+                reservationDto.getUserName(), 
+                reservationDto.getUserEmail(), 
+                reservationDto.getUserPhoneNumber());
+
         var reservation = Reservation.builder()
                 .userName(reservationDto.getUserName())
                 .pax(reservationDto.getPax())
@@ -236,11 +244,83 @@ public class ReservationService {
                 .date(reservationDto.getReservationDay())
                 .slot(slot)
                 .restaurant(restaurant)
-            //    .customer(customer)
+                .customer(customer)
                 .createdByUserType(Reservation.UserType.RESTAURANT_USER) // 🔧 FIX: aggiunto campo mancante per auditing  
                 .status(Reservation.Status.ACCEPTED)
                 .build();
         reservation = reservationDAO.save(reservation);
+        
+        // 🎯 INTEGRAZIONE AGENDA: Aggiungi automaticamente il cliente all'agenda del ristorante
+        try {
+            restaurantAgendaService.addToAgendaOnReservation(
+                customer.getId(), 
+                restaurant.getId()
+            );
+            log.debug("Customer {} successfully added to restaurant {} agenda", customer.getEmail(), restaurant.getId());
+        } catch (Exception e) {
+            // Non blocchiamo la prenotazione se l'aggiunta all'agenda fallisce
+            log.warn("Failed to add customer {} to restaurant {} agenda: {}", 
+                customer.getEmail(), restaurant.getId(), e.getMessage());
+        }
+        
+        return reservationMapper.toDTO(reservation);
+    }
+
+    /**
+     * Create a reservation with existing customer from restaurant agenda
+     */
+    public ReservationDTO createReservationWithExistingCustomer(
+            RestaurantReservationWithExistingCustomerDTO reservationDto, Restaurant restaurant) {
+        log.debug("Creating reservation with existing customer: {}", reservationDto);
+        
+        Slot slot = slotDAO.findById(reservationDto.getIdSlot())
+                .orElseThrow(() -> new IllegalArgumentException("Slot not found"));
+
+        if (slot.getDeleted()) {
+            throw new IllegalArgumentException("Slot is deleted");
+        }
+
+        // Validate that the reservation day matches the slot's weekday
+        DayOfWeek reservationDayOfWeek = reservationDto.getReservationDay().getDayOfWeek();
+        Weekday reservationWeekday = convertDayOfWeekToWeekday(reservationDayOfWeek);
+        if (!reservationWeekday.equals(slot.getWeekday())) {
+            throw new IllegalArgumentException(
+                String.format("Reservation day %s (%s) does not match slot weekday %s", 
+                    reservationDto.getReservationDay(), 
+                    reservationWeekday, 
+                    slot.getWeekday()));
+        }
+
+        // Get existing customer
+        Customer customer = customerDAO.findById(reservationDto.getCustomerId())
+                .orElseThrow(() -> new IllegalArgumentException("Customer not found: " + reservationDto.getCustomerId()));
+
+        Reservation reservation = Reservation.builder()
+                .userName(reservationDto.getUserName())
+                .pax(reservationDto.getPax())
+                .kids(reservationDto.getKids())
+                .notes(reservationDto.getNotes())
+                .date(reservationDto.getReservationDay())
+                .slot(slot)
+                .restaurant(restaurant)
+                .customer(customer)
+                .createdByUserType(Reservation.UserType.RESTAURANT_USER)
+                .status(Reservation.Status.ACCEPTED)
+                .build();
+        reservation = reservationDAO.save(reservation);
+        
+        // 🎯 INTEGRAZIONE AGENDA: Customer già esistente nell'agenda - aggiorna info prenotazione
+        try {
+            restaurantAgendaService.addToAgendaOnReservation(
+                customer.getId(), 
+                restaurant.getId()
+            );
+            log.debug("Customer {} agenda updated for restaurant {}", customer.getEmail(), restaurant.getId());
+        } catch (Exception e) {
+            // Non blocchiamo la prenotazione se l'aggiornamento agenda fallisce
+            log.warn("Failed to update customer {} agenda for restaurant {}: {}", 
+                customer.getEmail(), restaurant.getId(), e.getMessage());
+        }
         
         return reservationMapper.toDTO(reservation);
     }
@@ -282,6 +362,108 @@ public class ReservationService {
             default:
                 throw new IllegalArgumentException("Invalid day of week: " + dayOfWeek);
         }
+    }
+
+    /**
+     * Create or update customer from reservation data.
+     * Used when making reservations via restaurant (phone bookings).
+     * 
+     * @param userName Customer name
+     * @param userEmail Customer email (optional)
+     * @param userPhoneNumber Customer phone number (key identifier)
+     * @return Customer entity (existing or newly created)
+     */
+    private Customer createOrUpdateCustomerFromReservation(String userName, String userEmail, String userPhoneNumber) {
+        log.debug("Creating/updating customer from reservation: name={}, email={}, phone={}", 
+                userName, userEmail, userPhoneNumber);
+
+        // Validate input - at least name and phone required
+        if (userName == null || userName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Customer name is required for reservation");
+        }
+        if (userPhoneNumber == null || userPhoneNumber.trim().isEmpty()) {
+            throw new IllegalArgumentException("Customer phone number is required for reservation");
+        }
+
+        Customer customer = null;
+
+        // First, try to find existing customer by phone number
+        customer = customerDAO.findByPhoneNumber(userPhoneNumber);
+        
+        if (customer != null) {
+            log.debug("Found existing customer by phone: {}", customer.getId());
+            
+            // Update customer info if needed
+            boolean needsUpdate = false;
+            
+            // Update name if different (handle case: reservation with wife's name but husband's phone)
+            if (!userName.equals(customer.getName())) {
+                log.info("Updating customer name from '{}' to '{}' for customer {}", 
+                        customer.getName(), userName, customer.getId());
+                customer.setName(userName);
+                needsUpdate = true;
+            }
+            
+            // Add email if missing and provided
+            if (customer.getEmail() == null && userEmail != null && !userEmail.trim().isEmpty()) {
+                // Check if email already exists for another customer
+                Customer existingByEmail = customerDAO.findByEmail(userEmail);
+                if (existingByEmail == null) {
+                    customer.setEmail(userEmail);
+                    needsUpdate = true;
+                    log.info("Added email '{}' to existing customer {}", userEmail, customer.getId());
+                } else if (!existingByEmail.getId().equals(customer.getId())) {
+                    log.warn("Email '{}' already belongs to another customer {}. Cannot update customer {}",
+                            userEmail, existingByEmail.getId(), customer.getId());
+                }
+            }
+            
+            if (needsUpdate) {
+                customer = customerDAO.save(customer);
+            }
+        } else {
+            // No customer found by phone, check by email if provided
+            if (userEmail != null && !userEmail.trim().isEmpty()) {
+                customer = customerDAO.findByEmail(userEmail);
+                
+                if (customer != null) {
+                    log.debug("Found existing customer by email: {}", customer.getId());
+                    
+                    // Add phone number if missing
+                    if (customer.getPhoneNumber() == null) {
+                        customer.setPhoneNumber(userPhoneNumber);
+                        customer = customerDAO.save(customer);
+                        log.info("Added phone '{}' to existing customer {}", userPhoneNumber, customer.getId());
+                    }
+                }
+            }
+            
+            // Create new UNREGISTERED customer if still not found
+            if (customer == null) {
+                log.info("Creating new UNREGISTERED customer: name={}, email={}, phone={}", 
+                        userName, userEmail, userPhoneNumber);
+                
+                // Parse first and last name (simple split)
+                String[] nameParts = userName.trim().split("\\s+", 2);
+                String firstName = nameParts[0];
+                String lastName = nameParts.length > 1 ? nameParts[1] : "";
+                
+                customer = Customer.builder()
+                        .name(firstName)
+                        .surname(lastName)
+                        .email(userEmail != null && !userEmail.trim().isEmpty() ? userEmail : null)
+                        .phoneNumber(userPhoneNumber)
+                        .password(null) // No password for UNREGISTERED customers
+                        .status(Customer.Status.UNREGISTERED)
+                        .roles(new java.util.ArrayList<>()) // No roles for UNREGISTERED customers
+                        .build();
+                
+                customer = customerDAO.save(customer);
+                log.info("Created new UNREGISTERED customer with ID: {}", customer.getId());
+            }
+        }
+        
+        return customer;
     }
 
 }
