@@ -193,4 +193,111 @@ public interface ReservationDAO extends JpaRepository<Reservation, Long> {
             WHERE r.id = :reservationId
             """)
     Optional<Reservation> findByIdWithRestaurant(Long reservationId);
+
+    // === Restaurant Contact/Rubrica Methods ===
+
+    /**
+     * Find all customers who have made reservations at a restaurant
+     */
+    @Query(value = """
+            SELECT DISTINCT r.customer FROM Reservation r
+            WHERE r.restaurant.id = :restaurantId 
+                AND r.customer IS NOT NULL
+            ORDER BY r.customer.name, r.customer.surname
+            """)
+    List<com.application.customer.persistence.model.Customer> findCustomersByRestaurantId(Long restaurantId);
+
+    /**
+     * Find customers with pagination
+     */
+    @Query(value = """
+            SELECT DISTINCT r.customer FROM Reservation r
+            WHERE r.restaurant.id = :restaurantId 
+                AND r.customer IS NOT NULL
+            """)
+    Page<com.application.customer.persistence.model.Customer> findCustomersByRestaurantIdPageable(Long restaurantId, Pageable pageable);
+
+    /**
+     * Search customers by name, email, or phone
+     */
+    @Query(value = """
+            SELECT DISTINCT r.customer FROM Reservation r
+            WHERE r.restaurant.id = :restaurantId 
+                AND r.customer IS NOT NULL
+                AND (LOWER(r.customer.name) LIKE LOWER(CONCAT('%', :searchTerm, '%'))
+                    OR LOWER(r.customer.surname) LIKE LOWER(CONCAT('%', :searchTerm, '%'))
+                    OR LOWER(r.customer.email) LIKE LOWER(CONCAT('%', :searchTerm, '%'))
+                    OR r.customer.phoneNumber LIKE CONCAT('%', :searchTerm, '%'))
+            ORDER BY r.customer.name, r.customer.surname
+            """)
+    List<com.application.customer.persistence.model.Customer> searchCustomersByRestaurantId(Long restaurantId, String searchTerm);
+
+    /**
+     * Find unregistered customers (UNREGISTERED status)
+     */
+    @Query(value = """
+            SELECT DISTINCT r.customer FROM Reservation r
+            WHERE r.restaurant.id = :restaurantId 
+                AND r.customer IS NOT NULL
+                AND r.customer.status = 'UNREGISTERED'
+            ORDER BY r.customer.name, r.customer.surname
+            """)
+    List<com.application.customer.persistence.model.Customer> findUnregisteredCustomersByRestaurantId(Long restaurantId);
+
+    /**
+     * Count total unique customers for a restaurant
+     */
+    @Query(value = """
+            SELECT COUNT(DISTINCT r.customer) FROM Reservation r
+            WHERE r.restaurant.id = :restaurantId 
+                AND r.customer IS NOT NULL
+            """)
+    Long countCustomersByRestaurantId(Long restaurantId);
+
+    /**
+     * Count registered customers (not UNREGISTERED)
+     */
+    @Query(value = """
+            SELECT COUNT(DISTINCT r.customer) FROM Reservation r
+            WHERE r.restaurant.id = :restaurantId 
+                AND r.customer IS NOT NULL
+                AND r.customer.status != 'UNREGISTERED'
+            """)
+    Long countRegisteredCustomersByRestaurantId(Long restaurantId);
+
+    /**
+     * Count unregistered customers
+     */
+    @Query(value = """
+            SELECT COUNT(DISTINCT r.customer) FROM Reservation r
+            WHERE r.restaurant.id = :restaurantId 
+                AND r.customer IS NOT NULL
+                AND r.customer.status = 'UNREGISTERED'
+            """)
+    Long countUnregisteredCustomersByRestaurantId(Long restaurantId);
+
+    /**
+     * Check if customer has reservations at restaurant
+     */
+    boolean existsByCustomerIdAndRestaurantId(Long customerId, Long restaurantId);
+
+    /**
+     * Count reservations for specific customer at restaurant
+     */
+    @Query(value = """
+            SELECT COUNT(r) FROM Reservation r
+            WHERE r.customer.id = :customerId 
+                AND r.restaurant.id = :restaurantId
+            """)
+    Long countByCustomerIdAndRestaurantId(Long customerId, Long restaurantId);
+
+    /**
+     * Get last reservation date for customer at restaurant
+     */
+    @Query(value = """
+            SELECT MAX(r.date) FROM Reservation r
+            WHERE r.customer.id = :customerId 
+                AND r.restaurant.id = :restaurantId
+            """)
+    LocalDate findLastReservationDateByCustomerAndRestaurant(Long customerId, Long restaurantId);
 }

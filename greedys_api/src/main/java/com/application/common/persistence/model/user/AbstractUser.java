@@ -51,9 +51,8 @@ public abstract class AbstractUser implements UserDetails {
     @NotNull
     private String email;
 
-    @NotNull
     @Column(length = 60)
-    private String password;
+    private String password; // Nullable per supportare Customer non registrati
 
     private String phoneNumber;
     
@@ -83,5 +82,17 @@ public abstract class AbstractUser implements UserDetails {
     @Override
     public String getUsername() {
         return email;
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    /**
+     * Check if user has a password set (i.e., can authenticate)
+     */
+    public boolean hasPassword() {
+        return password != null && !password.trim().isEmpty();
     }
 }

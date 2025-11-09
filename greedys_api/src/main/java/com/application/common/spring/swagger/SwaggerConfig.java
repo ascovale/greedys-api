@@ -32,6 +32,7 @@ public class SwaggerConfig implements WebMvcConfigurer {
         "com.application.admin.web.dto",
         "com.application.customer.web.dto", 
         "com.application.restaurant.web.dto",
+        "com.application.agency.web.dto",
         "com.application.common.web.dto"
     );
 
@@ -81,7 +82,8 @@ public class SwaggerConfig implements WebMvcConfigurer {
                     ALL_DTO_PACKAGES.get(0), // admin.web.dto
                     ALL_DTO_PACKAGES.get(1), // customer.web.dto
                     ALL_DTO_PACKAGES.get(2), // restaurant.web.dto
-                    ALL_DTO_PACKAGES.get(3)  // common.web.dto
+                    ALL_DTO_PACKAGES.get(3), // agency.web.dto
+                    ALL_DTO_PACKAGES.get(4)  // common.web.dto
                 )
                 .pathsToMatch("/admin/**")
                 .addOpenApiCustomizer(groupCustomizer())
@@ -97,7 +99,7 @@ public class SwaggerConfig implements WebMvcConfigurer {
                     "com.application.customer.controller",
                     "com.application.common.controller",
                     ALL_DTO_PACKAGES.get(1), // customer.web.dto
-                    ALL_DTO_PACKAGES.get(3)  // common.web.dto
+                    ALL_DTO_PACKAGES.get(4)  // common.web.dto
                 )
                 .pathsToMatch("/customer/**")
                 .addOpenApiCustomizer(groupCustomizer())
@@ -113,9 +115,25 @@ public class SwaggerConfig implements WebMvcConfigurer {
                     "com.application.restaurant.controller",
                     "com.application.common.controller",
                     ALL_DTO_PACKAGES.get(2), // restaurant.web.dto
-                    ALL_DTO_PACKAGES.get(3)  // common.web.dto
+                    ALL_DTO_PACKAGES.get(4)  // common.web.dto
                 )
                 .pathsToMatch("/restaurant/**")
+                .addOpenApiCustomizer(groupCustomizer())
+                .addOpenApiCustomizer(sortSchemasCustomizer())
+                .build();
+    }
+
+    @Bean
+    GroupedOpenApi agencyApi() {
+        return GroupedOpenApi.builder()
+                .group("agency-api")
+                .packagesToScan(
+                    "com.application.agency.controller",
+                    "com.application.common.controller",
+                    ALL_DTO_PACKAGES.get(3), // agency.web.dto
+                    ALL_DTO_PACKAGES.get(4)  // common.web.dto
+                )
+                .pathsToMatch("/agency/**")
                 .addOpenApiCustomizer(groupCustomizer())
                 .addOpenApiCustomizer(sortSchemasCustomizer())
                 .build();

@@ -30,6 +30,7 @@ import com.application.common.web.dto.reservations.ReservationDTO;
 import com.application.restaurant.persistence.model.user.RUser;
 import com.application.restaurant.service.RestaurantNotificationService;
 import com.application.restaurant.web.dto.reservation.RestaurantNewReservationDTO;
+import com.application.restaurant.web.dto.reservation.RestaurantReservationWithExistingCustomerDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -65,6 +66,21 @@ public class RestaurantReservationController extends BaseController {
 			dto.getUserName(), dto.getUserEmail(), dto.getUserPhoneNumber(), dto.getPax(), dto.getKids(), dto.getIdSlot(), dto.getReservationDay());
 		return executeCreate("create reservation", "Reservation created successfully", () -> {
 			return reservationService.createReservation(dto, rUser.getRestaurant());
+		});
+	}
+
+	//TODO: Aggiungere verifica che il customer sia nell'agenda del ristorante
+	@Operation(summary = "Create a new reservation with existing customer", description = "Endpoint to create a new reservation using existing customer from agenda")
+	@CreateApiResponses
+	@PostMapping("/new-with-existing-customer")
+	@PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_RESERVATION_WRITE') && @securityRUserService.isSlotOwnedByAuthenticatedUser(#dto.idSlot)")
+	public ResponseEntity<ReservationDTO> createReservationWithExistingCustomer(@RequestBody RestaurantReservationWithExistingCustomerDTO dto,
+			@AuthenticationPrincipal RUser rUser) {
+		log.debug("Received reservation DTO with existing customer: {}", dto);
+		log.debug("DTO customerId: {}, userName: {}, pax: {}, kids: {}, idSlot: {}, reservationDay: {}", 
+			dto.getCustomerId(), dto.getUserName(), dto.getPax(), dto.getKids(), dto.getIdSlot(), dto.getReservationDay());
+		return executeCreate("create reservation with existing customer", "Reservation created successfully", () -> {
+			return reservationService.createReservationWithExistingCustomer(dto, rUser.getRestaurant());
 		});
 	}
 

@@ -72,10 +72,17 @@ public class TokenTypeValidationFilter extends OncePerRequestFilter {
             // 🔄 ENDPOINT DI REFRESH: Validazione specifica per tipo
             if (SecurityPatterns.isRefreshTokenPath(path)) {
                 if (path.equals("/restaurant/user/auth/refresh/hub")) {
-                    // Endpoint Hub refresh: solo Hub refresh token
+                    // Endpoint Restaurant Hub refresh: solo Restaurant Hub refresh token
                     if (!jwtUtil.isHubRefreshToken(token)) {
-                        log.warn("Hub refresh endpoint {} {} accessed with non-hub-refresh token", method, path);
-                        writeAuthenticationError(response, "Hub refresh token required for this endpoint");
+                        log.warn("Restaurant Hub refresh endpoint {} {} accessed with non-hub-refresh token", method, path);
+                        writeAuthenticationError(response, "Restaurant Hub refresh token required for this endpoint");
+                        return;
+                    }
+                } else if (path.equals("/agency/user/auth/refresh/hub")) {
+                    // Endpoint Agency Hub refresh: solo Agency Hub refresh token
+                    if (!jwtUtil.isAgencyHubRefreshToken(token)) {
+                        log.warn("Agency Hub refresh endpoint {} {} accessed with non-agency-hub-refresh token", method, path);
+                        writeAuthenticationError(response, "Agency Hub refresh token required for this endpoint");
                         return;
                     }
                 } else {
@@ -89,7 +96,7 @@ public class TokenTypeValidationFilter extends OncePerRequestFilter {
                 log.debug("Valid refresh token for endpoint {} {}", method, path);
             } else {
                 // 🎯 ENDPOINT NORMALI: Solo access token
-                if (!jwtUtil.isAccessToken(token) && !jwtUtil.isHubToken(token)) {
+                if (!jwtUtil.isAccessToken(token) && !jwtUtil.isHubToken(token) && !jwtUtil.isAgencyHubToken(token)) {
                     log.warn("Protected endpoint {} {} accessed with non-access token", method, path);
                     writeAuthenticationError(response, "Access token required for this endpoint");
                     return;
@@ -126,6 +133,8 @@ public class TokenTypeValidationFilter extends OncePerRequestFilter {
                 return "admin".equals(userType);
             } else if (path.startsWith("/restaurant/")) {
                 return "restaurant-user".equals(userType) || "restaurant-user-hub".equals(userType);
+            } else if (path.startsWith("/agency/")) {
+                return "agency-user".equals(userType) || "agency-user-hub".equals(userType);
             }
             
             return true; // Per altri endpoint

@@ -24,6 +24,11 @@ import com.application.admin.AdminAuthenticationProvider;
 import com.application.admin.AdminRequestFilter;
 import com.application.admin.persistence.dao.AdminDAO;
 import com.application.admin.service.security.AdminUserDetailsService;
+import com.application.agency.AgencyUserAuthenticationProvider;
+import com.application.agency.AgencyUserHubValidationFilter;
+import com.application.agency.AgencyUserRequestFilter;
+import com.application.agency.persistence.dao.AgencyUserDAO;
+import com.application.agency.service.security.AgencyUserDetailsService;
 import com.application.common.security.SecurityPatterns;
 import com.application.common.security.TokenTypeValidationFilter;
 import com.application.customer.CustomerAuthenticationProvider;
@@ -48,8 +53,10 @@ public class SecurityConfig {
         private final RUserRequestFilter restaurantJwtRequestFilter;
         private final CustomerRequestFilter customerJwtRequestFilter;
         private final AdminRequestFilter adminJwtRequestFilter;
+        private final AgencyUserRequestFilter agencyJwtRequestFilter;
         private final TokenTypeValidationFilter tokenTypeValidationFilter;
         private final RUserHubValidationFilter hubValidationFilter;
+        private final AgencyUserHubValidationFilter agencyHubValidationFilter;
 
         // TODO: make sure the authentication filter is not required for login,
         // registration, and other public operations
@@ -175,6 +182,40 @@ public class SecurityConfig {
 
         /*
          * ============================================================================
+         * AGENCY FILTER CHAIN - SEQUENZA DEI 3 FILTRI PER /agency/**
+         * ============================================================================
+         * 1️⃣ TokenTypeValidationFilter - Verifica Access vs Refresh Token
+         * 2️⃣ AgencyUserHubValidationFilter - Limita Agency Hub agli endpoint permessi
+         * 3️⃣ AgencyUserRequestFilter - AUTENTICAZIONE (SecurityContext)
+         * ============================================================================
+         */
+        @Bean
+        SecurityFilterChain agencyFilterChain(HttpSecurity http, AgencyUserAuthenticationProvider agencyProvider) throws Exception {
+                http
+                                .securityMatcher("/agency/**")
+                                .csrf(csrf -> csrf.disable())
+                                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                                .authorizeHttpRequests(authz -> authz
+                                                .requestMatchers(SecurityPatterns.getAgencyPublicPatterns())
+                                                .permitAll()
+                                                .requestMatchers("/agency/**").authenticated())
+                                .sessionManagement(management -> management
+                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                                // Configura il provider usando il DSL
+                                .authenticationProvider(agencyProvider)
+                                // SEQUENZA FILTRI (ORDINE IMPORTANTE):
+                                // 1° TokenTypeValidationFilter - Verifica Access vs Refresh Token
+                                .addFilterBefore(tokenTypeValidationFilter, UsernamePasswordAuthenticationFilter.class)
+                                // 2° AgencyUserHubValidationFilter - Limita Agency Hub agli endpoint permessi  
+                                .addFilterAfter(agencyHubValidationFilter, TokenTypeValidationFilter.class)
+                                // 3° AgencyUserRequestFilter - AUTENTICAZIONE finale (SecurityContext)
+                                .addFilterAfter(agencyJwtRequestFilter, AgencyUserHubValidationFilter.class);
+
+                return http.build();
+        }
+
+        /*
+         * ============================================================================
          * DEFAULT FILTER CHAIN - Per endpoint non coperti dalle altre filter chain
          * ============================================================================
          * Gestisce endpoint come /v3/api-docs/*, /actuator/*, etc.
@@ -246,6 +287,14 @@ public class SecurityConfig {
                 return new AdminAuthenticationProvider(adminDAO, adminDetailsService, passwordEncoder);
         }
 
+        @Bean
+        public AgencyUserAuthenticationProvider agencyUserAuthenticationProvider(
+                        AgencyUserDAO agencyUserDAO,
+                        AgencyUserDetailsService agencyUserDetailsService,
+                        PasswordEncoder passwordEncoder) {
+                return new AgencyUserAuthenticationProvider(agencyUserDAO, agencyUserDetailsService, passwordEncoder);
+        }
+
         /**
          * AuthenticationManager di default per Spring Security.
          * Questo è necessario perché Spring Security richiede un Primary quando
@@ -300,6 +349,20 @@ public class SecurityConfig {
         @Bean
         FilterRegistrationBean<AdminRequestFilter> disableAdminRequestFilter(AdminRequestFilter f) {
                 FilterRegistrationBean<AdminRequestFilter> reg = new FilterRegistrationBean<>(f);
+                reg.setEnabled(false);
+                return reg;
+        }
+
+        @Bean
+        FilterRegistrationBean<AgencyUserRequestFilter> disableAgencyUserRequestFilter(AgencyUserRequestFilter f) {
+                FilterRegistrationBean<AgencyUserRequestFilter> reg = new FilterRegistrationBean<>(f);
+                reg.setEnabled(false);
+                return reg;
+        }
+
+        @Bean
+        FilterRegistrationBean<AgencyUserHubValidationFilter> disableAgencyUserHubValidationFilter(AgencyUserHubValidationFilter f) {
+                FilterRegistrationBean<AgencyUserHubValidationFilter> reg = new FilterRegistrationBean<>(f);
                 reg.setEnabled(false);
                 return reg;
         }

@@ -76,6 +76,16 @@ public final class SecurityPatterns {
     };
     
     /**
+     * Pattern specifici per l'autenticazione agency (solo /agency/**)
+     */
+    public static final String[] AGENCY_AUTH_PATTERNS = {
+        "/agency/user/auth/login", 
+        "/agency/user/auth/google",
+        "/agency/auth/**",
+        "/agency/register/**"
+    };
+    
+    /**
      * Pattern per la defaultFilterChain (endpoint non coperti dalle altre chain)
      */
     public static final String[] DEFAULT_PUBLIC_PATTERNS = {
@@ -124,6 +134,28 @@ public final class SecurityPatterns {
         "**/change-password"
     };
 
+    /**
+     * Pattern per endpoint accessibili ai token Agency Hub
+     */
+    public static final String[] AGENCY_HUB_ALLOWED_PATTERNS = {
+        // Endpoint di autenticazione e refresh
+        "**/auth/refresh",
+        "**/refresh",
+        // Endpoint per gestione agenzie 
+        "**/switch-agency", 
+        "**/change-agency",
+        "**/select-agency",
+        "**/available-agencies", 
+        "**/agencies",
+        "/agency/user/auth/agencies",
+        "/agency/user/auth/hub/*/agencies",
+        // Endpoint profilo e logout
+        "**/logout", 
+        "**/profile/hub",
+        // Gestione password
+        "**/change-password"
+    };
+
     // ============================================================================
     // METODI UTILITY - Unificano la logica di SecurityEndpointConfig
     // ============================================================================
@@ -165,6 +197,13 @@ public final class SecurityPatterns {
     }
     
     /**
+     * Restituisce i pattern pubblici per la filter chain agency
+     */
+    public static String[] getAgencyPublicPatterns() {
+        return getCombinedPatterns(AGENCY_AUTH_PATTERNS);
+    }
+    
+    /**
      * Restituisce TUTTI i pattern pubblici dell'applicazione (per i filtri)
      */
     public static String[] getAllPublicPatterns() {
@@ -174,6 +213,7 @@ public final class SecurityPatterns {
         allPatterns.addAll(Arrays.asList(RESTAURANT_AUTH_PATTERNS));
         allPatterns.addAll(Arrays.asList(CUSTOMER_AUTH_PATTERNS));
         allPatterns.addAll(Arrays.asList(ADMIN_AUTH_PATTERNS));
+        allPatterns.addAll(Arrays.asList(AGENCY_AUTH_PATTERNS));
         allPatterns.addAll(Arrays.asList(DEFAULT_PUBLIC_PATTERNS));
         
         return allPatterns.toArray(new String[0]);
@@ -191,6 +231,13 @@ public final class SecurityPatterns {
      */
     public static boolean isHubAllowedPath(String path) {
         return isPublicPath(path, HUB_ALLOWED_PATTERNS);
+    }
+    
+    /**
+     * Verifica se un path è accessibile ai token Agency Hub
+     */
+    public static boolean isAgencyHubAllowedPath(String path) {
+        return isPublicPath(path, AGENCY_HUB_ALLOWED_PATTERNS);
     }
     
     /**

@@ -173,12 +173,24 @@ public class CustomerAuthenticationService {
 		return customerMapper.toDTO(customer);
 	}
 	public Customer registerNewCustomerAccount(final NewCustomerDTO accountDto) {
+		// Check if there's an existing UNREGISTERED customer that can be upgraded
+		Customer existingUnregisteredCustomer = findUnregisteredCustomerForUpgrade(accountDto.getEmail());
+		
+		if (existingUnregisteredCustomer != null) {
+			// Upgrade existing UNREGISTERED customer
+			return upgradeUnregisteredCustomer(existingUnregisteredCustomer, accountDto);
+		}
+		
+		// Check for existing registered customer
 		if (emailExists(accountDto.getEmail())) {
 			throw new UserAlreadyExistException("There is an account with that email adress: " + accountDto.getEmail());
 		}
+		
 		if (accountDto.getPassword() == null) {
 			throw new IllegalArgumentException("rawPassword cannot be null");
 		}
+		
+		// Create new customer
 		final Customer customer = Customer.builder()
 				.name(accountDto.getFirstName())
 				.surname(accountDto.getLastName())
@@ -435,6 +447,48 @@ public class CustomerAuthenticationService {
 
 	private boolean emailExists(final String email) {
 		return customerDAO.findByEmail(email) != null;
+	}
+
+	/**
+	 * Find an UNREGISTERED customer that can be upgraded to registered status
+	 */
+	private Customer findUnregisteredCustomerForUpgrade(String email) {
+		// First check by email
+		Customer customer = customerDAO.findByEmailAndStatus(email, Customer.Status.UNREGISTERED).orElse(null);
+		
+		if (customer != null) {
+			log.info("Found UNREGISTERED customer by email for upgrade: customer={}", customer.getId());
+			return customer;
+		}
+		
+		// TODO: In future, we could also check by phone number if provided in registration form
+		// For now, we only match by email
+		
+		return null;
+	}
+
+	/**
+	 * Upgrade an existing UNREGISTERED customer to registered status
+	 */
+	private Customer upgradeUnregisteredCustomer(Customer existingCustomer, NewCustomerDTO accountDto) {
+		log.info("Upgrading UNREGISTERED customer {} to registered status", existingCustomer.getId());
+		
+		// Update customer details
+		existingCustomer.setName(accountDto.getFirstName());
+		existingCustomer.setSurname(accountDto.getLastName());
+		existingCustomer.setPassword(passwordEncoder.encode(accountDto.getPassword()));
+		existingCustomer.setEmail(accountDto.getEmail()); // Ensure email is correct
+		existingCustomer.setStatus(Customer.Status.ENABLED); // Skip email verification for existing contacts
+		
+		// Add customer role if not present
+		if (existingCustomer.getRoles().isEmpty()) {
+			existingCustomer.getRoles().add(roleRepository.findByName("ROLE_CUSTOMER"));
+		}
+		
+		Customer savedCustomer = customerDAO.save(existingCustomer);
+		
+		log.info("Successfully upgraded customer {} from UNREGISTERED to ENABLED", savedCustomer.getId());
+		return savedCustomer;
 	}
 
 	public void setCustomerStatus(Long id, Status enabled) {
