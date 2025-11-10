@@ -40,13 +40,11 @@ build:
     - echo "Pushing Docker images..."
     - docker push $TAG_LATEST
     - docker push $TAG_COMMIT
-  only:
-    - main
   after_script:
     - echo "Cleaning up Docker resources..."
     - docker system prune -f
 
-deploy:
+deploy_prod:
   image: alpine:3.18
   stage: deploy
   before_script:
@@ -63,7 +61,6 @@ deploy:
     - scp -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -r -i deploy/id_key traefik/ deployer@"$SERVER_IP":~/greedys_api/
     - printf '%s' "$CI_JOB_TOKEN" | ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i deploy/id_key deployer@"$SERVER_IP" "docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY"
     - ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i deploy/id_key deployer@"$SERVER_IP" 'cd ~/greedys_api/ && chmod +x ./deploy.sh && bash ./deploy.sh'
-  only: [main]
 
 publish:
   image: eclipse-temurin:17-jdk
@@ -216,9 +213,6 @@ publish:
         echo "Client v${OPENAPI_GENERATOR_VERSION} pushati con successo!"
       fi
 
-  only:
-    - main
-
 test:
   image: alpine:3.18
   stage: test
@@ -253,5 +247,3 @@ test:
       echo "  1. docker service logs greedys_api_traefik | grep -i certificate"
       echo "  2. Attendere 5-10 minuti per Let's Encrypt"
       echo "  3. Verificare acme.json sul server"
-  only:
-    - main
