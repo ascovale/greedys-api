@@ -47,6 +47,8 @@ build:
 deploy_prod:
   image: alpine:3.18
   stage: deploy
+  only:
+    - main
   before_script:
     - apk add --no-cache openssh-client openssh-keygen
     - mkdir -p deploy
@@ -65,6 +67,8 @@ deploy_prod:
 publish:
   image: eclipse-temurin:17-jdk
   stage: publish
+  only:
+    - main
   before_script:
     - echo "Setup ambiente per generazione Dart..."
     - apt-get update && apt-get install -y curl git
@@ -216,6 +220,8 @@ publish:
 test:
   image: alpine:3.18
   stage: test
+  only:
+    - main
   before_script:
     - apk add --no-cache curl
   script:
