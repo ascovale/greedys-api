@@ -1,4 +1,4 @@
-package com.application.reservation.controller.parsing;
+package com.application.common.reservation.controller.parsing;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -12,13 +12,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.application.common.reservation.web.dto.parsing.BatchReservationCreateInput;
+import com.application.common.reservation.web.dto.parsing.BatchReservationCreateResponse;
+import com.application.common.reservation.web.dto.parsing.ParsedReservationDTO;
+import com.application.common.reservation.web.dto.parsing.ReservationCreationResult;
 import com.application.customer.service.CustomerMatchService;
 import com.application.customer.web.dto.matching.CustomerMatchInput;
 import com.application.customer.web.dto.matching.CustomerMatchResponse;
-import com.application.reservation.web.dto.parsing.BatchReservationCreateInput;
-import com.application.reservation.web.dto.parsing.BatchReservationCreateResponse;
-import com.application.reservation.web.dto.parsing.ParsedReservationDTO;
-import com.application.reservation.web.dto.parsing.ReservationCreationResult;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -30,7 +30,7 @@ import lombok.extern.slf4j.Slf4j;
  * REST Controller for batch reservation creation from parsed data
  */
 @RestController
-@RequestMapping("/api/reservations")
+@RequestMapping("/restaurant/reservations")
 @Tag(name = "Batch Reservation Creation", description = "Endpoints for creating multiple reservations from parsed text data")
 @Slf4j
 public class BatchReservationController {

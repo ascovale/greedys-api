@@ -1,4 +1,4 @@
-package com.application.reservation.web.dto.parsing;
+package com.application.common.reservation.web.dto.parsing;
 
 import java.time.LocalDateTime;
 import java.util.List;

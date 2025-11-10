@@ -1,4 +1,4 @@
-package com.application.reservation.controller.parsing;
+package com.application.common.reservation.controller.parsing;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -12,10 +12,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.application.reservation.service.ReservationTextParserService;
-import com.application.reservation.web.dto.parsing.ParsedReservationDTO;
-import com.application.reservation.web.dto.parsing.ReservationParseInput;
-import com.application.reservation.web.dto.parsing.ReservationParseResponse;
+import com.application.common.reservation.service.ReservationTextParserService;
+import com.application.common.reservation.web.dto.parsing.ParsedReservationDTO;
+import com.application.common.reservation.web.dto.parsing.ReservationParseInput;
+import com.application.common.reservation.web.dto.parsing.ReservationParseResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -28,7 +28,7 @@ import lombok.extern.slf4j.Slf4j;
  * REST Controller for reservation text parsing operations
  */
 @RestController
-@RequestMapping("/api/reservations")
+@RequestMapping("/restaurant/reservations")
 @Tag(name = "Reservation Text Parsing", description = "Endpoints for intelligent parsing of reservation text into structured data")
 @Slf4j
 public class ReservationParsingController {
