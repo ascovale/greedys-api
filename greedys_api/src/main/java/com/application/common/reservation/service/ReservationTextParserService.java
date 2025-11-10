@@ -1,4 +1,4 @@
-package com.application.reservation.service;
+package com.application.common.reservation.service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -17,10 +17,10 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.application.common.reservation.web.dto.parsing.ParsedReservationDTO;
+import com.application.common.reservation.web.dto.parsing.ReservationParseInput;
+import com.application.common.reservation.web.dto.parsing.ReservationParseResponse;
 import com.application.common.service.PhoneNormalizer;
-import com.application.reservation.web.dto.parsing.ParsedReservationDTO;
-import com.application.reservation.web.dto.parsing.ReservationParseInput;
-import com.application.reservation.web.dto.parsing.ReservationParseResponse;
 
 import lombok.extern.slf4j.Slf4j;
 
