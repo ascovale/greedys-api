@@ -7,6 +7,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import com.application.admin.persistence.model.Admin;
+import com.application.agency.persistence.model.user.AgencyUser;
 import com.application.common.persistence.model.reservation.Reservation;
 import com.application.common.persistence.model.user.AbstractUser;
 import com.application.customer.persistence.model.Customer;
@@ -103,6 +104,8 @@ public class CustomAuditingEntityListener {
             return Reservation.UserType.ADMIN;
         } else if (user instanceof RUser) {
             return Reservation.UserType.RESTAURANT_USER;
+        } else if (user instanceof AgencyUser) {
+            return Reservation.UserType.AGENCY_USER;
         }
         
         // Fallback - you might want to throw an exception or log a warning
