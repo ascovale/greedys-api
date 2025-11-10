@@ -126,7 +126,8 @@ public class Reservation {
     public enum UserType {
         CUSTOMER,
         ADMIN,
-        RESTAURANT_USER
+        RESTAURANT_USER,
+        AGENCY_USER
     }
 
     public enum Status {
