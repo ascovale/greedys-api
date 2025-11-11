@@ -300,4 +300,26 @@ public interface ReservationDAO extends JpaRepository<Reservation, Long> {
                 AND r.restaurant.id = :restaurantId
             """)
     LocalDate findLastReservationDateByCustomerAndRestaurant(Long customerId, Long restaurantId);
+
+    /**
+     * Get all reservations for a specific customer at a specific restaurant
+     */
+    @Query(value = """
+            SELECT r FROM Reservation r
+            WHERE r.customer.id = :customerId 
+                AND r.restaurant.id = :restaurantId
+            ORDER BY r.date DESC, r.slot.start DESC
+            """)
+    List<Reservation> findByCustomerIdAndRestaurantId(Long customerId, Long restaurantId);
+
+    /**
+     * Get all reservations for a specific customer at a specific restaurant with pagination
+     */
+    @Query(value = """
+            SELECT r FROM Reservation r
+            WHERE r.customer.id = :customerId 
+                AND r.restaurant.id = :restaurantId
+            ORDER BY r.date DESC, r.slot.start DESC
+            """)
+    Page<Reservation> findByCustomerIdAndRestaurantId(Long customerId, Long restaurantId, Pageable pageable);
 }

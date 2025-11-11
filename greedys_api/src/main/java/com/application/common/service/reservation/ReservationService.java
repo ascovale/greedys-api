@@ -340,6 +340,24 @@ public class ReservationService {
     }
 
     /**
+     * Get all reservations for a customer across all restaurants
+     */
+    public Collection<ReservationDTO> getCustomerReservations(Long customerId) {
+        return reservationDAO.findByCustomer(customerId).stream()
+                .map(reservationMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Get all reservations for a customer at a specific restaurant
+     */
+    public Collection<ReservationDTO> getCustomerReservationsByRestaurant(Long customerId, Long restaurantId) {
+        return reservationDAO.findByCustomerIdAndRestaurantId(customerId, restaurantId).stream()
+                .map(reservationMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Convert Java DayOfWeek to our custom Weekday enum
      */
     private Weekday convertDayOfWeekToWeekday(DayOfWeek dayOfWeek) {

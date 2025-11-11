@@ -190,5 +190,23 @@ public class RestaurantReservationController extends BaseController {
 		});
 	}
 
+	@Operation(summary = "Get all reservations of a customer in a restaurant", 
+			description = "Retrieve all reservations for a specific customer in the authenticated restaurant")
+	@ReadApiResponses
+	@GetMapping(value = "/customer/{customerId}")
+	@PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_RESERVATION_READ')")
+	public ResponseEntity<List<ReservationDTO>> getCustomerReservations(
+			@PathVariable Long customerId,
+			@AuthenticationPrincipal RUser rUser) {
+		return executeList("get customer reservations", () -> {
+			Long restaurantId = rUser.getRestaurant().getId();
+			
+			// Get reservations for the customer in this specific restaurant directly from database
+			Collection<ReservationDTO> reservations = reservationService.getCustomerReservationsByRestaurant(customerId, restaurantId);
+			return reservations instanceof List ? (List<ReservationDTO>) reservations
+					: new java.util.ArrayList<>(reservations);
+		});
+	}
+
 }
 
