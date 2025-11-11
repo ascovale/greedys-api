@@ -15,7 +15,8 @@ import com.application.common.persistence.model.reservation.Slot;
 @Transactional(readOnly = true)
 @Repository
 public interface SlotDAO extends JpaRepository<Slot, Long> {
-    public Collection<Slot> findByService_Id(Long idService);
+    @Query("SELECT s FROM Slot s WHERE s.service.id = :serviceId")
+    Collection<Slot> findByService_Id(@Param("serviceId") Long serviceId);
     
     @Query("SELECT s FROM Slot s WHERE s.service.restaurant.id = :restaurantId AND s.deleted = false")
     List<Slot> findSlotsByRestaurantId(@Param("restaurantId") Long restaurantId);
