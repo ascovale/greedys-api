@@ -30,6 +30,7 @@ import lombok.RequiredArgsConstructor;
 @Profile({"dev", "docker", "prod"}) // 🔧 Per Dev MySQL, Docker e Produzione
 @EnableJpaRepositories(basePackages = {
     "com.application.admin.persistence.dao",
+    "com.application.agency.persistence.dao",
     "com.application.customer.persistence.dao",
     "com.application.restaurant.persistence.dao",
     "com.application.common.persistence.dao"
