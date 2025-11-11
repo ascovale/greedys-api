@@ -457,8 +457,8 @@ public class ReservationService {
                         .email(userEmail != null && !userEmail.trim().isEmpty() ? userEmail : null)
                         .phoneNumber(userPhoneNumber)
                         .password(tempPassword) // Temporary random password (not used for authentication)
-                        .status(Customer.Status.UNREGISTERED)
-                        .roles(new java.util.ArrayList<>()) // No roles for UNREGISTERED customers
+                        .status(Customer.Status.VERIFY_TOKEN)
+                        .roles(new java.util.ArrayList<>()) // No roles for customers created from reservations
                         .build();
                 
                 customer = customerDAO.save(customer);
