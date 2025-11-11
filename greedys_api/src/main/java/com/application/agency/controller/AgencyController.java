@@ -1,4 +1,4 @@
-package com.application.agency.web.controller;
+package com.application.agency.controller;
 
 import java.util.List;
 

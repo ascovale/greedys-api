@@ -114,6 +114,7 @@ public class PersistenceJPAConfig {
         em.setDataSource(dataSource);
         em.setPackagesToScan(
             "com.application.admin.persistence.model",
+            "com.application.agency.persistence.model",
             "com.application.customer.persistence.model",
             "com.application.restaurant.persistence.model",
             "com.application.common.persistence.model"
