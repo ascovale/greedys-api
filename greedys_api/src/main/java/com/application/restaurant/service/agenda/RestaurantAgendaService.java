@@ -235,7 +235,7 @@ public class RestaurantAgendaService {
         
         return RestaurantCustomerDTO.builder()
                 .customerId(customer.getId())
-                .restaurantId(restaurantId != null ? UUID.fromString(restaurantId.toString()) : null)
+                .restaurantId(restaurantId)
                 .firstName(customer.getName())
                 .lastName(customer.getSurname())
                 .displayName(buildDisplayName(customer.getName(), customer.getSurname()))

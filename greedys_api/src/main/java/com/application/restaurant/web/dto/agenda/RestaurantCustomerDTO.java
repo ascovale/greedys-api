@@ -2,7 +2,6 @@ package com.application.restaurant.web.dto.agenda;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 import com.application.customer.persistence.model.Customer;
 
@@ -21,7 +20,7 @@ import lombok.NoArgsConstructor;
 public class RestaurantCustomerDTO {
     
     private Long customerId;
-    private UUID restaurantId;
+    private Long restaurantId;
     private String firstName;
     private String lastName;
     private String displayName; // Nome completo per display
@@ -43,7 +42,7 @@ public class RestaurantCustomerDTO {
     /**
      * Create DTO from Customer entity
      */
-    public static RestaurantCustomerDTO fromCustomer(Customer customer, UUID restaurantId) {
+    public static RestaurantCustomerDTO fromCustomer(Customer customer, Long restaurantId) {
         return RestaurantCustomerDTO.builder()
                 .customerId(customer.getId())
                 .restaurantId(restaurantId)
