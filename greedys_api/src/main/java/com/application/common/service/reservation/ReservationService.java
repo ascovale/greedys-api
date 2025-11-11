@@ -447,18 +447,22 @@ public class ReservationService {
                 String firstName = nameParts[0];
                 String lastName = nameParts.length > 1 ? nameParts[1] : "";
                 
+                // Generate a temporary random password for UNREGISTERED customers
+                // (database requires non-null password, even for non-registered customers)
+                String tempPassword = java.util.UUID.randomUUID().toString().substring(0, 20);
+                
                 customer = Customer.builder()
                         .name(firstName)
                         .surname(lastName)
                         .email(userEmail != null && !userEmail.trim().isEmpty() ? userEmail : null)
                         .phoneNumber(userPhoneNumber)
-                        .password(null) // No password for UNREGISTERED customers
+                        .password(tempPassword) // Temporary random password (not used for authentication)
                         .status(Customer.Status.UNREGISTERED)
                         .roles(new java.util.ArrayList<>()) // No roles for UNREGISTERED customers
                         .build();
                 
                 customer = customerDAO.save(customer);
-                log.info("Created new UNREGISTERED customer with ID: {}", customer.getId());
+                log.info("Created new UNREGISTERED customer with ID: {} (temporary password generated)", customer.getId());
             }
         }
         
