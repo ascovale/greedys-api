@@ -1,7 +1,6 @@
 package com.application.restaurant.web.dto.agenda;
 
 import java.util.List;
-import java.util.UUID;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,7 +16,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RestaurantAgendaResponse {
     
-    private UUID restaurantId;
+    private Long restaurantId;
     private List<RestaurantCustomerDTO> customers;
     private int totalCustomers;
     private int registeredCustomers; // Con account

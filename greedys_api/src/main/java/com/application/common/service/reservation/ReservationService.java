@@ -224,10 +224,9 @@ public class ReservationService {
         Weekday reservationWeekday = convertDayOfWeekToWeekday(reservationDayOfWeek);
         if (!reservationWeekday.equals(slot.getWeekday())) {
             throw new IllegalArgumentException(
-                String.format("Reservation day %s (%s) does not match slot weekday %s", 
+                String.format("Reservation day %s (%s) is not available for this service", 
                     reservationDto.getReservationDay(), 
-                    reservationWeekday, 
-                    slot.getWeekday()));
+                    reservationWeekday));
         }
 
         // Create or find customer (UNREGISTERED if new)

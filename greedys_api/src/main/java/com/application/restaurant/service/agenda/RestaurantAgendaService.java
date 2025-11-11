@@ -64,7 +64,7 @@ public class RestaurantAgendaService {
                 .toList();
         
         return RestaurantAgendaResponse.builder()
-                .restaurantId(UUID.fromString(restaurantId.toString()))
+                .restaurantId(restaurantId)
                 .customers(customerDTOs)
                 .totalCustomers(customerDTOs.size())
                 .registeredCustomers((int) customerDTOs.stream()
@@ -90,7 +90,7 @@ public class RestaurantAgendaService {
                 .toList();
         
         return RestaurantAgendaResponse.builder()
-                .restaurantId(UUID.fromString(restaurantId.toString()))
+                .restaurantId(restaurantId)
                 .customers(customerDTOs)
                 .totalCustomers(customerDTOs.size())
                 .registeredCustomers((int) customerDTOs.stream()
@@ -121,7 +121,7 @@ public class RestaurantAgendaService {
         
         // Check if customer already exists using match service
         CustomerMatchInput matchInput = CustomerMatchInput.builder()
-                .restaurantId(UUID.fromString(restaurantId.toString()))
+                .restaurantId(convertLongToUUID(restaurantId))
                 .firstName(createDTO.getFirstName())
                 .lastName(createDTO.getLastName())
                 .phone(normalizedPhone)
@@ -314,6 +314,16 @@ public class RestaurantAgendaService {
         if (uuid == null) return null;
         // Simple hash-based conversion - in production might want something more sophisticated
         return Math.abs(uuid.hashCode()) % Long.MAX_VALUE;
+    }
+
+    /**
+     * Convert Long to UUID for compatibility
+     */
+    private UUID convertLongToUUID(Long id) {
+        if (id == null) return null;
+        // Create a UUID from the long value
+        // For now, use a simple mapping approach
+        return UUID.nameUUIDFromBytes(id.toString().getBytes());
     }
 
     /**
