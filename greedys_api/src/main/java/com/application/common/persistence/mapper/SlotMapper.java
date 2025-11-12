@@ -24,8 +24,18 @@ public interface SlotMapper {
     /**
      * Converte un'entità Slot in SlotDTO
      */
-    @Mapping(target = "service", ignore = true) // Gestito dal costruttore del DTO
+    @Mapping(target = "service", source = "slot.service")
     SlotDTO toDTO(Slot slot);
+    
+    /**
+     * Custom mapping method per convertire Service a ServiceDTO
+     */
+    default com.application.common.web.dto.restaurant.ServiceDTO serviceToServiceDTO(com.application.common.persistence.model.reservation.Service service) {
+        if (service == null) {
+            return null;
+        }
+        return new com.application.common.web.dto.restaurant.ServiceDTO(service);
+    }
 
     /**
      * Converte un NewSlotDTO in entità Slot
