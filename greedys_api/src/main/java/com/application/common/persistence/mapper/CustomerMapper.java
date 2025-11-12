@@ -16,7 +16,7 @@ import com.application.customer.web.dto.customer.NewCustomerDTO;
 @Mapper(
     componentModel = "spring",
     nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
-    unmappedTargetPolicy = ReportingPolicy.WARN
+    unmappedTargetPolicy = ReportingPolicy.IGNORE
 )
 public interface CustomerMapper {
 

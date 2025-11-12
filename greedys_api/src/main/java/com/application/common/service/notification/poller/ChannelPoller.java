@@ -1,0 +1,270 @@
+package com.application.common.service.notification.poller;
+
+import java.time.Instant;
+import java.util.Set;
+
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.application.common.persistence.dao.NotificationChannelSendDAO;
+import com.application.common.persistence.model.notification.NotificationChannelSend;
+import com.application.common.persistence.model.notification.NotificationChannelSend.ChannelType;
+
+import lombok.extern.slf4j.Slf4j;
+
+/**
+ * ⭐ LIVELLO 3: CHANNEL POLLER (CHANNEL ISOLATION PATTERN)
+ * 
+ * ⭐⭐⭐ ARCHITETTURA CRITICA ⭐⭐⭐
+ * 
+ * Responsabilità:
+ * 1. Per ogni notifica PENDING
+ * 2. Per ogni canale (SMS, EMAIL, PUSH, WEBSOCKET, SLACK)
+ * 3. Crea UNA riga di NotificationChannelSend (se non esiste)
+ * 4. Invia via il canale
+ * 5. UPDATE is_sent indipendentemente
+ * 
+ * ⭐ CHANNEL ISOLATION PATTERN:
+ * 
+ * Vecchio (SBAGLIATO):
+ *   Listener crea 5 channel_send (SMS, EMAIL, PUSH, WS, SLACK)
+ *   Se listener muore dopo SMS: EMAIL non viene mai creato
+ *   Se SMS fallisce: retry blocca tutti gli altri canali
+ * 
+ * Nuovo (CORRETTO):
+ *   Listener crea SOLO notification_outbox (no channel_send)
+ *   ChannelPoller crea ONE CHANNEL AT A TIME
+ *   
+ *   CICLO 1:
+ *     - Check exists SMS? NO → CREATE SMS entry
+ *     - Send SMS
+ *     - UPDATE is_sent=true/false (per SMS SOLO)
+ *   
+ *   CICLO 2:
+ *     - Check exists EMAIL? NO → CREATE EMAIL entry
+ *     - Send EMAIL
+ *     - UPDATE is_sent=true/false (per EMAIL SOLO)
+ *   
+ *   Se SMS fallisce: CICLO 1 retry SMS, CICLO 2 prosegue EMAIL normalmente
+ *   Se EMAIL fallisce: CICLO 2 retry EMAIL, altri canali non affetti
+ * 
+ * ✅ VANTAGGI:
+ * 1. Error Isolation: SMS crash non blocca EMAIL/PUSH/etc
+ * 2. Granular Retry: Solo il canale che fallisce riprova
+ * 3. No Batch Overhead: Un canale alla volta
+ * 4. Observability: Puoi vedere quale canale ha problemi
+ * 5. Scalability: Puoi processare canali in parallelo (future work)
+ * 
+ * @author Greedy's System
+ * @since 2025-01-20 (Channel Isolation Implementation)
+ */
+@Slf4j
+@Service
+public class ChannelPoller {
+
+    private static final int MAX_RETRIES = 3;
+
+    private final NotificationChannelSendDAO channelSendDAO;
+
+    public ChannelPoller(NotificationChannelSendDAO channelSendDAO) {
+        this.channelSendDAO = channelSendDAO;
+    }
+
+    /**
+     * Polling ogni 10 secondi per inviare notifiche via canali.
+     * 
+     * ⭐ TIMING:
+     * - fixedDelay=10000: 10 secondi tra esecuzioni (più lento di outbox poller)
+     * - initialDelay=4000: Attende 4 secondi prima della prima esecuzione
+     * 
+     * Questo garantisce che EventOutboxPoller e NotificationOutboxPoller
+     * abbiano fatto il loro lavoro prima che ChannelPoller inizi.
+     */
+    @Scheduled(fixedDelay = 10000, initialDelay = 4000)
+    public void pollAndSendChannels() {
+        try {
+            long pendingCount = channelSendDAO.countPending();
+
+            if (pendingCount == 0) {
+                log.debug("No pending channels to send");
+                return;
+            }
+
+            log.info("Found {} pending channel sends to process", pendingCount);
+
+            // Trova tutte le notifiche che hanno almeno un canale pending
+            Set<Long> notificationIds = channelSendDAO.findNotificationsWithPendingChannels();
+
+            if (notificationIds.isEmpty()) {
+                return;
+            }
+
+            log.debug("Processing {} notifications with pending channels", notificationIds.size());
+
+            // ⭐ CHANNEL ISOLATION LOOP
+            for (Long notificationId : notificationIds) {
+                // Per OGNI canale (uno alla volta)
+                for (ChannelType channelType : ChannelType.values()) {
+                    processSingleChannel(notificationId, channelType);
+                }
+            }
+
+        } catch (Exception e) {
+            log.error("Error in ChannelPoller.pollAndSendChannels", e);
+        }
+    }
+
+    /**
+     * Processa un SINGOLO canale per una SINGOLA notifica.
+     * 
+     * ⭐ CHANNEL ISOLATION:
+     * - Se questo metodo fallisce: SOLO questo canale è affetto
+     * - Altri canali continuano normalmente
+     * - Retry è granulare per canale
+     * 
+     * @param notificationId L'ID della notifica
+     * @param channelType Il tipo di canale (SMS, EMAIL, PUSH, etc)
+     */
+    @Transactional
+    private void processSingleChannel(Long notificationId, ChannelType channelType) {
+        try {
+            // Step 1: Check se esiste una riga per questo combo
+            if (!channelSendDAO.existsByNotificationIdAndChannelType(notificationId, channelType)) {
+                // Step 2: Se non esiste, crea SOLO per questo canale
+                NotificationChannelSend send = new NotificationChannelSend();
+                send.setNotificationId(notificationId);
+                send.setChannelType(channelType);
+                send.setSent(null);  // NULL = pending
+                send.setAttemptCount(0);
+                channelSendDAO.save(send);
+                
+                log.debug("Created channel send entry: notif={}, channel={}", notificationId, channelType);
+            }
+
+            // Step 3: Leggi l'entry per questo canale
+            NotificationChannelSend send = channelSendDAO
+                    .findByNotificationIdAndChannelType(notificationId, channelType)
+                    .orElse(null);
+
+            if (send == null) {
+                log.warn("Channel send not found after creation: notif={}, channel={}", notificationId, channelType);
+                return;
+            }
+
+            // Step 4: Se non è pending (già inviato/fallito), salta
+            if (send.getSent() != null) {
+                log.debug("Channel already processed: notif={}, channel={}, sent={}", 
+                         notificationId, channelType, send.getSent());
+                return;
+            }
+
+            // Step 5: Invia via il SINGOLO canale
+            sendViaChannel(send);
+
+            // Step 6: UPDATE is_sent=true (inviato con successo)
+            channelSendDAO.markAsSent(send.getId(), Instant.now());
+            log.info("Channel sent successfully: notif={}, channel={}", notificationId, channelType);
+
+        } catch (Exception e) {
+            log.error("Failed to send notification {} via channel {}", notificationId, channelType, e);
+
+            // Cerca l'entry e aggiorna attempt count
+            NotificationChannelSend send = channelSendDAO
+                    .findByNotificationIdAndChannelType(notificationId, channelType)
+                    .orElse(null);
+
+            if (send != null) {
+                // Incrementa attempt count
+                channelSendDAO.incrementAttempt(send.getId(), Instant.now(), e.getMessage());
+
+                // Se hai raggiunto max retries, marca come definitivamente fallito
+                if (send.getAttemptCount() >= MAX_RETRIES) {
+                    channelSendDAO.markAsFailed(send.getId(), 
+                            "Max retries reached: " + e.getMessage(), 
+                            Instant.now());
+                    log.error("Channel marked as FAILED after {} attempts: notif={}, channel={}", 
+                             MAX_RETRIES, notificationId, channelType);
+                } else {
+                    log.warn("Channel send attempt {}/{} failed, will retry: notif={}, channel={}", 
+                            send.getAttemptCount(), MAX_RETRIES, notificationId, channelType);
+                }
+            }
+        }
+    }
+
+    /**
+     * Invia una notifica via un canale specifico.
+     * 
+     * Implementazione placeholder - verrà specializzata per ogni canale
+     * 
+     * @param send L'entry di NotificationChannelSend con i dettagli dell'invio
+     * @throws Exception Se l'invio fallisce
+     */
+    private void sendViaChannel(NotificationChannelSend send) throws Exception {
+        switch (send.getChannelType()) {
+            case SMS -> sendSMS(send);
+            case EMAIL -> sendEmail(send);
+            case PUSH -> sendPush(send);
+            case WEBSOCKET -> sendWebSocket(send);
+            case SLACK -> sendSlack(send);
+        }
+    }
+
+    private void sendSMS(NotificationChannelSend send) throws Exception {
+        // TODO: Implementare SMS send logic
+        // - Leggi NotificationChannelSend.notificationId
+        // - Leggi notifica (AdminNotification, RestaurantNotification, etc)
+        // - Leggi user phone number (da userId/userType)
+        // - Chiama SMS gateway
+        log.debug("TODO: Send SMS for notification {}", send.getNotificationId());
+    }
+
+    private void sendEmail(NotificationChannelSend send) throws Exception {
+        // TODO: Implementare Email send logic
+        // - Leggi NotificationChannelSend.notificationId
+        // - Leggi notifica
+        // - Leggi user email (da userId/userType)
+        // - Chiama Email service
+        log.debug("TODO: Send Email for notification {}", send.getNotificationId());
+    }
+
+    private void sendPush(NotificationChannelSend send) throws Exception {
+        // TODO: Implementare Push send logic
+        // - Leggi NotificationChannelSend.notificationId
+        // - Leggi notifica
+        // - Leggi user device tokens (da userId/userType)
+        // - Chiama FCM/APNs
+        log.debug("TODO: Send Push for notification {}", send.getNotificationId());
+    }
+
+    private void sendWebSocket(NotificationChannelSend send) throws Exception {
+        // TODO: Implementare WebSocket send logic
+        // - Leggi NotificationChannelSend.notificationId
+        // - Leggi notifica
+        // - Broadcast via WebSocket a userId
+        log.debug("TODO: Send WebSocket for notification {}", send.getNotificationId());
+    }
+
+    private void sendSlack(NotificationChannelSend send) throws Exception {
+        // TODO: Implementare Slack send logic
+        // - Leggi NotificationChannelSend.notificationId
+        // - Leggi notifica
+        // - Invia a Slack channel
+        log.debug("TODO: Send Slack for notification {}", send.getNotificationId());
+    }
+
+    /**
+     * Metodo per il monitoring: conta i canali pending.
+     */
+    public long getPendingChannelCount() {
+        return channelSendDAO.countPending();
+    }
+
+    /**
+     * Metodo per il monitoring: conta i canali falliti.
+     */
+    public long getFailedChannelCount() {
+        return channelSendDAO.countFailed();
+    }
+}
