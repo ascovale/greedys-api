@@ -106,6 +106,11 @@ public class ChannelPoller {
             for (Long notificationId : notificationIds) {
                 // Per OGNI canale (uno alla volta)
                 for (ChannelType channelType : ChannelType.values()) {
+                    // ⭐ Skip direct channels in main loop (processed separately)
+                    if (isDirectChannel(channelType)) {
+                        processSingleChannel(notificationId, channelType);  // Processa DIRETTAMENTE
+                        continue;
+                    }
                     processSingleChannel(notificationId, channelType);
                 }
             }
@@ -123,12 +128,28 @@ public class ChannelPoller {
      * - Altri canali continuano normalmente
      * - Retry è granulare per canale
      * 
+     * ⭐ DIRECT CHANNELS (WEBSOCKET):
+     * - Alcuni canali (WebSocket) NON hanno bisogno di NotificationOutbox
+     * - Vengono inviati DIRETTAMENTE senza persistenza
+     * - Questo riduce latenza e overhead
+     * 
      * @param notificationId L'ID della notifica
      * @param channelType Il tipo di canale (SMS, EMAIL, PUSH, etc)
      */
     @Transactional
     private void processSingleChannel(Long notificationId, ChannelType channelType) {
         try {
+            // ⭐ DIRECT CHANNELS: Salta il secondo Outbox
+            if (isDirectChannel(channelType)) {
+                log.debug("Processing direct channel (no Outbox required): notif={}, channel={}", 
+                         notificationId, channelType);
+                // Invia DIRETTAMENTE senza persistenza
+                sendViaChannelDirect(notificationId, channelType);
+                log.info("Direct channel sent successfully: notif={}, channel={}", notificationId, channelType);
+                return;  // ← Esci, non creare NotificationChannelSend
+            }
+
+            // ⭐ PERSISTENT CHANNELS: Usa il secondo Outbox
             // Step 1: Check se esiste una riga per questo combo
             if (!channelSendDAO.existsByNotificationIdAndChannelType(notificationId, channelType)) {
                 // Step 2: Se non esiste, crea SOLO per questo canale
@@ -169,6 +190,12 @@ public class ChannelPoller {
         } catch (Exception e) {
             log.error("Failed to send notification {} via channel {}", notificationId, channelType, e);
 
+            // Skip error handling for direct channels (WebSocket)
+            if (isDirectChannel(channelType)) {
+                log.warn("Direct channel send failed (transient): notif={}, channel={}", notificationId, channelType);
+                return;
+            }
+
             // Cerca l'entry e aggiorna attempt count
             NotificationChannelSend send = channelSendDAO
                     .findByNotificationIdAndChannelType(notificationId, channelType)
@@ -194,7 +221,59 @@ public class ChannelPoller {
     }
 
     /**
-     * Invia una notifica via un canale specifico.
+     * Determina se un canale è DIRECT (non ha bisogno di persistenza nel secondo Outbox).
+     * 
+     * ⭐ DIRECT CHANNELS:
+     * - WEBSOCKET: In-memory, nessuna persistenza necessaria
+     * 
+     * ⭐ PERSISTENT CHANNELS:
+     * - SMS, EMAIL, PUSH, SLACK: Richiedono persistenza per garantire consegna
+     * 
+     * @param channelType Il tipo di canale
+     * @return true se il canale è DIRECT
+     */
+    private boolean isDirectChannel(ChannelType channelType) {
+        return channelType == ChannelType.WEBSOCKET;
+    }
+
+    /**
+     * Invia una notifica via un canale DIRETTO (senza Outbox).
+     * 
+     * @param notificationId L'ID della notifica
+     * @param channelType Il tipo di canale
+     * @throws Exception Se l'invio fallisce
+     */
+    private void sendViaChannelDirect(Long notificationId, ChannelType channelType) throws Exception {
+        switch (channelType) {
+            case WEBSOCKET -> sendWebSocketDirect(notificationId);
+            default -> throw new IllegalArgumentException("Channel " + channelType + " is not a direct channel");
+        }
+    }
+
+    /**
+     * Invia una notifica via WebSocket DIRETTAMENTE (senza persistenza).
+     * 
+     * ⭐ VANTAGGI:
+     * - In-memory, latenza quasi zero
+     * - Nessuna persistenza necessaria (browser è volatile)
+     * - Client riceve immediatamente
+     * 
+     * @param notificationId L'ID della notifica
+     * @throws Exception Se l'invio fallisce
+     */
+    private void sendWebSocketDirect(Long notificationId) throws Exception {
+        // TODO: Implementare WebSocket send logic diretto
+        // - Leggi notifica (CustomerNotification, AdminNotification, etc)
+        // - Broadcast via WebSocket a userId
+        // - Usa SimpMessagingTemplate per inviare a "/user/{userId}/queue/notifications"
+        // Esempio:
+        // NotificationDto dto = buildNotificationDTO(notification);
+        // simpMessagingTemplate.convertAndSendToUser(userId.toString(), "/queue/notifications", dto);
+        log.debug("TODO: Send WebSocket DIRECT for notification {}", notificationId);
+    }
+
+    /**
+     * Invia una notifica via un canale specifico (con Outbox).
      * 
      * Implementazione placeholder - verrà specializzata per ogni canale
      * 

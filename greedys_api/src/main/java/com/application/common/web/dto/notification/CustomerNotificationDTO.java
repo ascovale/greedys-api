@@ -3,7 +3,7 @@ package com.application.common.web.dto.notification;
 import java.time.Instant;
 import java.util.Map;
 
-import com.application.customer.persistence.model.CustomerNotification;
+import com.application.common.persistence.model.notification.CustomerNotification;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -33,7 +33,7 @@ public class CustomerNotificationDTO {
         this.properties = notification.getProperties();
         this.read = notification.getRead();
         this.creationTime = notification.getCreationTime();
-        this.customerId = notification.getCustomer() != null ? notification.getCustomer().getId() : null;
+        this.customerId = notification.getUserId();
     }
 
     public static CustomerNotificationDTO toDTO(CustomerNotification notification) {

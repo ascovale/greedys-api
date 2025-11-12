@@ -1,14 +1,18 @@
 package com.application.common.persistence.model.notification;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+import com.application.customer.persistence.model.Customer;
 
 /**
  * ⭐ NOTIFICA RECIPIENT-SPECIFICA PER CUSTOMER
@@ -31,6 +35,7 @@ import lombok.experimental.SuperBuilder;
  * DATABASE:
  * - Table: customer_notification (estende ANotification)
  * - PK: id
+ * - FK: customer_id (relazione LAZY con Customer)
  * - Inherited: user_id, user_type, title, body, is_read, shared_read, creation_time
  * 
  * @author Greedy's System
@@ -48,4 +53,29 @@ public class CustomerNotification extends ANotification {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /**
+     * Relazione LAZY con Customer.
+     * 
+     * ⭐ NOTA: Usa userId ereditato da ANotification come FK
+     * Questa relazione è OPZIONALE per comodità (evita di dover fare query separate)
+     * 
+     * @Transactional obbligatorio se accedi a customer.getEmail() etc.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", insertable = false, updatable = false)
+    private Customer customer;
+
+    /**
+     * Helper method per ottenere il Customer.
+     * 
+     * ⚠️ ATTENZIONE: Usa LAZY loading, la relazione viene caricata al primo accesso
+     * Assicurati di essere in contesto @Transactional!
+     * 
+     * @return Il Customer associato a questa notifica, o null se userId non esiste
+     */
+    public Customer getCustomer() {
+        return this.customer;
+    }
+
 }
+
