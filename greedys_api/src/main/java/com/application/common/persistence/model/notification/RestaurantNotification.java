@@ -2,14 +2,18 @@ package com.application.common.persistence.model.notification;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+import com.application.restaurant.persistence.model.user.RUser;
 
 /**
  * ⭐ NOTIFICA RECIPIENT-SPECIFICA PER STAFF RISTORANTE
@@ -37,6 +41,7 @@ import lombok.experimental.SuperBuilder;
  * - Table: restaurant_notification (estende ANotification)
  * - PK: id
  * - FK: restaurant_id (quale ristorante ha ricevuto questa notifica)
+ * - FK: user_id (relazione LAZY con RUser dello staff)
  * - Inherited: user_id, user_type, title, body, is_read, shared_read, creation_time
  * 
  * @author Greedy's System
@@ -65,4 +70,29 @@ public class RestaurantNotification extends ANotification {
     @Column(name = "restaurant_id", nullable = false)
     private Long restaurantId;
 
+    /**
+     * Relazione LAZY con RUser (staff del ristorante).
+     * 
+     * ⭐ NOTA: Usa userId ereditato da ANotification come FK
+     * Questa relazione è OPZIONALE per comodità (evita di dover fare query separate)
+     * 
+     * @Transactional obbligatorio se accedi a rUser.getEmail() etc.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", insertable = false, updatable = false)
+    private RUser rUser;
+
+    /**
+     * Helper method per ottenere l'RUser (staff).
+     * 
+     * ⚠️ ATTENZIONE: Usa LAZY loading, la relazione viene caricata al primo accesso
+     * Assicurati di essere in contesto @Transactional!
+     * 
+     * @return L'RUser associato a questa notifica, o null se userId non esiste
+     */
+    public RUser getRUser() {
+        return this.rUser;
+    }
+
 }
+
