@@ -1,5 +1,7 @@
 package com.application.common.persistence.model.notification;
 
+import com.application.restaurant.persistence.model.user.RUser;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -13,7 +15,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
-import com.application.restaurant.persistence.model.user.RUser;
 
 /**
  * ⭐ NOTIFICA RECIPIENT-SPECIFICA PER STAFF RISTORANTE
