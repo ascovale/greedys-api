@@ -1,5 +1,7 @@
 package com.application.common.persistence.model.notification;
 
+import com.application.customer.persistence.model.Customer;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -12,7 +14,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
-import com.application.customer.persistence.model.Customer;
 
 /**
  * ⭐ NOTIFICA RECIPIENT-SPECIFICA PER CUSTOMER
