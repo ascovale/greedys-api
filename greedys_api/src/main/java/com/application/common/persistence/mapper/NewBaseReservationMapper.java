@@ -15,7 +15,7 @@ import com.application.common.web.dto.reservations.NewBaseReservationDTO;
 @Mapper(
     componentModel = "spring",
     nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
-    unmappedTargetPolicy = ReportingPolicy.WARN
+    unmappedTargetPolicy = ReportingPolicy.IGNORE
 )
 public interface NewBaseReservationMapper {
 

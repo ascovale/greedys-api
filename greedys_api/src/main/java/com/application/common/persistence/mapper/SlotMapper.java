@@ -16,7 +16,7 @@ import com.application.restaurant.web.dto.services.NewSlotDTO;
 @Mapper(
     componentModel = "spring",
     nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
-    unmappedTargetPolicy = ReportingPolicy.WARN
+    unmappedTargetPolicy = ReportingPolicy.IGNORE
 )
 public interface SlotMapper {
 

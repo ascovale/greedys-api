@@ -15,7 +15,7 @@ import com.application.common.web.dto.restaurant.RestaurantLogoDto;
 @Mapper(
     componentModel = "spring",
     nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
-    unmappedTargetPolicy = ReportingPolicy.WARN
+    unmappedTargetPolicy = ReportingPolicy.IGNORE
 )
 public interface RestaurantLogoMapper {
 

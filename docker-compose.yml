@@ -49,6 +49,7 @@ services:
         max_attempts: 3
     depends_on:
       - db
+      - rabbitmq
     networks:
       - app-network
     ports:
@@ -57,11 +58,25 @@ services:
       SPRING_PROFILES_ACTIVE: "docker"
       SERVER_PORT: 8080
       SERVER_SSL_ENABLED: "false"  # NO HTTPS interno (Traefik gestisce)
+      # RabbitMQ Configuration
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME_FILE: /run/secrets/rabbitmq_user
+      SPRING_RABBITMQ_PASSWORD_FILE: /run/secrets/rabbitmq_password
+      SPRING_RABBITMQ_VIRTUAL_HOST: /greedys
+      # Notification Outbox Poller Configuration
+      NOTIFICATION_OUTBOX_MULTI_POLLER_ENABLED: "false"
+      NOTIFICATION_OUTBOX_FAST_POLLER_DELAY_MS: "1000"
+      NOTIFICATION_OUTBOX_FAST_POLLER_FRESH_EVENT_WINDOW_SECONDS: "60"
+      NOTIFICATION_OUTBOX_SLOW_POLLER_DELAY_MS: "30000"
+      NOTIFICATION_OUTBOX_SLOW_POLLER_STUCK_EVENT_THRESHOLD_SECONDS: "60"
     secrets:
       - db_password
       - email_password
       - service_account
       - jwt_secret
+      - rabbitmq_user
+      - rabbitmq_password
     labels:
       # API Router con HTTPS
       - "traefik.enable=true"
@@ -129,6 +144,50 @@ services:
       timeout: 10s
       retries: 5
 
+  # ===== RABBITMQ MESSAGE BROKER =====
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager  # RabbitMQ su manager per persistenza
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+    networks:
+      - app-network
+    ports:
+      - "5672:5672"    # AMQP protocol
+      - "15672:15672"  # Management UI
+    environment:
+      # RabbitMQ 3.13 non supporta _FILE variables - usa config file
+      RABBITMQ_PLUGINS: "rabbitmq_management,rabbitmq_consistent_hash_exchange,rabbitmq_priority_queue"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+      - ./rabbitmq/init-rabbitmq.sh:/docker-entrypoint-initdb.d/init-rabbitmq.sh:ro
+    secrets:
+      - rabbitmq_user
+      - rabbitmq_password
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    labels:
+      # RabbitMQ Management UI con HTTPS
+      - "traefik.enable=true"
+      - "traefik.http.routers.rabbitmq.rule=Host(`rabbitmq.greedys.it`)"
+      - "traefik.http.routers.rabbitmq.entrypoints=web,websecure"
+      - "traefik.http.routers.rabbitmq.service=rabbitmq"
+      - "traefik.http.routers.rabbitmq.tls.certresolver=letsencrypt"
+      - "traefik.http.services.rabbitmq.loadbalancer.server.port=15672"
+      # Basic Auth per Management UI
+      - "traefik.http.routers.rabbitmq.middlewares=rabbitmq-auth"
+      - "traefik.http.middlewares.rabbitmq-auth.basicauth.users=admin:$$2y$$10$$yourhashpassword"  # CAMBIA PASSWORD!
+
 networks:
   app-network:
     driver: overlay
@@ -136,6 +195,7 @@ networks:
 
 volumes:
   db_data:
+  rabbitmq_data:
 
 secrets:
   db_password:
@@ -145,5 +205,9 @@ secrets:
   service_account:
     external: true
   jwt_secret:
-    external: true  
+    external: true
+  rabbitmq_user:
+    external: true
+  rabbitmq_password:
+    external: true
 

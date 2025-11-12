@@ -15,7 +15,7 @@ import com.application.restaurant.persistence.model.Restaurant;
 @Mapper(
     componentModel = "spring",
     nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
-    unmappedTargetPolicy = ReportingPolicy.WARN,
+    unmappedTargetPolicy = ReportingPolicy.IGNORE,
     uses = {RestaurantImageMapper.class, RestaurantLogoMapper.class}
 )
 public interface RestaurantFullDetailsMapper {

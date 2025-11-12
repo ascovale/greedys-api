@@ -15,7 +15,7 @@ import com.application.common.web.dto.restaurant.ServiceTypeDto;
 @Mapper(
     componentModel = "spring",
     nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
-    unmappedTargetPolicy = ReportingPolicy.WARN
+    unmappedTargetPolicy = ReportingPolicy.IGNORE
 )
 public interface ServiceTypeMapper {
 
