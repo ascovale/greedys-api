@@ -3,15 +3,14 @@ package com.application.common.service.notification.listener;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.application.common.persistence.dao.AdminNotificationDAO;
 import com.application.common.persistence.dao.EventOutboxDAO;
 import com.application.common.persistence.dao.NotificationOutboxDAO;
-import com.application.admin.persistence.model.AdminNotification;
 import com.application.common.persistence.model.notification.NotificationOutbox;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -59,16 +58,13 @@ import lombok.extern.slf4j.Slf4j;
 @Transactional
 public class AdminNotificationListener {
 
-    private final AdminNotificationDAO adminNotificationDAO;
     private final EventOutboxDAO eventOutboxDAO;
     private final NotificationOutboxDAO notificationOutboxDAO;
     private final ObjectMapper objectMapper;
 
-    public AdminNotificationListener(AdminNotificationDAO adminNotificationDAO,
-                                    EventOutboxDAO eventOutboxDAO,
+    public AdminNotificationListener(EventOutboxDAO eventOutboxDAO,
                                     NotificationOutboxDAO notificationOutboxDAO,
                                     ObjectMapper objectMapper) {
-        this.adminNotificationDAO = adminNotificationDAO;
         this.eventOutboxDAO = eventOutboxDAO;
         this.notificationOutboxDAO = notificationOutboxDAO;
         this.objectMapper = objectMapper;
@@ -149,22 +145,19 @@ public class AdminNotificationListener {
             Long restaurantId = restaurantIdObj != null ? ((Number) restaurantIdObj).longValue() : null;
 
             // Step 2: Crea notifica generica in base al tipo di evento
-            AdminNotification notification = createNotificationFromEvent(eventType, eventData);
+            Map<String, Object> notification = createNotificationFromEvent(eventType, eventData);
 
             if (notification == null) {
                 log.warn("Could not create notification for event type: {}", eventType);
                 return;
             }
 
-            // Step 3: Persist la notifica
-            AdminNotification savedNotification = adminNotificationDAO.save(notification);
-
-            log.debug("Created AdminNotification: id={}, event_type={}, user_id={}", 
-                     savedNotification.getId(), eventType, savedNotification.getUserId());
+            // Step 3: Persist la notifica in notification_outbox
+            log.debug("Created AdminNotification: event_type={}", eventType);
 
             // Step 4: Crea entry in notification_outbox per il ChannelPoller
             NotificationOutbox outbox = NotificationOutbox.builder()
-                    .notificationId(savedNotification.getId())
+                    .notificationId(UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE)
                     .notificationType("ADMIN")
                     .aggregateType(eventData.getOrDefault("aggregateType", "RESERVATION").toString())
                     .aggregateId(restaurantId != null ? restaurantId : 0L)
@@ -177,7 +170,7 @@ public class AdminNotificationListener {
             notificationOutboxDAO.save(outbox);
 
             log.debug("Created NotificationOutbox entry: notification_id={}, status=PENDING", 
-                     savedNotification.getId());
+                     eventId);
 
         } catch (Exception e) {
             log.error("Error creating admin notifications", e);
@@ -197,9 +190,9 @@ public class AdminNotificationListener {
      * 
      * @param eventType Il tipo di evento
      * @param eventData I dati dell'evento
-     * @return Una AdminNotification pronta per il persist
+     * @return Una map con i dati della notifica pronta per il persist
      */
-    private AdminNotification createNotificationFromEvent(String eventType, Map<String, Object> eventData) {
+    private Map<String, Object> createNotificationFromEvent(String eventType, Map<String, Object> eventData) {
         String title;
         String body;
         Map<String, String> properties = new HashMap<>();
@@ -229,19 +222,15 @@ public class AdminNotificationListener {
                 return null;
         }
 
-        // TODO: Implementa logica per determinare quale admin riceve questa notifica
-        // Per ora: placeholder userId=1 (primo admin)
-        Long adminUserId = 1L;
+        // Costruisci una map con i dati della notifica
+        Map<String, Object> notification = new HashMap<>();
+        notification.put("title", title);
+        notification.put("body", body);
+        notification.put("properties", properties);
+        notification.put("userType", "ADMIN_USER");
+        notification.put("read", false);
+        notification.put("creationTime", Instant.now());
 
-        return AdminNotification.builder()
-                .title(title)
-                .body(body)
-                .properties(properties)
-                .userId(adminUserId)
-                .userType("ADMIN_USER")
-                .read(false)
-                .sharedRead(true)  // Primo admin che agisce, tutti vedono
-                .creationTime(Instant.now())
-                .build();
+        return notification;
     }
 }
