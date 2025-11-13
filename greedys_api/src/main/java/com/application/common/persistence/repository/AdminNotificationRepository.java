@@ -2,22 +2,25 @@ package com.application.common.persistence.repository;
 
 import java.util.List;
 
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.application.common.persistence.model.notification.AdminNotification;
+import com.application.admin.persistence.model.AdminNotification;
 
 /**
- * Repository per AdminNotification
+ * Repository per AdminNotification (Legacy - Non usato in nuova architettura)
  * 
- * Specializzato per le notifiche degli admin.
+ * ⚠️ NOTA: AdminNotification è una legacy class che non estende ANotification
+ * Non è compatibile con la nuova architettura di notifiche.
+ * Repository semplice per query legacy.
  * 
  * @author Greedy's System
  * @since 2025-01-20
  */
 @Repository
-public interface AdminNotificationRepository extends ANotificationRepository<AdminNotification> {
+public interface AdminNotificationRepository extends JpaRepository<AdminNotification, Long> {
 
     /**
      * Trova tutte le notifiche di un admin specifico per un ristorante.

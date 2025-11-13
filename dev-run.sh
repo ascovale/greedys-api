@@ -140,7 +140,6 @@ quick_dev_run() {
         -Dspring-boot.run.fork=false \
         --batch-mode \
         --show-version \
-        -o \
         -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 }
 
@@ -178,7 +177,6 @@ ultra_fast_dev_run() {
         -Dspring.devtools.restart.quiet-period=400 \
         --batch-mode \
         --show-version \
-        -o \
         -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 }
 
@@ -210,7 +208,6 @@ hot_reload_dev_run() {
         -Dspring.devtools.restart.quiet-period=400 \
         --batch-mode \
         --show-version \
-        -o \
         -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 }
 
@@ -225,7 +222,6 @@ compile_only() {
         -Dmaven.test.skip=true \
         --batch-mode \
         --show-version \
-        -o \
         -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 }
 
