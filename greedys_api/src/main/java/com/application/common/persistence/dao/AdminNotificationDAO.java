@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.application.common.persistence.model.notification.AdminNotification;
+import com.application.admin.persistence.model.AdminNotification;
 
 /**
  * DAO per AdminNotification
