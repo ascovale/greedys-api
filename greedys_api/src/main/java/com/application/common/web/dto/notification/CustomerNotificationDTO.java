@@ -3,7 +3,7 @@ package com.application.common.web.dto.notification;
 import java.time.Instant;
 import java.util.Map;
 
-import com.application.common.persistence.model.notification.CustomerNotification;
+import com.application.customer.persistence.model.CustomerNotification;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

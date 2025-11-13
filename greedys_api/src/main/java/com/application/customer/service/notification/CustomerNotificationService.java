@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.application.common.persistence.dao.CustomerNotificationDAO;
-import com.application.common.persistence.model.notification.CustomerNotification;
+import com.application.customer.persistence.model.CustomerNotification;
 import com.application.common.service.FirebaseService;
 import com.application.common.web.dto.notification.CustomerNotificationDTO;
 import com.application.common.web.dto.shared.NotificationDto;

@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.application.common.persistence.model.notification.CustomerNotification;
+import com.application.customer.persistence.model.CustomerNotification;
 
 /**
  * DAO per CustomerNotification
