@@ -2,6 +2,7 @@ package com.application.common.persistence.model.notification.channel;
 
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 
 import com.application.common.persistence.model.notification.websocket.WebSocketSessionManager;
 import com.application.common.service.notification.model.NotificationMessage;
@@ -16,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
  * Supporta routing multi-tipo utente: CUSTOMER, RESTAURANT, ADMIN
  */
 @Component
+@ConditionalOnBean(SimpMessagingTemplate.class)
 @RequiredArgsConstructor
 @Slf4j
 public class WebSocketNotificationChannel implements NotificationChannel {
