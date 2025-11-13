@@ -1,5 +1,6 @@
 package com.application.admin.service.security;
 
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -18,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 @Transactional
 @RequiredArgsConstructor
 @Slf4j
+@Profile("!dev-minimal")
 public class AdminUserDetailsService implements UserDetailsService {
 
     private final AdminDAO adminDAO;
