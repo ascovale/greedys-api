@@ -3,7 +3,7 @@ package com.application.common.web.dto.notification;
 import java.time.Instant;
 import java.util.Map;
 
-import com.application.common.persistence.model.notification.RestaurantNotification;
+import com.application.restaurant.persistence.model.RestaurantNotification;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -25,7 +25,6 @@ public class RestaurantNotificationDTO {
     private Boolean read;
     private Instant creationTime;
     private Long rUserId;
-    private Long restaurantId;
 
     public RestaurantNotificationDTO(RestaurantNotification notification) {
         this.id = notification.getId();
@@ -35,7 +34,6 @@ public class RestaurantNotificationDTO {
         this.read = notification.getRead();
         this.creationTime = notification.getCreationTime();
         this.rUserId = notification.getUserId();
-        this.restaurantId = notification.getRestaurantId();
     }
 
     public static RestaurantNotificationDTO toDTO(RestaurantNotification notification) {

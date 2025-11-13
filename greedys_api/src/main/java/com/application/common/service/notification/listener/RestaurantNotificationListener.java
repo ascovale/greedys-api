@@ -11,7 +11,7 @@ import com.application.common.persistence.dao.EventOutboxDAO;
 import com.application.common.persistence.dao.NotificationOutboxDAO;
 import com.application.common.persistence.dao.RestaurantNotificationDAO;
 import com.application.common.persistence.model.notification.NotificationOutbox;
-import com.application.common.persistence.model.notification.RestaurantNotification;
+import com.application.restaurant.persistence.model.RestaurantNotification;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
@@ -201,7 +201,6 @@ public class RestaurantNotificationListener {
                 .title(title)
                 .body(body)
                 .properties(properties)
-                .restaurantId(restaurantId)
                 .userId(staffUserId)
                 .userType("RESTAURANT_USER")
                 .read(false)

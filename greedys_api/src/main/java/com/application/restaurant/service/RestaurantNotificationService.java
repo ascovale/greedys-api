@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.application.common.persistence.dao.RestaurantNotificationDAO;
-import com.application.common.persistence.model.notification.RestaurantNotification;
+import com.application.restaurant.persistence.model.RestaurantNotification;
 import com.application.common.persistence.model.reservation.Reservation;
 import com.application.common.service.FirebaseService;
 import com.application.common.web.dto.notification.RestaurantNotificationDTO;
@@ -40,7 +40,6 @@ public class RestaurantNotificationService {
                     .body(body)
                     .userId(RUser.getId())
                     .userType("RESTAURANT_USER")
-                    .restaurantId(RUser.getRestaurant() != null ? RUser.getRestaurant().getId() : null)
                     .read(false)
                     .creationTime(Instant.now())
                     .build();

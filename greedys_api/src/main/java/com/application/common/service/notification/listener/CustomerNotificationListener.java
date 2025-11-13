@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.application.common.persistence.dao.CustomerNotificationDAO;
 import com.application.common.persistence.dao.EventOutboxDAO;
 import com.application.common.persistence.dao.NotificationOutboxDAO;
-import com.application.common.persistence.model.notification.CustomerNotification;
+import com.application.customer.persistence.model.CustomerNotification;
 import com.application.common.persistence.model.notification.NotificationOutbox;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
