@@ -27,7 +27,7 @@ import lombok.experimental.SuperBuilder;
 @Setter
 @SuperBuilder
 @NoArgsConstructor
-@Entity
+@Entity(name = "RestaurantNotificationEntity")
 @Table(name = "notification_restaurant")
 public class RestaurantNotification extends ANotification {
 
