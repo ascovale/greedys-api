@@ -27,6 +27,7 @@ import lombok.RequiredArgsConstructor;
 @Profile("dev-minimal") // 🚀 Solo per profilo dev-minimal (H2)
 @EnableJpaRepositories(basePackages = {
     "com.application.admin.persistence.dao",
+    "com.application.agency.persistence.dao",
     "com.application.customer.persistence.dao",
     "com.application.restaurant.persistence.dao",
     "com.application.common.persistence.dao"
@@ -60,6 +61,7 @@ public class DevPersistenceConfig {
         em.setDataSource(dataSource);
         em.setPackagesToScan(
             "com.application.admin.persistence.model",
+            "com.application.agency.persistence.model",
             "com.application.customer.persistence.model",
             "com.application.restaurant.persistence.model",
             "com.application.common.persistence.model"
