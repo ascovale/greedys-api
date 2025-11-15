@@ -84,6 +84,12 @@ public class Reservation {
     @JoinColumn(name = "table_id")
     private com.application.restaurant.persistence.model.Table table;
 
+    @Column(name = "table_number")
+    private Integer tableNumber;
+
+    @Column(length = 500, name = "rejection_reason")
+    private String rejectionReason;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id")
     private Customer customer;

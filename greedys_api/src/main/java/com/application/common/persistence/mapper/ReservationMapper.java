@@ -59,6 +59,8 @@ public interface ReservationMapper {
     @Mapping(target = "modifiedByUserType", ignore = true)
     @Mapping(target = "acceptedBy", ignore = true)
     @Mapping(target = "acceptedAt", ignore = true)
+    @Mapping(target = "tableNumber", ignore = true)
+    @Mapping(target = "rejectionReason", ignore = true)
     Reservation fromCustomerNewReservationDTO(CustomerNewReservationDTO dto);
 
     /**
@@ -81,6 +83,8 @@ public interface ReservationMapper {
     @Mapping(target = "modifiedByUserType", ignore = true)
     @Mapping(target = "acceptedBy", ignore = true)
     @Mapping(target = "acceptedAt", ignore = true)
+    @Mapping(target = "tableNumber", ignore = true)
+    @Mapping(target = "rejectionReason", ignore = true)
     Reservation fromRestaurantNewReservationDTO(RestaurantNewReservationDTO dto);
 
     /**
@@ -102,6 +106,8 @@ public interface ReservationMapper {
     @Mapping(target = "modifiedByUserType", ignore = true)
     @Mapping(target = "acceptedBy", ignore = true)
     @Mapping(target = "acceptedAt", ignore = true)
+    @Mapping(target = "tableNumber", ignore = true)
+    @Mapping(target = "rejectionReason", ignore = true)
     Reservation fromAdminNewReservationDTO(AdminNewReservationDTO dto);
 
     /**
@@ -124,6 +130,8 @@ public interface ReservationMapper {
     @Mapping(target = "modifiedByUserType", ignore = true)
     @Mapping(target = "acceptedBy", ignore = true)
     @Mapping(target = "acceptedAt", ignore = true)
+    @Mapping(target = "tableNumber", ignore = true)
+    @Mapping(target = "rejectionReason", ignore = true)
     Reservation fromNewBaseReservationDTO(NewBaseReservationDTO dto);
 
     /**
@@ -145,5 +153,7 @@ public interface ReservationMapper {
     @Mapping(target = "modifiedByUserType", ignore = true)
     @Mapping(target = "acceptedBy", ignore = true)
     @Mapping(target = "acceptedAt", ignore = true)
+    @Mapping(target = "tableNumber", ignore = true)
+    @Mapping(target = "rejectionReason", ignore = true)
     void updateEntityFromDTO(ReservationDTO dto, @MappingTarget Reservation entity);
 }

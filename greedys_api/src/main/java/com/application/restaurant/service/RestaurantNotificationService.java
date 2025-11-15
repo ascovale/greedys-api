@@ -169,5 +169,37 @@ public class RestaurantNotificationService {
                 .map(RestaurantNotificationDTO::toDTO)
                 .toList();
     }
-}
 
+    /**
+     * ⭐ Get count of NEW notifications (arrived SINCE lastMenuOpenedAt)
+     * 
+     * Definition of "new":
+     * - Notifications created AFTER lastMenuOpenedAt timestamp
+     * - If lastMenuOpenedAt is NULL, count all notifications
+     * 
+     * @param rUser The restaurant user
+     * @return Count of new notifications since last menu open
+     */
+    public long getNewNotificationsCount(RUser rUser) {
+        if (rUser.getLastMenuOpenedAt() == null) {
+            // First time opening menu - return all notifications
+            return restaurantNotificationDAO.countByUserId(rUser.getId());
+        }
+        
+        // Count notifications created after lastMenuOpenedAt
+        return restaurantNotificationDAO.countByUserIdAndCreatedAfter(rUser.getId(), rUser.getLastMenuOpenedAt());
+    }
+
+    /**
+     * ⭐ Update lastMenuOpenedAt timestamp
+     * 
+     * Called when staff opens the notification menu.
+     * This resets the "new notifications" counter.
+     * 
+     * @param rUser The restaurant user
+     */
+    public void updateLastMenuOpenedAt(RUser rUser) {
+        rUser.setLastMenuOpenedAt(Instant.now());
+        RUserDAO.save(rUser);
+    }
+}
