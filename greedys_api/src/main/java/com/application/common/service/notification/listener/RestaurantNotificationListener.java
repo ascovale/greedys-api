@@ -11,6 +11,8 @@ import com.application.common.persistence.dao.EventOutboxDAO;
 import com.application.common.persistence.dao.NotificationOutboxDAO;
 import com.application.common.persistence.dao.RestaurantNotificationDAO;
 import com.application.common.persistence.model.notification.NotificationOutbox;
+import com.application.restaurant.persistence.dao.RUserDAO;
+import com.application.restaurant.persistence.model.user.RUser;
 import com.application.restaurant.persistence.model.RestaurantNotification;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -40,15 +42,18 @@ public class RestaurantNotificationListener {
     private final RestaurantNotificationDAO restaurantNotificationDAO;
     private final EventOutboxDAO eventOutboxDAO;
     private final NotificationOutboxDAO notificationOutboxDAO;
+    private final RUserDAO rUserDAO;
     private final ObjectMapper objectMapper;
 
     public RestaurantNotificationListener(RestaurantNotificationDAO restaurantNotificationDAO,
                                         EventOutboxDAO eventOutboxDAO,
                                         NotificationOutboxDAO notificationOutboxDAO,
+                                        RUserDAO rUserDAO,
                                         ObjectMapper objectMapper) {
         this.restaurantNotificationDAO = restaurantNotificationDAO;
         this.eventOutboxDAO = eventOutboxDAO;
         this.notificationOutboxDAO = notificationOutboxDAO;
+        this.rUserDAO = rUserDAO;
         this.objectMapper = objectMapper;
     }
 
@@ -114,41 +119,58 @@ public class RestaurantNotificationListener {
                 return;
             }
 
-            // Step 2: TODO - Query per trovare tutti gli staff di questo ristorante
-            // List<RUser> staffList = restaurantUserDAO.findByRestaurantId(restaurantId);
-            
-            // Step 3: Per ogni staff, crea una RestaurantNotification
-            // (Placeholder: crea per staff_id=1)
-            Long staffUserId = 1L;
+            // Step 2: ⭐ Query per trovare tutti gli staff di questo ristorante
+            java.util.Collection<RUser> staffList = rUserDAO.findByRestaurantId(restaurantId);
 
-            RestaurantNotification notification = createNotificationFromEvent(eventType, eventData, restaurantId, staffUserId);
-
-            if (notification == null) {
-                log.warn("Could not create notification for event type: {}", eventType);
+            if (staffList == null || staffList.isEmpty()) {
+                log.warn("No staff found for restaurant {}, skipping notifications", restaurantId);
                 return;
             }
 
-            // Step 4: Persist la notifica
-            RestaurantNotification savedNotification = restaurantNotificationDAO.save(notification);
+            log.debug("Found {} staff members for restaurant {}", staffList.size(), restaurantId);
 
-            log.debug("Created RestaurantNotification: id={}, restaurant={}, staff={}", 
-                     savedNotification.getId(), restaurantId, staffUserId);
+            // Step 3: ⭐ Per ogni staff, crea una RestaurantNotification
+            for (RUser staff : staffList) {
+                try {
+                    RestaurantNotification notification = createNotificationFromEvent(eventType, eventData, restaurantId, staff.getId());
 
-            // Step 5: Crea entry in notification_outbox
-            NotificationOutbox outbox = NotificationOutbox.builder()
-                    .notificationId(savedNotification.getId())
-                    .notificationType("RESTAURANT")
-                    .aggregateType(eventData.getOrDefault("aggregateType", "RESERVATION").toString())
-                    .aggregateId(restaurantId)
-                    .eventType(eventType)
-                    .payload(objectMapper.writeValueAsString(eventData))
-                    .status(NotificationOutbox.Status.PENDING)
-                    .retryCount(0)
-                    .build();
+                    if (notification == null) {
+                        log.warn("Could not create notification for event type: {}", eventType);
+                        continue;
+                    }
 
-            notificationOutboxDAO.save(outbox);
+                    // Step 4: Persist la notifica
+                    RestaurantNotification savedNotification = restaurantNotificationDAO.save(notification);
 
-            log.debug("Created NotificationOutbox entry: notification_id={}", savedNotification.getId());
+                    log.debug("Created RestaurantNotification: id={}, restaurant={}, staff={}", 
+                             savedNotification.getId(), restaurantId, staff.getId());
+
+                    // Step 5: Crea entry in notification_outbox
+                    NotificationOutbox outbox = NotificationOutbox.builder()
+                            .notificationId(savedNotification.getId())
+                            .notificationType("RESTAURANT")
+                            .aggregateType(eventData.getOrDefault("aggregateType", "RESERVATION").toString())
+                            .aggregateId(restaurantId)
+                            .eventType(eventType)
+                            .payload(objectMapper.writeValueAsString(eventData))
+                            .status(NotificationOutbox.Status.PENDING)
+                            .retryCount(0)
+                            .build();
+
+                    notificationOutboxDAO.save(outbox);
+
+                    log.debug("Created NotificationOutbox entry: notification_id={}, staff_id={}", 
+                             savedNotification.getId(), staff.getId());
+
+                } catch (Exception e) {
+                    log.error("Error creating notification for staff {}", staff.getId(), e);
+                    // Continue with next staff instead of failing entire event
+                    continue;
+                }
+            }
+
+            log.info("Successfully created {} notifications for event {} in restaurant {}", 
+                    staffList.size(), eventId, restaurantId);
 
         } catch (Exception e) {
             log.error("Error creating restaurant notifications", e);
