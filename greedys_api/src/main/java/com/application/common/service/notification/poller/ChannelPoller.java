@@ -1,15 +1,21 @@
 package com.application.common.service.notification.poller;
 
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.application.common.persistence.dao.NotificationChannelSendDAO;
+import com.application.common.persistence.dao.RestaurantNotificationDAO;
 import com.application.common.persistence.model.notification.NotificationChannelSend;
 import com.application.common.persistence.model.notification.NotificationChannelSend.ChannelType;
+import com.application.restaurant.persistence.model.RestaurantNotification;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -66,9 +72,15 @@ public class ChannelPoller {
     private static final int MAX_RETRIES = 3;
 
     private final NotificationChannelSendDAO channelSendDAO;
+    private final RestaurantNotificationDAO restaurantNotificationDAO;
+    private final SimpMessagingTemplate simpMessagingTemplate;
 
-    public ChannelPoller(NotificationChannelSendDAO channelSendDAO) {
+    public ChannelPoller(NotificationChannelSendDAO channelSendDAO,
+                        RestaurantNotificationDAO restaurantNotificationDAO,
+                        SimpMessagingTemplate simpMessagingTemplate) {
         this.channelSendDAO = channelSendDAO;
+        this.restaurantNotificationDAO = restaurantNotificationDAO;
+        this.simpMessagingTemplate = simpMessagingTemplate;
     }
 
     /**
@@ -258,18 +270,61 @@ public class ChannelPoller {
      * - Nessuna persistenza necessaria (browser è volatile)
      * - Client riceve immediatamente
      * 
+     * ⭐ FLOW:
+     * 1. Leggi RestaurantNotification dal DB
+     * 2. Estrai userId (è il staff che riceve)
+     * 3. Prepara payload JSON
+     * 4. Invia via SimpMessagingTemplate a /user/{userId}/queue/notifications
+     * 5. Browser riceve in tempo reale
+     * 
      * @param notificationId L'ID della notifica
      * @throws Exception Se l'invio fallisce
      */
     private void sendWebSocketDirect(Long notificationId) throws Exception {
-        // TODO: Implementare WebSocket send logic diretto
-        // - Leggi notifica (CustomerNotification, AdminNotification, etc)
-        // - Broadcast via WebSocket a userId
-        // - Usa SimpMessagingTemplate per inviare a "/user/{userId}/queue/notifications"
-        // Esempio:
-        // NotificationDto dto = buildNotificationDTO(notification);
-        // simpMessagingTemplate.convertAndSendToUser(userId.toString(), "/queue/notifications", dto);
-        log.debug("TODO: Send WebSocket DIRECT for notification {}", notificationId);
+        try {
+            // Step 1: Leggi la notifica dal DB
+            Optional<RestaurantNotification> notifOpt = restaurantNotificationDAO.findById(notificationId);
+            
+            if (notifOpt.isEmpty()) {
+                log.warn("RestaurantNotification not found: {}", notificationId);
+                return;
+            }
+            
+            RestaurantNotification notification = notifOpt.get();
+            Long userId = notification.getUserId();
+            
+            if (userId == null) {
+                log.warn("Notification {} has null userId, skipping WebSocket send", notificationId);
+                return;
+            }
+            
+            // Step 2: Prepara il payload per il client
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("notificationId", notification.getId());
+            payload.put("title", notification.getTitle());
+            payload.put("body", notification.getBody());
+            payload.put("timestamp", Instant.now().toString());
+            payload.put("properties", notification.getProperties());
+            
+            log.debug("WebSocket payload prepared: notif={}, user={}, payload={}", 
+                     notificationId, userId, payload);
+            
+            // Step 3: Invia via WebSocket a /user/{userId}/queue/notifications
+            simpMessagingTemplate.convertAndSendToUser(
+                userId.toString(),
+                "/queue/notifications",
+                payload
+            );
+            
+            log.info("WebSocket message sent successfully: notif={}, user={}", notificationId, userId);
+            
+        } catch (Exception e) {
+            log.error("Failed to send WebSocket notification {}: {}", notificationId, e.getMessage(), e);
+            // ⭐ NO RETRY for WebSocket (best-effort only)
+            // Se il staff è offline: messaggio perso
+            // Se il browser non è connesso: no consegna
+            throw e;
+        }
     }
 
     /**
