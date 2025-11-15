@@ -30,6 +30,7 @@ import com.application.restaurant.persistence.dao.ServiceDAO;
 import com.application.restaurant.persistence.dao.SlotDAO;
 import com.application.restaurant.persistence.model.Restaurant;
 import com.application.restaurant.service.agenda.RestaurantAgendaService;
+import com.application.restaurant.service.ReservationWebSocketPublisher;
 import com.application.restaurant.web.dto.reservation.RestaurantNewReservationDTO;
 import com.application.restaurant.web.dto.reservation.RestaurantReservationWithExistingCustomerDTO;
 
@@ -55,6 +56,7 @@ public class ReservationService {
     private final CustomerDAO customerDAO;
     private final ReservationMapper reservationMapper;
     private final RestaurantAgendaService restaurantAgendaService;
+    private final ReservationWebSocketPublisher webSocketPublisher;
 
     public void save(Reservation reservation) {
         // Save the reservation
@@ -81,6 +83,9 @@ public class ReservationService {
             reservation.getDate().toString()
         );
         eventPublisher.publishEvent(event);
+        
+        // Also publish WebSocket event for real-time notification to restaurant staff
+        webSocketPublisher.publishReservationCreated(reservation);
     }
 
     public List<Reservation> findAll(long id) {
@@ -97,6 +102,58 @@ public class ReservationService {
         reservation.setStatus(status);
         reservationDAO.save(reservation);
         return reservationMapper.toDTO(reservation);
+    }
+
+    /**
+     * ⭐ Accept a reservation with optional table number and notes.
+     * 
+     * @param reservationId ID of the reservation to accept
+     * @param tableNumber Optional table number
+     * @param notes Optional notes for the reservation
+     * @return Updated reservation DTO
+     */
+    public ReservationDTO acceptReservation(Long reservationId, Integer tableNumber, String notes) {
+        Reservation reservation = reservationDAO.findByIdWithRestaurant(reservationId)
+                .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
+        
+        reservation.setStatus(Reservation.Status.ACCEPTED);
+        if (tableNumber != null) {
+            reservation.setTableNumber(tableNumber);
+        }
+        if (notes != null) {
+            reservation.setNotes(notes);
+        }
+        
+        Reservation saved = reservationDAO.save(reservation);
+        
+        // Publish WebSocket event for reservation accepted
+        webSocketPublisher.publishReservationAccepted(saved);
+        
+        return reservationMapper.toDTO(saved);
+    }
+
+    /**
+     * ⭐ Reject a reservation with optional reason.
+     * 
+     * @param reservationId ID of the reservation to reject
+     * @param reason Optional reason for rejection
+     * @return Updated reservation DTO
+     */
+    public ReservationDTO rejectReservation(Long reservationId, String reason) {
+        Reservation reservation = reservationDAO.findByIdWithRestaurant(reservationId)
+                .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
+        
+        reservation.setStatus(Reservation.Status.REJECTED);
+        if (reason != null) {
+            reservation.setRejectionReason(reason);
+        }
+        
+        Reservation saved = reservationDAO.save(reservation);
+        
+        // Publish WebSocket event for reservation rejected
+        webSocketPublisher.publishReservationRejected(saved);
+        
+        return reservationMapper.toDTO(saved);
     }
 
     public Collection<ReservationDTO> getReservations(Long restaurantId, LocalDate start, LocalDate end) {

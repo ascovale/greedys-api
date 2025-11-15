@@ -1,0 +1,405 @@
+{
+	"info": {
+		"_postman_id": "customer-reservations-websocket-test",
+		"name": "Customer Reservations - WebSocket Test",
+		"description": "Test collection for creating customer reservations to test WebSocket real-time updates for restaurant test@test.it",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Setup - Get Restaurant Test@Test.It",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Find restaurant with email test@test.it\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('data');",
+							"    ",
+							"    // Find restaurant by email",
+							"    var restaurants = jsonData.data;",
+							"    var targetRestaurant = restaurants.find(r => r.email === 'test@test.it');",
+							"    ",
+							"    if (targetRestaurant) {",
+							"        pm.environment.set('restaurantId', targetRestaurant.id);",
+							"        pm.environment.set('restaurantName', targetRestaurant.name);",
+							"        console.log('Found restaurant: ' + targetRestaurant.name + ' (ID: ' + targetRestaurant.id + ')');",
+							"    } else {",
+							"        console.log('Restaurant test@test.it not found. Available restaurants:');",
+							"        restaurants.forEach(r => console.log(r.name + ' - ' + r.email));",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/customer/restaurant/all",
+					"host": ["{{baseUrl}}"],
+					"path": ["customer", "restaurant", "all"]
+				}
+			}
+		},
+		{
+			"name": "Setup - Get Services for Restaurant",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Extract service ID\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('data');",
+							"    ",
+							"    if (jsonData.data && jsonData.data.length > 0) {",
+							"        var service = jsonData.data[0];",
+							"        pm.environment.set('serviceId', service.id);",
+							"        console.log('Found service: ' + service.name + ' (ID: ' + service.id + ')');",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/customer/restaurant/{{restaurantId}}/services",
+					"host": ["{{baseUrl}}"],
+					"path": ["customer", "restaurant", "{{restaurantId}}", "services"]
+				}
+			}
+		},
+		{
+			"name": "Setup - Get Time Slots for Today",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Extract slot ID\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('data');",
+							"    ",
+							"    if (jsonData.data && jsonData.data.length > 0) {",
+							"        var slot = jsonData.data[0];",
+							"        pm.environment.set('slotId', slot.id);",
+							"        console.log('Found slot: ' + slot.startTime + ' (ID: ' + slot.id + ')');",
+							"    } else {",
+							"        console.log('No slots available for today');",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/customer/restaurant/{{restaurantId}}/service/{{serviceId}}/day/{{today}}",
+					"host": ["{{baseUrl}}"],
+					"path": ["customer", "restaurant", "{{restaurantId}}", "service", "{{serviceId}}", "day", "{{today}}"]
+				}
+			}
+		},
+		{
+			"name": "Customer 1 - Create Reservation",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201 or 200\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+							"});",
+							"",
+							"pm.test(\"Reservation created successfully\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.eql(true);",
+							"});",
+							"",
+							"pm.test(\"Response contains reservation data\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data).to.have.property('id');",
+							"    pm.expect(jsonData.data).to.have.property('userName');",
+							"    pm.expect(jsonData.data).to.have.property('status');",
+							"    console.log('Reservation 1 created with ID: ' + jsonData.data.id);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{customerToken}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"userName\": \"Marco Rossi\",\n    \"userEmail\": \"marco.rossi@example.it\",\n    \"userPhoneNumber\": \"3471234567\",\n    \"idSlot\": {{slotId}},\n    \"pax\": 4,\n    \"kids\": 1,\n    \"reservationDay\": \"{{today}}\",\n    \"restaurantId\": {{restaurantId}}\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/customer/reservation/ask",
+					"host": ["{{baseUrl}}"],
+					"path": ["customer", "reservation", "ask"]
+				}
+			}
+		},
+		{
+			"name": "Customer 2 - Create Reservation",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201 or 200\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+							"});",
+							"",
+							"pm.test(\"Reservation created successfully\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.eql(true);",
+							"});",
+							"",
+							"pm.test(\"Response contains reservation data\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data).to.have.property('id');",
+							"    pm.expect(jsonData.data).to.have.property('userName');",
+							"    pm.expect(jsonData.data).to.have.property('status');",
+							"    console.log('Reservation 2 created with ID: ' + jsonData.data.id);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{customerToken}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"userName\": \"Luca Bianchi\",\n    \"userEmail\": \"luca.bianchi@example.it\",\n    \"userPhoneNumber\": \"3489876543\",\n    \"idSlot\": {{slotId}},\n    \"pax\": 2,\n    \"kids\": 0,\n    \"reservationDay\": \"{{today}}\",\n    \"restaurantId\": {{restaurantId}}\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/customer/reservation/ask",
+					"host": ["{{baseUrl}}"],
+					"path": ["customer", "reservation", "ask"]
+				}
+			}
+		},
+		{
+			"name": "Customer 3 - Create Reservation",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201 or 200\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+							"});",
+							"",
+							"pm.test(\"Reservation created successfully\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.eql(true);",
+							"});",
+							"",
+							"pm.test(\"Response contains reservation data\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data).to.have.property('id');",
+							"    pm.expect(jsonData.data).to.have.property('userName');",
+							"    pm.expect(jsonData.data).to.have.property('status');",
+							"    console.log('Reservation 3 created with ID: ' + jsonData.data.id);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{customerToken}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"userName\": \"Giulia Neri\",\n    \"userEmail\": \"giulia.neri@example.it\",\n    \"userPhoneNumber\": \"3356789012\",\n    \"idSlot\": {{slotId}},\n    \"pax\": 3,\n    \"kids\": 2,\n    \"reservationDay\": \"{{today}}\",\n    \"restaurantId\": {{restaurantId}}\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/customer/reservation/ask",
+					"host": ["{{baseUrl}}"],
+					"path": ["customer", "reservation", "ask"]
+				}
+			}
+		},
+		{
+			"name": "Verification - Get All Reservations",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Reservations list retrieved\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('data');",
+							"    ",
+							"    if (jsonData.data && jsonData.data.length > 0) {",
+							"        console.log('Total reservations found: ' + jsonData.data.length);",
+							"        jsonData.data.forEach(r => {",
+							"            console.log('- ' + r.userName + ' (' + r.status + ') - PAX: ' + r.pax);",
+							"        });",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/customer/reservation/all",
+					"host": ["{{baseUrl}}"],
+					"path": ["customer", "reservation", "all"]
+				}
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "today",
+			"value": "2025-01-15",
+			"type": "string"
+		},
+		{
+			"key": "customerToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "restaurantId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "serviceId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "slotId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "restaurantName",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Pre-request script to ensure proper authentication",
+					"// Check if we have a valid token for authenticated requests",
+					"const authHeader = pm.request.headers.get('Authorization');",
+					"if (authHeader && authHeader.includes('Bearer') && !pm.environment.get('customerToken')) {",
+					"    console.log('Warning: Missing customer token for authenticated request');",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global test script for common validations",
+					"pm.test('Response time is acceptable', function () {",
+					"    pm.expect(pm.response.responseTime).to.be.below(5000);",
+					"});"
+				]
+			}
+		}
+	]
+}

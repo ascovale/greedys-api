@@ -28,7 +28,8 @@ import com.application.common.persistence.model.reservation.Reservation;
 import com.application.common.service.reservation.ReservationService;
 import com.application.common.web.dto.reservations.ReservationDTO;
 import com.application.restaurant.persistence.model.user.RUser;
-import com.application.restaurant.service.RestaurantNotificationService;
+import com.application.restaurant.web.dto.reservation.AcceptReservationDTO;
+import com.application.restaurant.web.dto.reservation.RejectReservationDTO;
 import com.application.restaurant.web.dto.reservation.RestaurantNewReservationDTO;
 import com.application.restaurant.web.dto.reservation.RestaurantReservationWithExistingCustomerDTO;
 
@@ -52,7 +53,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RestaurantReservationController extends BaseController {
 	private final ReservationService reservationService;
-	private final RestaurantNotificationService restaurantNotificationService;
 
 	//TODO: Aggiungere verifica che lo slot sia del ristorante
 	@Operation(summary = "Create a new reservation", description = "Endpoint to create a new reservation")
@@ -88,15 +88,26 @@ public class RestaurantReservationController extends BaseController {
 	@Operation(summary = "Accept a reservation", description = "Endpoint to accept a reservation by its ID")
 	@ReadApiResponses
 	@PreAuthorize("@securityRUserService.hasPermissionOnReservation(#reservationId)")
-	public ResponseEntity<ReservationDTO> acceptReservation(@PathVariable Long reservationId) {
-		return execute("accept reservation", () -> reservationService.setStatus(reservationId, Reservation.Status.ACCEPTED));
+	public ResponseEntity<ReservationDTO> acceptReservation(
+			@PathVariable Long reservationId,
+			@RequestBody(required = false) AcceptReservationDTO dto) {
+		return execute("accept reservation", () -> {
+			Integer tableNumber = dto != null ? dto.getTableNumber() : null;
+			String notes = dto != null ? dto.getNotes() : null;
+			return reservationService.acceptReservation(reservationId, tableNumber, notes);
+		});
 	}
 
 	@PutMapping("/{reservationId}/reject")
 	@Operation(summary = "Reject a reservation", description = "Endpoint to reject a reservation by its ID")
 	@ReadApiResponses
-	public ResponseEntity<ReservationDTO> rejectReservation(@PathVariable Long reservationId) {
-		return execute("reject reservation", () -> reservationService.setStatus(reservationId, Reservation.Status.REJECTED));
+	public ResponseEntity<ReservationDTO> rejectReservation(
+			@PathVariable Long reservationId,
+			@RequestBody(required = false) RejectReservationDTO dto) {
+		return execute("reject reservation", () -> {
+			String reason = dto != null ? dto.getReason() : null;
+			return reservationService.rejectReservation(reservationId, reason);
+		});
 	}
 
 	@PutMapping("/{reservationId}/no_show")

@@ -1,5 +1,6 @@
 package com.application.restaurant.persistence.model.user;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,7 +65,8 @@ public class RUser extends AbstractUser {
     @JoinColumn(name = "restaurant_user_hub_id")
     private RUserHub RUserHub;
 
-
+    @Column(name = "last_menu_opened_at")
+    private Instant lastMenuOpenedAt;
     @Override
     public boolean isEnabled() {
         return status == Status.ENABLED && restaurant != null && restaurant.getStatus() == Restaurant.Status.ENABLED;

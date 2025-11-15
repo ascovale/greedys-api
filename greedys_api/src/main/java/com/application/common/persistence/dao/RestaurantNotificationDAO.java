@@ -60,4 +60,20 @@ public interface RestaurantNotificationDAO extends JpaRepository<RestaurantNotif
     @Query("UPDATE RestaurantNotificationEntity r SET r.read = true, r.readByUserId = :readByUserId, r.readAt = :readAt " +
            "WHERE r.id = :notificationId AND r.sharedRead = true AND r.read = false")
     void markAsReadShared(@Param("notificationId") Long notificationId, @Param("readByUserId") Long readByUserId, @Param("readAt") Instant readAt);
+
+    /**
+     * ⭐ Conta notifiche di un user (per badge "new since menu opened")
+     */
+    @Query("SELECT COUNT(r) FROM RestaurantNotificationEntity r WHERE r.userId = :userId")
+    long countByUserId(@Param("userId") Long userId);
+
+    /**
+     * ⭐ Conta notifiche create DOPO il timestamp di menu-open (for badge)
+     * 
+     * Definizione di "new":
+     * - Notifiche create DOPO lastMenuOpenedAt
+     * - Se lastMenuOpenedAt è NULL, tutti le notifiche sono "new"
+     */
+    @Query("SELECT COUNT(r) FROM RestaurantNotificationEntity r WHERE r.userId = :userId AND r.creationTime > :lastMenuOpenedAt")
+    long countByUserIdAndCreatedAfter(@Param("userId") Long userId, @Param("lastMenuOpenedAt") Instant lastMenuOpenedAt);
 }
