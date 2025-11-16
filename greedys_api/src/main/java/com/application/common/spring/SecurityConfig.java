@@ -242,10 +242,20 @@ public class SecurityConfig {
                 UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
                 CorsConfiguration config = new CorsConfiguration();
                 config.setAllowCredentials(true);
-                config.setAllowedOriginPatterns(java.util.Arrays.asList("*")); // Metodo moderno
+                // ⭐ IMPORTANTE: Per WebSocket, non possiamo usare "*" con credentials
+                // Usiamo una lista specifica di origin patterns
+                config.setAllowedOriginPatterns(java.util.Arrays.asList(
+                        "http://localhost:*",          // Dev locale
+                        "http://127.0.0.1:*",         // Dev localhost
+                        "https://greedys.it",         // Produzione
+                        "https://www.greedys.it",     // Produzione www
+                        "https://app.greedys.it",     // Produzione app
+                        "https://*.greedys.it"        // Sottdomini produzione
+                )); 
                 config.setAllowedHeaders(java.util.Arrays.asList("*")); // Metodo moderno
                 config.setAllowedMethods(java.util.Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")); // Specifico
                 config.setExposedHeaders(java.util.Arrays.asList("Authorization", "Content-Type")); // Metodo moderno
+                // ⭐ WebSocket non ha CORS preflight, ma configuriamo comunque
                 source.registerCorsConfiguration("/**", config);
                 return source;
         }
