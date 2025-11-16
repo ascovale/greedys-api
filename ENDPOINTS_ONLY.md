@@ -1,27 +1,34 @@
 # Endpoints Aggiunti
 
-## WebSocket Connection
+## 🚀 WebSocket Connection - FIXED!
+
+**Status**: ✅ **FIXED** - Traefik configurato per WebSocket upgrade
 
 **Endpoint Backend**: `/ws`
 
 **URL Connessione**:
 - **Dev locale**: `ws://localhost:8080/ws` (plain WebSocket, no SSL)
-- **Produzione**: Dipende da SSL
+- **Produzione**: `wss://api.greedys.it/ws` ✅ (FIXED - Traefik ora supporta HTTP upgrade)
 
 **⚠️ IMPORTANTE - wss:// vs ws://**
 
 | URL HTTPS | WebSocket | SSL Certificate |
 |-----------|-----------|------------------|
-| `https://api.greedys.it` | `wss://api.greedys.it/ws` | ✅ Valido |
+| `https://api.greedys.it` | `wss://api.greedys.it/ws` | ✅ Valido + Traefik configured |
 | `http://localhost:8080` | `ws://localhost:8080/ws` | ❌ No SSL |
 
-**Se stai su `https://api.greedys.it` con certificato invalido → Usa `ws://` (plain)**
-**Se il certificato è valido → Usa `wss://` (secure)**
-
 **La app Flutter converte automaticamente**:
-- `https://api.greedys.it` + cert valido → `wss://api.greedys.it/ws` ✅
-- `https://api.greedys.it` + cert invalido → Errore (cambio in `ws://`) ⚠️
+- `https://api.greedys.it` + cert valido + Traefik WebSocket middleware → `wss://api.greedys.it/ws` ✅
 - `http://localhost:8080` → `ws://localhost:8080/ws` ✅
+
+### Fix Applicato:
+1. ✅ Aggiunto middleware `websocket` in `traefik/dynamic.yml`
+2. ✅ Aggiunto `passhostheader=true` in `docker-compose.prod.yml`
+3. ✅ Aggiunto supporto WebSocket nel router Traefik
+4. ✅ Aggiornato `deploy.sh` per usare `docker-compose.prod.yml`
+5. ✅ Aggiornato `.gitlab-ci.yml` per copiare `docker-compose.prod.yml`
+
+Vedi `WEBSOCKET_FIX_TRAEFIK.md` per dettagli tecnici.
 
 ---
 
