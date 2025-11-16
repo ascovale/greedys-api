@@ -1,6 +1,14 @@
 # Dynamic Configuration
 http:
   middlewares:
+    # ⭐ WebSocket Middleware - Permetti upgrade HTTP→WebSocket
+    websocket:
+      headers:
+        customRequestHeaders:
+          Upgrade: "websocket"
+          Connection: "Upgrade"
+          Sec-WebSocket-Version: "13"
+    
     # CORS Middleware
     cors:
       headers:

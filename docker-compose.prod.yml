@@ -110,8 +110,10 @@ services:
       - "traefik.http.routers.greedys-api.tls.certresolver=letsencrypt"
       - "traefik.http.routers.greedys-api.service=greedys-api"
       - "traefik.http.services.greedys-api.loadbalancer.server.port=8080"
+      # ⭐ WebSocket Support - Abilita HTTP upgrade per WebSocket
+      - "traefik.http.services.greedys-api.loadbalancer.passhostheader=true"
       # Middleware per CORS e sicurezza
-      - "traefik.http.routers.greedys-api.middlewares=cors,security"
+      - "traefik.http.routers.greedys-api.middlewares=cors,security,websocket"
       # HTTPS Redirect
       - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
       - "traefik.http.routers.greedys-api-insecure.rule=Host(`api.greedys.it`)" 
