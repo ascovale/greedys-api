@@ -85,6 +85,10 @@ services:
       - "traefik.http.routers.api.service=api"
       - "traefik.http.routers.api.tls.certresolver=letsencrypt"
       - "traefik.http.services.api.loadbalancer.server.port=8080"
+      # ⭐ WebSocket Support - Abilita HTTP upgrade per WebSocket
+      - "traefik.http.services.api.loadbalancer.passhostheader=true"
+      # Middleware per CORS, sicurezza e WebSocket
+      - "traefik.http.routers.api.middlewares=cors,security,websocket"
 
   # ===== FLUTTER APP (Nginx) =====
   flutter-app:
