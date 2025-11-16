@@ -90,8 +90,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         
         // Registra endpoint WebSocket
         registry.addEndpoint("/ws")
-            // Permetti accesso da qualsiasi origine (in dev: * in prod: specificare)
-            .setAllowedOrigins("*")
+            // ⭐ IMPORTANTE: Disabilita CORS validation per WebSocket
+            // WebSocket non supporta credentials come REST, quindi non validare CORS qui
+            // La validazione avviene in SecurityConfig solo per REST endpoints
+            .setAllowedOriginPatterns("*")
             // Abilita SockJS fallback per browser vecchi
             .withSockJS()
             // Timeout di sessione
