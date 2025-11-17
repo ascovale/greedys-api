@@ -250,12 +250,19 @@ public class SecurityConfig {
                 // ⭐ WebSocket non ha CORS preflight, ma configuriamo comunque
                 source.registerCorsConfiguration("/**", config);
                 
-                // ⭐⭐ CRITICO: Escludi WebSocket da CORS validation
-                // WebSocket non usa CORS, usa upgrade headers propri
-                // CORS filter di Spring intercetta il WebSocket upgrade e lo rifiuta
-                // Soluzione: registrare /ws con una config NULL (disabilita CORS)
+                // ⭐⭐ CRITICO: WebSocket CORS Configuration
+                // SockJS fa richieste CORS per /ws/info, /ws/xhr-polling, etc.
+                // Queste richieste RICHIEDONO credentials=true per il browser
+                // Ma con credentials=true NON possiamo usare wildcard "*"
+                // Soluzione: Permetti credentials con pattern specifico "http://*" e "https://*"
                 CorsConfiguration wsConfig = new CorsConfiguration();
-                wsConfig.setAllowedOriginPatterns(java.util.Arrays.asList());  // Empty = CORS disabilitato
+                wsConfig.setAllowCredentials(true);
+                // Pattern che matchano tutti gli HTTP e HTTPS origins
+                wsConfig.setAllowedOriginPatterns(java.util.Arrays.asList("http://*", "https://*"));
+                wsConfig.setAllowedHeaders(java.util.Arrays.asList("*"));
+                wsConfig.setAllowedMethods(java.util.Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+                wsConfig.setExposedHeaders(java.util.Arrays.asList("Authorization", "Content-Type"));
+                wsConfig.setMaxAge(3600L);
                 source.registerCorsConfiguration("/ws/**", wsConfig);
                 
                 return source;
