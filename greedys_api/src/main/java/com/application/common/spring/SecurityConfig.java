@@ -247,12 +247,12 @@ public class SecurityConfig {
                 // ⭐⭐ CRITICO: WebSocket CORS Configuration (REGISTRATO PRIMA per priorità)
                 // SockJS fa richieste CORS per /ws/info, /ws/xhr-polling, etc.
                 // Queste richieste RICHIEDONO credentials=true per il browser
-                // Ma con credentials=true NON possiamo usare wildcard "*"
-                // Soluzione: Permetti credentials con pattern specifico "http://*" e "https://*"
+                // ⚠️ NOTA: Browser a volte manda Origin: null per sicurezza
+                // Soluzione: Permetti credentials con pattern specifico + null origin
                 CorsConfiguration wsConfig = new CorsConfiguration();
                 wsConfig.setAllowCredentials(true);
-                // Pattern che matchano tutti gli HTTP e HTTPS origins
-                wsConfig.setAllowedOriginPatterns(java.util.Arrays.asList("http://*", "https://*"));
+                // Pattern che matchano tutti gli HTTP, HTTPS origins + null (per browser sandboxed)
+                wsConfig.setAllowedOriginPatterns(java.util.Arrays.asList("http://*", "https://*", "null"));
                 wsConfig.setAllowedHeaders(java.util.Arrays.asList("*"));
                 wsConfig.setAllowedMethods(java.util.Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
                 wsConfig.setExposedHeaders(java.util.Arrays.asList("Authorization", "Content-Type"));
