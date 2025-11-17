@@ -20,6 +20,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import lombok.extern.slf4j.Slf4j;
+
 import com.application.admin.AdminAuthenticationProvider;
 import com.application.admin.AdminRequestFilter;
 import com.application.admin.persistence.dao.AdminDAO;
@@ -48,6 +50,7 @@ import lombok.RequiredArgsConstructor;
 @ComponentScan({ "com.application.security" })
 @EnableMethodSecurity(prePostEnabled = true)
 @RequiredArgsConstructor
+@Slf4j
 public class SecurityConfig {
 
         private final RUserRequestFilter restaurantJwtRequestFilter;
@@ -240,17 +243,8 @@ public class SecurityConfig {
         @Bean
         CorsConfigurationSource corsConfigurationSource() {
                 UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-                CorsConfiguration config = new CorsConfiguration();
-                config.setAllowCredentials(false);
-                // ⭐ IMPORTANTE: allowCredentials=false permette di usare "*"
-                config.setAllowedOriginPatterns(java.util.Arrays.asList("*")); 
-                config.setAllowedHeaders(java.util.Arrays.asList("*")); 
-                config.setAllowedMethods(java.util.Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")); 
-                config.setExposedHeaders(java.util.Arrays.asList("Authorization", "Content-Type")); 
-                // ⭐ WebSocket non ha CORS preflight, ma configuriamo comunque
-                source.registerCorsConfiguration("/**", config);
                 
-                // ⭐⭐ CRITICO: WebSocket CORS Configuration
+                // ⭐⭐ CRITICO: WebSocket CORS Configuration (REGISTRATO PRIMA per priorità)
                 // SockJS fa richieste CORS per /ws/info, /ws/xhr-polling, etc.
                 // Queste richieste RICHIEDONO credentials=true per il browser
                 // Ma con credentials=true NON possiamo usare wildcard "*"
@@ -264,6 +258,20 @@ public class SecurityConfig {
                 wsConfig.setExposedHeaders(java.util.Arrays.asList("Authorization", "Content-Type"));
                 wsConfig.setMaxAge(3600L);
                 source.registerCorsConfiguration("/ws/**", wsConfig);
+                log.info("✅ CORS WebSocket /ws/** registrato: allowCredentials={}, allowedOrigins={}", 
+                        wsConfig.getAllowCredentials(), wsConfig.getAllowedOriginPatterns());
+                
+                // Configurazione CORS per tutti gli altri endpoint
+                CorsConfiguration config = new CorsConfiguration();
+                config.setAllowCredentials(false);
+                // ⭐ IMPORTANTE: allowCredentials=false permette di usare "*"
+                config.setAllowedOriginPatterns(java.util.Arrays.asList("*")); 
+                config.setAllowedHeaders(java.util.Arrays.asList("*")); 
+                config.setAllowedMethods(java.util.Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")); 
+                config.setExposedHeaders(java.util.Arrays.asList("Authorization", "Content-Type")); 
+                source.registerCorsConfiguration("/**", config);
+                log.info("✅ CORS default /** registrato: allowCredentials={}, allowedOrigins={}", 
+                        config.getAllowCredentials(), config.getAllowedOriginPatterns());
                 
                 return source;
         }
