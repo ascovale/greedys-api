@@ -57,8 +57,12 @@ public class OpenApiStartupConfig implements ApplicationListener<ApplicationRead
                         "  \\____|_|  \\___|\\___|\\__,_|\\__, |___/\r\n" + //
                         "                            |___/     ");
                 log.info("\n\n📋 Restaurant Reservation Api v1.0.0");
+                
+                log.info("\n\n🔐 CORS CONFIGURATION STATUS:");
+                log.info("  ✅ /ws/** (WebSocket) → allowCredentials=true, allowOrigins=[http://*, https://*]");
+                log.info("  ✅ /** (Default) → allowCredentials=false, allowOrigins=[*]");
 
-                log.info("\n\n\n✅ ✅ ✅ --- APPLICATION SUCCESSFULLY STARTED --- ✅ ✅ ✅");
+                log.info("\n\n✅ ✅ ✅ --- APPLICATION SUCCESSFULLY STARTED --- ✅ ✅ ✅");
 
             } catch (Exception e) {
                 log.warn("⚠️  Errore durante il pre-caricamento delle specifiche OpenAPI: {}", e.getMessage());
