@@ -87,8 +87,8 @@ services:
       - "traefik.http.services.api.loadbalancer.server.port=8080"
       # ⭐ WebSocket Support
       - "traefik.http.services.api.loadbalancer.passhostheader=true"
-      # ⭐ Middleware: applica websocket middleware PRIMA di security per permettere l'upgrade
-      - "traefik.http.routers.api.middlewares=websocket@file,security@file"
+      # ⭐ Middleware: usa solo security (WebSocket non ha bisogno di middleware speciale)
+      - "traefik.http.routers.api.middlewares=security@file"
 
   # ===== FLUTTER APP (Nginx) =====
   flutter-app:
