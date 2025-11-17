@@ -85,10 +85,8 @@ services:
       - "traefik.http.routers.api.service=api"
       - "traefik.http.routers.api.tls.certresolver=letsencrypt"
       - "traefik.http.services.api.loadbalancer.server.port=8080"
-      # ⭐ WebSocket Support
+      # ⭐ WebSocket Support - No middleware needed, Spring handles CORS and headers
       - "traefik.http.services.api.loadbalancer.passhostheader=true"
-      # ⭐ Middleware: usa solo security (WebSocket non ha bisogno di middleware speciale)
-      - "traefik.http.routers.api.middlewares=security@file"
 
   # ===== FLUTTER APP (Nginx) =====
   flutter-app:
