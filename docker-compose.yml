@@ -25,6 +25,9 @@ services:
       - TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_EMAIL=beeinggreedy@gmail.com
       - TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_STORAGE=/acme.json
       - TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_HTTPCHALLENGE_ENTRYPOINT=web
+      # ⭐ WebSocket Support: Disable HTTP timeouts for long-lived connections
+      - TRAEFIK_ENTRYPOINTS_WEBSECURE_HTTP_READTIMEOUT=0
+      - TRAEFIK_ENTRYPOINTS_WEBSECURE_HTTP_WRITETIMEOUT=0
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./traefik/traefik.yml:/traefik.yml:ro
