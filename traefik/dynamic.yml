@@ -1,13 +1,18 @@
 # Dynamic Configuration
 http:
   middlewares:
-    # ⭐ WebSocket Middleware - Permetti upgrade HTTP→WebSocket
+    # ⭐ WebSocket Middleware - Permetti upgrade HTTP→WebSocket + CORS credentials
     websocket:
       headers:
         customRequestHeaders:
           Upgrade: "websocket"
           Connection: "Upgrade"
           Sec-WebSocket-Version: "13"
+        customResponseHeaders:
+          Access-Control-Allow-Credentials: "true"
+          Access-Control-Allow-Methods: "GET, POST, PUT, DELETE, OPTIONS, PATCH"
+          Access-Control-Allow-Headers: "*"
+          Access-Control-Max-Age: "3600"
     
     # CORS Middleware
     cors:
