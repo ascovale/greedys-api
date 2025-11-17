@@ -1,20 +1,16 @@
 # Dynamic Configuration
 http:
   middlewares:
-    # ⭐ WebSocket Middleware - Permetti upgrade HTTP→WebSocket + CORS credentials
+    # ⭐ WebSocket Middleware - Permetti upgrade HTTP→WebSocket
+    # Note: Non aggiungiamo header personalizzati qui perché Spring li gestisce
+    # Traefik deve solo passare attraverso il traffico WebSocket senza modificare gli header
     websocket:
       headers:
-        customRequestHeaders:
-          Upgrade: "websocket"
-          Connection: "Upgrade"
-          Sec-WebSocket-Version: "13"
-        customResponseHeaders:
-          Access-Control-Allow-Credentials: "true"
-          Access-Control-Allow-Methods: "GET, POST, PUT, DELETE, OPTIONS, PATCH"
-          Access-Control-Allow-Headers: "*"
-          Access-Control-Max-Age: "3600"
+        # Permetti passthrough degli header Upgrade/Connection senza modifiche
+        customRequestHeaders: {}
+        customResponseHeaders: {}
     
-    # CORS Middleware
+    # CORS Middleware - Per endpoint REST (NON WebSocket)
     cors:
       headers:
         accessControlAllowMethods:
