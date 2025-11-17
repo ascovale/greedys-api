@@ -96,8 +96,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
             .setAllowedOriginPatterns("*")
             // Abilita SockJS fallback per browser vecchi
             .withSockJS()
-            // Timeout di sessione
-            .setSessionCookieNeeded(false);
+            // ⭐ CRITICO: Permetti session cookies per SockJS handshake
+            // SockJS ha bisogno di cookies per identificare la sessione
+            .setSessionCookieNeeded(true);
         
         log.info("WebSocket STOMP endpoint registered successfully");
     }
