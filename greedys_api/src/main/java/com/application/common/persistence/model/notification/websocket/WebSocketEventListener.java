@@ -26,13 +26,22 @@ public class WebSocketEventListener {
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
         String sessionId = headerAccessor.getSessionId();
         
-        String username = (String) headerAccessor.getSessionAttributes().get("username");
-        String userType = (String) headerAccessor.getSessionAttributes().get("userType");
+        // ⭐ FIX: Null-check per evitare NullPointerException
+        var sessionAttributes = headerAccessor.getSessionAttributes();
+        if (sessionAttributes == null) {
+            log.debug("📡 WebSocket CONNECTED: sessionId={} (no session attributes)", sessionId);
+            return;
+        }
+        
+        String username = (String) sessionAttributes.get("username");
+        String userType = (String) sessionAttributes.get("userType");
         
         if (username != null && userType != null) {
             sessionManager.registerSession(username, userType, sessionId);
             log.info("🟢 WebSocket CONNECTED: sessionId={}, username={}, userType={}", 
                      sessionId, username, userType);
+        } else {
+            log.debug("📡 WebSocket CONNECTED: sessionId={} (no user info)", sessionId);
         }
     }
 
@@ -41,11 +50,20 @@ public class WebSocketEventListener {
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
         String sessionId = headerAccessor.getSessionId();
         
-        String username = (String) headerAccessor.getSessionAttributes().get("username");
+        // ⭐ FIX: Null-check per evitare NullPointerException
+        var sessionAttributes = headerAccessor.getSessionAttributes();
+        if (sessionAttributes == null) {
+            log.debug("📡 WebSocket DISCONNECTED: sessionId={} (no session attributes)", sessionId);
+            return;
+        }
+        
+        String username = (String) sessionAttributes.get("username");
         
         if (username != null) {
             sessionManager.unregisterSession(username, sessionId);
             log.info("🔴 WebSocket DISCONNECTED: sessionId={}, username={}", sessionId, username);
+        } else {
+            log.debug("📡 WebSocket DISCONNECTED: sessionId={} (no user info)", sessionId);
         }
     }
 
