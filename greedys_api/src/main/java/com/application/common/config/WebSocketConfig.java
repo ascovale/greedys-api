@@ -86,9 +86,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
      */
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        log.info("Registering WebSocket STOMP endpoint: /ws");
+        log.info("Registering WebSocket STOMP endpoints: /ws (SockJS) and /stomp (native)");
         
-        // Registra endpoint WebSocket
+        // ⭐ ENDPOINT 1: /ws - SockJS + STOMP (per browser, web app, fallback)
         registry.addEndpoint("/ws")
             // ⭐ IMPORTANTE: Disabilita CORS validation per WebSocket
             // WebSocket non supporta credentials come REST, quindi non validare CORS qui
@@ -100,7 +100,15 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
             // SockJS ha bisogno di cookies per identificare la sessione
             .setSessionCookieNeeded(true);
         
-        log.info("WebSocket STOMP endpoint registered successfully");
+        // ⭐ ENDPOINT 2: /stomp - Native WebSocket + STOMP (per client mobili, Flutter, etc)
+        // Questo endpoint accetta connessioni WebSocket native senza SockJS fallback
+        registry.addEndpoint("/stomp")
+            .setAllowedOriginPatterns("http://*", "https://*", "null");
+            // NO withSockJS() - questo è per WebSocket puro
+        
+        log.info("WebSocket STOMP endpoints registered successfully");
+        log.info("  - /ws: SockJS endpoint for browsers (HTTP fallback available)");
+        log.info("  - /stomp: Native WebSocket endpoint for mobile/Flutter clients");
     }
 
     /**
