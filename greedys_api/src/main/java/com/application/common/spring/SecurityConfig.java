@@ -261,6 +261,11 @@ public class SecurityConfig {
                 log.info("✅ CORS WebSocket /ws/** registrato: allowCredentials={}, allowedOrigins={}", 
                         wsConfig.getAllowCredentials(), wsConfig.getAllowedOriginPatterns());
                 
+                // ⭐ Native WebSocket endpoint /stomp (per Flutter e client mobili)
+                source.registerCorsConfiguration("/stomp/**", wsConfig);
+                log.info("✅ CORS WebSocket /stomp/** registrato: allowCredentials={}, allowedOrigins={}", 
+                        wsConfig.getAllowCredentials(), wsConfig.getAllowedOriginPatterns());
+                
                 // Configurazione CORS per tutti gli altri endpoint
                 CorsConfiguration config = new CorsConfiguration();
                 config.setAllowCredentials(false);
