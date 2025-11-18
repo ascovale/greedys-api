@@ -43,9 +43,11 @@ public final class SecurityPatterns {
         "/img/**",
         "/images/**",
         "/static/**",
-        // ⭐ WebSocket endpoint - Accesso pubblico per connessioni iniziali
+        // ⭐ WebSocket endpoints - Accesso pubblico per connessioni iniziali
         "/ws",
-        "/ws/**"
+        "/ws/**",
+        "/stomp",
+        "/stomp/**"
     };
 
     // ============================================================================

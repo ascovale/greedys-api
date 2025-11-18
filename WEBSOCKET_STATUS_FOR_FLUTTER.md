@@ -8,11 +8,17 @@ Summary: I verified the backend changes (pipeline deployed). The Spring WebSocke
 
 ## Quick status (what works now)
 
-- Endpoint path (Spring): `/ws` (registered as SockJS endpoint)
-- Browser test page (uses SockJS + STOMP) successfully connected and stayed connected
-- `/ws/info` (SockJS handshake) returns correct CORS headers and `access-control-allow-credentials: true`
-- Spring service deployed and running (Docker service `greedys_api_spring-app`)
-- No recent NullPointerExceptions in Spring logs after the latest fix
+- ✅ **Endpoint `/ws`** (SockJS + STOMP) — **FULLY WORKING**
+  - Endpoint path (Spring): `/ws` (registered as SockJS endpoint)
+  - Browser test page (uses SockJS + STOMP) successfully connected and stayed connected
+  - `/ws/info` returns correct CORS headers and `access-control-allow-credentials: true`
+  - Spring service deployed and running (Docker service `greedys_api_spring-app`)
+  
+- ⚠️ **Endpoint `/stomp`** (Native WebSocket + STOMP) — **ADDED, NEEDS CLIENT TESTING**
+  - Registered in WebSocketConfig.java (no SockJS fallback, pure WebSocket)
+  - CORS configured in SecurityConfig.java for `/stomp/**`
+  - HTTP 400 on raw WebSocket upgrade (expected for now, needs proper WebSocket handshake)
+  - Intended for Flutter mobile app with native WebSocket client
 
 ---
 

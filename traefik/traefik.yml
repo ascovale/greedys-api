@@ -26,7 +26,7 @@ providers:
   docker:
     endpoint: "unix:///var/run/docker.sock"
     exposedByDefault: false
-    network: traefik
+    network: greedys_api_app-network
   file:
     filename: /dynamic.yml
     watch: true
