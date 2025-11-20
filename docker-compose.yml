@@ -61,9 +61,9 @@ services:
       # RabbitMQ Configuration (v2.0.0 with notifications)
       SPRING_RABBITMQ_HOST: rabbitmq
       SPRING_RABBITMQ_PORT: 5672
-      SPRING_RABBITMQ_USERNAME_FILE: /run/secrets/rabbitmq_user_v2
-      SPRING_RABBITMQ_PASSWORD_FILE: /run/secrets/rabbitmq_password_v2
-      SPRING_RABBITMQ_VIRTUALHOST: greedys
+      SPRING_RABBITMQ_USERNAME: greedys_user
+      SPRING_RABBITMQ_PASSWORD: greedys_rabbitmq_pass_2025
+      SPRING_RABBITMQ_VIRTUALHOST: /greedys
       SPRING_RABBITMQ_REQUESTHEARTBEAT: 60
       SPRING_RABBITMQ_CONNECTIONTIMEOUT: 5000
       # Notification System Configuration
@@ -80,8 +80,6 @@ services:
       - email_password
       - service_account
       - jwt_secret
-      - rabbitmq_user_v2
-      - rabbitmq_password_v2
       - rabbitmq_uri
     labels:
       # API Router con HTTPS
@@ -170,9 +168,6 @@ services:
       RABBITMQ_DEFAULT_PASS: greedys_rabbitmq_pass_2025
       RABBITMQ_DEFAULT_VHOST: /greedys
     volumes: []
-    secrets:
-      - rabbitmq_user_v2
-      - rabbitmq_password_v2
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
       interval: 30s
