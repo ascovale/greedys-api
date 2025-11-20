@@ -29,13 +29,13 @@ public class RabbitMQConfig {
     
     // ============ QUEUE NAMES ============
     // EventOutbox → RabbitMQ queues (by user type)
-    public static final String QUEUE_CUSTOMER = "notification.customer.queue";
-    public static final String QUEUE_RESTAURANT = "notification.restaurant.queue";
-    public static final String QUEUE_ADMIN = "notification.admin.queue";
-    public static final String QUEUE_AGENCY = "notification.agency.queue";
+    public static final String QUEUE_CUSTOMER = "notification.customer";
+    public static final String QUEUE_RESTAURANT = "notification.restaurant";
+    public static final String QUEUE_ADMIN = "notification.admin";
+    public static final String QUEUE_AGENCY = "notification.agency";
     
     // NotificationOutbox → ChannelPoller queue
-    public static final String QUEUE_CHANNEL_DISPATCH = "notification.channel.dispatch.queue";
+    public static final String QUEUE_CHANNEL_DISPATCH = "notification.channel.dispatch";
     
     // Dead Letter Queue for failed messages
     public static final String DLQ = "notification.dlq";
