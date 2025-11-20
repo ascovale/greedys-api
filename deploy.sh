@@ -46,6 +46,14 @@ if [ $attempt -gt $max_attempts ]; then
   docker network rm greedys_api_app-network || echo "Network already removed or in use"
 fi
 
+# Remove orphaned containers from previous deployments
+echo "Cleaning up orphaned containers..."
+docker rm -f greedys-db greedys-api traefik 2>/dev/null || echo "No orphaned containers found"
+
+# Prune unused volumes to free space
+echo "Pruning unused volumes..."
+docker volume prune -f
+
 echo "Additional safety wait..."
 sleep 5
 

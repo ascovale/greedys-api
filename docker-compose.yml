@@ -7,9 +7,6 @@ services:
     restart: always
     deploy:
       replicas: 1
-      placement:
-        constraints:
-          - node.role == manager  # Traefik sempre su manager
       restart_policy:
         condition: on-failure
         delay: 5s
@@ -130,9 +127,6 @@ services:
     image: mysql:8.0
     deploy:
       replicas: 1
-      placement:
-        constraints:
-          - node.role == manager  # Database sempre su manager per persistenza
       restart_policy:
         condition: on-failure
         delay: 5s
@@ -160,9 +154,6 @@ services:
     image: rabbitmq:3.13-management-alpine
     deploy:
       replicas: 1
-      placement:
-        constraints:
-          - node.role == manager  # RabbitMQ su manager per persistenza
       restart_policy:
         condition: on-failure
         delay: 5s
