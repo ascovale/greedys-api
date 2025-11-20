@@ -1,6 +1,5 @@
 package com.application.customer.service.notification;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -12,8 +11,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.application.common.persistence.dao.CustomerNotificationDAO;
+import com.application.customer.persistence.dao.CustomerNotificationDAO;
 import com.application.customer.persistence.model.CustomerNotification;
+import com.application.common.persistence.model.notification.DeliveryStatus;
 import com.application.common.service.FirebaseService;
 import com.application.common.web.dto.notification.CustomerNotificationDTO;
 import com.application.common.web.dto.shared.NotificationDto;
@@ -31,14 +31,14 @@ public class CustomerNotificationService {
     private final FirebaseService firebaseService;
 
     public List<NotificationDto> findByUser(Customer user) {
-        List<CustomerNotification> notifications = notificationDAO.findByUserId(user.getId());
+        List<CustomerNotification> notifications = notificationDAO.findByUserIdOrderByCreatedAtDesc(user.getId());
         return notifications.stream()
                 .map(notification -> new NotificationDto(
                     notification.getId(), 
                     notification.getUserId(), 
-                    notification.getRead(),
+                    notification.isRead(),
                     notification.getTitle(),
-                    notification.getCreationTime()
+                    notification.getReadAt() != null ? notification.getReadAt() : notification.getCreationTime()
 
                 )).toList();
     }
@@ -50,8 +50,7 @@ public class CustomerNotificationService {
     @Transactional
     public void read(Long idNotification) {
         CustomerNotification notification = findById(idNotification).get();
-        notification.setRead(true);
-        notification.setReadAt(Instant.now());
+        notification.markAsRead();
         notificationDAO.save(notification);
     }
 
@@ -59,14 +58,13 @@ public class CustomerNotificationService {
     public CustomerNotificationDTO markAsReadAndReturn(Long idNotification) {
         CustomerNotification notification = findById(idNotification)
                 .orElseThrow(() -> new IllegalArgumentException("Notification not found"));
-        notification.setRead(true);
-        notification.setReadAt(Instant.now());
+        notification.markAsRead();
         CustomerNotification savedNotification = notificationDAO.save(notification);
         return CustomerNotificationDTO.toDTO(savedNotification);
     }
     
     public Integer countNotification(Customer currentUser) {
-        long unreadCount = notificationDAO.countUnreadByUserId(currentUser.getId());
+        long unreadCount = notificationDAO.countByUserIdAndStatus(currentUser.getId(), DeliveryStatus.PENDING);
         return (int) unreadCount;
     }
     
@@ -104,7 +102,7 @@ public class CustomerNotificationService {
 
     public Page<CustomerNotificationDTO> getAllNotificationsDTO(Pageable pageable) {
         Customer currentUser = getCurrentUser();
-        List<CustomerNotification> allNotifications = notificationDAO.findByUserId(currentUser.getId());
+        List<CustomerNotification> allNotifications = notificationDAO.findByUserIdOrderByCreatedAtDesc(currentUser.getId());
         
         // Paginate the results manually
         int start = (int) pageable.getOffset();
