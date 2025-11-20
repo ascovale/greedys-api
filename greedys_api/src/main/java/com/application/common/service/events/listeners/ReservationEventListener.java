@@ -4,12 +4,15 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.application.common.persistence.dao.NotificationOutboxDAO;
+import com.application.common.persistence.dao.RestaurantNotificationDAO;
 import com.application.common.service.events.ReservationCreatedEvent;
+import com.application.restaurant.persistence.model.RestaurantNotification;
+import com.application.restaurant.persistence.model.RNotificationType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -98,11 +101,9 @@ public class ReservationEventListener {
                     RestaurantNotification notification = RestaurantNotification.builder()
                             .title(title)
                             .body(body)
-                            .properties(properties)
                             .userId(staffUserId)
                             .userType("RESTAURANT_USER")
-                            .read(false)
-                            .sharedRead(true)  // Primo staff che accetta, tutti vedono
+                            .type(RNotificationType.RESERVATION_REQUEST)
                             .creationTime(Instant.now())
                             .build();
 
@@ -113,15 +114,15 @@ public class ReservationEventListener {
                              savedNotification.getId(), restaurantId, staffUserId);
 
                     // Step 4: Crea entry in notification_outbox per il poller
-                    NotificationOutbox outbox = NotificationOutbox.builder()
+                    com.application.common.persistence.model.notification.NotificationOutbox outbox = 
+                        com.application.common.persistence.model.notification.NotificationOutbox.builder()
                             .notificationId(savedNotification.getId())
                             .notificationType("RESTAURANT")
                             .aggregateType("RESERVATION")
                             .aggregateId(restaurantId)
                             .eventType("RESERVATION_REQUESTED")
                             .payload(objectMapper.writeValueAsString(properties))
-                            .status(NotificationOutbox.Status.PENDING)
-                            .retryCount(0)
+                            .status(com.application.common.persistence.model.notification.NotificationOutbox.Status.PENDING)
                             .createdAt(Instant.now())
                             .build();
 
