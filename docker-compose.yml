@@ -61,12 +61,17 @@ services:
       SPRING_PROFILES_ACTIVE: "docker"
       SERVER_PORT: 8080
       SERVER_SSL_ENABLED: "false"  # NO HTTPS interno (Traefik gestisce)
-      # RabbitMQ Configuration
+      # RabbitMQ Configuration (v2.0.0 with notifications)
       SPRING_RABBITMQ_HOST: rabbitmq
       SPRING_RABBITMQ_PORT: 5672
-      SPRING_RABBITMQ_USERNAME_FILE: /run/secrets/rabbitmq_user
-      SPRING_RABBITMQ_PASSWORD_FILE: /run/secrets/rabbitmq_password
-      SPRING_RABBITMQ_VIRTUAL_HOST: /greedys
+      SPRING_RABBITMQ_USERNAME: greedys_user
+      SPRING_RABBITMQ_PASSWORD: greedys_rabbitmq_pass_2025
+      SPRING_RABBITMQ_VIRTUALHOST: greedys
+      SPRING_RABBITMQ_REQUESTHEARTBEAT: 60
+      SPRING_RABBITMQ_CONNECTIONTIMEOUT: 5000
+      # Notification System Configuration
+      NOTIFICATION_ENABLED: "true"
+      NOTIFICATION_CHANNELS: WEBSOCKET,EMAIL,PUSH,SMS
       # Notification Outbox Poller Configuration
       NOTIFICATION_OUTBOX_MULTI_POLLER_ENABLED: "false"
       NOTIFICATION_OUTBOX_FAST_POLLER_DELAY_MS: "1000"
@@ -80,6 +85,9 @@ services:
       - jwt_secret
       - rabbitmq_user
       - rabbitmq_password
+      - rabbitmq_uri
+      - rabbitmq_user_v2
+      - rabbitmq_password_v2
     labels:
       # API Router con HTTPS
       - "traefik.enable=true"
@@ -214,5 +222,11 @@ secrets:
   rabbitmq_user:
     external: true
   rabbitmq_password:
+    external: true
+  rabbitmq_uri:
+    external: true
+  rabbitmq_user_v2:
+    external: true
+  rabbitmq_password_v2:
     external: true
 

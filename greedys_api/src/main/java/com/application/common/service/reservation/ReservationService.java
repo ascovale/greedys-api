@@ -8,7 +8,7 @@ import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.context.ApplicationEventPublisher;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -18,7 +18,6 @@ import com.application.common.persistence.mapper.ReservationMapper;
 import com.application.common.persistence.model.reservation.Reservation;
 import com.application.common.persistence.model.reservation.ReservationRequest;
 import com.application.common.persistence.model.reservation.Slot;
-import com.application.common.service.events.ReservationCreatedEvent;
 import com.application.common.web.dto.reservations.ReservationDTO;
 import com.application.common.persistence.mapper.Mapper.Weekday;
 import com.application.customer.persistence.dao.CustomerDAO;
@@ -52,7 +51,6 @@ public class ReservationService {
     private final ServiceDAO serviceDAO;
     private final ClosedDayDAO closedDaysDAO;
     private final SlotDAO slotDAO;
-    private final ApplicationEventPublisher eventPublisher;
     private final CustomerDAO customerDAO;
     private final ReservationMapper reservationMapper;
     private final RestaurantAgendaService restaurantAgendaService;
@@ -63,29 +61,13 @@ public class ReservationService {
         reservationDAO.save(reservation);
     }
 
+    /**
+     * Create new reservation (core method - saves reservation only)
+     * Callers are responsible for creating the appropriate EventOutbox
+     */
     public Reservation createNewReservation(Reservation reservation) {
-        // Save first to get the ID
         Reservation savedReservation = reservationDAO.save(reservation);
-        
-        // 🎯 PUBLISH EVENT FOR NEW RESERVATION
-        publishReservationCreatedEvent(savedReservation);
-        // Return the saved reservation
         return savedReservation;
-    }
-
-    private void publishReservationCreatedEvent(Reservation reservation) {
-        ReservationCreatedEvent event = new ReservationCreatedEvent(
-            this,
-            reservation.getId(),
-            reservation.getCustomer().getId(),
-            reservation.getSlot().getService().getRestaurant().getId(),
-            reservation.getCustomer().getEmail(),
-            reservation.getDate().toString()
-        );
-        eventPublisher.publishEvent(event);
-        
-        // Also publish WebSocket event for real-time notification to restaurant staff
-        webSocketPublisher.publishReservationCreated(reservation);
     }
 
     public List<Reservation> findAll(long id) {

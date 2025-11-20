@@ -87,4 +87,18 @@ public interface EventOutboxDAO extends JpaRepository<EventOutbox, Long> {
      */
     @Query("SELECT e FROM EventOutbox e WHERE e.status = :status AND e.createdAt < :createdBefore ORDER BY e.createdAt ASC")
     List<EventOutbox> findByStatusAndCreatedBefore(@Param("status") Status status, @Param("createdBefore") Instant createdBefore);
+
+    /**
+     * Trova gli eventi PENDING con limite di risultati.
+     * Usato da EventOutboxOrchestrator per processare un batch di eventi per ciclo.
+     */
+    @Query("SELECT e FROM EventOutbox e WHERE e.status = :status ORDER BY e.createdAt ASC")
+    List<EventOutbox> findByStatusWithLimit(@Param("status") Status status, org.springframework.data.domain.Pageable pageable);
+
+    /**
+     * Overload helper per trovare con limit diretto
+     */
+    default List<EventOutbox> findByStatusWithLimit(Status status, int limit) {
+        return findByStatusWithLimit(status, org.springframework.data.domain.PageRequest.of(0, limit));
+    }
 }

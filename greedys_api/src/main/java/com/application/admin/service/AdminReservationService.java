@@ -14,8 +14,10 @@ import com.application.common.persistence.mapper.Mapper.Weekday;
 import com.application.common.persistence.model.reservation.Reservation;
 import com.application.common.persistence.model.reservation.Reservation.Status;
 import com.application.common.persistence.model.reservation.Slot;
+import com.application.common.persistence.model.notification.EventOutbox;
 import com.application.common.service.reservation.ReservationService;
 import com.application.common.web.dto.reservations.ReservationDTO;
+import com.application.common.persistence.dao.EventOutboxDAO;
 import com.application.customer.persistence.dao.CustomerDAO;
 import com.application.customer.persistence.dao.ReservationDAO;
 import com.application.customer.persistence.model.Customer;
@@ -38,6 +40,7 @@ public class AdminReservationService {
     private final CustomerDAO customerDAO;
     private final RestaurantDAO restaurantDAO;
     private final SlotDAO slotDAO;
+    private final EventOutboxDAO eventOutboxDAO;
 
     public ReservationDTO createReservation(AdminNewReservationDTO reservationDto) {
         // Validate slot exists and is not deleted
@@ -89,7 +92,56 @@ public class AdminReservationService {
         // Use the common service that publishes the event
         Reservation savedReservation = reservationService.createNewReservation(reservation);
         
+        // 📌 CREATE CUSTOMER_RESERVATION_CREATED EVENT (notifies customer only)
+        createCustomerReservationCreatedEvent(savedReservation);
+        
         return reservationMapper.toDTO(savedReservation);
+    }
+    
+    /**
+     * Create CUSTOMER_RESERVATION_CREATED event (restaurant user/admin created reservation)
+     * Notifies: CUSTOMER ONLY (confirmation that their reservation was created)
+     */
+    private void createCustomerReservationCreatedEvent(Reservation reservation) {
+        String eventId = "CUSTOMER_RESERVATION_CREATED_" + reservation.getId() + "_" + System.currentTimeMillis();
+        String payload = buildReservationPayload(reservation);
+        
+        EventOutbox eventOutbox = EventOutbox.builder()
+            .eventId(eventId)
+            .eventType("CUSTOMER_RESERVATION_CREATED")
+            .aggregateType("ADMIN")
+            .aggregateId(reservation.getId())
+            .payload(payload)
+            .status(EventOutbox.Status.PENDING)
+            .build();
+        
+        eventOutboxDAO.save(eventOutbox);
+        
+        log.info("✅ Created EventOutbox CUSTOMER_RESERVATION_CREATED: eventId={}, reservationId={}, aggregateType=ADMIN, status=PENDING", 
+            eventId, reservation.getId());
+    }
+    
+    /**
+     * Build JSON payload for EventOutbox
+     */
+    private String buildReservationPayload(Reservation reservation) {
+        Long customerId = reservation.getCustomer() != null ? reservation.getCustomer().getId() : null;
+        String customerEmail = reservation.getCustomer() != null ? reservation.getCustomer().getEmail() : "anonymous";
+        Long restaurantId = reservation.getSlot().getService().getRestaurant().getId();
+        Integer kids = reservation.getKids() != null ? reservation.getKids() : 0;
+        String notes = reservation.getNotes() != null ? reservation.getNotes().replace("\"", "\\\"") : "";
+        
+        return String.format(
+            "{\"reservationId\":%d,\"customerId\":%s,\"restaurantId\":%d,\"email\":\"%s\",\"date\":\"%s\",\"pax\":%d,\"kids\":%d,\"notes\":\"%s\"}",
+            reservation.getId(),
+            customerId != null ? customerId : "null",
+            restaurantId,
+            customerEmail,
+            reservation.getDate().toString(),
+            reservation.getPax(),
+            kids,
+            notes
+        );
     }
 
     public Collection<ReservationDTO> findAllCustomerReservations(Long customerId) {

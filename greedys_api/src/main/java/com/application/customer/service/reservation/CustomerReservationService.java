@@ -14,8 +14,10 @@ import com.application.common.persistence.model.reservation.Reservation;
 import com.application.common.persistence.model.reservation.Reservation.Status;
 import com.application.common.persistence.model.reservation.ReservationRequest;
 import com.application.common.persistence.model.reservation.Slot;
+import com.application.common.persistence.model.notification.EventOutbox;
 import com.application.common.service.reservation.ReservationService;
 import com.application.common.web.dto.reservations.ReservationDTO;
+import com.application.common.persistence.dao.EventOutboxDAO;
 import com.application.customer.persistence.dao.ReservationDAO;
 import com.application.customer.persistence.dao.ReservationRequestDAO;
 import com.application.customer.persistence.model.Customer;
@@ -23,10 +25,12 @@ import com.application.customer.web.dto.reservations.CustomerNewReservationDTO;
 import com.application.restaurant.persistence.dao.SlotDAO;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Transactional
 @RequiredArgsConstructor
+@Slf4j
 public class CustomerReservationService {
 
     private final ReservationDAO reservationDAO;
@@ -34,6 +38,7 @@ public class CustomerReservationService {
     private final ReservationService reservationService;
     private final SlotDAO slotDAO;
     private final ReservationMapper reservationMapper;
+    private final EventOutboxDAO eventOutboxDAO;
 
     public ReservationDTO createReservation(CustomerNewReservationDTO reservationDto, Customer customer) {
         Slot slot = slotDAO.getReferenceById(reservationDto.getIdSlot());
@@ -68,7 +73,57 @@ public class CustomerReservationService {
         
         // 🎯 USA IL SERVICE COMUNE CHE PUBBLICA L'EVENTO
         Reservation savedReservation = reservationService.createNewReservation(reservation);
+        
+        // 📌 CREATE RESERVATION_REQUESTED EVENT (notifies restaurant staff)
+        createReservationRequestedEvent(savedReservation);
+        
         return reservationMapper.toDTO(savedReservation);
+    }
+    
+    /**
+     * Create RESERVATION_REQUESTED event (customer created reservation)
+     * Notifies: RESTAURANT STAFF
+     */
+    private void createReservationRequestedEvent(Reservation reservation) {
+        String eventId = "RESERVATION_REQUESTED_" + reservation.getId() + "_" + System.currentTimeMillis();
+        String payload = buildReservationPayload(reservation);
+        
+        EventOutbox eventOutbox = EventOutbox.builder()
+            .eventId(eventId)
+            .eventType("RESERVATION_REQUESTED")
+            .aggregateType("CUSTOMER")
+            .aggregateId(reservation.getId())
+            .payload(payload)
+            .status(EventOutbox.Status.PENDING)
+            .build();
+        
+        eventOutboxDAO.save(eventOutbox);
+        
+        log.info("✅ Created EventOutbox RESERVATION_REQUESTED: eventId={}, reservationId={}, aggregateType=CUSTOMER, status=PENDING", 
+            eventId, reservation.getId());
+    }
+    
+    /**
+     * Build JSON payload for EventOutbox
+     */
+    private String buildReservationPayload(Reservation reservation) {
+        Long customerId = reservation.getCustomer() != null ? reservation.getCustomer().getId() : null;
+        String customerEmail = reservation.getCustomer() != null ? reservation.getCustomer().getEmail() : "anonymous";
+        Long restaurantId = reservation.getSlot().getService().getRestaurant().getId();
+        Integer kids = reservation.getKids() != null ? reservation.getKids() : 0;
+        String notes = reservation.getNotes() != null ? reservation.getNotes().replace("\"", "\\\"") : "";
+        
+        return String.format(
+            "{\"reservationId\":%d,\"customerId\":%s,\"restaurantId\":%d,\"email\":\"%s\",\"date\":\"%s\",\"pax\":%d,\"kids\":%d,\"notes\":\"%s\"}",
+            reservation.getId(),
+            customerId != null ? customerId : "null",
+            restaurantId,
+            customerEmail,
+            reservation.getDate().toString(),
+            reservation.getPax(),
+            kids,
+            notes
+        );
     }
 
     @Transactional

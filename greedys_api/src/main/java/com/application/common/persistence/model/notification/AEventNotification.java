@@ -9,6 +9,9 @@ import org.hibernate.annotations.CreationTimestamp;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.MapKeyColumn;
 import jakarta.persistence.MappedSuperclass;
@@ -56,6 +59,16 @@ import lombok.experimental.SuperBuilder;
 @Setter
 @NoArgsConstructor
 public abstract class AEventNotification {
+    
+    /**
+     * Primary Key ID
+     * 
+     * Auto-generated per ogni notification
+     */
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Long id;
     
     /**
      * Titolo della notifica
