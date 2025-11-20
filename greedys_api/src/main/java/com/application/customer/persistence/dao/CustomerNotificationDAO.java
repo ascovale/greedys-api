@@ -113,7 +113,7 @@ public interface CustomerNotificationDAO extends JpaRepository<CustomerNotificat
      */
     @Modifying
     @Transactional
-    @Query("UPDATE CustomerNotification c SET c.status = :status, c.updatedAt = CURRENT_TIMESTAMP WHERE c.id = :notificationId")
+    @Query("UPDATE CustomerNotificationEntity c SET c.status = :status, c.updatedAt = CURRENT_TIMESTAMP WHERE c.id = :notificationId")
     int updateStatus(
         @Param("notificationId") Long notificationId,
         @Param("status") DeliveryStatus status
@@ -139,7 +139,7 @@ public interface CustomerNotificationDAO extends JpaRepository<CustomerNotificat
      * @param userId Customer ID
      * @return notifiche non lette
      */
-    @Query("SELECT c FROM CustomerNotification c WHERE c.userId = :userId AND c.status != 'READ' ORDER BY c.createdAt DESC")
+    @Query("SELECT c FROM CustomerNotificationEntity c WHERE c.userId = :userId AND c.status != 'READ' ORDER BY c.createdAt DESC")
     List<CustomerNotification> findUnreadByUserId(@Param("userId") Long userId);
 
     /**
