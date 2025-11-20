@@ -1,3 +1,8 @@
+# ⚠️ NOTE: This file is NOT YET used for production deployment
+# The actual production deployment uses docker-compose.yml (updated in Step 10)
+# This file (docker-compose.prod.yml) will be updated in a future step
+# See DONE_LIST.md for deployment progress
+
 version: '3.8'
 
 services:
@@ -83,11 +88,25 @@ services:
       # Override HTTP interno - Traefik gestisce HTTPS
       - SERVER_PORT=8080
       - SERVER_SSL_ENABLED=false
+      # RabbitMQ Configuration
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=greedys_user
+      - SPRING_RABBITMQ_PASSWORD=greedys_rabbitmq_pass_2025
+      - SPRING_RABBITMQ_VIRTUALHOST=greedys
+      - SPRING_RABBITMQ_REQUESTHEARTBEAT=60
+      - SPRING_RABBITMQ_CONNECTIONTIMEOUT=5000
+      # Notification System Configuration
+      - NOTIFICATION_ENABLED=true
+      - NOTIFICATION_CHANNELS=WEBSOCKET,EMAIL,PUSH,SMS
     secrets:
       - db_password
       - email_password
       - service_account
       - jwt_secret
+      - rabbitmq_uri
+      - rabbitmq_user_v2
+      - rabbitmq_password_v2
     deploy:
       replicas: 2  # ✅ 2 istanze per alta disponibilità
       update_config:
@@ -148,3 +167,9 @@ secrets:
     external: true  # ✅ Swarm secret
   jwt_secret:
     external: true  # ✅ Swarm secret
+  rabbitmq_uri:
+    external: true  # ✅ Swarm secret - Complete RabbitMQ connection string
+  rabbitmq_user_v2:
+    external: true  # ✅ Swarm secret - RabbitMQ username
+  rabbitmq_password_v2:
+    external: true  # ✅ Swarm secret - RabbitMQ password

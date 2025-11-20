@@ -1,0 +1,983 @@
+[[1;34mINFO[m] Scanning for projects...
+[[1;33mWARNING[m] The requested profile "prod" could not be activated because it does not exist.
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--------------------< [0;36mcom.application:greedys_api[0;1m >---------------------[m
+[[1;34mINFO[m] [1mBuilding greedys_api 0.1.1[m
+[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-clean-plugin:3.4.1:clean[m [1m(default-clean)[m @ [36mgreedys_api[0;1m ---[m
+[[1;34mINFO[m] Deleting /home/valentino/workspace/greedysgroup/greedys_api/greedys_api/target
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-resources-plugin:3.3.1:resources[m [1m(default-resources)[m @ [36mgreedys_api[0;1m ---[m
+[[1;34mINFO[m] Copying 5 resources from src/main/resources to target/classes
+[[1;34mINFO[m] Copying 58 resources from src/main/resources to target/classes
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-compiler-plugin:3.14.0:compile[m [1m(default-compile)[m @ [36mgreedys_api[0;1m ---[m
+[[1;34mINFO[m] Recompiling the module because of [1mchanged source code[m.
+[[1;34mINFO[m] Compiling 531 source files with javac [debug parameters release 17] to target/classes
+[[1;34mINFO[m] MapStruct: Using accessor naming strategy: org.mapstruct.ap.spi.DefaultAccessorNamingStrategy
+[[1;34mINFO[m] MapStruct: Using builder provider: org.mapstruct.ap.spi.DefaultBuilderProvider
+[[1;34mINFO[m] MapStruct: Using enum naming strategy: org.mapstruct.ap.spi.DefaultEnumMappingStrategy
+[[1;34mINFO[m] MapStruct: referred types not available (yet), deferring mapper: com.application.common.persistence.mapper.SlotMapper
+[[1;34mINFO[m] MapStruct: referred types not available (yet), deferring mapper: com.application.common.persistence.mapper.ReservationMapper
+[[1;34mINFO[m] MapStruct: referred types not available (yet), deferring mapper: com.application.common.persistence.mapper.RestaurantMapper
+[[1;34mINFO[m] MapStruct: referred types not available (yet), deferring mapper: com.application.common.persistence.mapper.AdminMapper
+[[1;34mINFO[m] MapStruct: referred types not available (yet), deferring mapper: com.application.common.persistence.mapper.AdminNewReservationMapper
+[[1;34mINFO[m] MapStruct: referred types not available (yet), deferring mapper: com.application.common.persistence.mapper.RUserMapper
+[[1;34mINFO[m] MapStruct: referred types not available (yet), deferring mapper: com.application.common.persistence.mapper.CustomerDTOMapper
+[[1;34mINFO[m] MapStruct: referred types not available (yet), deferring mapper: com.application.common.persistence.mapper.NewBaseReservationMapper
+[[1;34mINFO[m] MapStruct: referred types not available (yet), deferring mapper: com.application.common.persistence.mapper.RoleDTOMapper
+[[1;34mINFO[m] MapStruct: referred types not available (yet), deferring mapper: com.application.common.persistence.mapper.AllergyMapper
+[[1;34mINFO[m] MapStruct: referred types not available (yet), deferring mapper: com.application.common.persistence.mapper.MenuMapper
+[[1;34mINFO[m] MapStruct: referred types not available (yet), deferring mapper: com.application.common.persistence.mapper.RestaurantServiceMapper
+[[1;34mINFO[m] MapStruct: referred types not available (yet), deferring mapper: com.application.common.persistence.mapper.AdminNewServiceMapper
+[[1;34mINFO[m] MapStruct: referred types not available (yet), deferring mapper: com.application.common.persistence.mapper.DishMapper
+[[1;34mINFO[m] MapStruct: referred types not available (yet), deferring mapper: com.application.common.persistence.mapper.NewAdminMapper
+[[1;34mINFO[m] MapStruct: referred types not available (yet), deferring mapper: com.application.common.persistence.mapper.ServiceTypeDtoMapper
+[[1;34mINFO[m] MapStruct: referred types not available (yet), deferring mapper: com.application.common.persistence.mapper.MenuDishMapper
+[[1;34mINFO[m] MapStruct: referred types not available (yet), deferring mapper: com.application.common.persistence.mapper.RUserHubAuthResponseMapper
+[[1;34mINFO[m] MapStruct: referred types not available (yet), deferring mapper: com.application.common.persistence.mapper.ClientUserMapper
+[[1;34mINFO[m] MapStruct: referred types not available (yet), deferring mapper: com.application.common.persistence.mapper.RestaurantCategoryMapper
+[[1;34mINFO[m] MapStruct: referred types not available (yet), deferring mapper: com.application.common.persistence.mapper.AuthResponseMapper
+[[1;34mINFO[m] MapStruct: referred types not available (yet), deferring mapper: com.application.common.persistence.mapper.RestaurantLogoMapper
+[[1;34mINFO[m] MapStruct: referred types not available (yet), deferring mapper: com.application.common.persistence.mapper.UpdatePasswordMapper
+[[1;34mINFO[m] MapStruct: referred types not available (yet), deferring mapper: com.application.common.persistence.mapper.CustomerMapper
+[[1;34mINFO[m] MapStruct: referred types not available (yet), deferring mapper: com.application.common.persistence.mapper.ServiceDtoMapper
+[[1;34mINFO[m] MapStruct: referred types not available (yet), deferring mapper: com.application.common.persistence.mapper.TableMapper
+[[1;34mINFO[m] MapStruct: referred types not available (yet), deferring mapper: com.application.common.persistence.mapper.EmailRequestMapper
+[[1;34mINFO[m] MapStruct: referred types not available (yet), deferring mapper: com.application.common.persistence.mapper.ServiceTypeMapper
+[[1;34mINFO[m] MapStruct: referred types not available (yet), deferring mapper: com.application.common.persistence.mapper.RestaurantImageMapper
+[[1;34mINFO[m] MapStruct: referred types not available (yet), deferring mapper: com.application.common.persistence.mapper.ServiceSlotMapper
+[[1;34mINFO[m] MapStruct: referred types not available (yet), deferring mapper: com.application.common.persistence.mapper.RUserHubMapper
+[[1;34mINFO[m] MapStruct: referred types not available (yet), deferring mapper: com.application.common.persistence.mapper.PrivilegeDTOMapper
+[[1;34mINFO[m] MapStruct: referred types not available (yet), deferring mapper: com.application.common.persistence.mapper.RestaurantFullDetailsMapper
+[[1;34mINFO[m] MapStruct: referred types not available (yet), deferring mapper: com.application.common.persistence.mapper.ServiceMapper
+[[1;34mINFO[m] MapStruct: referred types not available (yet), deferring mapper: com.application.common.persistence.mapper.RoomMapper
+[[1;34mINFO[m]  MapStruct: processing: com.application.common.persistence.mapper.SlotMapper.
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.web.dto.restaurant.SlotDTO toDTO(com.application.common.persistence.model.reservation.Slot slot).
+[[1;34mINFO[m] -- MapStruct: mapping property: slot.getService() to: service(com.application.common.web.dto.restaurant.ServiceDTO).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: com.application.common.web.dto.restaurant.ServiceDTO #serviceToServiceDTO(slot.getService()).
+[[1;34mINFO[m] -- MapStruct: mapping property: slot.getId() to: id(java.lang.Long).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: slot.getId().
+[[1;34mINFO[m] -- MapStruct: mapping property: slot.getStart() to: start(java.time.LocalTime).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: slot.getStart().
+[[1;34mINFO[m] -- MapStruct: mapping property: slot.getEnd() to: end(java.time.LocalTime).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: slot.getEnd().
+[[1;34mINFO[m] -- MapStruct: mapping property: slot.getWeekday() to: weekday(com.application.common.persistence.mapper.Mapper.Weekday).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: slot.getWeekday().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.persistence.model.reservation.Slot fromNewSlotDTO(com.application.restaurant.web.dto.services.NewSlotDTO newSlotDTO).
+[[1;34mINFO[m] -- MapStruct: mapping property: newSlotDTO.getStart() to: start(java.time.LocalTime).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newSlotDTO.getStart().
+[[1;34mINFO[m] -- MapStruct: mapping property: newSlotDTO.getEnd() to: end(java.time.LocalTime).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newSlotDTO.getEnd().
+[[1;34mINFO[m] -- MapStruct: mapping property: newSlotDTO.getWeekday() to: weekday(com.application.common.persistence.mapper.Mapper.Weekday).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newSlotDTO.getWeekday().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.persistence.model.reservation.Slot toEntity(com.application.common.web.dto.restaurant.SlotDTO slotDTO).
+[[1;34mINFO[m] -- MapStruct: mapping property: slotDTO.getStart() to: start(java.time.LocalTime).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: slotDTO.getStart().
+[[1;34mINFO[m] -- MapStruct: mapping property: slotDTO.getEnd() to: end(java.time.LocalTime).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: slotDTO.getEnd().
+[[1;34mINFO[m] -- MapStruct: mapping property: slotDTO.getWeekday() to: weekday(com.application.common.persistence.mapper.Mapper.Weekday).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: slotDTO.getWeekday().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for void updateEntityFromNewDTO(com.application.restaurant.web.dto.services.NewSlotDTO dto, @MappingTarget com.application.common.persistence.model.reservation.Slot entity).
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getStart() to: setStart(java.time.LocalTime).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getStart().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getEnd() to: setEnd(java.time.LocalTime).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getEnd().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getWeekday() to: setWeekday(com.application.common.persistence.mapper.Mapper.Weekday).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getWeekday().
+[[1;34mINFO[m]  MapStruct: processing: com.application.common.persistence.mapper.RestaurantMapper.
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.web.dto.restaurant.RestaurantDTO toDTO(com.application.restaurant.persistence.model.Restaurant restaurant).
+[[1;34mINFO[m] -- MapStruct: mapping property: restaurant.getPostCode() to: post_code(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: restaurant.getPostCode().
+[[1;34mINFO[m] -- MapStruct: mapping property: restaurant.getVatNumber() to: pi(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: restaurant.getVatNumber().
+[[1;34mINFO[m] -- MapStruct: mapping property: restaurant.getId() to: id(java.lang.Long).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: restaurant.getId().
+[[1;34mINFO[m] -- MapStruct: mapping property: restaurant.getName() to: name(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: restaurant.getName().
+[[1;34mINFO[m] -- MapStruct: mapping property: restaurant.getAddress() to: address(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: restaurant.getAddress().
+[[1;34mINFO[m] -- MapStruct: mapping property: restaurant.getVatNumber() to: vatNumber(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: restaurant.getVatNumber().
+[[1;34mINFO[m] -- MapStruct: mapping property: restaurant.getEmail() to: email(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: restaurant.getEmail().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.restaurant.persistence.model.Restaurant fromNewRestaurantDTO(com.application.restaurant.web.dto.restaurant.NewRestaurantDTO newRestaurantDTO).
+[[1;34mINFO[m] -- MapStruct: mapping property: newRestaurantDTO.getPost_code() to: postCode(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newRestaurantDTO.getPost_code().
+[[1;34mINFO[m] -- MapStruct: mapping property: newRestaurantDTO.getVatNumber() to: vatNumber(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newRestaurantDTO.getVatNumber().
+[[1;34mINFO[m] -- MapStruct: mapping property: newRestaurantDTO.getName() to: name(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newRestaurantDTO.getName().
+[[1;34mINFO[m] -- MapStruct: mapping property: newRestaurantDTO.getEmail() to: email(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newRestaurantDTO.getEmail().
+[[1;34mINFO[m] -- MapStruct: mapping property: newRestaurantDTO.getPhoneNumber() to: phoneNumber(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newRestaurantDTO.getPhoneNumber().
+[[1;34mINFO[m] -- MapStruct: mapping property: newRestaurantDTO.getAddress() to: address(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newRestaurantDTO.getAddress().
+[[1;34mINFO[m] -- MapStruct: mapping property: newRestaurantDTO.getCity() to: city(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newRestaurantDTO.getCity().
+[[1;34mINFO[m] -- MapStruct: mapping property: newRestaurantDTO.getStateProvince() to: stateProvince(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newRestaurantDTO.getStateProvince().
+[[1;34mINFO[m] -- MapStruct: mapping property: newRestaurantDTO.getCountry() to: country(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newRestaurantDTO.getCountry().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for void updateEntityFromNewDTO(com.application.restaurant.web.dto.restaurant.NewRestaurantDTO dto, @MappingTarget com.application.restaurant.persistence.model.Restaurant entity).
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getPost_code() to: setPostCode(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getPost_code().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getVatNumber() to: setVatNumber(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getVatNumber().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getName() to: setName(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getName().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getEmail() to: setEmail(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getEmail().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getPhoneNumber() to: setPhoneNumber(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getPhoneNumber().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getAddress() to: setAddress(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getAddress().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getCity() to: setCity(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getCity().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getStateProvince() to: setStateProvince(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getStateProvince().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getCountry() to: setCountry(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getCountry().
+[[1;34mINFO[m]  MapStruct: processing: com.application.common.persistence.mapper.ReservationMapper.
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.web.dto.reservations.ReservationDTO toDTO(com.application.common.persistence.model.reservation.Reservation reservation).
+[[1;34mINFO[m] -- MapStruct: mapping property: reservation.getSlot() to: slot(com.application.common.web.dto.restaurant.SlotDTO).
+[[1;34mINFO[m] -- MapStruct: mapping property: slot.getService() to: service(com.application.common.web.dto.restaurant.ServiceDTO).
+[[1;34mINFO[m] -- MapStruct: mapping property: serviceRestaurantId( service ) to: restaurantId(long).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: serviceRestaurantId( service ).
+[[1;34mINFO[m] -- MapStruct: mapping property: service.getId() to: id(java.lang.Long).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: service.getId().
+[[1;34mINFO[m] -- MapStruct: mapping property: service.getName() to: name(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: service.getName().
+[[1;34mINFO[m] -- MapStruct: mapping property: service.getInfo() to: info(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: service.getInfo().
+[[1;34mINFO[m] -- MapStruct: mapping property: service.isEnabled() to: enabled(boolean).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: service.isEnabled().
+[[1;34mINFO[m] -- MapStruct: mapping property: service.getValidFrom() to: validFrom(java.time.LocalDate).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: service.getValidFrom().
+[[1;34mINFO[m] -- MapStruct: mapping property: service.getValidTo() to: validTo(java.time.LocalDate).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: service.getValidTo().
+[[1;34mINFO[m] -- MapStruct: mapping property: service.isActive() to: active(boolean).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: service.isActive().
+[[1;34mINFO[m] -- MapStruct: creating property mapping: com.application.common.web.dto.restaurant.ServiceDTO #serviceToServiceDTO(slot.getService()).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: com.application.common.web.dto.restaurant.ServiceDTO #serviceToServiceDTO(slot.getService()).
+[[1;34mINFO[m] -- MapStruct: mapping property: slot.getId() to: id(java.lang.Long).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: slot.getId().
+[[1;34mINFO[m] -- MapStruct: mapping property: slot.getStart() to: start(java.time.LocalTime).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: slot.getStart().
+[[1;34mINFO[m] -- MapStruct: mapping property: slot.getEnd() to: end(java.time.LocalTime).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: slot.getEnd().
+[[1;34mINFO[m] -- MapStruct: mapping property: slot.getWeekday() to: weekday(com.application.common.persistence.mapper.Mapper.Weekday).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: slot.getWeekday().
+[[1;34mINFO[m] -- MapStruct: creating property mapping: com.application.common.web.dto.restaurant.SlotDTO #slotToSlotDTO(reservation.getSlot()).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: com.application.common.web.dto.restaurant.SlotDTO #slotToSlotDTO(reservation.getSlot()).
+[[1;34mINFO[m] -- MapStruct: mapping property: reservation.getUserName() to: name(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: reservation.getUserName().
+[[1;34mINFO[m] -- MapStruct: mapping property: reservation.getDate() to: reservationDay(java.time.LocalDate).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: reservation.getDate().
+[[1;34mINFO[m] -- MapStruct: mapping property: reservationSlotServiceRestaurantId( reservation ) to: restaurant(java.lang.Long).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: reservationSlotServiceRestaurantId( reservation ).
+[[1;34mINFO[m] -- MapStruct: mapping property: reservationCustomerId( reservation ) to: customerId(java.lang.Long).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: reservationCustomerId( reservation ).
+[[1;34mINFO[m] -- MapStruct: mapping property: reservationCreatedByUsername( reservation ) to: createdBy(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: reservationCreatedByUsername( reservation ).
+[[1;34mINFO[m] -- MapStruct: mapping property: reservation.getCreatedByUserType() to: createdByUserType(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: reservation.getCreatedByUserType().name().
+[[1;34mINFO[m] -- MapStruct: mapping property: reservation.getCreatedAt() to: createdAt(java.time.LocalDateTime).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: reservation.getCreatedAt().
+[[1;34mINFO[m] -- MapStruct: mapping property: reservation.getId() to: id(java.lang.Long).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: reservation.getId().
+[[1;34mINFO[m] -- MapStruct: mapping property: reservation.getPax() to: pax(java.lang.Integer).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: reservation.getPax().
+[[1;34mINFO[m] -- MapStruct: mapping property: reservation.getKids() to: kids(java.lang.Integer).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: reservation.getKids().
+[[1;34mINFO[m] -- MapStruct: mapping property: reservation.getNotes() to: notes(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: reservation.getNotes().
+[[1;34mINFO[m] -- MapStruct: mapping property: reservation.getStatus() to: status(com.application.common.persistence.model.reservation.Reservation.Status).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: reservation.getStatus().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.persistence.model.reservation.Reservation fromCustomerNewReservationDTO(com.application.customer.web.dto.reservations.CustomerNewReservationDTO dto).
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getUserName() to: userName(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getUserName().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getReservationDay() to: date(java.time.LocalDate).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getReservationDay().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getPax() to: pax(java.lang.Integer).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getPax().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getKids() to: kids(java.lang.Integer).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getKids().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getNotes() to: notes(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getNotes().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.persistence.model.reservation.Reservation fromRestaurantNewReservationDTO(com.application.restaurant.web.dto.reservation.RestaurantNewReservationDTO dto).
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getUserName() to: userName(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getUserName().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getReservationDay() to: date(java.time.LocalDate).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getReservationDay().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getPax() to: pax(java.lang.Integer).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getPax().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getKids() to: kids(java.lang.Integer).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getKids().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getNotes() to: notes(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getNotes().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.persistence.model.reservation.Reservation fromAdminNewReservationDTO(com.application.admin.web.dto.reservation.AdminNewReservationDTO dto).
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getUserName() to: userName(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getUserName().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getReservationDay() to: date(java.time.LocalDate).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getReservationDay().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getPax() to: pax(java.lang.Integer).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getPax().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getKids() to: kids(java.lang.Integer).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getKids().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getNotes() to: notes(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getNotes().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getStatus() to: status(com.application.common.persistence.model.reservation.Reservation.Status).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getStatus().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.persistence.model.reservation.Reservation fromNewBaseReservationDTO(com.application.common.web.dto.reservations.NewBaseReservationDTO dto).
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getUserName() to: userName(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getUserName().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getReservationDay() to: date(java.time.LocalDate).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getReservationDay().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getPax() to: pax(java.lang.Integer).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getPax().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getKids() to: kids(java.lang.Integer).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getKids().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getNotes() to: notes(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getNotes().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for void updateEntityFromDTO(com.application.common.web.dto.reservations.ReservationDTO dto, @MappingTarget com.application.common.persistence.model.reservation.Reservation entity).
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getName() to: setUserName(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getName().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getReservationDay() to: setDate(java.time.LocalDate).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getReservationDay().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getPax() to: setPax(java.lang.Integer).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getPax().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getKids() to: setKids(java.lang.Integer).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getKids().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getNotes() to: setNotes(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getNotes().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getStatus() to: setStatus(com.application.common.persistence.model.reservation.Reservation.Status).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getStatus().
+[[1;34mINFO[m]  MapStruct: processing: com.application.common.persistence.mapper.AdminMapper.
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.admin.web.dto.admin.AdminDTO toDTO(com.application.admin.persistence.model.Admin admin).
+[[1;34mINFO[m] -- MapStruct: mapping property: admin.getId() to: id(java.lang.Long).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: admin.getId().
+[[1;34mINFO[m] -- MapStruct: mapping property: admin.getName() to: firstName(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: admin.getName().
+[[1;34mINFO[m] -- MapStruct: mapping property: admin.getSurname() to: lastName(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: admin.getSurname().
+[[1;34mINFO[m] -- MapStruct: mapping property: admin.getEmail() to: email(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: admin.getEmail().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.admin.persistence.model.Admin toEntity(com.application.admin.web.dto.admin.NewAdminDTO newAdminDTO).
+[[1;34mINFO[m] -- MapStruct: mapping property: newAdminDTO.getFirstName() to: name(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newAdminDTO.getFirstName().
+[[1;34mINFO[m] -- MapStruct: mapping property: newAdminDTO.getLastName() to: surname(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newAdminDTO.getLastName().
+[[1;34mINFO[m] -- MapStruct: mapping property: newAdminDTO.getPassword() to: password(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newAdminDTO.getPassword().
+[[1;34mINFO[m] -- MapStruct: mapping property: newAdminDTO.getEmail() to: email(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newAdminDTO.getEmail().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for void updateEntityFromNewDTO(com.application.admin.web.dto.admin.NewAdminDTO dto, @MappingTarget com.application.admin.persistence.model.Admin entity).
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getFirstName() to: setName(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getFirstName().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getLastName() to: setSurname(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getLastName().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getPassword() to: setPassword(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getPassword().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getEmail() to: setEmail(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getEmail().
+[[1;34mINFO[m]  MapStruct: processing: com.application.common.persistence.mapper.AdminNewReservationMapper.
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.persistence.model.reservation.Reservation fromNewDTO(com.application.admin.web.dto.reservation.AdminNewReservationDTO adminNewReservationDTO).
+[[1;34mINFO[m] -- MapStruct: mapping property: adminNewReservationDTO.getReservationDay() to: date(java.time.LocalDate).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: adminNewReservationDTO.getReservationDay().
+[[1;34mINFO[m] -- MapStruct: mapping property: adminNewReservationDTO.getUserName() to: userName(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: adminNewReservationDTO.getUserName().
+[[1;34mINFO[m] -- MapStruct: mapping property: adminNewReservationDTO.getPax() to: pax(java.lang.Integer).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: adminNewReservationDTO.getPax().
+[[1;34mINFO[m] -- MapStruct: mapping property: adminNewReservationDTO.getKids() to: kids(java.lang.Integer).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: adminNewReservationDTO.getKids().
+[[1;34mINFO[m] -- MapStruct: mapping property: adminNewReservationDTO.getNotes() to: notes(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: adminNewReservationDTO.getNotes().
+[[1;34mINFO[m] -- MapStruct: mapping property: adminNewReservationDTO.getStatus() to: status(com.application.common.persistence.model.reservation.Reservation.Status).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: adminNewReservationDTO.getStatus().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for void updateEntityFromNewDTO(com.application.admin.web.dto.reservation.AdminNewReservationDTO dto, @MappingTarget com.application.common.persistence.model.reservation.Reservation entity).
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getReservationDay() to: setDate(java.time.LocalDate).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getReservationDay().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getUserName() to: setUserName(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getUserName().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getPax() to: setPax(java.lang.Integer).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getPax().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getKids() to: setKids(java.lang.Integer).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getKids().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getNotes() to: setNotes(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getNotes().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getStatus() to: setStatus(com.application.common.persistence.model.reservation.Reservation.Status).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getStatus().
+[[1;34mINFO[m]  MapStruct: processing: com.application.common.persistence.mapper.RUserMapper.
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.web.dto.restaurant.RUserDTO toDTO(com.application.restaurant.persistence.model.user.RUser rUser).
+[[1;34mINFO[m] -- MapStruct: mapping property: rUser.getEmail() to: username(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: rUser.getEmail().
+[[1;34mINFO[m] -- MapStruct: mapping property: rUserRestaurantId( rUser ) to: restaurantId(java.lang.Long).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: rUserRestaurantId( rUser ).
+[[1;34mINFO[m] -- MapStruct: mapping property: rUser.getId() to: id(java.lang.Long).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: rUser.getId().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.restaurant.persistence.model.user.RUser fromNewRUserDTO(com.application.restaurant.web.dto.staff.NewRUserDTO newRUserDTO).
+[[1;34mINFO[m] -- MapStruct: mapping property: newRUserDTO.getEmail() to: email(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newRUserDTO.getEmail().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.restaurant.persistence.model.user.RUser toEntity(com.application.common.web.dto.restaurant.RUserDTO rUserDTO).
+[[1;34mINFO[m] -- MapStruct: mapping property: rUserDTO.getUsername() to: email(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: rUserDTO.getUsername().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for void updateEntityFromDTO(com.application.common.web.dto.restaurant.RUserDTO dto, @MappingTarget com.application.restaurant.persistence.model.user.RUser entity).
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getUsername() to: setEmail(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getUsername().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for void updateEntityFromNewDTO(com.application.restaurant.web.dto.staff.NewRUserDTO dto, @MappingTarget com.application.restaurant.persistence.model.user.RUser entity).
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getEmail() to: setEmail(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getEmail().
+[[1;34mINFO[m]  MapStruct: processing: com.application.common.persistence.mapper.NewBaseReservationMapper.
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.persistence.model.reservation.Reservation fromNewBaseDTO(com.application.common.web.dto.reservations.NewBaseReservationDTO newBaseReservationDTO).
+[[1;34mINFO[m] -- MapStruct: mapping property: newBaseReservationDTO.getReservationDay() to: date(java.time.LocalDate).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newBaseReservationDTO.getReservationDay().
+[[1;34mINFO[m] -- MapStruct: mapping property: newBaseReservationDTO.getUserName() to: userName(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newBaseReservationDTO.getUserName().
+[[1;34mINFO[m] -- MapStruct: mapping property: newBaseReservationDTO.getPax() to: pax(java.lang.Integer).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newBaseReservationDTO.getPax().
+[[1;34mINFO[m] -- MapStruct: mapping property: newBaseReservationDTO.getKids() to: kids(java.lang.Integer).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newBaseReservationDTO.getKids().
+[[1;34mINFO[m] -- MapStruct: mapping property: newBaseReservationDTO.getNotes() to: notes(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newBaseReservationDTO.getNotes().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for void updateEntityFromNewBaseDTO(com.application.common.web.dto.reservations.NewBaseReservationDTO dto, @MappingTarget com.application.common.persistence.model.reservation.Reservation entity).
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getReservationDay() to: setDate(java.time.LocalDate).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getReservationDay().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getUserName() to: setUserName(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getUserName().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getPax() to: setPax(java.lang.Integer).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getPax().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getKids() to: setKids(java.lang.Integer).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getKids().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getNotes() to: setNotes(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getNotes().
+[[1;34mINFO[m]  MapStruct: processing: com.application.common.persistence.mapper.RoleDTOMapper.
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.web.dto.security.RoleDTO toDTO(com.application.customer.persistence.model.Role role).
+[[1;34mINFO[m] -- MapStruct: mapping property: role.getId() to: id(java.lang.Long).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: role.getId().
+[[1;34mINFO[m] -- MapStruct: mapping property: role.getName() to: name(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: role.getName().
+[[1;34mINFO[m] -- MapStruct: mapping property: role.getPrivileges() to: privileges(java.util.List<com.application.common.web.dto.security.PrivilegeDTO>).
+[[1;34mINFO[m] -- MapStruct: selecting element mapping: com.application.common.web.dto.security.PrivilegeDTO PrivilegeDTOMapper#toDTO(privilege).
+[[1;34mINFO[m] -- MapStruct: creating property mapping: java.util.List<com.application.common.web.dto.security.PrivilegeDTO> #privilegeListToPrivilegeDTOList(role.getPrivileges()).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: java.util.List<com.application.common.web.dto.security.PrivilegeDTO> #privilegeListToPrivilegeDTOList(role.getPrivileges()).
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.customer.persistence.model.Role toEntity(com.application.common.web.dto.security.RoleDTO roleDTO).
+[[1;34mINFO[m] -- MapStruct: mapping property: roleDTO.getPrivileges() to: setPrivileges(java.util.List<com.application.customer.persistence.model.Privilege>).
+[[1;34mINFO[m] -- MapStruct: selecting element mapping: com.application.customer.persistence.model.Privilege PrivilegeDTOMapper#toEntity(privilegeDTO).
+[[1;34mINFO[m] -- MapStruct: creating property mapping: java.util.List<com.application.customer.persistence.model.Privilege> #privilegeDTOListToPrivilegeList(roleDTO.getPrivileges()).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: java.util.List<com.application.customer.persistence.model.Privilege> #privilegeDTOListToPrivilegeList(roleDTO.getPrivileges()).
+[[1;34mINFO[m] -- MapStruct: mapping property: roleDTO.getId() to: setId(java.lang.Long).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: roleDTO.getId().
+[[1;34mINFO[m] -- MapStruct: mapping property: roleDTO.getName() to: setName(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: roleDTO.getName().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for void updateEntityFromDTO(com.application.common.web.dto.security.RoleDTO dto, @MappingTarget com.application.customer.persistence.model.Role entity).
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getPrivileges() to: setPrivileges(java.util.List<com.application.customer.persistence.model.Privilege>).
+[[1;34mINFO[m] -- MapStruct: selecting element mapping: com.application.customer.persistence.model.Privilege PrivilegeDTOMapper#toEntity(privilegeDTO).
+[[1;34mINFO[m] -- MapStruct: creating property mapping: java.util.List<com.application.customer.persistence.model.Privilege> #privilegeDTOListToPrivilegeList(dto.getPrivileges()).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: java.util.List<com.application.customer.persistence.model.Privilege> #privilegeDTOListToPrivilegeList(dto.getPrivileges()).
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getName() to: setName(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getName().
+[[1;34mINFO[m]  MapStruct: processing: com.application.common.persistence.mapper.CustomerDTOMapper.
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.web.dto.customer.CustomerDTO toDTO(com.application.customer.persistence.model.Customer customer).
+[[1;34mINFO[m] -- MapStruct: mapping property: customer.getName() to: firstName(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: customer.getName().
+[[1;34mINFO[m] -- MapStruct: mapping property: customer.getSurname() to: lastName(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: customer.getSurname().
+[[1;34mINFO[m] -- MapStruct: mapping property: customer.getId() to: id(java.lang.Long).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: customer.getId().
+[[1;34mINFO[m] -- MapStruct: mapping property: customer.getEmail() to: email(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: customer.getEmail().
+[[1;34mINFO[m] -- MapStruct: mapping property: customer.getStatus() to: status(com.application.customer.persistence.model.Customer.Status).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: customer.getStatus().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.customer.persistence.model.Customer toEntity(com.application.common.web.dto.customer.CustomerDTO customerDTO).
+[[1;34mINFO[m] -- MapStruct: mapping property: customerDTO.getFirstName() to: name(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: customerDTO.getFirstName().
+[[1;34mINFO[m] -- MapStruct: mapping property: customerDTO.getLastName() to: surname(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: customerDTO.getLastName().
+[[1;34mINFO[m] -- MapStruct: mapping property: customerDTO.getId() to: id(java.lang.Long).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: customerDTO.getId().
+[[1;34mINFO[m] -- MapStruct: mapping property: customerDTO.getEmail() to: email(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: customerDTO.getEmail().
+[[1;34mINFO[m] -- MapStruct: mapping property: customerDTO.getStatus() to: status(com.application.customer.persistence.model.Customer.Status).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: customerDTO.getStatus().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.customer.persistence.model.Customer toEntity(com.application.customer.web.dto.customer.NewCustomerDTO newCustomerDTO).
+[[1;34mINFO[m] -- MapStruct: mapping property: newCustomerDTO.getFirstName() to: name(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newCustomerDTO.getFirstName().
+[[1;34mINFO[m] -- MapStruct: mapping property: newCustomerDTO.getLastName() to: surname(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newCustomerDTO.getLastName().
+[[1;34mINFO[m] -- MapStruct: mapping property: newCustomerDTO.getEmail() to: email(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newCustomerDTO.getEmail().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for void updateEntityFromDTO(com.application.customer.web.dto.customer.NewCustomerDTO dto, @MappingTarget com.application.customer.persistence.model.Customer entity).
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getFirstName() to: setName(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getFirstName().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getLastName() to: setSurname(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getLastName().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getEmail() to: setEmail(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getEmail().
+[[1;34mINFO[m]  MapStruct: processing: com.application.common.persistence.mapper.AllergyMapper.
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.web.dto.customer.AllergyDTO toDTO(com.application.customer.persistence.model.Allergy allergy).
+[[1;34mINFO[m] -- MapStruct: mapping property: allergy.getId() to: id(java.lang.Long).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: allergy.getId().
+[[1;34mINFO[m] -- MapStruct: mapping property: allergy.getName() to: name(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: allergy.getName().
+[[1;34mINFO[m] -- MapStruct: mapping property: allergy.getDescription() to: description(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: allergy.getDescription().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.customer.persistence.model.Allergy fromNewAllergyDTO(com.application.common.web.dto.customer.NewAllergyDTO newAllergyDTO).
+[[1;34mINFO[m] -- MapStruct: mapping property: newAllergyDTO.getName() to: name(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newAllergyDTO.getName().
+[[1;34mINFO[m] -- MapStruct: mapping property: newAllergyDTO.getDescription() to: description(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newAllergyDTO.getDescription().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for void updateEntityFromNewDTO(com.application.common.web.dto.customer.NewAllergyDTO dto, @MappingTarget com.application.customer.persistence.model.Allergy entity).
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getName() to: setName(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getName().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getDescription() to: setDescription(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getDescription().
+[[1;34mINFO[m]  MapStruct: processing: com.application.common.persistence.mapper.MenuMapper.
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.web.dto.menu.MenuDTO toDTO(com.application.restaurant.persistence.model.menu.Menu menu).
+[[1;34mINFO[m] -- MapStruct: mapping property: menu.getId() to: id(java.lang.Long).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: menu.getId().
+[[1;34mINFO[m] -- MapStruct: mapping property: menu.getName() to: name(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: menu.getName().
+[[1;34mINFO[m] -- MapStruct: mapping property: menu.getDescription() to: description(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: menu.getDescription().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.restaurant.persistence.model.menu.Menu fromNewMenuDTO(com.application.restaurant.web.dto.menu.NewMenuDTO newMenuDTO).
+[[1;34mINFO[m] -- MapStruct: mapping property: newMenuDTO.getName() to: name(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newMenuDTO.getName().
+[[1;34mINFO[m] -- MapStruct: mapping property: newMenuDTO.getDescription() to: description(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newMenuDTO.getDescription().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for void updateEntityFromNewDTO(com.application.restaurant.web.dto.menu.NewMenuDTO dto, @MappingTarget com.application.restaurant.persistence.model.menu.Menu entity).
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getName() to: setName(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getName().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getDescription() to: setDescription(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getDescription().
+[[1;34mINFO[m]  MapStruct: processing: com.application.common.persistence.mapper.RestaurantServiceMapper.
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.web.dto.restaurant.RestaurantServizioDto toDTO(com.application.common.persistence.model.reservation.Service service).
+[[1;34mINFO[m] -- MapStruct: mapping property: service.getValidFrom() to: startDate(java.time.LocalDate).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: service.getValidFrom().
+[[1;34mINFO[m] -- MapStruct: mapping property: service.getValidTo() to: endDate(java.time.LocalDate).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: service.getValidTo().
+[[1;34mINFO[m] -- MapStruct: mapping property: service.getInfo() to: description(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: service.getInfo().
+[[1;34mINFO[m] -- MapStruct: mapping property: service.getId() to: id(java.lang.Long).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: service.getId().
+[[1;34mINFO[m] -- MapStruct: mapping property: service.getName() to: name(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: service.getName().
+[[1;34mINFO[m] -- MapStruct: mapping property: service.getRestaurant() to: restaurant(com.application.restaurant.persistence.model.Restaurant).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: service.getRestaurant().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.persistence.model.reservation.Service toEntity(com.application.common.web.dto.restaurant.RestaurantServizioDto restaurantServizioDto).
+[[1;34mINFO[m] -- MapStruct: mapping property: restaurantServizioDto.getStartDate() to: validFrom(java.time.LocalDate).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: restaurantServizioDto.getStartDate().
+[[1;34mINFO[m] -- MapStruct: mapping property: restaurantServizioDto.getEndDate() to: validTo(java.time.LocalDate).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: restaurantServizioDto.getEndDate().
+[[1;34mINFO[m] -- MapStruct: mapping property: restaurantServizioDto.getDescription() to: info(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: restaurantServizioDto.getDescription().
+[[1;34mINFO[m] -- MapStruct: mapping property: restaurantServizioDto.getName() to: name(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: restaurantServizioDto.getName().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for void updateEntityFromDTO(com.application.common.web.dto.restaurant.RestaurantServizioDto dto, @MappingTarget com.application.common.persistence.model.reservation.Service entity).
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getStartDate() to: setValidFrom(java.time.LocalDate).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getStartDate().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getEndDate() to: setValidTo(java.time.LocalDate).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getEndDate().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getDescription() to: setInfo(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getDescription().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getName() to: setName(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getName().
+[[1;34mINFO[m]  MapStruct: processing: com.application.common.persistence.mapper.DishMapper.
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.web.dto.menu.DishDTO toDTO(com.application.restaurant.persistence.model.menu.Dish dish).
+[[1;34mINFO[m] -- MapStruct: mapping property: dish.getId() to: id(java.lang.Long).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dish.getId().
+[[1;34mINFO[m] -- MapStruct: mapping property: dish.getName() to: name(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dish.getName().
+[[1;34mINFO[m] -- MapStruct: mapping property: dish.getDescription() to: description(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dish.getDescription().
+[[1;34mINFO[m] -- MapStruct: mapping property: dish.getAllergens() to: allergens(java.util.Collection<com.application.restaurant.persistence.model.menu.Allergen>).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dish.getAllergens().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.restaurant.persistence.model.menu.Dish fromNewDishDTO(com.application.restaurant.web.dto.menu.NewDishDTO newDishDTO).
+[[1;34mINFO[m] -- MapStruct: mapping property: newDishDTO.getName() to: name(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newDishDTO.getName().
+[[1;34mINFO[m] -- MapStruct: mapping property: newDishDTO.getDescription() to: description(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newDishDTO.getDescription().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for void updateEntityFromNewDTO(com.application.restaurant.web.dto.menu.NewDishDTO dto, @MappingTarget com.application.restaurant.persistence.model.menu.Dish entity).
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getName() to: setName(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getName().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getDescription() to: setDescription(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getDescription().
+[[1;34mINFO[m]  MapStruct: processing: com.application.common.persistence.mapper.AdminNewServiceMapper.
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.persistence.model.reservation.Service fromNewDTO(com.application.admin.web.dto.service.AdminNewServiceDTO adminNewServiceDTO).
+[[1;34mINFO[m] -- MapStruct: mapping property: adminNewServiceDTO.getName() to: name(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: adminNewServiceDTO.getName().
+[[1;34mINFO[m] -- MapStruct: mapping property: adminNewServiceDTO.getInfo() to: info(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: adminNewServiceDTO.getInfo().
+[[1;34mINFO[m] -- MapStruct: mapping property: adminNewServiceDTO.getValidFrom() to: validFrom(java.time.LocalDate).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: adminNewServiceDTO.getValidFrom().
+[[1;34mINFO[m] -- MapStruct: mapping property: adminNewServiceDTO.getValidTo() to: validTo(java.time.LocalDate).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: adminNewServiceDTO.getValidTo().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for void updateEntityFromNewDTO(com.application.admin.web.dto.service.AdminNewServiceDTO dto, @MappingTarget com.application.common.persistence.model.reservation.Service entity).
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getName() to: setName(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getName().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getInfo() to: setInfo(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getInfo().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getValidFrom() to: setValidFrom(java.time.LocalDate).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getValidFrom().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getValidTo() to: setValidTo(java.time.LocalDate).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getValidTo().
+[[1;34mINFO[m]  MapStruct: processing: com.application.common.persistence.mapper.ServiceTypeDtoMapper.
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.web.dto.restaurant.ServiceTypeDto toDTO(com.application.common.persistence.model.reservation.ServiceType serviceType).
+[[1;34mINFO[m] -- MapStruct: mapping property: serviceType.getId() to: id(java.lang.Long).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: serviceType.getId().
+[[1;34mINFO[m] -- MapStruct: mapping property: serviceType.getName() to: name(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: serviceType.getName().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.persistence.model.reservation.ServiceType toEntity(com.application.common.web.dto.restaurant.ServiceTypeDto serviceTypeDto).
+[[1;34mINFO[m] -- MapStruct: mapping property: serviceTypeDto.getName() to: name(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: serviceTypeDto.getName().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for void updateEntityFromDTO(com.application.common.web.dto.restaurant.ServiceTypeDto dto, @MappingTarget com.application.common.persistence.model.reservation.ServiceType entity).
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getName() to: setName(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getName().
+[[1;34mINFO[m]  MapStruct: processing: com.application.common.persistence.mapper.NewAdminMapper.
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.admin.persistence.model.Admin fromNewDTO(com.application.admin.web.dto.admin.NewAdminDTO newAdminDTO).
+[[1;34mINFO[m] -- MapStruct: mapping property: newAdminDTO.getFirstName() to: name(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newAdminDTO.getFirstName().
+[[1;34mINFO[m] -- MapStruct: mapping property: newAdminDTO.getLastName() to: surname(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newAdminDTO.getLastName().
+[[1;34mINFO[m] -- MapStruct: mapping property: newAdminDTO.getEmail() to: email(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newAdminDTO.getEmail().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for void updateEntityFromNewDTO(com.application.admin.web.dto.admin.NewAdminDTO dto, @MappingTarget com.application.admin.persistence.model.Admin entity).
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getFirstName() to: setName(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getFirstName().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getLastName() to: setSurname(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getLastName().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getEmail() to: setEmail(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getEmail().
+[[1;34mINFO[m]  MapStruct: processing: com.application.common.persistence.mapper.MenuDishMapper.
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.web.dto.menu.MenuDishDTO toDTO(com.application.restaurant.persistence.model.menu.MenuDish menuDish).
+[[1;34mINFO[m] -- MapStruct: mapping property: menuDish.getPrice() to: price(java.lang.Double).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: menuDish.getPrice().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.restaurant.persistence.model.menu.MenuDish fromNewMenuDishDTO(com.application.restaurant.web.dto.menu.NewMenuDishDTO newMenuDishDTO).
+[[1;34mINFO[m] -- MapStruct: mapping property: newMenuDishDTO.getPrice() to: price(java.lang.Double).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newMenuDishDTO.getPrice().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.restaurant.persistence.model.menu.MenuDish toEntity(com.application.common.web.dto.menu.MenuDishDTO menuDishDTO).
+[[1;34mINFO[m] -- MapStruct: mapping property: menuDishDTO.getPrice() to: price(java.lang.Double).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: menuDishDTO.getPrice().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for void updateEntityFromDTO(com.application.common.web.dto.menu.MenuDishDTO dto, @MappingTarget com.application.restaurant.persistence.model.menu.MenuDish entity).
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getPrice() to: setPrice(java.lang.Double).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getPrice().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for void updateEntityFromNewDTO(com.application.restaurant.web.dto.menu.NewMenuDishDTO dto, @MappingTarget com.application.restaurant.persistence.model.menu.MenuDish entity).
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getPrice() to: setPrice(java.lang.Double).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getPrice().
+[[1;34mINFO[m]  MapStruct: processing: com.application.common.persistence.mapper.RUserHubAuthResponseMapper.
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.web.dto.security.RUserHubAuthResponseDTO toDTO(com.application.restaurant.persistence.model.user.RUser rUser).
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.web.dto.security.RUserHubAuthResponseDTO.RestaurantInfo restaurantToInfo(com.application.restaurant.persistence.model.Restaurant restaurant).
+[[1;34mINFO[m] -- MapStruct: mapping property: restaurant.getId() to: id(java.lang.Long).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: restaurant.getId().
+[[1;34mINFO[m] -- MapStruct: mapping property: restaurant.getName() to: name(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: restaurant.getName().
+[[1;34mINFO[m]  MapStruct: processing: com.application.common.persistence.mapper.ClientUserMapper.
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.web.dto.customer.ClientUserDto toDTO(com.application.customer.persistence.model.Customer customer).
+[[1;34mINFO[m] -- MapStruct: mapping property: customer.getName() to: firstName(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: customer.getName().
+[[1;34mINFO[m] -- MapStruct: mapping property: customer.getSurname() to: lastName(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: customer.getSurname().
+[[1;34mINFO[m] -- MapStruct: mapping property: customer.getEmail() to: email(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: customer.getEmail().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.customer.persistence.model.Customer toEntity(com.application.common.web.dto.customer.ClientUserDto clientUserDto).
+[[1;34mINFO[m] -- MapStruct: mapping property: clientUserDto.getFirstName() to: name(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: clientUserDto.getFirstName().
+[[1;34mINFO[m] -- MapStruct: mapping property: clientUserDto.getLastName() to: surname(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: clientUserDto.getLastName().
+[[1;34mINFO[m] -- MapStruct: mapping property: clientUserDto.getEmail() to: email(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: clientUserDto.getEmail().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for void updateEntityFromDTO(com.application.common.web.dto.customer.ClientUserDto dto, @MappingTarget com.application.customer.persistence.model.Customer entity).
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getFirstName() to: setName(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getFirstName().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getLastName() to: setSurname(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getLastName().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getEmail() to: setEmail(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getEmail().
+[[1;34mINFO[m]  MapStruct: processing: com.application.common.persistence.mapper.RestaurantCategoryMapper.
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.web.dto.restaurant.RestaurantCategoryDTO toDTO(com.application.restaurant.persistence.model.RestaurantCategory restaurantCategory).
+[[1;34mINFO[m] -- MapStruct: mapping property: restaurantCategory.getId() to: id(java.lang.Long).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: restaurantCategory.getId().
+[[1;34mINFO[m] -- MapStruct: mapping property: restaurantCategory.getName() to: name(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: restaurantCategory.getName().
+[[1;34mINFO[m] -- MapStruct: mapping property: restaurantCategory.getDescription() to: description(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: restaurantCategory.getDescription().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.restaurant.persistence.model.RestaurantCategory toEntity(com.application.common.web.dto.restaurant.RestaurantCategoryDTO restaurantCategoryDTO).
+[[1;34mINFO[m] -- MapStruct: mapping property: restaurantCategoryDTO.getName() to: name(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: restaurantCategoryDTO.getName().
+[[1;34mINFO[m] -- MapStruct: mapping property: restaurantCategoryDTO.getDescription() to: description(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: restaurantCategoryDTO.getDescription().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for void updateEntityFromDTO(com.application.common.web.dto.restaurant.RestaurantCategoryDTO dto, @MappingTarget com.application.restaurant.persistence.model.RestaurantCategory entity).
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getName() to: setName(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getName().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getDescription() to: setDescription(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getDescription().
+[[1;34mINFO[m]  MapStruct: processing: com.application.common.persistence.mapper.AuthResponseMapper.
+[[1;34mINFO[m]  MapStruct: processing: com.application.common.persistence.mapper.RestaurantLogoMapper.
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.web.dto.restaurant.RestaurantLogoDto toDTO(com.application.common.persistence.model.Image image).
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.persistence.model.Image toEntity(com.application.common.web.dto.restaurant.RestaurantLogoDto restaurantLogoDto).
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for void updateEntityFromDTO(com.application.common.web.dto.restaurant.RestaurantLogoDto dto, @MappingTarget com.application.common.persistence.model.Image entity).
+[[1;34mINFO[m]  MapStruct: processing: com.application.common.persistence.mapper.UpdatePasswordMapper.
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for void updatePasswordFromDTO(com.application.common.web.dto.security.UpdatePasswordDTO dto, @MappingTarget com.application.common.persistence.model.user.AbstractUser entity).
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getNewPassword() to: setPassword(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getNewPassword().
+[[1;34mINFO[m]  MapStruct: processing: com.application.common.persistence.mapper.ServiceDtoMapper.
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.web.dto.restaurant.ServiceDTO toDTO(com.application.common.persistence.model.reservation.Service service).
+[[1;34mINFO[m] -- MapStruct: mapping property: service.getServiceTypes() to: serviceType(java.util.Collection<com.application.common.web.dto.restaurant.ServiceTypeDto>).
+[[1;34mINFO[m] -- MapStruct: selecting element mapping: com.application.common.web.dto.restaurant.ServiceTypeDto ServiceTypeDtoMapper#toDTO(serviceType).
+[[1;34mINFO[m] -- MapStruct: creating property mapping: java.util.Collection<com.application.common.web.dto.restaurant.ServiceTypeDto> #serviceTypeSetToServiceTypeDtoCollection(service.getServiceTypes()).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: java.util.Collection<com.application.common.web.dto.restaurant.ServiceTypeDto> #serviceTypeSetToServiceTypeDtoCollection(service.getServiceTypes()).
+[[1;34mINFO[m] -- MapStruct: mapping property: serviceRestaurantId( service ) to: restaurantId(long).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: serviceRestaurantId( service ).
+[[1;34mINFO[m] -- MapStruct: mapping property: service.getId() to: id(java.lang.Long).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: service.getId().
+[[1;34mINFO[m] -- MapStruct: mapping property: service.getName() to: name(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: service.getName().
+[[1;34mINFO[m] -- MapStruct: mapping property: service.getInfo() to: info(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: service.getInfo().
+[[1;34mINFO[m] -- MapStruct: mapping property: service.isEnabled() to: enabled(boolean).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: service.isEnabled().
+[[1;34mINFO[m] -- MapStruct: mapping property: service.getValidFrom() to: validFrom(java.time.LocalDate).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: service.getValidFrom().
+[[1;34mINFO[m] -- MapStruct: mapping property: service.getValidTo() to: validTo(java.time.LocalDate).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: service.getValidTo().
+[[1;34mINFO[m] -- MapStruct: mapping property: service.isActive() to: active(boolean).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: service.isActive().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.persistence.model.reservation.Service toEntity(com.application.common.web.dto.restaurant.ServiceDTO serviceDto).
+[[1;34mINFO[m] -- MapStruct: mapping property: serviceDto.getServiceType() to: serviceTypes(java.util.Set<com.application.common.persistence.model.reservation.ServiceType>).
+[[1;34mINFO[m] -- MapStruct: selecting element mapping: com.application.common.persistence.model.reservation.ServiceType ServiceTypeDtoMapper#toEntity(serviceTypeDto).
+[[1;34mINFO[m] -- MapStruct: creating property mapping: java.util.Set<com.application.common.persistence.model.reservation.ServiceType> #serviceTypeDtoCollectionToServiceTypeSet(serviceDto.getServiceType()).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: java.util.Set<com.application.common.persistence.model.reservation.ServiceType> #serviceTypeDtoCollectionToServiceTypeSet(serviceDto.getServiceType()).
+[[1;34mINFO[m] -- MapStruct: mapping property: serviceDto.getName() to: name(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: serviceDto.getName().
+[[1;34mINFO[m] -- MapStruct: mapping property: serviceDto.getInfo() to: info(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: serviceDto.getInfo().
+[[1;34mINFO[m] -- MapStruct: mapping property: serviceDto.getValidFrom() to: validFrom(java.time.LocalDate).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: serviceDto.getValidFrom().
+[[1;34mINFO[m] -- MapStruct: mapping property: serviceDto.getValidTo() to: validTo(java.time.LocalDate).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: serviceDto.getValidTo().
+[[1;34mINFO[m] -- MapStruct: mapping property: serviceDto.isActive() to: active(boolean).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: serviceDto.isActive().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for void updateEntityFromDTO(com.application.common.web.dto.restaurant.ServiceDTO dto, @MappingTarget com.application.common.persistence.model.reservation.Service entity).
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getServiceType() to: setServiceTypes(java.util.Set<com.application.common.persistence.model.reservation.ServiceType>).
+[[1;34mINFO[m] -- MapStruct: selecting element mapping: com.application.common.persistence.model.reservation.ServiceType ServiceTypeDtoMapper#toEntity(serviceTypeDto).
+[[1;34mINFO[m] -- MapStruct: creating property mapping: java.util.Set<com.application.common.persistence.model.reservation.ServiceType> #serviceTypeDtoCollectionToServiceTypeSet(dto.getServiceType()).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: java.util.Set<com.application.common.persistence.model.reservation.ServiceType> #serviceTypeDtoCollectionToServiceTypeSet(dto.getServiceType()).
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getName() to: setName(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getName().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getInfo() to: setInfo(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getInfo().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getValidFrom() to: setValidFrom(java.time.LocalDate).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getValidFrom().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getValidTo() to: setValidTo(java.time.LocalDate).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getValidTo().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.isActive() to: setActive(boolean).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.isActive().
+[[1;34mINFO[m]  MapStruct: processing: com.application.common.persistence.mapper.CustomerMapper.
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.web.dto.customer.CustomerDTO toDTO(com.application.customer.persistence.model.Customer customer).
+[[1;34mINFO[m] -- MapStruct: mapping property: customer.getName() to: firstName(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: customer.getName().
+[[1;34mINFO[m] -- MapStruct: mapping property: customer.getSurname() to: lastName(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: customer.getSurname().
+[[1;34mINFO[m] -- MapStruct: mapping property: customer.getId() to: id(java.lang.Long).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: customer.getId().
+[[1;34mINFO[m] -- MapStruct: mapping property: customer.getEmail() to: email(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: customer.getEmail().
+[[1;34mINFO[m] -- MapStruct: mapping property: customer.getStatus() to: status(com.application.customer.persistence.model.Customer.Status).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: customer.getStatus().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.customer.persistence.model.Customer fromNewCustomerDTO(com.application.customer.web.dto.customer.NewCustomerDTO newCustomerDTO).
+[[1;34mINFO[m] -- MapStruct: mapping property: newCustomerDTO.getFirstName() to: name(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newCustomerDTO.getFirstName().
+[[1;34mINFO[m] -- MapStruct: mapping property: newCustomerDTO.getLastName() to: surname(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newCustomerDTO.getLastName().
+[[1;34mINFO[m] -- MapStruct: mapping property: newCustomerDTO.getEmail() to: email(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newCustomerDTO.getEmail().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for void updateEntityFromNewDTO(com.application.customer.web.dto.customer.NewCustomerDTO dto, @MappingTarget com.application.customer.persistence.model.Customer entity).
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getFirstName() to: setName(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getFirstName().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getLastName() to: setSurname(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getLastName().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getEmail() to: setEmail(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getEmail().
+[[1;34mINFO[m]  MapStruct: processing: com.application.common.persistence.mapper.TableMapper.
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.web.dto.restaurant.TableDTO toDTO(com.application.restaurant.persistence.model.Table table).
+[[1;34mINFO[m] -- MapStruct: mapping property: table.getId() to: id(java.lang.Long).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: table.getId().
+[[1;34mINFO[m] -- MapStruct: mapping property: table.getName() to: name(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: table.getName().
+[[1;34mINFO[m] -- MapStruct: mapping property: table.getCapacity() to: capacity(int).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: table.getCapacity().
+[[1;34mINFO[m] -- MapStruct: mapping property: table.getPositionX() to: positionX(int).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: table.getPositionX().
+[[1;34mINFO[m] -- MapStruct: mapping property: table.getPositionY() to: positionY(int).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: table.getPositionY().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.restaurant.persistence.model.Table fromNewTableDTO(com.application.restaurant.web.dto.restaurant.NewTableDTO newTableDTO).
+[[1;34mINFO[m] -- MapStruct: mapping property: newTableDTO.getName() to: name(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newTableDTO.getName().
+[[1;34mINFO[m] -- MapStruct: mapping property: newTableDTO.getCapacity() to: capacity(int).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newTableDTO.getCapacity().
+[[1;34mINFO[m] -- MapStruct: mapping property: newTableDTO.getPositionX() to: positionX(int).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newTableDTO.getPositionX().
+[[1;34mINFO[m] -- MapStruct: mapping property: newTableDTO.getPositionY() to: positionY(int).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newTableDTO.getPositionY().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for void updateEntityFromNewDTO(com.application.restaurant.web.dto.restaurant.NewTableDTO dto, @MappingTarget com.application.restaurant.persistence.model.Table entity).
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getName() to: setName(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getName().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getCapacity() to: setCapacity(int).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getCapacity().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getPositionX() to: setPositionX(int).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getPositionX().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getPositionY() to: setPositionY(int).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getPositionY().
+[[1;34mINFO[m]  MapStruct: processing: com.application.common.persistence.mapper.EmailRequestMapper.
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.admin.web.dto.communication.EmailRequestDTO clone(com.application.admin.web.dto.communication.EmailRequestDTO original).
+[[1;34mINFO[m] -- MapStruct: mapping property: original.getEmail() to: email(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: original.getEmail().
+[[1;34mINFO[m] -- MapStruct: mapping property: original.getSubject() to: subject(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: original.getSubject().
+[[1;34mINFO[m] -- MapStruct: mapping property: original.getMessage() to: message(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: original.getMessage().
+[[1;34mINFO[m]  MapStruct: processing: com.application.common.persistence.mapper.ServiceTypeMapper.
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.web.dto.restaurant.ServiceTypeDto toDTO(com.application.common.persistence.model.reservation.ServiceType serviceType).
+[[1;34mINFO[m] -- MapStruct: mapping property: serviceType.getId() to: id(java.lang.Long).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: serviceType.getId().
+[[1;34mINFO[m] -- MapStruct: mapping property: serviceType.getName() to: name(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: serviceType.getName().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.persistence.model.reservation.ServiceType toEntity(com.application.common.web.dto.restaurant.ServiceTypeDto serviceTypeDto).
+[[1;34mINFO[m] -- MapStruct: mapping property: serviceTypeDto.getName() to: name(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: serviceTypeDto.getName().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for void updateEntityFromDTO(com.application.common.web.dto.restaurant.ServiceTypeDto dto, @MappingTarget com.application.common.persistence.model.reservation.ServiceType entity).
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getName() to: setName(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getName().
+[[1;34mINFO[m]  MapStruct: processing: com.application.common.persistence.mapper.RestaurantImageMapper.
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.web.dto.restaurant.RestaurantImageDto toDTO(com.application.common.persistence.model.Image image).
+[[1;34mINFO[m] -- MapStruct: mapping property: image.getId() to: id(java.lang.Long).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: image.getId().
+[[1;34mINFO[m] -- MapStruct: mapping property: image.getName() to: name(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: image.getName().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.persistence.model.Image toEntity(com.application.common.web.dto.restaurant.RestaurantImageDto restaurantImageDto).
+[[1;34mINFO[m] -- MapStruct: mapping property: restaurantImageDto.getName() to: name(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: restaurantImageDto.getName().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for void updateEntityFromDTO(com.application.common.web.dto.restaurant.RestaurantImageDto dto, @MappingTarget com.application.common.persistence.model.Image entity).
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getName() to: setName(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getName().
+[[1;34mINFO[m]  MapStruct: processing: com.application.common.persistence.mapper.ServiceSlotMapper.
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.web.dto.restaurant.ServiceSlotsDto toDTO(com.application.common.persistence.model.reservation.Slot slot).
+[[1;34mINFO[m] -- MapStruct: mapping property: slot.getStart() to: open(java.time.LocalTime).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: slot.getStart().
+[[1;34mINFO[m] -- MapStruct: mapping property: slot.getEnd() to: close(java.time.LocalTime).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: slot.getEnd().
+[[1;34mINFO[m] -- MapStruct: mapping property: slotServiceName( slot ) to: name(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: slotServiceName( slot ).
+[[1;34mINFO[m] -- MapStruct: mapping property: slot.getWeekday() to: weekday(com.application.common.persistence.mapper.Mapper.Weekday).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: slot.getWeekday().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.persistence.model.reservation.Slot toEntity(com.application.common.web.dto.restaurant.ServiceSlotsDto serviceSlotsDto).
+[[1;34mINFO[m] -- MapStruct: mapping property: serviceSlotsDto.getOpen() to: start(java.time.LocalTime).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: serviceSlotsDto.getOpen().
+[[1;34mINFO[m] -- MapStruct: mapping property: serviceSlotsDto.getClose() to: end(java.time.LocalTime).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: serviceSlotsDto.getClose().
+[[1;34mINFO[m] -- MapStruct: mapping property: serviceSlotsDto.getWeekday() to: weekday(com.application.common.persistence.mapper.Mapper.Weekday).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: serviceSlotsDto.getWeekday().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for void updateEntityFromDTO(com.application.common.web.dto.restaurant.ServiceSlotsDto dto, @MappingTarget com.application.common.persistence.model.reservation.Slot entity).
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getOpen() to: setStart(java.time.LocalTime).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getOpen().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getClose() to: setEnd(java.time.LocalTime).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getClose().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getWeekday() to: setWeekday(com.application.common.persistence.mapper.Mapper.Weekday).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getWeekday().
+[[1;34mINFO[m]  MapStruct: processing: com.application.common.persistence.mapper.RUserHubMapper.
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.web.dto.restaurant.RUserHubDTO toDTO(com.application.restaurant.persistence.model.user.RUserHub rUserHub).
+[[1;34mINFO[m] -- MapStruct: mapping property: rUserHub.getId() to: id(java.lang.Long).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: rUserHub.getId().
+[[1;34mINFO[m] -- MapStruct: mapping property: rUserHub.getEmail() to: email(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: rUserHub.getEmail().
+[[1;34mINFO[m] -- MapStruct: mapping property: rUserHub.getFirstName() to: firstName(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: rUserHub.getFirstName().
+[[1;34mINFO[m] -- MapStruct: mapping property: rUserHub.getLastName() to: lastName(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: rUserHub.getLastName().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.restaurant.persistence.model.user.RUserHub toEntity(com.application.common.web.dto.restaurant.RUserHubDTO rUserHubDTO).
+[[1;34mINFO[m] -- MapStruct: mapping property: rUserHubDTO.getStatus() to: status(com.application.restaurant.persistence.model.user.RUserHub.Status).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: Enum.valueOf( RUserHub.Status.class, rUserHubDTO.getStatus() ).
+[[1;34mINFO[m] -- MapStruct: mapping property: rUserHubDTO.getEmail() to: email(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: rUserHubDTO.getEmail().
+[[1;34mINFO[m] -- MapStruct: mapping property: rUserHubDTO.getFirstName() to: firstName(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: rUserHubDTO.getFirstName().
+[[1;34mINFO[m] -- MapStruct: mapping property: rUserHubDTO.getLastName() to: lastName(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: rUserHubDTO.getLastName().
+[[1;34mINFO[m]  MapStruct: processing: com.application.common.persistence.mapper.PrivilegeDTOMapper.
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.web.dto.security.PrivilegeDTO toDTO(com.application.customer.persistence.model.Privilege privilege).
+[[1;34mINFO[m] -- MapStruct: mapping property: privilege.getId() to: id(java.lang.Long).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: privilege.getId().
+[[1;34mINFO[m] -- MapStruct: mapping property: privilege.getName() to: name(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: privilege.getName().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.customer.persistence.model.Privilege toEntity(com.application.common.web.dto.security.PrivilegeDTO privilegeDTO).
+[[1;34mINFO[m] -- MapStruct: mapping property: privilegeDTO.getId() to: id(java.lang.Long).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: privilegeDTO.getId().
+[[1;34mINFO[m] -- MapStruct: mapping property: privilegeDTO.getName() to: name(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: privilegeDTO.getName().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for void updateEntityFromDTO(com.application.common.web.dto.security.PrivilegeDTO dto, @MappingTarget com.application.customer.persistence.model.Privilege entity).
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getName() to: setName(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getName().
+[[1;34mINFO[m]  MapStruct: processing: com.application.common.persistence.mapper.ServiceMapper.
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.web.dto.restaurant.ServiceDTO toDTO(com.application.common.persistence.model.reservation.Service service).
+[[1;34mINFO[m] -- MapStruct: mapping property: serviceRestaurantId( service ) to: restaurantId(long).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: serviceRestaurantId( service ).
+[[1;34mINFO[m] -- MapStruct: mapping property: service.getId() to: id(java.lang.Long).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: service.getId().
+[[1;34mINFO[m] -- MapStruct: mapping property: service.getName() to: name(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: service.getName().
+[[1;34mINFO[m] -- MapStruct: mapping property: service.getInfo() to: info(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: service.getInfo().
+[[1;34mINFO[m] -- MapStruct: mapping property: service.isEnabled() to: enabled(boolean).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: service.isEnabled().
+[[1;34mINFO[m] -- MapStruct: mapping property: service.getValidFrom() to: validFrom(java.time.LocalDate).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: service.getValidFrom().
+[[1;34mINFO[m] -- MapStruct: mapping property: service.getValidTo() to: validTo(java.time.LocalDate).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: service.getValidTo().
+[[1;34mINFO[m] -- MapStruct: mapping property: service.isActive() to: active(boolean).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: service.isActive().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.persistence.model.reservation.Service fromNewServiceDTO(com.application.restaurant.web.dto.services.NewServiceDTO newServiceDTO).
+[[1;34mINFO[m] -- MapStruct: mapping property: newServiceDTO.getName() to: name(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newServiceDTO.getName().
+[[1;34mINFO[m] -- MapStruct: mapping property: newServiceDTO.getInfo() to: info(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newServiceDTO.getInfo().
+[[1;34mINFO[m] -- MapStruct: mapping property: newServiceDTO.getValidFrom() to: validFrom(java.time.LocalDate).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newServiceDTO.getValidFrom().
+[[1;34mINFO[m] -- MapStruct: mapping property: newServiceDTO.getValidTo() to: validTo(java.time.LocalDate).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newServiceDTO.getValidTo().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.persistence.model.reservation.Service toEntity(com.application.common.web.dto.restaurant.ServiceDTO serviceDTO).
+[[1;34mINFO[m] -- MapStruct: mapping property: serviceDTO.getName() to: name(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: serviceDTO.getName().
+[[1;34mINFO[m] -- MapStruct: mapping property: serviceDTO.getInfo() to: info(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: serviceDTO.getInfo().
+[[1;34mINFO[m] -- MapStruct: mapping property: serviceDTO.getValidFrom() to: validFrom(java.time.LocalDate).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: serviceDTO.getValidFrom().
+[[1;34mINFO[m] -- MapStruct: mapping property: serviceDTO.getValidTo() to: validTo(java.time.LocalDate).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: serviceDTO.getValidTo().
+[[1;34mINFO[m] -- MapStruct: mapping property: serviceDTO.isActive() to: active(boolean).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: serviceDTO.isActive().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for void updateEntityFromDTO(com.application.common.web.dto.restaurant.ServiceDTO dto, @MappingTarget com.application.common.persistence.model.reservation.Service entity).
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getName() to: setName(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getName().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getInfo() to: setInfo(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getInfo().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getValidFrom() to: setValidFrom(java.time.LocalDate).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getValidFrom().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getValidTo() to: setValidTo(java.time.LocalDate).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getValidTo().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.isActive() to: setActive(boolean).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.isActive().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for void updateEntityFromNewDTO(com.application.restaurant.web.dto.services.NewServiceDTO dto, @MappingTarget com.application.common.persistence.model.reservation.Service entity).
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getName() to: setName(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getName().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getInfo() to: setInfo(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getInfo().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getValidFrom() to: setValidFrom(java.time.LocalDate).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getValidFrom().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getValidTo() to: setValidTo(java.time.LocalDate).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getValidTo().
+[[1;34mINFO[m]  MapStruct: processing: com.application.common.persistence.mapper.RestaurantFullDetailsMapper.
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.web.dto.restaurant.RestaurantFullDetailsDto toDTO(com.application.restaurant.persistence.model.Restaurant restaurant).
+[[1;34mINFO[m] -- MapStruct: mapping property: restaurant.getRestaurantImages() to: restaurantOtherImages(java.util.List<com.application.common.web.dto.restaurant.RestaurantImageDto>).
+[[1;34mINFO[m] -- MapStruct: selecting element mapping: com.application.common.web.dto.restaurant.RestaurantImageDto RestaurantImageMapper#toDTO(image).
+[[1;34mINFO[m] -- MapStruct: creating property mapping: java.util.List<com.application.common.web.dto.restaurant.RestaurantImageDto> #imageListToRestaurantImageDtoList(restaurant.getRestaurantImages()).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: java.util.List<com.application.common.web.dto.restaurant.RestaurantImageDto> #imageListToRestaurantImageDtoList(restaurant.getRestaurantImages()).
+[[1;34mINFO[m] -- MapStruct: mapping property: restaurant.getPostCode() to: postCode(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: restaurant.getPostCode().
+[[1;34mINFO[m] -- MapStruct: mapping property: restaurant.getId() to: id(java.lang.Long).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: restaurant.getId().
+[[1;34mINFO[m] -- MapStruct: mapping property: restaurant.getName() to: name(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: restaurant.getName().
+[[1;34mINFO[m] -- MapStruct: mapping property: restaurant.getAddress() to: address(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: restaurant.getAddress().
+[[1;34mINFO[m] -- MapStruct: mapping property: restaurant.getVatNumber() to: vatNumber(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: restaurant.getVatNumber().
+[[1;34mINFO[m] -- MapStruct: mapping property: restaurant.getDescription() to: description(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: restaurant.getDescription().
+[[1;34mINFO[m] -- MapStruct: mapping property: restaurant.getLatitude() to: latitude(double).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: restaurant.getLatitude().
+[[1;34mINFO[m] -- MapStruct: mapping property: restaurant.getLongitude() to: longitude(double).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: restaurant.getLongitude().
+[[1;34mINFO[m] -- MapStruct: mapping property: restaurant.getEmail() to: email(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: restaurant.getEmail().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.restaurant.persistence.model.Restaurant toEntity(com.application.common.web.dto.restaurant.RestaurantFullDetailsDto restaurantFullDetailsDto).
+[[1;34mINFO[m] -- MapStruct: mapping property: restaurantFullDetailsDto.getVatNumber() to: vatNumber(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: restaurantFullDetailsDto.getVatNumber().
+[[1;34mINFO[m] -- MapStruct: mapping property: restaurantFullDetailsDto.getName() to: name(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: restaurantFullDetailsDto.getName().
+[[1;34mINFO[m] -- MapStruct: mapping property: restaurantFullDetailsDto.getEmail() to: email(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: restaurantFullDetailsDto.getEmail().
+[[1;34mINFO[m] -- MapStruct: mapping property: restaurantFullDetailsDto.getAddress() to: address(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: restaurantFullDetailsDto.getAddress().
+[[1;34mINFO[m] -- MapStruct: mapping property: restaurantFullDetailsDto.getPostCode() to: postCode(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: restaurantFullDetailsDto.getPostCode().
+[[1;34mINFO[m] -- MapStruct: mapping property: restaurantFullDetailsDto.getLatitude() to: latitude(java.lang.Double).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: restaurantFullDetailsDto.getLatitude().
+[[1;34mINFO[m] -- MapStruct: mapping property: restaurantFullDetailsDto.getLongitude() to: longitude(java.lang.Double).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: restaurantFullDetailsDto.getLongitude().
+[[1;34mINFO[m] -- MapStruct: mapping property: restaurantFullDetailsDto.getDescription() to: description(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: restaurantFullDetailsDto.getDescription().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for void updateEntityFromDTO(com.application.common.web.dto.restaurant.RestaurantFullDetailsDto dto, @MappingTarget com.application.restaurant.persistence.model.Restaurant entity).
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getName() to: setName(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getName().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getEmail() to: setEmail(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getEmail().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getAddress() to: setAddress(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getAddress().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getPostCode() to: setPostCode(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getPostCode().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getLatitude() to: setLatitude(java.lang.Double).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getLatitude().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getLongitude() to: setLongitude(java.lang.Double).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getLongitude().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getVatNumber() to: setVatNumber(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getVatNumber().
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getDescription() to: setDescription(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getDescription().
+[[1;34mINFO[m]  MapStruct: processing: com.application.common.persistence.mapper.RoomMapper.
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.common.web.dto.restaurant.RoomDTO toDTO(com.application.restaurant.persistence.model.Room room).
+[[1;34mINFO[m] -- MapStruct: mapping property: roomRestaurantId( room ) to: restaurantId(java.lang.Long).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: roomRestaurantId( room ).
+[[1;34mINFO[m] -- MapStruct: mapping property: room.getId() to: id(java.lang.Long).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: room.getId().
+[[1;34mINFO[m] -- MapStruct: mapping property: room.getName() to: name(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: room.getName().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for com.application.restaurant.persistence.model.Room fromNewRoomDTO(com.application.restaurant.web.dto.restaurant.NewRoomDTO newRoomDTO).
+[[1;34mINFO[m] -- MapStruct: mapping property: newRoomDTO.getName() to: name(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: newRoomDTO.getName().
+[[1;34mINFO[m] - MapStruct: creating bean mapping method implementation for void updateEntityFromNewDTO(com.application.restaurant.web.dto.restaurant.NewRoomDTO dto, @MappingTarget com.application.restaurant.persistence.model.Room entity).
+[[1;34mINFO[m] -- MapStruct: mapping property: dto.getName() to: setName(java.lang.String).
+[[1;34mINFO[m] -- MapStruct: selecting property mapping: dto.getName().
+[[1;33mWARNING[m] /home/valentino/workspace/greedysgroup/greedys_api/greedys_api/src/main/java/com/application/common/persistence/mapper/AuthResponseMapper.java:[20,8] deprecated item is not annotated with @Deprecated
+[[1;33mWARNING[m] /home/valentino/workspace/greedysgroup/greedys_api/greedys_api/target/generated-sources/annotations/com/application/common/persistence/mapper/RestaurantMapperImpl.java:[25,22] pi(java.lang.String) in com.application.common.web.dto.restaurant.RestaurantDTO.RestaurantDTOBuilder has been deprecated
+[[1;33mWARNING[m] /home/valentino/workspace/greedysgroup/greedys_api/greedys_api/target/generated-sources/annotations/com/application/common/persistence/mapper/AuthResponseMapperImpl.java:[11,48] com.application.common.persistence.mapper.AuthResponseMapper in com.application.common.persistence.mapper has been deprecated
+[[1;33mWARNING[m] /home/valentino/workspace/greedysgroup/greedys_api/greedys_api/target/generated-sources/annotations/com/application/common/persistence/mapper/AuthResponseMapperImpl.java:[11,48] com.application.common.persistence.mapper.AuthResponseMapper in com.application.common.persistence.mapper has been deprecated
+[[1;33mWARNING[m] /home/valentino/workspace/greedysgroup/greedys_api/greedys_api/target/generated-sources/annotations/com/application/common/persistence/mapper/AuthResponseMapperImpl.java:[11,48] com.application.common.persistence.mapper.AuthResponseMapper in com.application.common.persistence.mapper has been deprecated
+[[1;33mWARNING[m] /home/valentino/workspace/greedysgroup/greedys_api/greedys_api/target/generated-sources/annotations/com/application/common/persistence/mapper/AuthResponseMapperImpl.java:[11,48] com.application.common.persistence.mapper.AuthResponseMapper in com.application.common.persistence.mapper has been deprecated
+[[1;33mWARNING[m] /home/valentino/workspace/greedysgroup/greedys_api/greedys_api/target/generated-sources/annotations/com/application/common/persistence/mapper/AuthResponseMapperImpl.java:[11,48] com.application.common.persistence.mapper.AuthResponseMapper in com.application.common.persistence.mapper has been deprecated
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-resources-plugin:3.3.1:testResources[m [1m(default-testResources)[m @ [36mgreedys_api[0;1m ---[m
+[[1;34mINFO[m] Copying 2 resources from src/test/resources to target/test-classes
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-compiler-plugin:3.14.0:testCompile[m [1m(default-testCompile)[m @ [36mgreedys_api[0;1m ---[m
+[[1;34mINFO[m] Recompiling the module because of [1mchanged dependency[m.
+[[1;34mINFO[m] Compiling 14 source files with javac [debug parameters release 17] to target/test-classes
+[[1;33mWARNING[m] The following options were not recognized by any processor: '[mapstruct.verbose, mapstruct.defaultComponentModel, mapstruct.suppressGeneratorTimestamp]'
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-surefire-plugin:3.0.0-M7:test[m [1m(default-test)[m @ [36mgreedys_api[0;1m ---[m
+[[1;34mINFO[m] Tests are skipped.
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-jar-plugin:3.4.2:jar[m [1m(default-jar)[m @ [36mgreedys_api[0;1m ---[m
+[[1;34mINFO[m] Building jar: /home/valentino/workspace/greedysgroup/greedys_api/greedys_api/target/greedys_api-0.1.1.jar
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mspring-boot-maven-plugin:3.5.4:repackage[m [1m(repackage)[m @ [36mgreedys_api[0;1m ---[m
+[[1;34mINFO[m] Replacing main artifact /home/valentino/workspace/greedysgroup/greedys_api/greedys_api/target/greedys_api-0.1.1.jar with repackaged archive, adding nested dependencies in BOOT-INF/.
+[[1;34mINFO[m] The original artifact has been renamed to /home/valentino/workspace/greedysgroup/greedys_api/greedys_api/target/greedys_api-0.1.1.jar.original
+[[1;34mINFO[m] [1m------------------------------------------------------------------------[m
+[[1;34mINFO[m] [1;32mBUILD SUCCESS[m
+[[1;34mINFO[m] [1m------------------------------------------------------------------------[m
+[[1;34mINFO[m] Total time:  24.587 s
+[[1;34mINFO[m] Finished at: 2025-11-20T11:29:43+01:00
+[[1;34mINFO[m] [1m------------------------------------------------------------------------[m
+[[1;33mWARNING[m] The requested profile "prod" could not be activated because it does not exist.
