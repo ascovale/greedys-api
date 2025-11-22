@@ -29,11 +29,13 @@ import lombok.RequiredArgsConstructor;
 @Configuration
 @Profile({"dev", "docker", "prod"}) // 🔧 Per Dev MySQL, Docker e Produzione
 @EnableJpaRepositories(basePackages = {
+    //TODO rimuovere repository e e mettere solo i dao
     "com.application.admin.persistence.dao",
     "com.application.agency.persistence.dao",
     "com.application.customer.persistence.dao",
     "com.application.restaurant.persistence.dao",
-    "com.application.common.persistence.dao"
+    "com.application.common.persistence.dao",
+    "com.application.common.persistence.repository"
 })
 @EnableTransactionManagement
 @EnableJpaAuditing(auditorAwareRef = "auditorProvider")
