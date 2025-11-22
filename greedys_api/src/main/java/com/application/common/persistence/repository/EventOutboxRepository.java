@@ -79,9 +79,10 @@ public interface EventOutboxRepository extends JpaRepository<EventOutbox, Long> 
      * 
      * @param eventId L'ID univoco dell'evento
      * @param error Il messaggio di errore
+     * @param failedAt Timestamp del fallimento
      */
     @Modifying(clearAutomatically = true)
-    @Query("UPDATE EventOutbox e SET e.status = 'FAILED', e.lastError = :error, e.failedAt = :failedAt, e.retryCount = e.retryCount + 1 " +
+    @Query("UPDATE EventOutbox e SET e.status = 'FAILED', e.errorMessage = :error, e.failedAt = :failedAt, e.retryCount = e.retryCount + 1 " +
            "WHERE e.eventId = :eventId")
     void markAsFailed(@Param("eventId") String eventId, @Param("error") String error, @Param("failedAt") Instant failedAt);
 

@@ -187,6 +187,14 @@ public class EventOutbox {
     private Instant processedAt;
 
     /**
+     * Timestamp quando l'elaborazione è fallita
+     * 
+     * NULL se status != FAILED
+     */
+    @Column(name = "failed_at")
+    private Instant failedAt;
+
+    /**
      * Numero di tentativi di pubblicazione su RabbitMQ
      */
     @Column(name = "retry_count", nullable = false)
