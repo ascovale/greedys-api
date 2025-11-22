@@ -31,6 +31,18 @@ public interface EventOutboxRepository extends JpaRepository<EventOutbox, Long> 
     List<EventOutbox> findByStatus(Status status);
 
     /**
+     * Trova gli eventi PENDING con LIMIT.
+     * Usato da EventOutboxOrchestrator per processare batch di eventi.
+     * 
+     * @param status Lo stato da cercare (PENDING, FAILED, ecc)
+     * @param limit Numero massimo di risultati
+     * @return Lista di EventOutbox fino al limit specificato
+     */
+    @Query(value = "SELECT * FROM event_outbox WHERE status = :status ORDER BY created_at ASC LIMIT :limit", 
+           nativeQuery = true)
+    List<EventOutbox> findByStatus(@Param("status") String status, @Param("limit") int limit);
+
+    /**
      * Trova un evento specifico per event_id.
      * 
      * @param eventId L'ID univoco dell'evento

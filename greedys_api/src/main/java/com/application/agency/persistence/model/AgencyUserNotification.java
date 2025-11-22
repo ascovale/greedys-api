@@ -17,6 +17,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -60,7 +61,15 @@ import lombok.experimental.SuperBuilder;
  * @since 2025-01-20 (RabbitListener Disaggregation per Channel)
  */
 @Entity
-@Table(name = "agency_user_notification")
+@Table(
+    name = "agency_user_notification",
+    uniqueConstraints = {
+        @UniqueConstraint(
+            name = "uk_agency_notification_idempotency",
+            columnNames = {"event_id", "user_id", "notification_type"}
+        )
+    }
+)
 @SuperBuilder
 @Getter
 @Setter

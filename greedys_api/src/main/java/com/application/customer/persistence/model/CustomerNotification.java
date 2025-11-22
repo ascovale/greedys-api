@@ -17,6 +17,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -64,7 +65,15 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "CustomerNotificationEntity")
-@Table(name = "notification")
+@Table(
+    name = "notification",
+    uniqueConstraints = {
+        @UniqueConstraint(
+            name = "uk_customer_notification_idempotency",
+            columnNames = {"event_id", "user_id", "notification_type"}
+        )
+    }
+)
 public class CustomerNotification extends ANotification {
 
 	/**
