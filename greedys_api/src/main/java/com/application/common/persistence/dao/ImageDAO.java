@@ -7,7 +7,7 @@ import com.application.common.persistence.model.Image;
 
 
 @Repository
-public interface ImageRepository extends JpaRepository<Image, Long>{
+public interface ImageDAO extends JpaRepository<Image, Long>{
 	Image findByName(String text);
 	Image findFirstByName(String text);
 

@@ -1,4 +1,4 @@
-package com.application.common.persistence.repository;
+package com.application.common.persistence.dao;
 
 import java.util.List;
 
@@ -20,7 +20,7 @@ import com.application.admin.persistence.model.AdminNotification;
  * @since 2025-01-20
  */
 @Repository
-public interface AdminNotificationRepository extends JpaRepository<AdminNotification, Long> {
+public interface AdminNotificationDAO extends JpaRepository<AdminNotification, Long> {
 
     /**
      * Trova tutte le notifiche di un admin specifico per un ristorante.

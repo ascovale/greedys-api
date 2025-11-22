@@ -30,8 +30,7 @@ import lombok.RequiredArgsConstructor;
     "com.application.agency.persistence.dao",
     "com.application.customer.persistence.dao",
     "com.application.restaurant.persistence.dao",
-    "com.application.common.persistence.dao",
-    "com.application.common.persistence.repository"
+    "com.application.common.persistence.dao"
 })
 @EnableTransactionManagement
 @EnableJpaAuditing(auditorAwareRef = "devAuditorProvider")

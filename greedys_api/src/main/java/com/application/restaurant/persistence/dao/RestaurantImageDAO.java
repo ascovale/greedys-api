@@ -5,7 +5,7 @@ import org.springframework.stereotype.Repository;
 
 import com.application.restaurant.persistence.model.RestaurantImage;
 @Repository
-public interface RestaurantImageRepository extends JpaRepository<RestaurantImage, Long>{
+public interface RestaurantImageDAO extends JpaRepository<RestaurantImage, Long>{
 
 	RestaurantImage findByName(String text);
 	RestaurantImage findFirstByName(String text);
