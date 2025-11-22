@@ -7,6 +7,7 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
@@ -22,6 +23,7 @@ import com.application.common.persistence.model.notification.ANotification;
  * @author Greedy's System
  * @since 2025-01-20 (Notification Base)
  */
+@NoRepositoryBean
 @Repository
 public interface ANotificationRepository<T extends ANotification> extends JpaRepository<T, Long> {
 
