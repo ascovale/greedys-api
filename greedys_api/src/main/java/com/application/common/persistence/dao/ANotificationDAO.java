@@ -1,4 +1,4 @@
-package com.application.common.persistence.repository;
+package com.application.common.persistence.dao;
 
 import java.time.Instant;
 import java.util.List;
@@ -25,7 +25,7 @@ import com.application.common.persistence.model.notification.ANotification;
  */
 @NoRepositoryBean
 @Repository
-public interface ANotificationRepository<T extends ANotification> extends JpaRepository<T, Long> {
+public interface ANotificationDAO<T extends ANotification> extends JpaRepository<T, Long> {
 
     /**
      * Trova tutte le notifiche di un user specifico.

@@ -1,4 +1,4 @@
-package com.application.common.persistence.repository;
+package com.application.common.persistence.dao;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -29,7 +29,7 @@ import com.application.common.persistence.model.ProcessedEvent;
  * @since 2025-01-21 (Idempotency Implementation)
  */
 @Repository
-public interface ProcessedEventRepository extends JpaRepository<ProcessedEvent, Long> {
+public interface ProcessedEventDAO extends JpaRepository<ProcessedEvent, Long> {
 
 	/**
 	 * Check if event with given eventId was already processed.

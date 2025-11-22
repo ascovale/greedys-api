@@ -10,11 +10,11 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.application.common.persistence.dao.ProcessedEventDAO;
+import com.application.common.persistence.dao.EventOutboxDAO;
 import com.application.common.persistence.model.ProcessedEvent;
 import com.application.common.persistence.model.notification.EventOutbox;
 import com.application.common.persistence.model.notification.EventOutbox.Status;
-import com.application.common.persistence.repository.EventOutboxRepository;
-import com.application.common.persistence.repository.ProcessedEventRepository;
 import com.application.common.type.ProcessingStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -95,8 +95,8 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class EventOutboxOrchestrator {
 
-    private final EventOutboxRepository eventOutboxRepository;
-    private final ProcessedEventRepository processedEventRepository;
+    private final EventOutboxDAO eventOutboxRepository;
+    private final ProcessedEventDAO processedEventRepository;
     private final RabbitTemplate rabbitTemplate;
 
     /**
