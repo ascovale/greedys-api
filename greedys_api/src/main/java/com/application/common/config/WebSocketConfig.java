@@ -1,11 +1,16 @@
 package com.application.common.config;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
+import com.application.common.security.websocket.WebSocketChannelInterceptor;
+import com.application.common.security.websocket.WebSocketHandshakeInterceptor;
+
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -35,7 +40,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Configuration
 @EnableWebSocketMessageBroker
+@RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+    
+    private final WebSocketHandshakeInterceptor handshakeInterceptor;
+    private final WebSocketChannelInterceptor channelInterceptor;
 
     /**
      * Configura il message broker in-memory.
@@ -64,6 +73,48 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         
         log.info("WebSocket message broker configured");
     }
+    
+    /**
+     * ⭐ REGISTRA GLI INTERCEPTOR SUGLI INBOUND/OUTBOUND CHANNEL
+     * 
+     * Questo metodo configura gli interceptor che validano OGNI STOMP FRAME:
+     * - CONNECT: Valida che l'utente sia autenticato
+     * - SUBSCRIBE: Valida che l'utente possa accedere alla destinazione
+     * - SEND: Valida che l'utente possa inviare al destinazione
+     * - MESSAGE: Valida che il messaggio sia del ruolo/utente corretto
+     * 
+     * FLUSSO SICUREZZA:
+     * Client STOMP → WebSocketChannelInterceptor.preSend() → Valida accesso → Passa/Blocca
+     * 
+     * @param registration Registrazione del channel
+     */
+    @Override
+    public void configureClientInboundChannel(ChannelRegistration registration) {
+        log.info("Registering WebSocket channel security interceptors");
+        
+        // Registra l'interceptor per validare OGNI STOMP frame in ingresso
+        registration.interceptors(channelInterceptor);
+        
+        log.info("✅ WebSocket channel interceptor registered for inbound messages");
+    }
+    
+    /**
+     * ⭐ REGISTRA GLI INTERCEPTOR SUI MESSAGGI IN USCITA
+     * 
+     * Valida i messaggi che il server invia ai client per prevenire
+     * la perdita di messaggi cross-role.
+     * 
+     * @param registration Registrazione del channel
+     */
+    @Override
+    public void configureClientOutboundChannel(ChannelRegistration registration) {
+        log.info("Registering WebSocket outbound channel security");
+        
+        // Registra l'interceptor anche sui messaggi in uscita
+        registration.interceptors(channelInterceptor);
+        
+        log.info("✅ WebSocket channel interceptor registered for outbound messages");
+    }
 
     /**
      * Registra gli endpoint WebSocket.
@@ -73,11 +124,30 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
      * - withSockJS(): Fallback per browser senza WebSocket
      * - setAllowedOrigins("*"): Permetti accesso da qualsiasi origine
      * 
+     * ⭐ JWT AUTHENTICATION:
+     * La sicurezza è implementata in WebSocketHandshakeInterceptor che:
+     * 1. Estrae JWT da Authorization header o query parameter
+     * 2. Valida il token usando JwtUtil
+     * 3. Estrae user ID, type, email da JWT claims
+     * 4. Crea WebSocketAuthenticationToken
+     * 5. Salva in WebSocket session attributes
+     * 6. Rifiuta connessione se JWT non valido (401)
+     * 
+     * ⭐ JWT EXTRACTION LOCATIONS:
+     * Client JavaScript (SockJS):
+     *     var socket = new SockJS('/ws?token=<jwt>');
+     * Client JavaScript (Native WebSocket):
+     *     var socket = new WebSocket('ws://host/stomp?token=<jwt>');
+     * Client HTTP Header:
+     *     GET /ws HTTP/1.1
+     *     Authorization: Bearer <jwt>
+     * 
      * ⭐ CLIENT CONNECTION:
-     * var socket = new SockJS('/ws');
+     * var socket = new SockJS('/ws?token=' + jwtToken);
      * var stompClient = Stomp.over(socket);
      * stompClient.connect({}, function(frame) {
-     *     stompClient.subscribe('/user/queue/notifications', function(message) {
+     *     // Subscribe to user's personal notification queue
+     *     stompClient.subscribe('/user/123/queue/notifications', function(message) {
      *         console.log('Received: ' + message.body);
      *     });
      * });
@@ -89,11 +159,15 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         log.info("Registering WebSocket STOMP endpoints: /ws (SockJS) and /stomp (native)");
         
         // ⭐ ENDPOINT 1: /ws - SockJS + STOMP (per browser, web app, fallback)
+        // SockJS fornisce fallback per browser senza WebSocket nativo (es. IE9, network proxy)
         registry.addEndpoint("/ws")
             // ⭐ IMPORTANTE: Disabilita CORS validation per WebSocket
             // WebSocket non supporta credentials come REST, quindi non validare CORS qui
             // La validazione avviene in SecurityConfig solo per REST endpoints
             .setAllowedOriginPatterns("*")
+            // ⭐ REGISTRA HANDSHAKE INTERCEPTOR
+            // Questo interceptor estrae JWT dal request e autentica la connessione
+            .addInterceptors(handshakeInterceptor)
             // Abilita SockJS fallback per browser vecchi
             .withSockJS()
             // ⭐ CRITICO: Permetti session cookies per SockJS handshake
@@ -103,12 +177,16 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         // ⭐ ENDPOINT 2: /stomp - Native WebSocket + STOMP (per client mobili, Flutter, etc)
         // Questo endpoint accetta connessioni WebSocket native senza SockJS fallback
         registry.addEndpoint("/stomp")
-            .setAllowedOriginPatterns("http://*", "https://*", "null");
+            .setAllowedOriginPatterns("http://*", "https://*", "null")
+            // ⭐ REGISTRA HANDSHAKE INTERCEPTOR (anche per native WebSocket)
+            .addInterceptors(handshakeInterceptor);
             // NO withSockJS() - questo è per WebSocket puro
         
         log.info("WebSocket STOMP endpoints registered successfully");
         log.info("  - /ws: SockJS endpoint for browsers (HTTP fallback available)");
         log.info("  - /stomp: Native WebSocket endpoint for mobile/Flutter clients");
+        log.info("✅ JWT authentication enabled via WebSocketHandshakeInterceptor");
+        log.info("✅ Role-based access control enabled via WebSocketChannelInterceptor");
     }
 
     /**
