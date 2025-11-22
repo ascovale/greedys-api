@@ -17,3 +17,7 @@ generator/generated-clients/
 
 # Ignora strumenti temporanei
 generator/tools
+
+# Ignora file di configurazione locale con credenziali
+impostazioni.md
+greedys_api/impostazioni.md
