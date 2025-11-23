@@ -71,19 +71,36 @@ public class WebSocketDestinationValidator {
      * @return true if access is allowed, false otherwise
      */
     public boolean canAccess(String destination, String userType, Long userId) {
+        return canAccess(destination, userType, userId, null);
+    }
+    
+    /**
+     * Validates if a user can access a specific WebSocket destination
+     * 
+     * @param destination The STOMP destination (e.g., /user/123/queue/notifications)
+     * @param userType The user's type (e.g., "restaurant-user", "customer", "admin")
+     * @param userId The user's ID
+     * @param restaurantId Optional restaurant ID from JWT (for restaurant-specific topics)
+     * @return true if access is allowed, false otherwise
+     */
+    public boolean canAccess(String destination, String userType, Long userId, Long restaurantId) {
         if (destination == null || destination.isEmpty() || userType == null || userId == null) {
             log.warn("❌ Invalid validation parameters: destination={}, userType={}, userId={}", 
                      destination, userType, userId);
             return false;
         }
         
-        log.debug("🔍 Validating WebSocket access: destination={}, userType={}, userId={}", 
-                  destination, userType, userId);
+        log.debug("🔍 Validating WebSocket access: destination={}, userType={}, userId={}, restaurantId={}", 
+                  destination, userType, userId, restaurantId);
         
         // Parse destination type
         if (destination.startsWith(USER_PREFIX)) {
             return validateUserSpecificQueue(destination, userId);
         } else if (destination.startsWith(TOPIC_PREFIX)) {
+            // Check for restaurant/reservations pattern first (requires restaurantId validation)
+            if (isRestaurantReservationsTopic(destination)) {
+                return validateRestaurantReservationsAccess(destination, userType, userId, restaurantId);
+            }
             return validateTopicAccess(destination, userType);
         } else if (destination.startsWith(GROUP_PREFIX)) {
             return validateGroupAccess(destination, userId);
@@ -136,6 +153,69 @@ public class WebSocketDestinationValidator {
             log.warn("❌ Invalid user ID in destination: {}", parts[0]);
             return false;
         }
+    }
+    
+    /**
+     * Checks if destination is a restaurant reservations topic
+     * Pattern: /topic/restaurant/{restaurantId}/reservations
+     * 
+     * @param destination The destination to check
+     * @return true if it matches the pattern
+     */
+    private boolean isRestaurantReservationsTopic(String destination) {
+        return destination != null && destination.matches("^/topic/restaurant/\\d+/reservations$");
+    }
+    
+    /**
+     * Validates access to restaurant-specific reservations topics
+     * Pattern: /topic/restaurant/{restaurantId}/reservations
+     * 
+     * Security: Only restaurant staff can access, and only for restaurants they manage/work for
+     * Validates: 
+     * 1. User is restaurant-user type
+     * 2. restaurantId in URL matches restaurantId in JWT
+     * 
+     * @param destination e.g., /topic/restaurant/42/reservations
+     * @param userType The user's type (must be "restaurant-user")
+     * @param userId The user's ID
+     * @param restaurantId The restaurant ID from JWT (if available)
+     * @return true if user is restaurant staff AND has access to the specific restaurant
+     */
+    private boolean validateRestaurantReservationsAccess(String destination, String userType, Long userId, Long restaurantId) {
+        // Only restaurant staff can access reservations topics
+        if (!userType.startsWith("restaurant-user")) {
+            log.warn("❌ Non-restaurant user type {} denied access to reservations topic: {}", userType, destination);
+            return false;
+        }
+        
+        // Extract restaurant ID from /topic/restaurant/{restaurantId}/reservations
+        String[] parts = destination.substring(TOPIC_PREFIX.length()).split("/");
+        if (parts.length >= 2) {
+            try {
+                Long destinationRestaurantId = Long.parseLong(parts[1]);
+                
+                // If JWT contains restaurantId, verify it matches the destination
+                if (restaurantId != null && !restaurantId.equals(destinationRestaurantId)) {
+                    log.warn("❌ Restaurant user {} (restaurantId: {}) denied access to /topic/restaurant/{}/reservations (mismatch)", 
+                             userId, restaurantId, destinationRestaurantId);
+                    return false;
+                }
+                
+                // TODO: If restaurantId is null in JWT, verify via DB that user works for this restaurant
+                // restaurantStaffDAO.findByRestaurantIdAndUserId(destinationRestaurantId, userId)
+                
+                log.debug("✅ Restaurant user {} allowed to access /topic/restaurant/{}/reservations", 
+                         userId, destinationRestaurantId);
+                return true;
+                
+            } catch (NumberFormatException e) {
+                log.warn("❌ Invalid restaurant ID in reservations topic: {}", parts[1]);
+                return false;
+            }
+        }
+        
+        log.warn("❌ Invalid reservations topic format: {}", destination);
+        return false;
     }
     
     /**

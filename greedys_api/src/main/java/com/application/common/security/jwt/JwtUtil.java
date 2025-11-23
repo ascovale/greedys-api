@@ -101,6 +101,10 @@ public class JwtUtil {
                 .collect(Collectors.toList()));
         claims.put("access_type", "access");
         claims.put("user_type", determineUserType(userDetails));
+        
+        // Add restaurantId or agencyId if available
+        addOrganizationIdToClaims(claims, userDetails);
+        
         return createToken(claims, userDetails.getUsername(), expiration);
     }
 
@@ -291,5 +295,90 @@ public class JwtUtil {
     public String extractUserType(String token) {
         Claims claims = extractAllClaims(token);
         return (String) claims.get("user_type");
+    }
+    
+    /**
+     * Aggiunge restaurantId o agencyId ai claims JWT se l'utente ha un'organizzazione
+     * 
+     * - RUser → aggiunge restaurant_id
+     * - AgencyUser → aggiunge agency_id
+     * - Customer, Admin → nessun ID aggiunto
+     * 
+     * @param claims Mappa dei claims JWT
+     * @param userDetails Dettagli utente (implementazione)
+     */
+    private void addOrganizationIdToClaims(Map<String, Object> claims, UserDetails userDetails) {
+        String className = userDetails.getClass().getSimpleName();
+        
+        try {
+            switch (className) {
+                case "RUser":
+                    // Estrai restaurant_id via reflection per RUser
+                    Long restaurantId = extractRestaurantIdFromRUser(userDetails);
+                    if (restaurantId != null) {
+                        claims.put("restaurant_id", restaurantId);
+                    }
+                    break;
+                    
+                case "AgencyUser":
+                    // Estrai agency_id via reflection per AgencyUser
+                    Long agencyId = extractAgencyIdFromAgencyUser(userDetails);
+                    if (agencyId != null) {
+                        claims.put("agency_id", agencyId);
+                    }
+                    break;
+                    
+                case "Customer":
+                case "Admin":
+                    // No organization ID needed for customer or admin
+                    break;
+                    
+                default:
+                    log.debug("Unknown user type for organization ID extraction: {}", className);
+            }
+        } catch (Exception e) {
+            log.debug("Could not extract organization ID from user: {}", e.getMessage());
+            // Continua senza l'ID organizzazione (non critico)
+        }
+    }
+    
+    /**
+     * Estrae restaurantId da un RUser via reflection
+     */
+    private Long extractRestaurantIdFromRUser(UserDetails userDetails) {
+        try {
+            var restaurantField = userDetails.getClass().getDeclaredField("restaurant");
+            restaurantField.setAccessible(true);
+            var restaurant = restaurantField.get(userDetails);
+            
+            if (restaurant != null) {
+                var idField = restaurant.getClass().getDeclaredField("id");
+                idField.setAccessible(true);
+                return (Long) idField.get(restaurant);
+            }
+        } catch (Exception e) {
+            log.debug("Could not extract restaurant_id from RUser: {}", e.getMessage());
+        }
+        return null;
+    }
+    
+    /**
+     * Estrae agencyId da un AgencyUser via reflection
+     */
+    private Long extractAgencyIdFromAgencyUser(UserDetails userDetails) {
+        try {
+            var agencyField = userDetails.getClass().getDeclaredField("agency");
+            agencyField.setAccessible(true);
+            var agency = agencyField.get(userDetails);
+            
+            if (agency != null) {
+                var idField = agency.getClass().getDeclaredField("id");
+                idField.setAccessible(true);
+                return (Long) idField.get(agency);
+            }
+        } catch (Exception e) {
+            log.debug("Could not extract agency_id from AgencyUser: {}", e.getMessage());
+        }
+        return null;
     }
 }
