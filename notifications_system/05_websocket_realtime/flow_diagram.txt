@@ -1,0 +1,120 @@
+# WebSocket Real-Time Delivery
+
+## Flow Diagram
+
+```
+NOTIFICATION CREATED → WEBSOCKET SENDER → STOMP BROKER → CLIENT
+
+BaseNotificationListener.processNotificationMessage()
+├─ 1. Create notification record in DB
+├─ 2. Call attemptWebSocketSend(notification) [SYNCHRONOUS]
+│  └─ NotificationWebSocketSender.send()
+│     ├─ Check: is client online?
+│     ├─ If YES: SimpMessagingTemplate.convertAndSend()
+│     │  └─ Send to /topic/notifications/{userId}/{type}
+│     │  └─ Delivered immediately (100-500ms)
+│     └─ If NO: send() fails silently (no retry)
+└─ 3. Continue (ACK to RabbitMQ)
+
+Destination: /topic/notifications/{userId}/RESTAURANT
+Payload: {notificationId, eventId, title, body, properties, timestamp}
+Protocol: STOMP over WebSocket
+```
+
+## Functional Description
+
+Delivers notifications in real-time to connected clients via WebSocket.
+
+**Purpose**: Immediate, low-latency notification delivery for online users
+
+**Delivery Model**: Best-effort, synchronous
+- If client online: Success, delivered in 100-500ms
+- If client offline: Fails silently, no retry
+- Happens immediately after DB persist in listener
+
+**Topic Format**: `/topic/notifications/{userId}/{recipientType}`
+- Example: `/topic/notifications/50/RESTAURANT`
+- Security: Only users of matching type can subscribe
+
+**Payload Structure**:
+```json
+{
+  "notificationId": 123,
+  "eventId": "evt-res-456",
+  "title": "New Reservation",
+  "body": "Table for 4 at 20:00",
+  "timestamp": 1700000000,
+  "properties": {...}
+}
+```
+
+**Session Management**:
+- Maintained by Spring STOMP MessageBroker
+- Automatic cleanup on disconnect
+- Rate limiting: WebSocketRateLimiter prevents abuse
+
+---
+
+## Implementation Notes
+
+```java
+// NotificationWebSocketSender
+@Service
+public class NotificationWebSocketSender {
+    
+    private final SimpMessagingTemplate messagingTemplate;
+    
+    public boolean sendRestaurantNotification(RestaurantUserNotification notif) {
+        try {
+            messagingTemplate.convertAndSend(
+                "/topic/notifications/" + notif.getUserId() + "/RESTAURANT",
+                buildPayload(notif)
+            );
+            return true;
+        } catch (Exception e) {
+            // Client offline or connection error
+            log.warn("WebSocket send failed: {}", e.getMessage());
+            return false;  // No retry
+        }
+    }
+}
+
+// In BaseNotificationListener
+for (T notification : disaggregatedList) {
+    persistNotification(notification);  // INSERT to DB
+    attemptWebSocketSend(notification);  // Send async (best-effort)
+}
+
+// Security: WebSocketChannelInterceptor validates destination
+public Message<?> preSend(Message<?> message, MessageChannel channel) {
+    String destination = SimpMessageHeaderAccessor.getDestination(message);
+    String userId = getUserIdFromAuth();
+    String userType = getUserTypeFromAuth();
+    
+    // Validate: user can only receive /topic/notifications/{userId}/{type}
+    if (!destination.contains("/" + userId + "/")) {
+        throw new AccessDeniedException("Not your topic");
+    }
+    
+    return message;
+}
+```
+
+**Transaction Scope**:
+```java
+@Transactional
+protected void processNotificationMessage(...) {
+    // WebSocket send is NOT part of transaction
+    // If send fails: notification still persisted ✅ (correct)
+    
+    persistNotification(notification);  // INSERT (transaction)
+    attemptWebSocketSend(notification);  // Outside transaction (best-effort)
+}
+```
+
+**Concurrency**: No concurrency control needed (send is fire-and-forget)
+
+---
+
+**Document Version**: 1.0  
+**Component**: WebSocket Real-Time Delivery

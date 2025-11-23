@@ -254,6 +254,7 @@ public class AdminOrchestrator extends NotificationOrchestrator<AdminNotificatio
     ) {
         String eventType = extractString(message, "event_type");
         String aggregateType = extractString(message, "aggregate_type");
+        Long eventOutboxId = extractLong(message, "event_outbox_id");
         Map<String, Object> payload = extractPayload(message);
 
         @SuppressWarnings("unchecked")
@@ -263,6 +264,7 @@ public class AdminOrchestrator extends NotificationOrchestrator<AdminNotificatio
 
         return AdminNotification.builder()
             .eventId(eventId)
+            .eventOutboxId(eventOutboxId)
             .userId(adminId)
             .channel(NotificationChannel.valueOf(channel))
             .status(DeliveryStatus.PENDING)

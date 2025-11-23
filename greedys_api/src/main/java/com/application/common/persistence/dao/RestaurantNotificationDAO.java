@@ -76,4 +76,62 @@ public interface RestaurantNotificationDAO extends JpaRepository<RestaurantNotif
      */
     @Query("SELECT COUNT(r) FROM RestaurantNotificationEntity r WHERE r.userId = :userId AND r.creationTime > :lastMenuOpenedAt")
     long countByUserIdAndCreatedAfter(@Param("userId") Long userId, @Param("lastMenuOpenedAt") Instant lastMenuOpenedAt);
+
+    // ========== SHARED READ SCOPE METHODS ==========
+
+    /**
+     * RESTAURANT scope: Mark all unread notifications for restaurant as read
+     * 
+     * Use case: Reservation alert sent to all staff in restaurant#5
+     *   - Staff#1 reads → all staff in restaurant#5 see it as read
+     * 
+     * @param restaurantId Restaurant ID
+     * @param readByUserId User who triggered read
+     * @param readAt Timestamp
+     * @return Number of rows updated
+     */
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE RestaurantNotificationEntity r SET r.read = true, r.readByUserId = :readByUserId, r.readAt = :readAt " +
+           "WHERE r.RUser.restaurant.id = :restaurantId AND r.sharedRead = true AND r.read = false")
+    int markAsReadRestaurant(@Param("restaurantId") Long restaurantId, 
+                             @Param("readByUserId") Long readByUserId, 
+                             @Param("readAt") Instant readAt);
+
+    /**
+     * RESTAURANT_HUB scope: Mark all notifications for hub as read
+     * 
+     * Use case: Hub manager notification sent to all staff across hub's restaurants
+     *   - Hub#10 manages restaurant#1, restaurant#2
+     *   - Hub staff reads → ALL staff in hub#10 see it as read
+     * 
+     * @param hubId Restaurant User Hub ID
+     * @param readByUserId User who triggered read
+     * @param readAt Timestamp
+     * @return Number of rows updated
+     */
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE RestaurantNotificationEntity r SET r.read = true, r.readByUserId = :readByUserId, r.readAt = :readAt " +
+           "WHERE r.RUser.restaurantUserHub.id = :hubId AND r.sharedRead = true AND r.read = false")
+    int markAsReadRestaurantHub(@Param("hubId") Long hubId, 
+                                @Param("readByUserId") Long readByUserId, 
+                                @Param("readAt") Instant readAt);
+
+    /**
+     * RESTAURANT_HUB_ALL scope: Admin broadcast - mark ALL as read immediately
+     * 
+     * Use case: Critical system announcement to entire hub
+     *   - Admin marks hub#10 as read
+     *   - ALL users in hub#10 see notification as "read"
+     * 
+     * @param hubId Restaurant User Hub ID
+     * @param readByUserId User who triggered read
+     * @param readAt Timestamp
+     * @return Number of rows updated
+     */
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE RestaurantNotificationEntity r SET r.read = true, r.readByUserId = :readByUserId, r.readAt = :readAt " +
+           "WHERE r.RUser.restaurantUserHub.id = :hubId")
+    int markAsReadRestaurantHubAll(@Param("hubId") Long hubId, 
+                                    @Param("readByUserId") Long readByUserId, 
+                                    @Param("readAt") Instant readAt);
 }

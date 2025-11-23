@@ -215,4 +215,65 @@ public interface AgencyUserNotificationDAO extends JpaRepository<AgencyUserNotif
         """, nativeQuery = true)
     int deleteOldReadNotifications(@Param("daysOld") int daysOld);
 
+    // ========== SHARED READ SCOPE METHODS ==========
+
+    /**
+     * AGENCY scope: Mark all unread notifications for agency as read
+     * 
+     * Use case: Agency-wide announcement
+     *   - AgencyUser#1 (agency#3) reads → all AgencyUsers in agency#3 see it as read
+     * 
+     * @param agencyId Agency ID
+     * @param readByUserId User who triggered read
+     * @param readAt Timestamp
+     * @return Number of rows updated
+     */
+    @Modifying
+    @Transactional
+    @Query("UPDATE AgencyUserNotification a SET a.status = 'READ', a.readByUserId = :readByUserId, a.readAt = :readAt " +
+           "WHERE a.agencyId = :agencyId AND a.sharedRead = true AND a.status != 'READ'")
+    int markAsReadAgency(@Param("agencyId") Long agencyId, 
+                         @Param("readByUserId") Long readByUserId, 
+                         @Param("readAt") java.time.Instant readAt);
+
+    /**
+     * AGENCY_HUB scope: Mark all notifications for hub as read
+     * 
+     * Use case: Hub manager notification sent to all staff across multiple agencies
+     *   - Hub#20 manages agency#1, agency#2
+     *   - Hub staff reads → ALL staff in hub#20 see it as read
+     * 
+     * @param hubId Agency User Hub ID
+     * @param readByUserId User who triggered read
+     * @param readAt Timestamp
+     * @return Number of rows updated
+     */
+    @Modifying
+    @Transactional
+    @Query("UPDATE AgencyUserNotification a SET a.status = 'READ', a.readByUserId = :readByUserId, a.readAt = :readAt " +
+           "WHERE a.agencyUser.agencyUserHub.id = :hubId AND a.sharedRead = true AND a.status != 'READ'")
+    int markAsReadAgencyHub(@Param("hubId") Long hubId, 
+                            @Param("readByUserId") Long readByUserId, 
+                            @Param("readAt") java.time.Instant readAt);
+
+    /**
+     * AGENCY_HUB_ALL scope: Admin broadcast - mark ALL as read immediately
+     * 
+     * Use case: Critical system announcement to entire hub
+     *   - Admin marks hub#20 as read
+     *   - ALL users in hub#20 see notification as "read"
+     * 
+     * @param hubId Agency User Hub ID
+     * @param readByUserId User who triggered read
+     * @param readAt Timestamp
+     * @return Number of rows updated
+     */
+    @Modifying
+    @Transactional
+    @Query("UPDATE AgencyUserNotification a SET a.status = 'READ', a.readByUserId = :readByUserId, a.readAt = :readAt " +
+           "WHERE a.agencyUser.agencyUserHub.id = :hubId")
+    int markAsReadAgencyHubAll(@Param("hubId") Long hubId, 
+                               @Param("readByUserId") Long readByUserId, 
+                               @Param("readAt") java.time.Instant readAt);
+
 }

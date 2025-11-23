@@ -1,0 +1,100 @@
+# Notification Persistence - Comprehensive Documentation
+
+## Three-File Structure
+
+### flow_diagram.txt
+```
+NOTIFICATION TABLES → PENDING STAGE → DELIVERY → READ/ARCHIVED
+
+RestaurantUserNotification
+├─ Columns:
+│  ├─ id (PK)
+│  ├─ event_id (UNIQUE, FK to EventOutbox)
+│  ├─ user_id (staff ID)
+│  ├─ channel (WEBSOCKET, EMAIL, PUSH, SMS)
+│  ├─ status (PENDING, DELIVERED, FAILED, READ, ARCHIVED)
+│  ├─ read_by_all (true/false - shared read flag)
+│  ├─ restaurant_id (for batch operations)
+│  ├─ title, body, properties
+│  ├─ created_at, updated_at, read_at
+│  └─ deleted_at (soft delete)
+│
+├─ Indexes:
+│  ├─ UNIQUE(event_id) - idempotency
+│  ├─ INDEX(user_id, status) - polling
+│  ├─ INDEX(restaurant_id, status) - batch reads
+│  └─ INDEX(channel, status) - channel delivery
+
+Lifecycle:
+  PENDING → (ChannelPoller) → DELIVERED → (User reads) → READ
+         → (Max retries) → FAILED
+```
+
+### functional_description.md
+**Purpose**: Persist disaggregated notification records with idempotency
+
+**Responsibility**:
+- Store notification entities in database
+- Enforce UNIQUE(eventId) for idempotency
+- Track delivery status per channel
+- Support batch queries for delivery
+- Handle read status updates
+
+**4 Tables** (one per user type):
+1. RestaurantUserNotification
+2. CustomerNotification
+3. AgencyUserNotification  
+4. AdminNotification
+
+**Lifecycle**:
+- PENDING: Created by listener, waiting for delivery
+- DELIVERED: Successfully sent via channel
+- READ: User has opened notification
+- FAILED: Max retries exceeded
+- ARCHIVED: Old notifications (>30 days)
+
+### implementation_notes.md
+```java
+// Persistence in BaseNotificationListener
+try {
+    persistNotification(notification);  // INSERT
+} catch (DataIntegrityViolationException e) {
+    // Duplicate event_id → already processed
+    log.debug("Notification already exists, skipping");
+    // Continue (idempotent)
+}
+
+// DAO methods
+restaurantNotificationDAO.save(notification);  // INSERT
+restaurantNotificationDAO.findByStatusAndChannel(...);  // For polling
+restaurantNotificationDAO.markAsRead(...);  // For read status
+restaurantNotificationDAO.deleteOlderThan(...);  // For archival
+```
+
+**Transactions**: @Transactional at listener level (entire batch)
+
+**Constraints**:
+- UNIQUE(event_id) - prevent duplicates
+- FK to EventOutbox - audit trail
+- Soft delete (deleted_at column)
+
+**Indexes**:
+- PRIMARY(id)
+- UNIQUE(event_id)
+- (user_id, status) - for polling/counting
+- (restaurant_id, status) - for restaurant-level queries
+- (channel, status) - for ChannelPoller
+
+---
+
+## Summary Table
+
+| Aspect | Details |
+|---|---|
+| **Purpose** | Persist disaggregated notifications for tracking |
+| **Tables** | 4 (restaurant, customer, agency, admin) |
+| **Key Field** | eventId (UNIQUE for idempotency) |
+| **Lifecycle** | PENDING → DELIVERED → READ → ARCHIVED |
+| **Volume** | 1 event = 1-1000 records |
+| **Retention** | 30+ days (configurable) |
+| **Scaling** | Table partitioning if >50M rows |

@@ -1,0 +1,235 @@
+```
+NOTIFICATION DISAGGREGATION - FLOW DIAGRAM
+===========================================
+
+┌────────────────────────────────────────────┐
+│ LAYER 2: NOTIFICATION DISAGGREGATION       │
+│ Receives 1 GENERIC message from RabbitMQ   │
+│ Outputs N recipient-specific records       │
+└──────────────────┬─────────────────────────┘
+                   │
+                   │ Message structure:
+                   │ {
+                   │   event_type: "RESERVATION_REQUESTED",
+                   │   aggregate_type: "RESTAURANT",
+                   │   restaurant_id: 5,
+                   │   payload: {...}
+                   │ }
+                   │
+        ┌──────────▼──────────────────────────┐
+        │ STEP 1: GET ORCHESTRATOR             │
+        │                                      │
+        │ NotificationOrchestratorFactory      │
+        │   .getOrchestrator("RESTAURANT")     │
+        │                                      │
+        │ Returns:                             │
+        │   RestaurantUserOrchestrator         │
+        │                                      │
+        │ (or CustomerOrchestrator,            │
+        │  AgencyUserOrchestrator,             │
+        │  AdminOrchestrator)                  │
+        └──────────────────┬───────────────────┘
+                           │
+        ┌──────────────────▼───────────────────┐
+        │ STEP 2: LOAD RECIPIENTS              │
+        │                                      │
+        │ Query: SELECT * FROM restaurant_staff
+        │        WHERE restaurant_id = 5       │
+        │        AND active = true             │
+        │                                      │
+        │ Result: [Staff1, Staff2, ...Staff10] │
+        │                                      │
+        │ For different user types:            │
+        │ - RESTAURANT: load staff list        │
+        │ - CUSTOMER: load single customer     │
+        │ - AGENCY: load agency staff          │
+        │ - ADMIN: load system admins          │
+        └──────────────────┬───────────────────┘
+                           │
+        ┌──────────────────▼───────────────────────┐
+        │ STEP 3: FOR EACH RECIPIENT              │
+        │                                         │
+        │ Loop through recipient list             │
+        │ Per staff: [Staff1, Staff2, Staff3...]  │
+        │                                         │
+        │ For each staff:                         │
+        │   ├─ Load preferences                   │
+        │   │  (enabled channels)                 │
+        │   ├─ Load event rules                   │
+        │   │  (what channels for this event)     │
+        │   ├─ Load group settings                │
+        │   │  (restaurant-level defaults)        │
+        │   └─ Calculate final channels           │
+        │      (Group ∩ User ∩ Event)            │
+        └──────────────────┬───────────────────────┘
+                           │
+                           ▼
+        ┌─────────────────────────────────────────┐
+        │ STEP 4: CALCULATE FINAL CHANNELS        │
+        │                                         │
+        │ Example for Staff1:                     │
+        │                                         │
+        │ Group enabled: [WEBSOCKET, EMAIL, SMS]  │
+        │ User enabled: [WEBSOCKET, EMAIL]        │
+        │ Event rules: mandatory=[WEBSOCKET]      │
+        │              optional=[EMAIL, PUSH]     │
+        │                                         │
+        │ Intersection logic:                     │
+        │   final = (mandatory + optional)        │
+        │         ∩ user_enabled                  │
+        │         ∩ group_enabled                 │
+        │                                         │
+        │ Result:                                 │
+        │   [WEBSOCKET, EMAIL]                    │
+        │                                         │
+        │ For Staff2 (different preferences):     │
+        │ Group enabled: [WEBSOCKET, EMAIL, SMS]  │
+        │ User enabled: [WEBSOCKET, SMS]          │
+        │ Event rules: mandatory=[WEBSOCKET]      │
+        │              optional=[EMAIL, PUSH]     │
+        │                                         │
+        │ Result:                                 │
+        │   [WEBSOCKET, SMS]                      │
+        └──────────────────┬───────────────────────┘
+                           │
+        ┌──────────────────▼───────────────────────────┐
+        │ STEP 5: CREATE NOTIFICATION RECORDS         │
+        │ (per recipient × per channel)                │
+        │                                              │
+        │ For Staff1, channels=[WEBSOCKET, EMAIL]:     │
+        │   ├─ Create record 1:                        │
+        │   │  {eventId: evt-res-123-staff1-websocket, │
+        │   │   userId: staff1_id,                      │
+        │   │   channel: WEBSOCKET,                     │
+        │   │   status: PENDING}                        │
+        │   │                                           │
+        │   └─ Create record 2:                        │
+        │      {eventId: evt-res-123-staff1-email,     │
+        │       userId: staff1_id,                      │
+        │       channel: EMAIL,                         │
+        │       status: PENDING}                        │
+        │                                              │
+        │ For Staff2, channels=[WEBSOCKET, SMS]:       │
+        │   ├─ Create record 3: (WEBSOCKET)            │
+        │   └─ Create record 4: (SMS)                  │
+        │                                              │
+        │ ... (continue for all 10 staff)              │
+        │                                              │
+        │ Total: 10 staff × ~2 channels = 20 records   │
+        └──────────────────┬───────────────────────────┘
+                           │
+                           ▼
+        ┌──────────────────────────────────────┐
+        │ STEP 6: APPLY EVENT-TYPE RULES       │
+        │                                      │
+        │ Per orchestrator (RESTAURANT-specific│
+        │ logic):                              │
+        │                                      │
+        │ - ReadByAll flag: true for BROADCAST │
+        │   false for other events             │
+        │                                      │
+        │ - Priority escalation:               │
+        │   HIGH event → notify manager first  │
+        │                                      │
+        │ - SMS restrictions:                  │
+        │   Only MANAGER role gets SMS         │
+        │                                      │
+        │ - etc (per event type)               │
+        └──────────────────┬───────────────────┘
+                           │
+                           ▼
+        ┌──────────────────────────────────────┐
+        │ RETURN: List<RestaurantUser          │
+        │          Notification>               │
+        │                                      │
+        │ [                                    │
+        │   record1, record2, ..., record20    │
+        │ ]                                    │
+        │                                      │
+        │ All disaggregated and ready to       │
+        │ persist to database                  │
+        └──────────────────┬───────────────────┘
+                           │
+                           ▼
+        ┌──────────────────────────────────────────┐
+        │ PERSISTENCE (by BaseNotificationListener) │
+        │                                           │
+        │ ├─ for each record:                       │
+        │ │  persistNotification(record)            │
+        │ │  └─ INSERT into database                │
+        │ │                                         │
+        │ └─ Result: 20 rows in                     │
+        │    RestaurantUserNotification table       │
+        │                                           │
+        │ Indexed by:                               │
+        │   UNIQUE(eventId) - for idempotency       │
+        │   user_id, channel, status - for queries  │
+        └──────────────────┬───────────────────────┘
+                           │
+                           ▼
+        ┌──────────────────────────────────────────┐
+        │ LAYER 3: READY FOR DELIVERY              │
+        │                                           │
+        │ WebSocketSender attempts immediate send  │
+        │ ChannelPoller polls for pending delivery │
+        │ ReadStatusService handles user reads     │
+        └──────────────────────────────────────────┘
+
+ORCHESTRATOR CLASS HIERARCHY
+=============================
+
+NotificationOrchestrator<T> (Abstract Base)
+  ├─ public abstract List<T> disaggregateAndProcess(Map<String,Object> msg)
+  ├─ protected abstract List<Long> loadRecipients(Map<String,Object>)
+  ├─ protected abstract List<String> loadUserPreferences(Long userId)
+  ├─ protected abstract Map<String,Object> loadGroupSettings(Map<String,Object>)
+  ├─ protected abstract Map<String,Object> loadEventTypeRules(String eventType)
+  └─ protected abstract T createNotificationRecord(String eventId, Long userId, String channel, Map<String,Object> msg)
+
+  Implementations:
+  │
+  ├─ RestaurantUserOrchestrator extends NotificationOrchestrator<RestaurantUserNotification>
+  │  ├─ loadRecipients: Query restaurant_staff table
+  │  ├─ loadUserPreferences: Query restaurant_user_preferences
+  │  ├─ loadGroupSettings: Query restaurant_notification_settings
+  │  └─ loadEventTypeRules: Return RESERVATION → [WEBSOCKET, EMAIL, PUSH]
+  │
+  ├─ CustomerOrchestrator extends NotificationOrchestrator<CustomerNotification>
+  │  ├─ loadRecipients: Return single customer
+  │  ├─ loadUserPreferences: Query customer_notification_preferences
+  │  └─ loadGroupSettings: Return basic defaults
+  │
+  ├─ AgencyUserOrchestrator extends NotificationOrchestrator<AgencyUserNotification>
+  │  └─ (similar to RestaurantUserOrchestrator, but for agency)
+  │
+  └─ AdminOrchestrator extends NotificationOrchestrator<AdminNotification>
+     └─ (similar, but loads all system admins)
+
+FACTORY PATTERN
+================
+
+NotificationOrchestratorFactory
+  ├─ Map<String, NotificationOrchestrator> strategies
+  │  ├─ "RESTAURANT" → RestaurantUserOrchestrator
+  │  ├─ "CUSTOMER" → CustomerOrchestrator
+  │  ├─ "AGENCY" → AgencyUserOrchestrator
+  │  └─ "ADMIN" → AdminOrchestrator
+  │
+  └─ getOrchestrator(String aggregateType)
+     ├─ Validate aggregateType
+     ├─ Lookup in strategies map
+     └─ Return orchestrator instance
+
+Usage: (in BaseNotificationListener)
+  ├─ String aggregateType = message.get("aggregate_type")
+  ├─ NotificationOrchestrator orch =
+  │    factory.getOrchestrator(aggregateType)
+  └─ List<T> records = orch.disaggregateAndProcess(message)
+
+```
+
+---
+
+**Document Version**: 1.0  
+**Last Updated**: November 23, 2025  
+**Component**: Notification Disaggregation (Layer 2)

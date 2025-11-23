@@ -1,0 +1,147 @@
+# Security Validation Layer
+
+## Flow Diagram
+
+```
+CLIENT HANDSHAKE
+├─ 1. WebSocket upgrade request
+├─ 2. WebSocketHandshakeInterceptor
+│  ├─ Extract JWT (from header or query param)
+│  ├─ Validate signature & expiration
+│  ├─ Extract claims: userId, userType
+│  └─ Store in session attributes
+└─ 3. HTTP 101 Switching Protocols (or 401 if invalid JWT)
+
+CLIENT SUBSCRIBES
+├─ 1. STOMP SUBSCRIBE frame
+├─ 2. WebSocketChannelInterceptor
+│  ├─ Check authentication present
+│  ├─ Get destination: /topic/notifications/{userId}/{type}
+│  ├─ WebSocketDestinationValidator.canAccess()
+│  │  ├─ Check: userId matches destination {userId}?
+│  │  └─ Check: userType matches destination {type}?
+│  ├─ If valid: Allow subscription
+│  └─ If invalid: Send STOMP ERROR frame (403)
+└─ 3. Message delivery to /topic/... via SimpMessagingTemplate
+
+SECURITY RULES
+├─ Rule 1: /user/{id}/queue/* → Only user {id} can access
+├─ Rule 2: /topic/{role}/* → Only users with that role
+├─ Rule 3: /broadcast/* → Only admins
+└─ Rule 4: /app/* → Authenticated users only
+```
+
+## Functional Description
+
+Enforces multi-level access control via JWT authentication + role-based destination validation.
+
+**3 Security Layers**:
+1. **Handshake**: JWT validation
+2. **STOMP Frame**: Destination authorization
+3. **Integration**: Consistent with REST security
+
+**Access Control**:
+- User ID isolation: `/user/{id}/queue/*` only for user {id}
+- Role-based topics: `/topic/{role}/*` only for matching roles
+- Admin broadcast: `/broadcast/*` only for admins
+
+**Authentication**:
+- JWT from Authorization header or ?token query param
+- Same secret as REST JWT
+- Validates: signature, expiration, claims
+
+---
+
+## Implementation
+
+```java
+// WebSocketHandshakeInterceptor
+@Override
+public boolean beforeHandshake(ServletUpgradeRequest request, ServletUpgradeResponse response,
+                               WebSocketHandler wsHandler, Map<String, Object> attributes) {
+    try {
+        String token = extractJWT(request);
+        JwtUtil.validateToken(token);  // Check signature & expiration
+        
+        Claims claims = JwtUtil.getClaims(token);
+        Long userId = claims.get("user_id", Long.class);
+        String userType = claims.get("user_type", String.class);
+        
+        // Store in session for later access
+        attributes.put("userId", userId);
+        attributes.put("userType", userType);
+        
+        return true;  // Proceed
+    } catch (JwtException e) {
+        return false;  // Reject (HTTP 401)
+    }
+}
+
+// WebSocketChannelInterceptor
+@Override
+public Message<?> preSend(Message<?> message, MessageChannel channel) {
+    StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
+    
+    if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
+        String destination = accessor.getDestination();
+        Long userId = (Long) accessor.getSessionAttributes().get("userId");
+        String userType = (String) accessor.getSessionAttributes().get("userType");
+        
+        if (!WebSocketDestinationValidator.canAccess(destination, userId, userType)) {
+            throw new AccessDeniedException("No permission: " + destination);
+        }
+    }
+    
+    return message;
+}
+
+// WebSocketDestinationValidator
+public static boolean canAccess(String destination, Long userId, String userType) {
+    if (destination.startsWith("/user/" + userId + "/")) {
+        return true;  // User-specific queue
+    }
+    
+    if (destination.startsWith("/topic/restaurant/") && userType.contains("restaurant")) {
+        return true;
+    }
+    
+    if (destination.startsWith("/topic/customer/") && userType.equals("CUSTOMER")) {
+        return true;
+    }
+    
+    if (destination.startsWith("/broadcast/") && userType.equals("ADMIN")) {
+        return true;
+    }
+    
+    return false;
+}
+
+// WebSocketAuthenticationToken
+public class WebSocketAuthenticationToken implements Authentication {
+    
+    private final String username;
+    private final Long userId;
+    private final String userType;
+    private final List<GrantedAuthority> authorities;
+    private boolean authenticated;
+    
+    public boolean isUserType(String type) {
+        return userType.equals(type);
+    }
+    
+    public boolean isHubUser() {
+        return userType.endsWith("-hub");
+    }
+}
+```
+
+**Integration with REST Security**:
+- Same JWT secret
+- Same role definitions (CUSTOMER, RESTAURANT, AGENCY, ADMIN)
+- Same claim extraction logic
+- Consistent user identification
+
+---
+
+**Document Version**: 1.0  
+**Component**: Security Validation (WebSocket Auth & Access Control)
