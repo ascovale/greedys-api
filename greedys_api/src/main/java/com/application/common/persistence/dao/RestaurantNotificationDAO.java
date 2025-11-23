@@ -111,7 +111,7 @@ public interface RestaurantNotificationDAO extends JpaRepository<RestaurantNotif
      */
     @Modifying(clearAutomatically = true)
     @Query("UPDATE RestaurantNotificationEntity r SET r.read = true, r.readByUserId = :readByUserId, r.readAt = :readAt " +
-           "WHERE r.RUser.restaurantUserHub.id = :hubId AND r.sharedRead = true AND r.read = false")
+           "WHERE r.RUser.RUserHub.id = :hubId AND r.sharedRead = true AND r.read = false")
     int markAsReadRestaurantHub(@Param("hubId") Long hubId, 
                                 @Param("readByUserId") Long readByUserId, 
                                 @Param("readAt") Instant readAt);
@@ -130,7 +130,7 @@ public interface RestaurantNotificationDAO extends JpaRepository<RestaurantNotif
      */
     @Modifying(clearAutomatically = true)
     @Query("UPDATE RestaurantNotificationEntity r SET r.read = true, r.readByUserId = :readByUserId, r.readAt = :readAt " +
-           "WHERE r.RUser.restaurantUserHub.id = :hubId")
+           "WHERE r.RUser.RUserHub.id = :hubId")
     int markAsReadRestaurantHubAll(@Param("hubId") Long hubId, 
                                     @Param("readByUserId") Long readByUserId, 
                                     @Param("readAt") Instant readAt);
