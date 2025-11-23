@@ -144,24 +144,26 @@ public class WebSocketChannelInterceptor implements ChannelInterceptor {
             throw new AccessDeniedException("Not authenticated");
         }
         
-        // Get restaurantId from JWT claims (if available)
+        // Get restaurantId and agencyId from JWT claims (if available)
         Long restaurantId = auth.getRestaurantIdFromClaims();
+        Long agencyId = auth.getAgencyIdFromClaims();
         
         // Validate destination access
         boolean allowed = destinationValidator.canAccess(
                 destination, 
                 auth.getUserType(), 
                 auth.getUserId(),
-                restaurantId
+                restaurantId,
+                agencyId
         );
         
         if (allowed) {
-            log.info("SUBSCRIBE allowed: User {} (ID: {}, type: {}, restaurantId: {}) -> {}", 
-                     auth.getUsername(), auth.getUserId(), auth.getUserType(), restaurantId, destination);
+            log.info("SUBSCRIBE allowed: User {} (ID: {}, type: {}, restaurantId: {}, agencyId: {}) -> {}", 
+                     auth.getUsername(), auth.getUserId(), auth.getUserType(), restaurantId, agencyId, destination);
             return message;
         } else {
-            log.warn("SUBSCRIBE denied: User {} (ID: {}, type: {}, restaurantId: {}) -> {} (authorization failed)", 
-                     auth.getUsername(), auth.getUserId(), auth.getUserType(), restaurantId, destination);
+            log.warn("SUBSCRIBE denied: User {} (ID: {}, type: {}, restaurantId: {}, agencyId: {}) -> {} (authorization failed)", 
+                     auth.getUsername(), auth.getUserId(), auth.getUserType(), restaurantId, agencyId, destination);
             throw new AccessDeniedException(
                     "Not authorized to subscribe to: " + destination + 
                     " (role: " + destinationValidator.getRoleFromUserType(auth.getUserType()) + ")"
