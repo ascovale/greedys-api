@@ -251,7 +251,8 @@ public interface AgencyUserNotificationDAO extends JpaRepository<AgencyUserNotif
     @Modifying
     @Transactional
     @Query("UPDATE AgencyUserNotification a SET a.status = 'READ', a.readByUserId = :readByUserId, a.readAt = :readAt " +
-           "WHERE a.agencyUser.agencyUserHub.id = :hubId AND a.sharedRead = true AND a.status != 'READ'")
+           "WHERE a.userId IN (SELECT au.id FROM AgencyUser au WHERE au.agencyUserHub.id = :hubId) " +
+           "AND a.sharedRead = true AND a.status != 'READ'")
     int markAsReadAgencyHub(@Param("hubId") Long hubId, 
                             @Param("readByUserId") Long readByUserId, 
                             @Param("readAt") java.time.Instant readAt);
@@ -271,7 +272,7 @@ public interface AgencyUserNotificationDAO extends JpaRepository<AgencyUserNotif
     @Modifying
     @Transactional
     @Query("UPDATE AgencyUserNotification a SET a.status = 'READ', a.readByUserId = :readByUserId, a.readAt = :readAt " +
-           "WHERE a.agencyUser.agencyUserHub.id = :hubId")
+           "WHERE a.userId IN (SELECT au.id FROM AgencyUser au WHERE au.agencyUserHub.id = :hubId)")
     int markAsReadAgencyHubAll(@Param("hubId") Long hubId, 
                                @Param("readByUserId") Long readByUserId, 
                                @Param("readAt") java.time.Instant readAt);
