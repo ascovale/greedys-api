@@ -38,7 +38,7 @@ public class EventOutboxCleanupJob {
     
     private static final int RETENTION_DAYS = 30;
     
-    @Scheduled(cron = "0 2 * * *")  // 2 AM daily
+    @Scheduled(cron = "0 0 2 * * *")  // 2 AM daily (sec min hour day month dow)
     public void cleanupOldEvents() {
         try {
             log.info("🧹 Starting EventOutbox cleanup job...");
