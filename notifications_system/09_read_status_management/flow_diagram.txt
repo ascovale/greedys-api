@@ -1,0 +1,28 @@
+# Read Status Management - Functional Description
+
+Track notification read status with optional group propagation and real-time broadcasting.
+
+**Flow**:
+1. User reads notification → WebSocket handler
+2. Handler loads notification and checks `read_by_all` flag
+3. If true: SharedReadService marks all related as READ
+4. If false: Mark only this notification as READ
+5. Broadcast status update to all connected users in group
+
+**Broadcast Destination**: `/topic/notifications/{userId}/{type}`
+
+**Message Format**:
+```json
+{
+  "eventId": "evt-res-123",
+  "status": "READ",
+  "readByUser": "John (Staff ID 50)"
+}
+```
+
+**Transactional**: All operations within @Transactional boundary
+
+---
+
+**Document Version**: 1.0  
+**Component**: Read Status Management

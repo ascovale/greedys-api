@@ -16,8 +16,10 @@ import com.application.common.persistence.model.ProcessedEvent;
 import com.application.common.persistence.model.notification.EventOutbox;
 import com.application.common.persistence.model.notification.EventOutbox.Status;
 import com.application.common.type.ProcessingStatus;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import java.time.Instant;
 
 /**
  * ⭐ EVENT OUTBOX ORCHESTRATOR (PRODUCER - LAYER 1)
@@ -98,6 +100,8 @@ public class EventOutboxOrchestrator {
     private final EventOutboxDAO eventOutboxRepository;
     private final ProcessedEventDAO processedEventRepository;
     private final RabbitTemplate rabbitTemplate;
+    
+    private static final int MAX_RETRY_ATTEMPTS = 3;
 
     /**
      * ⭐ MAIN SCHEDULED JOB
@@ -110,9 +114,15 @@ public class EventOutboxOrchestrator {
      * - Allows other services to start first
      * 
      * ⭐ IDEMPOTENCY: LEVEL 1 (Event-Level)
+     * @Transactional wrapper provides logical lock via DB atomicity.
      * For each event, tries to INSERT ProcessedEvent(eventId) with UNIQUE constraint.
      * - If success → event is new, proceed with publishing
      * - If UNIQUE violation → event already processed, SKIP (no duplicate RabbitMQ messages)
+     * 
+     * ⭐ MAX RETRY LOGIC
+     * - Tracks retry attempts in EventOutbox.retry_count
+     * - If exceeds MAX_RETRY_ATTEMPTS (3), moves to FAILED status
+     * - Logs error for manual investigation
      */
     @Scheduled(fixedDelay = 1000, initialDelay = 2000)
     @Transactional
@@ -131,43 +141,89 @@ public class EventOutboxOrchestrator {
 
         // Process each event
         for (EventOutbox event : pendingEvents) {
-            try {
-                // ⭐ LEVEL 1 IDEMPOTENCY: Try insert ProcessedEvent with UNIQUE constraint
-                ProcessedEvent processed = new ProcessedEvent();
-                processed.setEventId(event.getEventId());
-                processed.setStatus(ProcessingStatus.PROCESSING);
-                processedEventRepository.save(processed);
-                
-                // If we reach here = first time processing this event
-                publishEvent(event);
-                markAsProcessed(event);
-                
-                // Mark processing as successful
-                processed.setStatus(ProcessingStatus.SUCCESS);
-                processedEventRepository.save(processed);
-                
-                log.info("✅ Published event: {} to queue: notification.{}", 
-                    event.getEventId(), 
-                    event.getAggregateType().toLowerCase()
-                );
-                
-            } catch (DataIntegrityViolationException e) {
-                // ⭐ UNIQUE constraint violation = eventId already in ProcessedEvent
-                // This means event was already published to RabbitMQ
-                // SKIP this event (no duplicate messages to RabbitMQ)
-                log.info("⏭️  Event {} already processed (idempotent), skipping", event.getEventId());
-                
-            } catch (Exception e) {
-                log.error("❌ Failed to process event: {} - {}", 
-                    event.getEventId(), 
-                    e.getMessage(), 
-                    e
-                );
-                // Don't mark as processed - will retry next cycle
-            }
+            processEvent(event);
         }
 
         log.info("✅ Completed orchestration cycle: {} events processed", pendingEvents.size());
+    }
+    
+    /**
+     * ⭐ PROBLEM #1: FIX Operation Order
+     * 
+     * CORRECT ORDER:
+     * 1. INSERT ProcessedEvent (idempotency lock) FIRST
+     * 2. Publish to RabbitMQ
+     * 3. Mark as PROCESSED
+     * 
+     * If crash at step 2 (during publish): Lock exists, retry will be skipped by UNIQUE
+     * If crash at step 3 (during mark as PROCESSED): Lock exists, mark will retry
+     * 
+     * ⭐ PROBLEM #2: Retry with backoff if ProcessedEvent insert fails
+     * If DB error during lock insert → don't publish → retry next cycle
+     * 
+     * ⭐ PROBLEM #4: Max retry logic
+     * If retry count exceeds MAX_RETRY_ATTEMPTS → move to FAILED status
+     */
+    @Transactional
+    private void processEvent(EventOutbox event) {
+        try {
+            // ⭐ MAX RETRY LOGIC: Check if exceeded max retries
+            if (event.getRetryCount() >= MAX_RETRY_ATTEMPTS) {
+                event.setStatus(Status.FAILED);
+                event.setFailedAt(Instant.now());
+                event.setErrorMessage("Max retry attempts (" + MAX_RETRY_ATTEMPTS + ") exceeded");
+                eventOutboxRepository.save(event);
+                
+                log.warn("⚠️ Event {} exceeded max retries, moved to FAILED status", event.getEventId());
+                return;
+            }
+            
+            // ⭐ PROBLEM #1 & #2: Step 1 - INSERT ProcessedEvent FIRST (idempotency lock)
+            // This must happen BEFORE publish
+            ProcessedEvent processed = new ProcessedEvent();
+            processed.setEventId(event.getEventId());
+            processed.setStatus(ProcessingStatus.PROCESSING);
+            processedEventRepository.save(processed);
+            
+            // ⭐ PROBLEM #1 & #2: Step 2 - Publish to RabbitMQ (if lock insert succeeded)
+            publishEvent(event);
+            
+            // ⭐ PROBLEM #1 & #2: Step 3 - Mark as PROCESSED only if publish succeeds
+            event.setStatus(Status.PROCESSED);
+            event.setPublishedAt(Instant.now());
+            eventOutboxRepository.save(event);
+            
+            // Mark processing as successful
+            processed.setStatus(ProcessingStatus.SUCCESS);
+            processedEventRepository.save(processed);
+            
+            log.info("✅ Published event: {} to queue: notification.{}", 
+                event.getEventId(), 
+                event.getAggregateType().toLowerCase()
+            );
+            
+        } catch (DataIntegrityViolationException e) {
+            // ⭐ UNIQUE constraint violation = eventId already in ProcessedEvent
+            // This means event was already published to RabbitMQ (previous cycle)
+            // SKIP this event (no duplicate messages to RabbitMQ)
+            log.info("⏭️  Event {} already processed (idempotent), skipping", event.getEventId());
+            event.setStatus(Status.PROCESSED);
+            eventOutboxRepository.save(event);
+            
+        } catch (Exception e) {
+            // ⭐ PROBLEM #4: Increment retry count on error
+            int newRetryCount = (event.getRetryCount() != null ? event.getRetryCount() : 0) + 1;
+            event.setRetryCount(newRetryCount);
+            eventOutboxRepository.save(event);
+            
+            log.error("❌ Failed to process event: {} - attempt {}/{} - {}", 
+                event.getEventId(),
+                newRetryCount,
+                MAX_RETRY_ATTEMPTS,
+                e.getMessage()
+            );
+            // Don't mark as processed - will retry next cycle
+        }
     }
 
     /**
@@ -225,6 +281,7 @@ public class EventOutboxOrchestrator {
      * 
      * Message structure:
      * {
+     *   event_outbox_id: 12345,      ⭐ NEW: Foreign key to EventOutbox for audit trail
      *   event_id: "RES-REQ-12345",
      *   event_type: "RESERVATION_REQUESTED",
      *   aggregate_type: "RESTAURANT",
@@ -239,12 +296,20 @@ public class EventOutboxOrchestrator {
      *   - BROADCAST: Load ALL users of this type, send to all
      *   - TARGETED: Load specific user only (from recipient_id in payload)
      * 
+     * ⭐ event_outbox_id links back to EventOutbox row for correlation:
+     *   - Audit trail: Which EventOutbox triggered which notifications
+     *   - Debugging: Trace back to original event
+     *   - Analytics: Understand event → notification flow
+     * 
      * @param event EventOutbox entity
      * @return Map ready for RabbitMQ
      */
     private Map<String, Object> buildMessage(EventOutbox event) {
         Map<String, Object> message = new HashMap<>();
 
+        // ⭐ Add EventOutbox ID for audit trail
+        message.put("event_outbox_id", event.getId());
+        
         message.put("event_id", event.getEventId());
         message.put("event_type", event.getEventType());
         message.put("aggregate_type", event.getAggregateType());
@@ -275,12 +340,13 @@ public class EventOutboxOrchestrator {
      * @param event EventOutbox entity
      * @return "BROADCAST" or "TARGETED" (default: "TARGETED")
      */
+    @SuppressWarnings("unchecked")
     private String determineRecipientType(EventOutbox event) {
         String payload = event.getPayload();
         if (payload != null && !payload.isEmpty()) {
             try {
                 // payload is a JSON string, parse it
-                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                ObjectMapper mapper = new ObjectMapper();
                 Map<String, Object> payloadMap = mapper.readValue(payload, Map.class);
                 Object recipientType = payloadMap.get("recipientType");
                 if (recipientType != null) {
@@ -324,21 +390,7 @@ public class EventOutboxOrchestrator {
     }
 
     /**
-     * ⭐ MARK EVENT AS PROCESSED
-     * 
-     * Updates status to PROCESSED after successful publication.
-     * This prevents the same event from being published multiple times.
-     * 
-     * @param event EventOutbox entity
-     */
-    private void markAsProcessed(EventOutbox event) {
-        event.setStatus(Status.PROCESSED);
-        eventOutboxRepository.save(event);
-        log.debug("✓ Marked event as PROCESSED: {}", event.getEventId());
-    }
-
-    /**
-     * ⭐ FUTURE ENHANCEMENT (Optional)
+     * ⭐ BUILD MESSAGE FOR RABBITMQ
      * 
      * Can add event-type-specific publishing rules here.
      * Example: CRITICAL events get higher priority, different routing, etc.

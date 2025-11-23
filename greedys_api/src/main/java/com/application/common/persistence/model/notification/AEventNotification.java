@@ -79,6 +79,32 @@ public abstract class AEventNotification {
     String title;
 
     /**
+     * ⭐ EVENT ID - Foreign Key to originating domain event
+     * 
+     * Links this notification back to the EventOutbox row that triggered it.
+     * 
+     * Critical for:
+     * - Audit trail: Trace which event generated this notification
+     * - Correlation: Join with EventOutbox to get event details
+     * - Deduplication: Detect if same event already processed
+     * - Analytics: Understand event → notification flow
+     * - Debugging: Trace event source when troubleshooting
+     * 
+     * Usage:
+     *   SELECT n.*, e.event_type, e.aggregate_type, e.payload
+     *   FROM a_event_notification n
+     *   JOIN event_outbox e ON n.event_outbox_id = e.id
+     *   WHERE n.id = ?
+     * 
+     * Populated by NotificationListener when creating notification from EventOutbox message:
+     *   eventNotification.setEventOutboxId(eventOutbox.getId());
+     * 
+     * @see com.application.common.persistence.model.EventOutbox
+     */
+    @Column(name = "event_outbox_id", nullable = false)
+    private Long eventOutboxId;
+
+    /**
      * Corpo/descrizione della notifica
      * 
      * Es: "Tavolo per 4 persone alle 19:30", "John Doe ha creato un account", etc.
@@ -164,5 +190,40 @@ public abstract class AEventNotification {
     @Column(name = "creation_time", updatable = false)
     @CreationTimestamp
     private Instant creationTime;
+
+    /**
+     * ⭐ SHARED READ SCOPE (Dynamic Multi-Recipient Behavior)
+     * 
+     * Determines scope of shared read propagation:
+     * 
+     * NONE (default):
+     *   - Individual read state per recipient
+     *   - 95% of notifications
+     *   - No propagation when one user marks as read
+     *   - Example: Email to single staff member
+     * 
+     * RESTAURANT:
+     *   - All staff in same restaurant see shared read status
+     *   - When one RUser reads, all RUsers in restaurant#5 see as read
+     *   - Query: UPDATE WHERE restaurant_id = ?
+     * 
+     * RESTAURANT_HUB:
+     *   - All staff across hub see shared read status
+     *   - When one RUser reads, all RUser + RUserHub in hub#10 see as read
+     *   - Query: UPDATE WHERE restaurant_user_hub_id = ?
+     * 
+     * RESTAURANT_HUB_ALL:
+     *   - Admin broadcast: mark ALL as read immediately
+     *   - No conditions, all rows updated
+     *   - Query: UPDATE WHERE restaurant_user_hub_id = ? (unconditional)
+     * 
+     * Same scopes exist for Agency (AGENCY, AGENCY_HUB, AGENCY_HUB_ALL)
+     * but stored with RESTAURANT prefix (strategy-level enum mapping)
+     * 
+     * @see com.application.common.service.notification.strategy.SharedReadScope
+     */
+    @Column(name = "shared_read_scope", nullable = false)
+    @Builder.Default
+    private String sharedReadScope = "NONE";
 
 }

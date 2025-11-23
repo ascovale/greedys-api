@@ -263,6 +263,7 @@ public class RestaurantUserOrchestrator extends NotificationOrchestrator<Restaur
         String eventType = extractString(message, "event_type");
         String aggregateType = extractString(message, "aggregate_type");
         Long restaurantId = extractLong(message, "restaurant_id");
+        Long eventOutboxId = extractLong(message, "event_outbox_id");
         Map<String, Object> payload = extractPayload(message);
 
         @SuppressWarnings("unchecked")
@@ -274,6 +275,7 @@ public class RestaurantUserOrchestrator extends NotificationOrchestrator<Restaur
 
         return RestaurantUserNotification.builder()
             .eventId(eventId)
+            .eventOutboxId(eventOutboxId)
             .userId(staffId)
             .restaurantId(restaurantId)
             .channel(NotificationChannel.valueOf(channel))

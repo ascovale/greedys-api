@@ -28,7 +28,8 @@ import lombok.experimental.SuperBuilder;
 /**
  * AgencyUser represents a user who works for a specific agency.
  * Similar to RUser but for agency operations.
- * One AgencyUser can work for multiple agencies through different instances.
+ * Each AgencyUser works for ONE Agency (ManyToOne).
+ * Each AgencyUser belongs to ONE AgencyUserHub (ManyToOne).
  */
 @SuperBuilder
 @NoArgsConstructor
@@ -53,6 +54,10 @@ public class AgencyUser extends AbstractUser {
 
     @OneToOne(fetch = FetchType.LAZY)
     private AgencyUserOptions options;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "agency_user_hub_id")
+    private AgencyUserHub agencyUserHub;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")

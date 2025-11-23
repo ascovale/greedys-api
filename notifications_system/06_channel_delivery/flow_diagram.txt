@@ -1,0 +1,189 @@
+# Channel Delivery System
+
+## Flow Diagram (flow_diagram.txt)
+
+```
+NOTIFICATION TABLES → CHANNEL POLLER → 4 CHANNEL IMPLEMENTATIONS → USERS
+
+ChannelPoller @Scheduled(fixedDelay = 5000ms per channel)
+├─ pollWebSocketChannel() every 5s → WebSocketNotificationChannel
+├─ pollEmailChannel() every 30s → EmailNotificationChannel
+├─ pollPushChannel() every 60s → PushNotificationChannel
+└─ pollSmsChannel() every 60s → SMSNotificationChannel
+
+Per channel:
+├─ Query: SELECT * WHERE channel=? AND status='PENDING' LIMIT 100
+├─ For each record:
+│  ├─ Get implementation (INotificationChannel)
+│  ├─ Call send(title, body, recipient, properties)
+│  ├─ If SUCCESS: UPDATE status='DELIVERED'
+│  └─ If FAILURE: stays PENDING (retry next cycle)
+└─ Handle exceptions (log, don't throw)
+
+Retry Logic:
+  ├─ Exponential backoff (1s, 2s, 4s)
+  ├─ Max 3 attempts
+  └─ After max: UPDATE status='FAILED'
+
+Channel Implementations:
+├─ WebSocketNotificationChannel: Real-time, best-effort
+├─ EmailNotificationChannel: SMTP integration
+├─ PushNotificationChannel: FCM integration
+└─ SMSNotificationChannel: Twilio integration
+```
+
+## Functional Description (functional_description.md)
+
+**Purpose**: Deliver persisted notifications to users via appropriate channels
+
+**Responsibility**:
+- Poll database for PENDING notifications per channel
+- Attempt delivery via channel-specific implementation
+- Track delivery status (DELIVERED, FAILED)
+- Retry with exponential backoff
+- Handle channel-specific errors
+
+**4 Channels**:
+1. **WebSocket**: Real-time (best-effort, no retry if offline)
+2. **Email**: Async, retryable (SMTP)
+3. **Push**: Mobile notifications (FCM)
+4. **SMS**: Text messages (Twilio or similar)
+
+**Polling Frequency**:
+- WebSocket: 5 seconds (real-time requirement)
+- Email: 30 seconds (async, can batch)
+- Push: 60 seconds (mobile app)
+- SMS: 60 seconds (rate-limited)
+
+**Delivery Guarantees**:
+- WebSocket: Best-effort (no retry if offline)
+- Email/Push/SMS: At-least-once (with retries)
+
+**Error Handling**:
+- Transient error: Retry with exponential backoff
+- Permanent error: Mark as FAILED after max retries
+- Exception: Log, don't crash (continue processing)
+
+## Implementation Notes (implementation_notes.md)
+
+```java
+// ChannelPoller orchestrates all 4 channels
+@Scheduled(fixedDelayString = "${notification.polling.websocket.interval:5000}")
+public void pollWebSocketChannel() {
+    pollChannel(NotificationChannel.WEBSOCKET);
+}
+
+private void pollChannel(NotificationChannel channel) {
+    // Query all 4 tables for PENDING notifications
+    List<? extends ANotification> pending = queryByChannelAndStatus(channel, PENDING);
+    
+    // Get channel implementation
+    INotificationChannel implementation = channelFactory.getChannel(channel);
+    
+    for (ANotification notif : pending) {
+        try {
+            boolean success = implementation.send(
+                notif.getTitle(),
+                notif.getBody(),
+                notif.getUserId(),
+                notif.getRecipientType(),
+                notif.getProperties()
+            );
+            
+            if (success) {
+                updateStatus(notif, DeliveryStatus.DELIVERED);
+            }
+        } catch (Exception e) {
+            log.error("Failed to send notification via {}: {}", channel, e.getMessage());
+            // Status stays PENDING, will retry next cycle
+        }
+    }
+}
+
+// INotificationChannel interface
+public interface INotificationChannel {
+    NotificationChannel getChannelType();
+    
+    boolean send(String title, String body, Long recipient, 
+                 String recipientType, Map<String, String> properties) throws Exception;
+    
+    boolean isEnabled();  // Check if service available
+    int getMaxRetries();
+    long getRetryDelayMs();
+    long getTimeoutMs();
+}
+
+// Example: WebSocketNotificationChannel
+@Component
+public class WebSocketNotificationChannel implements INotificationChannel {
+    
+    private final NotificationWebSocketSender webSocketSender;
+    
+    @Override
+    public boolean send(String title, String body, Long recipient, 
+                       String recipientType, Map<String, String> properties) {
+        try {
+            // Send via SimpMessagingTemplate (best-effort)
+            webSocketSender.send(recipient, recipientType, 
+                new NotificationPayload(title, body, properties));
+            return true;
+        } catch (Exception e) {
+            // Client offline or connection error
+            return false;  // Don't retry WebSocket
+        }
+    }
+    
+    @Override
+    public int getMaxRetries() {
+        return 1;  // WebSocket: best-effort, no retries
+    }
+}
+
+// Example: EmailNotificationChannel
+@Component
+public class EmailNotificationChannel implements INotificationChannel {
+    
+    private final EmailService emailService;
+    
+    @Override
+    public boolean send(String title, String body, Long recipient, 
+                       String recipientType, Map<String, String> properties) {
+        try {
+            emailService.send(recipient, title, body);
+            return true;
+        } catch (SmtpException e) {
+            log.warn("SMTP error: {}", e.getMessage());
+            return false;  // Retry next cycle
+        }
+    }
+    
+    @Override
+    public int getMaxRetries() {
+        return 3;  // Email: retry up to 3 times
+    }
+    
+    @Override
+    public long getRetryDelayMs() {
+        return 5000;  // 5 seconds
+    }
+}
+```
+
+**Retry Strategy**:
+```
+Attempt 1: Cycle N, delay = 5s
+  └─ FAIL
+
+Attempt 2: Cycle N+1 (5s later), delay = 10s
+  └─ FAIL
+
+Attempt 3: Cycle N+2 (10s later)
+  └─ FAIL
+
+After 3 attempts: Mark FAILED
+```
+
+---
+
+**Document Version**: 1.0  
+**Component**: Channel Delivery System (Polling & Distribution)

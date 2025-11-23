@@ -1,0 +1,305 @@
+```
+EVENT OUTBOX PRODUCER - FLOW DIAGRAM
+=====================================
+
+┌─────────────────────────────────────────────────────────────────┐
+│ BUSINESS SERVICE LAYER (Application)                            │
+│ CustomerReservationService, OrderService, etc.                  │
+└──────────────────────┬──────────────────────────────────────────┘
+                       │
+                       │ 1. createReservation(...) or createOrder(...)
+                       │    Within @Transactional method
+                       ▼
+          ┌────────────────────────────────┐
+          │ BEGIN TRANSACTION               │
+          └────────────────────┬───────────┘
+                               │
+                               ▼
+          ┌────────────────────────────────────────┐
+          │ INSERT INTO Reservation table           │
+          │ INSERT INTO Order table (etc)           │
+          └────────────────────┬───────────────────┘
+                               │
+                               ▼
+          ┌─────────────────────────────────────────────────────┐
+          │ ⭐ KEY STEP: INSERT INTO event_outbox               │
+          │                                                     │
+          │ EventOutbox record:                                 │
+          │   - event_id: "RES-REQ-123-2025-01-20T10:30"       │
+          │   - event_type: "RESERVATION_REQUESTED"            │
+          │   - aggregate_type: "RESTAURANT"                   │
+          │   - aggregate_id: 5 (restaurant ID)                │
+          │   - status: "PENDING"                              │
+          │   - payload: {...full event data...}               │
+          │   - created_at: NOW()                              │
+          │   - published_at: NULL                             │
+          │                                                     │
+          │ ✅ ATOMIC: Same transaction as Reservation         │
+          │ ✅ GUARANTEED: If this INSERT succeeds,            │
+          │    event will eventually be published              │
+          └────────────────────┬────────────────────────────────┘
+                               │
+                               ▼
+          ┌────────────────────────────────┐
+          │ COMMIT (or ROLLBACK on error)   │
+          └────────────────────┬───────────┘
+                               │
+                               ▼ ✅ All-or-nothing guarantee
+          ┌────────────────────────────────────┐
+          │ Transaction complete                │
+          │ Reservation CREATED + EventOutbox   │
+          │ PERSISTED atomically                │
+          └────────────────────┬───────────────┘
+                               │
+                               │ (Minutes or hours can pass...)
+                               │ Server might crash here!
+                               │ But event is already safely in DB
+                               │
+                               ▼ (Async polling - separate scheduler)
+
+┌─────────────────────────────────────────────────────────────────┐
+│ EVENT OUTBOX ORCHESTRATOR (Layer 1 - PRODUCER)                  │
+│ Package: com.application.common.service.notification.orchestrator
+│ Class: EventOutboxOrchestrator                                  │
+│ Triggers: @Scheduled(fixedDelay=1000ms, initialDelay=2000ms)   │
+│ Thread: Spring scheduled executor (configurable pool)          │
+└──────────────────────────┬──────────────────────────────────────┘
+                           │
+                           ▼ Every 1 second
+        ┌──────────────────────────────────────┐
+        │ STEP 1: POLL EVENTOUTBOX              │
+        │                                      │
+        │ Query:                               │
+        │ SELECT * FROM event_outbox           │
+        │ WHERE status = 'PENDING'             │
+        │ LIMIT 100                            │
+        │ ORDER BY created_at ASC              │
+        │                                      │
+        │ Result: List<EventOutbox> events     │
+        └──────────────────┬───────────────────┘
+                           │
+                           ▼
+        ┌──────────────────────────────────┐
+        │ STEP 2: FOR EACH EVENT            │
+        │                                  │
+        │ ├─ Extract:                      │
+        │ │  ├─ eventId                    │
+        │ │  ├─ eventType                  │
+        │ │  ├─ aggregateType (KEY!)       │
+        │ │  ├─ aggregateId                │
+        │ │  ├─ payload                    │
+        │ │                                │
+        │ └─ Actions (3 per event):        │
+        │    ├─ 2a. Try INSERT ProcessedEvent
+        │    ├─ 2b. Publish to RabbitMQ    │
+        │    └─ 2c. Mark PROCESSED         │
+        └──────────────────┬───────────────┘
+                           │
+                ┌──────────┼──────────┐
+                │          │          │
+            ┌───▼──┐   ┌───▼──┐  ┌───▼──┐
+            │ 2a   │   │ 2b   │  │ 2c   │
+            └──┬───┘   └──┬───┘  └──┬───┘
+               │          │         │
+               ▼          ▼         ▼
+        ┌──────────────────────────────────────────┐
+        │ 2A: IDEMPOTENCY CHECK (Level 1)           │
+        │                                          │
+        │ ProcessedEvent.save({                     │
+        │   event_id: "RES-REQ-123",               │
+        │   status: PROCESSING                     │
+        │ })                                       │
+        │                                          │
+        │ Table constraint: UNIQUE(event_id)      │
+        │                                          │
+        │ ├─ If SUCCESS → new event, proceed       │
+        │ └─ If UNIQUE VIOLATION →                 │
+        │    Event already processed               │
+        │    SKIP (don't publish again)            │
+        └──────────────────┬───────────────────────┘
+                           │
+                           ▼ (Only if new event)
+        ┌─────────────────────────────────────────┐
+        │ 2B: PUBLISH TO RABBITMQ                 │
+        │                                         │
+        │ Key: aggregateType determines queue:    │
+        │                                         │
+        │ aggregateType = "RESTAURANT"            │
+        │   └─ Publish to:                        │
+        │      notification.restaurant            │
+        │                                         │
+        │ aggregateType = "CUSTOMER"              │
+        │   └─ Publish to:                        │
+        │      notification.customer              │
+        │                                         │
+        │ aggregateType = "AGENCY"                │
+        │   └─ Publish to:                        │
+        │      notification.agency                │
+        │                                         │
+        │ aggregateType = "ADMIN"                 │
+        │   └─ Publish to:                        │
+        │      notification.admin                 │
+        │                                         │
+        │ MESSAGE CONTENT:                        │
+        │ {                                       │
+        │   "event_id": "RES-REQ-123",           │
+        │   "event_type": "RESERVATION_REQUESTED",
+        │   "aggregate_type": "RESTAURANT",       │
+        │   "aggregate_id": 5,                    │
+        │   "payload": {                          │
+        │     "reservation_id": "RES-456",        │
+        │     "restaurant_id": 5,                 │
+        │     "customer_name": "John",            │
+        │     "party_size": 4,                    │
+        │     "time": "20:00",                    │
+        │     ...more fields...                   │
+        │   }                                     │
+        │ }                                       │
+        │                                         │
+        │ ✅ IMPORTANT: This is 1 GENERIC message │
+        │    NO DISAGGREGATION (that's Layer 2)   │
+        │    NO recipient list included           │
+        │    NO channel preferences               │
+        │    Just: "Event happened for this type" │
+        └─────────────────┬────────────────────────┘
+                          │
+                          ▼ (Success)
+        ┌──────────────────────────────────────┐
+        │ 2C: MARK PROCESSED IN EVENTOUTBOX     │
+        │                                      │
+        │ UPDATE event_outbox                  │
+        │ SET status = 'PROCESSED',            │
+        │     published_at = NOW()             │
+        │ WHERE event_id = ...                 │
+        │                                      │
+        │ ✅ Event marked published            │
+        │    Won't be polled again             │
+        └──────────────────┬───────────────────┘
+                           │
+                           ▼
+┌──────────────────────────────────────────────────────────────┐
+│ RABBITMQ BROKER                                              │
+│ Topic Exchange: notifications.exchange                       │
+└──────────────────────┬───────────────────────────────────────┘
+                       │
+       ┌───────────────┼───────────────┬──────────────┐
+       │               │               │              │
+       ▼               ▼               ▼              ▼
+   ┌────────┐   ┌─────────┐   ┌──────────┐   ┌──────────┐
+   │notification
+   │.restaurant  │notification
+   │.customer  │notification
+   │.agency    │notification
+   │.admin   │
+   └────────┘   └─────────┘   └──────────┘   └──────────┘
+       │               │               │              │
+       │ (Message      │ (Message      │ (Message     │ (Message
+       │  waiting)     │  waiting)     │  waiting)    │  waiting)
+       │               │               │              │
+       ▼               ▼               ▼              ▼
+   ┌────────────────────────────────────────────────────┐
+   │ LISTENERS (consume from queues)                    │
+   │                                                    │
+   │ @RabbitListener(queues="notification.restaurant") │
+   │ RestaurantNotificationListener                     │
+   │                                                    │
+   │ @RabbitListener(queues="notification.customer")   │
+   │ CustomerNotificationListener                       │
+   │                                                    │
+   │ @RabbitListener(queues="notification.agency")     │
+   │ AgencyUserNotificationListener                     │
+   │                                                    │
+   │ @RabbitListener(queues="notification.admin")      │
+   │ AdminNotificationListener                          │
+   └────────────────────────────────────────────────────┘
+       │                              │
+       │ (Message handed off          │ (Disaggregation
+       │  to listener)                │  and persistence
+       │                              │  happens here
+       ▼                              │ in Layer 2)
+```
+
+SEQUENCE DIAGRAM - TIMELINE
+============================
+
+```
+    Time (ms)    Event
+
+    0:000        Event triggered (ReservationRequested)
+    ├─ Business service runs
+    ├─ INSERT Reservation
+    ├─ INSERT EventOutbox (PENDING)
+    └─ COMMIT ✅
+
+    1:000        EventOutboxOrchestrator cycle starts
+    ├─ Query EventOutbox WHERE status='PENDING'
+    ├─ Found 1 event
+    ├─ Try INSERT ProcessedEvent(eventId)
+    ├─ SUCCESS (first time)
+    ├─ Publish to RabbitMQ notification.restaurant
+    ├─ UPDATE EventOutbox SET status='PROCESSED'
+    ├─ Log: "✅ Published event RES-REQ-123"
+    └─ Cycle complete
+
+    1:005        RabbitMQ delivers message
+
+    1:010        RestaurantNotificationListener receives
+    ├─ Parse message
+    ├─ Check idempotency (eventId not seen before)
+    ├─ Get RestaurantUserOrchestrator
+    ├─ Call disaggregateAndProcess()
+    │  ├─ Load 10 restaurant staff
+    │  ├─ For each staff × channels
+    │  └─ Create 20 notification records
+    ├─ Persist 20 records to DB
+    ├─ ACK to RabbitMQ
+    └─ Complete
+
+    1:100        Done - 100ms total latency
+```
+
+KEY CHARACTERISTICS
+===================
+
+🔹 RESPONSIBILITY:
+   - Polls EventOutbox table
+   - Publishes 1 generic message per event
+   - Routes by aggregateType to correct queue
+   - Marks event as PROCESSED
+   - NO disaggregation logic here
+
+🔹 IDEMPOTENCY:
+   - ProcessedEvent table (UNIQUE constraint on eventId)
+   - Prevents duplicate RabbitMQ messages
+   - If publish fails → stays in EventOutbox
+   - Will retry next cycle
+
+🔹 MESSAGE VOLUME:
+   - Input: N events in EventOutbox
+   - Output: N messages to RabbitMQ
+   - 1:1 mapping (generic messages)
+   - Disaggregation to 1000s records happens LATER in Layer 2
+
+🔹 ERROR HANDLING:
+   - If RabbitMQ down: exception caught, event stays PENDING
+   - Next cycle: retry
+   - No infinite retry protection (potential issue)
+   - ProcessedEvent update failures: event might be published twice
+
+🔹 PERFORMANCE:
+   - Polls every 1 second (configurable)
+   - Batch limit: 100 events per cycle
+   - Non-blocking (async scheduling)
+   - Can handle 100 events/sec = 6000 events/min
+
+🔹 THREADING:
+   - Single scheduler thread (or pool depending on config)
+   - No concurrent updates to same event
+   - EventOutbox status='PENDING' is safe for batch processing
+```
+
+---
+
+**Document Version**: 1.0  
+**Last Updated**: November 23, 2025  
+**Component**: Event Outbox Producer (Layer 1)

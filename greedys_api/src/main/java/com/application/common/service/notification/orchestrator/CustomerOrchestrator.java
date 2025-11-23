@@ -267,6 +267,7 @@ public class CustomerOrchestrator extends NotificationOrchestrator<CustomerNotif
     ) {
         String eventType = extractString(message, "event_type");
         String aggregateType = extractString(message, "aggregate_type");
+        Long eventOutboxId = extractLong(message, "event_outbox_id");
         Map<String, Object> payload = extractPayload(message);
 
         @SuppressWarnings("unchecked")
@@ -276,6 +277,7 @@ public class CustomerOrchestrator extends NotificationOrchestrator<CustomerNotif
 
         return CustomerNotification.builder()
             .eventId(eventId)
+            .eventOutboxId(eventOutboxId)
             .userId(customerId)
             .channel(NotificationChannel.valueOf(channel))
             .status(DeliveryStatus.PENDING)

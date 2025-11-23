@@ -1,0 +1,170 @@
+# Shared Read Strategy & Read Status Management
+
+## Flow Diagram (Shared Read)
+
+```
+USER MARKS NOTIFICATION AS READ
+├─ WebSocket message: {action: "read_notification", notification_id: 123}
+├─ Handler loads notification (eventId, userId, channel, etc)
+├─ Check: read_by_all flag?
+│
+├─ If read_by_all=TRUE (SHARED READ):
+│  └─ ReadStatusService.markAsRead()
+│     ├─ SharedReadService.markAsRead(notifId, "RESTAURANT", scope)
+│     ├─ Get strategy: RestaurantSharedReadStrategy
+│     ├─ Execute scope-specific UPDATE:
+│     │  UPDATE WHERE eventId LIKE 'evt-123_%'
+│     │    AND restaurant_id = 5
+│     │    AND channel = WEBSOCKET
+│     │    AND read_by_all = true
+│     │  SET status = READ, read_at = NOW()
+│     └─ Result: ALL staff of restaurant 5 see as READ
+│
+├─ If read_by_all=FALSE (INDIVIDUAL READ):
+│  └─ Simple UPDATE:
+│     UPDATE WHERE id = 123
+│     SET status = READ, read_at = NOW()
+│
+└─ Broadcast: WebSocket message to group
+   /topic/notifications/*/RESTAURANT
+   {eventId, status: READ, readByUser: John}
+```
+
+## Functional Description
+
+### Shared Read Strategy
+When one user reads a notification, all related users (group/hub) see it as read.
+
+**Scopes**:
+- NONE: Individual read (no propagation)
+- RESTAURANT: Group read (restaurant-level)
+- RESTAURANT_HUB: Hub-level read
+- RESTAURANT_HUB_ALL: Broadcast read (all staff in hub)
+
+**Pattern**: Strategy pattern with scope-specific implementations
+
+### Read Status Management  
+Tracks read/unread status with optional shared propagation.
+
+**Operations**:
+- markAsRead(notificationId, userId): Mark as READ
+- markMultipleAsRead(...): Batch operation
+- broadcastReadStatus(...): Notify other users
+
+---
+
+## Implementation
+
+```java
+// Shared Read Scope
+public enum SharedReadScope {
+    NONE,               // Individual (no shared read)
+    RESTAURANT,         // Group: restaurant level
+    RESTAURANT_HUB,     // Hub level
+    RESTAURANT_HUB_ALL, // Broadcast within hub
+    AGENCY,             // Agency level
+    AGENCY_HUB,         // Agency hub
+    AGENCY_HUB_ALL;     // Broadcast within agency hub
+    
+    public boolean requiresSharedRead() {
+        return this != NONE;
+    }
+}
+
+// Shared Read Service
+@Service
+public class SharedReadService {
+    
+    public int markAsRead(Long notificationId, String entityType, 
+                         SharedReadScope scope, SharedReadParams params) {
+        if (!scope.requiresSharedRead()) {
+            return 0;  // No shared read needed
+        }
+        
+        SharedReadStrategy strategy = factory.getStrategy(entityType);
+        return strategy.markAsRead(params);
+    }
+}
+
+// Strategy Interface
+public interface SharedReadStrategy {
+    int markAsRead(SharedReadParams params);
+    int markMultipleAsRead(List<SharedReadParams> params);
+    List<SharedReadScope> getSupportedScopes();
+}
+
+// Restaurant Implementation
+@Service
+public class RestaurantSharedReadStrategy implements SharedReadStrategy {
+    
+    @Override
+    public int markAsRead(SharedReadParams params) {
+        switch (params.getScope()) {
+            case RESTAURANT:
+                return dao.markAsReadRestaurant(
+                    params.getRestaurantId(), params.getReadByUserId(), NOW());
+            
+            case RESTAURANT_HUB:
+                return dao.markAsReadRestaurantHub(
+                    params.getRestaurantUserHubId(), params.getReadByUserId(), NOW());
+            
+            case RESTAURANT_HUB_ALL:
+                return dao.markAsReadRestaurantHubAll(
+                    params.getRestaurantUserHubId(), params.getReadByUserId(), NOW());
+            
+            default:
+                return 0;
+        }
+    }
+}
+
+// Read Status Service
+@Service
+public class ReadStatusService {
+    
+    @Transactional
+    public void markNotificationAsRead(Long notificationId, Long userId) {
+        RestaurantUserNotification notif = dao.findById(notificationId);
+        
+        notif.setStatus(DeliveryStatus.READ);
+        notif.setReadAt(LocalDateTime.now());
+        dao.save(notif);
+        
+        // Check if shared read needed
+        if (notif.isReadByAll()) {
+            sharedReadService.markAsRead(
+                notificationId,
+                "RESTAURANT",
+                SharedReadScope.RESTAURANT,
+                new SharedReadParams(notificationId, userId, ...));
+        }
+        
+        // Broadcast update to connected users
+        broadcastReadStatus(notif);
+    }
+    
+    private void broadcastReadStatus(ANotification notif) {
+        messagingTemplate.convertAndSend(
+            "/topic/notifications/*/" + notif.getRecipientType(),
+            new ReadStatusUpdate(notif.getEventId(), DeliveryStatus.READ, notif.getUserId()));
+    }
+}
+
+// DAO Methods for Shared Read
+UPDATE restaurant_user_notification
+SET status = 'READ', read_at = NOW()
+WHERE event_id LIKE ?   // 'evt-123_%'
+  AND restaurant_id = ?
+  AND channel = ?
+  AND read_by_all = true;
+```
+
+**DAO Methods**:
+- `markAsReadRestaurant()`: Group by restaurant
+- `markAsReadRestaurantHub()`: Group by hub
+- `markAsReadRestaurantHubAll()`: All in hub (broadcast)
+
+---
+
+**Document Version**: 1.0  
+**Components**: Shared Read Strategy & Read Status Management

@@ -253,6 +253,7 @@ public class AgencyUserOrchestrator extends NotificationOrchestrator<AgencyUserN
         String eventType = extractString(message, "event_type");
         String aggregateType = extractString(message, "aggregate_type");
         Long agencyId = extractLong(message, "agency_id");
+        Long eventOutboxId = extractLong(message, "event_outbox_id");
         Map<String, Object> payload = extractPayload(message);
 
         @SuppressWarnings("unchecked")
@@ -263,6 +264,7 @@ public class AgencyUserOrchestrator extends NotificationOrchestrator<AgencyUserN
 
         return AgencyUserNotification.builder()
             .eventId(eventId)
+            .eventOutboxId(eventOutboxId)
             .userId(staffId)
             .agencyId(agencyId)
             .channel(NotificationChannel.valueOf(channel))

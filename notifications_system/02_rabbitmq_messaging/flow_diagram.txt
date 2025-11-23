@@ -1,0 +1,256 @@
+```
+RABBITMQ MESSAGING - FLOW DIAGRAM
+==================================
+
+┌────────────────────────────────────┐
+│ MESSAGES FROM LAYER 1              │
+│ EventOutboxOrchestrator             │
+│ (1 event = 1 message)               │
+└──────────────────┬─────────────────┘
+                   │
+                   │ rabbitTemplate.convertAndSend(queue, message)
+                   │
+        ┌──────────▼──────────────────────┐
+        │ RABBITMQ BROKER                  │
+        │ (Central message hub)            │
+        └──────────────────────────────────┘
+                   │
+    ┌──────────────┼──────────────┬──────────────┬───────────────┐
+    │              │              │              │               │
+    │ TOPIC EXCHANGE: notifications.exchange    │               │
+    │                                            │               │
+    │ Routing Rules:                             │               │
+    │ ├─ aggregate_type="RESTAURANT"             │               │
+    │ │  └─ routing_key → notification.restaurant
+    │ │                                          │
+    │ ├─ aggregate_type="CUSTOMER"               │
+    │ │  └─ routing_key → notification.customer  │
+    │ │                                          │
+    │ ├─ aggregate_type="AGENCY"                 │
+    │ │  └─ routing_key → notification.agency    │
+    │ │                                          │
+    │ └─ aggregate_type="ADMIN"                  │
+    │    └─ routing_key → notification.admin     │
+    │                                            │
+    └────────────────────────────────────────────┴───────────────┘
+         │               │               │              │
+         │               │               │              │
+         ▼               ▼               ▼              ▼
+    ┌────────────┐ ┌────────────┐ ┌────────────┐ ┌────────────┐
+    │ Queue:     │ │ Queue:     │ │ Queue:     │ │ Queue:     │
+    │ notif...   │ │ notif...   │ │ notif...   │ │ notif...   │
+    │ restaurant │ │ customer   │ │ agency     │ │ admin      │
+    │            │ │            │ │            │ │            │
+    │ Status:    │ │ Status:    │ │ Status:    │ │ Status:    │
+    │ READY      │ │ READY      │ │ READY      │ │ READY      │
+    │ (waiting)  │ │ (waiting)  │ │ (waiting)  │ │ (waiting)  │
+    └────┬───────┘ └────┬───────┘ └────┬───────┘ └────┬───────┘
+         │               │               │              │
+         │ Messages      │ Messages      │ Messages     │ Messages
+         │ waiting...    │ waiting...    │ waiting...   │ waiting...
+         │               │               │              │
+         ▼               ▼               ▼              ▼
+    ┌────────────────────────────────────────────────────┐
+    │ LISTENER CONSUMERS                                 │
+    │ (Always listening for new messages)                │
+    └────────────────────────────────────────────────────┘
+         │               │               │              │
+         │ @RabbitListener │ @RabbitListener │ @RabbitListener │ @RabbitListener
+         │ (queues=...)    │ (queues=...)    │ (queues=...)    │ (queues=...)
+         │                 │                 │                 │
+         ▼                 ▼                 ▼                 ▼
+    ┌──────────────────┐ ┌──────────────────┐ ┌──────────────────┐ ┌──────────────────┐
+    │ RestaurantNotif  │ │ CustomerNotif    │ │ AgencyNotif      │ │ AdminNotif       │
+    │ Listener         │ │ Listener         │ │ Listener         │ │ Listener         │
+    │                  │ │                  │ │                  │ │                  │
+    │ Extends          │ │ Extends          │ │ Extends          │ │ Extends          │
+    │ BaseNotification │ │ BaseNotification │ │ BaseNotification │ │ BaseNotification │
+    │ Listener<        │ │ Listener<        │ │ Listener<        │ │ Listener<        │
+    │   RestaurantUser │ │   CustomerNotif> │ │   AgencyUserNotif
+    │   Notification>  │ │                  │ │   >              │ │ AdminNotif>      │
+    │                  │ │                  │ │                  │ │                  │
+    └──────┬───────────┘ └──────┬───────────┘ └──────┬───────────┘ └──────┬───────────┘
+           │                     │                     │                     │
+           │ processNotificationMessage(message)       │                     │
+           │                     │                     │                     │
+           └─────────────────────┼─────────────────────┴─────────────────────┘
+                                 │
+                                 ▼
+         ┌───────────────────────────────────────────────────┐
+         │ LAYER 2: DISAGGREGATION & PERSISTENCE             │
+         │ (Each listener runs independently)                │
+         │                                                   │
+         │ ├─ Parse message                                  │
+         │ ├─ Check idempotency (eventId seen before?)      │
+         │ ├─ Get type-specific orchestrator                │
+         │ ├─ Disaggregate (1 msg → N records)              │
+         │ ├─ Persist to database                            │
+         │ ├─ Attempt WebSocket send                         │
+         │ └─ ACK to RabbitMQ                                │
+         │                                                   │
+         └───────────────────────────────────────────────────┘
+                                 │
+                                 ▼
+         ┌───────────────────────────────────────────────────┐
+         │ NOTIFICATION DATABASE TABLES                      │
+         │                                                   │
+         │ ├─ RestaurantUserNotification (for restaurant)    │
+         │ ├─ CustomerNotification (for customer)            │
+         │ ├─ AgencyUserNotification (for agency)            │
+         │ └─ AdminNotification (for admin)                  │
+         │                                                   │
+         │ Result: 1 event → 1000 DB records (worst case)   │
+         │         but still only 1 RabbitMQ message ✅     │
+         │                                                   │
+         └───────────────────────────────────────────────────┘
+
+MESSAGE SCHEMA
+==============
+
+Format: JSON (text serialization over AMQP)
+
+Example RESTAURANT notification message:
+────────────────────────────────────────
+
+{
+  "event_id": "RES-REQ-2025-01-20-10-30-12345",
+  "event_type": "RESERVATION_REQUESTED",
+  "aggregate_type": "RESTAURANT",
+  "aggregate_id": 5,
+  "payload": {
+    "reservation_id": "RES-456",
+    "customer_id": 100,
+    "customer_name": "John Smith",
+    "restaurant_id": 5,
+    "restaurant_name": "The Pizza Place",
+    "party_size": 4,
+    "reservation_time": "2025-01-20T20:00:00Z",
+    "special_requests": "Table by window",
+    "phone": "+1-555-0123",
+    "email": "john@example.com"
+  }
+}
+
+Example CUSTOMER notification message:
+───────────────────────────────────────
+
+{
+  "event_id": "RES-CONF-2025-01-20-11-15-12345",
+  "event_type": "RESERVATION_CONFIRMED",
+  "aggregate_type": "CUSTOMER",
+  "aggregate_id": 100,
+  "payload": {
+    "customer_id": 100,
+    "reservation_id": "RES-456",
+    "restaurant_id": 5,
+    "restaurant_name": "The Pizza Place",
+    "reservation_time": "2025-01-20T20:00:00Z",
+    "party_size": 4,
+    "confirmation_code": "CONF-789",
+    "cancellation_deadline": "2025-01-20T18:00:00Z"
+  }
+}
+
+
+DELIVERY GUARANTEES
+===================
+
+At-Least-Once Delivery:
+  ✅ GUARANTEED: Each event published to RabbitMQ at least once
+     (ProcessedEvent table prevents duplicates)
+  
+  ✅ GUARANTEED: Each message reaches listener at least once
+     (RabbitMQ requeue on NACK)
+  
+  ❌ NOT GUARANTEED: Messages in order
+     (RabbitMQ may reorder on error retry)
+  
+  ✅ GUARANTEED: Eventual processing
+     (Dead letter queue routes failed messages for inspection)
+
+
+MESSAGE ACK/NACK SEMANTICS
+==========================
+
+Happy Path:
+  ├─ Listener receives message
+  ├─ Processes successfully
+  ├─ channel.basicAck(deliveryTag)
+  └─ Message removed from queue ✅
+
+Error Path:
+  ├─ Listener receives message
+  ├─ Processing fails (exception thrown)
+  ├─ Listener calls channel.basicNack(deliveryTag, requeue=true)
+  ├─ Message requeued (goes back to queue head)
+  ├─ Next consumer attempts processing
+  └─ Max retries: depends on RabbitMQ config (typically unlimited)
+
+
+QUEUE CONFIGURATION
+===================
+
+Queue: notification.restaurant
+  ├─ Durable: YES (survives broker restart)
+  ├─ Auto-delete: NO (stays even with no consumers)
+  ├─ Exclusive: NO (multiple consumers can bind)
+  ├─ TTL: NONE (messages stay forever until processed)
+  ├─ Max Length: NONE (no queue size limit)
+  ├─ Dead Letter Exchange: notification.dlq (if configured)
+  └─ Consumer Prefetch: 1 (one message at a time per consumer)
+
+Queue: notification.customer
+  └─ Same as above
+
+Queue: notification.agency
+  └─ Same as above
+
+Queue: notification.admin
+  └─ Same as above
+
+
+CONSUMER CONFIGURATION (Spring AMQP)
+====================================
+
+@RabbitListener(queues="notification.restaurant")
+public void listen(Message message) { ... }
+
+Listener Container Settings:
+  ├─ Concurrency: 1 (single-threaded per queue)
+  ├─ Prefetch: 1 (one message at a time)
+  ├─ Retry Policy: exponential backoff (if configured)
+  ├─ Timeout: DEFAULT (typically 60 seconds per message)
+  └─ Error Handler: BaseNotificationListener.processNotificationMessage()
+
+
+SCALING CONSIDERATIONS
+======================
+
+Single Listener Instance:
+  ├─ Consumer: 1 listener instance per queue
+  ├─ Throughput: ~100-1000 messages/second
+  ├─ CPU: ~20% on single core
+  └─ Memory: Constant (processes 1 message at a time)
+
+Multiple Listener Instances:
+  ├─ Consumer: Multiple instances, same queue
+  ├─ Behavior: RabbitMQ distributes messages (round-robin)
+  ├─ Throughput: Linear scaling (~N × 100-1000 msg/s)
+  ├─ Concurrency: High (true parallelism)
+  └─ Risk: Duplicate processing if same message consumed by 2 instances
+     Mitigation: Notification table UNIQUE(eventId, userId, channel)
+
+Horizontal Scaling Strategy:
+  1. Deploy N instances of application
+  2. Each binds @RabbitListener to same queue
+  3. RabbitMQ automatically load-balances messages
+  4. No changes to queue configuration needed
+  5. Monitor message rate per instance
+
+```
+
+---
+
+**Document Version**: 1.0  
+**Last Updated**: November 23, 2025  
+**Component**: RabbitMQ Messaging (Broker & Routing)
