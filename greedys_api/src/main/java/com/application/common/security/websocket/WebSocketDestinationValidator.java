@@ -101,7 +101,9 @@ public class WebSocketDestinationValidator {
             return validateUserSpecificQueue(destination, userId);
         } else if (destination.startsWith(TOPIC_PREFIX)) {
             // Check for organization-specific patterns first (requires ID validation)
-            if (isRestaurantReservationsTopic(destination)) {
+            if (isRUserNotificationsTopic(destination)) {
+                return validateRUserNotificationsAccess(destination, userType, userId);
+            } else if (isRestaurantReservationsTopic(destination)) {
                 return validateRestaurantReservationsAccess(destination, userType, userId, restaurantId);
             } else if (isAgencyNotificationsTopic(destination)) {
                 return validateAgencyNotificationsAccess(destination, userType, userId, agencyId);
@@ -350,6 +352,60 @@ public class WebSocketDestinationValidator {
         // Extract hub ID and check user's managed hubs
         
         return isHubUser;
+    }
+    
+    /**
+     * Checks if destination is an RUser notifications topic
+     * Pattern: /topic/ruser/{rUserId}/notifications
+     * 
+     * @param destination The destination to check
+     * @return true if it matches the pattern
+     */
+    private boolean isRUserNotificationsTopic(String destination) {
+        return destination != null && destination.matches("^/topic/ruser/\\d+/notifications$");
+    }
+    
+    /**
+     * Validates access to RUser notifications topic
+     * Pattern: /topic/ruser/{rUserId}/notifications
+     * 
+     * Security: Only the RUser can access their own notifications
+     * Validates that userId in URL matches userId in authentication
+     * 
+     * @param destination e.g., /topic/ruser/5/notifications
+     * @param userType The user's type (must be "restaurant-user")
+     * @param userId The authenticated user's ID
+     * @return true if userId in URL matches authenticated userId
+     */
+    private boolean validateRUserNotificationsAccess(String destination, String userType, Long userId) {
+        if (!userType.startsWith("restaurant-user")) {
+            log.warn("❌ Non-restaurant user type {} denied access to RUser notifications: {}", userType, destination);
+            return false;
+        }
+        
+        // Extract user ID from /topic/ruser/{rUserId}/notifications
+        String[] parts = destination.substring(TOPIC_PREFIX.length()).split("/");
+        if (parts.length >= 2) {
+            try {
+                Long destinationUserId = Long.parseLong(parts[1]);
+                
+                if (!destinationUserId.equals(userId)) {
+                    log.warn("❌ RUser {} denied access to /topic/ruser/{}/notifications (userId mismatch)", 
+                             userId, destinationUserId);
+                    return false;
+                }
+                
+                log.debug("✅ RUser {} allowed to access /topic/ruser/{}/notifications", userId, destinationUserId);
+                return true;
+                
+            } catch (NumberFormatException e) {
+                log.warn("❌ Invalid RUser ID in notifications topic: {}", parts[1]);
+                return false;
+            }
+        }
+        
+        log.warn("❌ Invalid RUser notifications topic format: {}", destination);
+        return false;
     }
     
     /**
