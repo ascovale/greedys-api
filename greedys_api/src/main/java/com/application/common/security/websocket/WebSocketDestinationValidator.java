@@ -64,6 +64,7 @@ public class WebSocketDestinationValidator {
     
     /**
      * Validates if a user can access a specific WebSocket destination
+     * Overload without organization IDs (for backward compatibility)
      * 
      * @param destination The STOMP destination (e.g., /user/123/queue/notifications)
      * @param userType The user's type (e.g., "restaurant-user", "customer", "admin")
@@ -71,35 +72,39 @@ public class WebSocketDestinationValidator {
      * @return true if access is allowed, false otherwise
      */
     public boolean canAccess(String destination, String userType, Long userId) {
-        return canAccess(destination, userType, userId, null);
+        return canAccess(destination, userType, userId, null, null);
     }
     
     /**
      * Validates if a user can access a specific WebSocket destination
+     * Full validation with organization IDs
      * 
      * @param destination The STOMP destination (e.g., /user/123/queue/notifications)
      * @param userType The user's type (e.g., "restaurant-user", "customer", "admin")
      * @param userId The user's ID
-     * @param restaurantId Optional restaurant ID from JWT (for restaurant-specific topics)
+     * @param restaurantId Optional restaurant ID from JWT
+     * @param agencyId Optional agency ID from JWT
      * @return true if access is allowed, false otherwise
      */
-    public boolean canAccess(String destination, String userType, Long userId, Long restaurantId) {
+    public boolean canAccess(String destination, String userType, Long userId, Long restaurantId, Long agencyId) {
         if (destination == null || destination.isEmpty() || userType == null || userId == null) {
             log.warn("❌ Invalid validation parameters: destination={}, userType={}, userId={}", 
                      destination, userType, userId);
             return false;
         }
         
-        log.debug("🔍 Validating WebSocket access: destination={}, userType={}, userId={}, restaurantId={}", 
-                  destination, userType, userId, restaurantId);
+        log.debug("🔍 Validating WebSocket access: destination={}, userType={}, userId={}, restaurantId={}, agencyId={}", 
+                  destination, userType, userId, restaurantId, agencyId);
         
         // Parse destination type
         if (destination.startsWith(USER_PREFIX)) {
             return validateUserSpecificQueue(destination, userId);
         } else if (destination.startsWith(TOPIC_PREFIX)) {
-            // Check for restaurant/reservations pattern first (requires restaurantId validation)
+            // Check for organization-specific patterns first (requires ID validation)
             if (isRestaurantReservationsTopic(destination)) {
                 return validateRestaurantReservationsAccess(destination, userType, userId, restaurantId);
+            } else if (isAgencyNotificationsTopic(destination)) {
+                return validateAgencyNotificationsAccess(destination, userType, userId, agencyId);
             }
             return validateTopicAccess(destination, userType);
         } else if (destination.startsWith(GROUP_PREFIX)) {
@@ -345,6 +350,69 @@ public class WebSocketDestinationValidator {
         // Extract hub ID and check user's managed hubs
         
         return isHubUser;
+    }
+    
+    /**
+     * Checks if destination is an agency notifications topic
+     * Pattern: /topic/agency/{agencyId}/notifications
+     * 
+     * @param destination The destination to check
+     * @return true if it matches the pattern
+     */
+    private boolean isAgencyNotificationsTopic(String destination) {
+        return destination != null && destination.matches("^/topic/agency/\\d+/notifications$");
+    }
+    
+    /**
+     * Validates access to agency notifications topics
+     * Pattern: /topic/agency/{agencyId}/notifications
+     * 
+     * Security: Only agency staff can access, and only for agencies they work for
+     * Validates: 
+     * 1. User is agency-user type
+     * 2. agencyId in URL matches agencyId in JWT
+     * 
+     * @param destination e.g., /topic/agency/15/notifications
+     * @param userType The user's type (must be "agency-user")
+     * @param userId The user's ID
+     * @param agencyId The agency ID from JWT (if available)
+     * @return true if user is agency staff AND has access to the specific agency
+     */
+    private boolean validateAgencyNotificationsAccess(String destination, String userType, Long userId, Long agencyId) {
+        // Only agency staff can access agency notification topics
+        if (!userType.startsWith("agency-user")) {
+            log.warn("❌ Non-agency user type {} denied access to agency notifications topic: {}", userType, destination);
+            return false;
+        }
+        
+        // Extract agency ID from /topic/agency/{agencyId}/notifications
+        String[] parts = destination.substring(TOPIC_PREFIX.length()).split("/");
+        if (parts.length >= 2) {
+            try {
+                Long destinationAgencyId = Long.parseLong(parts[1]);
+                
+                // If JWT contains agencyId, verify it matches the destination
+                if (agencyId != null && !agencyId.equals(destinationAgencyId)) {
+                    log.warn("❌ Agency user {} (agencyId: {}) denied access to /topic/agency/{}/notifications (mismatch)", 
+                             userId, agencyId, destinationAgencyId);
+                    return false;
+                }
+                
+                // TODO: If agencyId is null in JWT, verify via DB that user works for this agency
+                // agencyStaffDAO.findByAgencyIdAndUserId(destinationAgencyId, userId)
+                
+                log.debug("✅ Agency user {} allowed to access /topic/agency/{}/notifications", 
+                         userId, destinationAgencyId);
+                return true;
+                
+            } catch (NumberFormatException e) {
+                log.warn("❌ Invalid agency ID in notifications topic: {}", parts[1]);
+                return false;
+            }
+        }
+        
+        log.warn("❌ Invalid agency notifications topic format: {}", destination);
+        return false;
     }
     
     /**
