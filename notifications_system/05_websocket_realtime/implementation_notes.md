@@ -13,7 +13,7 @@ public class NotificationWebSocketSender implements NotificationChannelSender {
             notif.getId(),
             notif.getEventId(),
             notif.getUserId(),
-            "RESTAURANT",
+            "restaurant",
             notif.getTitle(),
             notif.getBody(),
             notif.getProperties());
@@ -24,16 +24,17 @@ public class NotificationWebSocketSender implements NotificationChannelSender {
             notif.getId(),
             notif.getEventId(),
             notif.getUserId(),
-            "CUSTOMER",
+            "customer",
             notif.getTitle(),
             notif.getBody(),
             notif.getProperties());
     }
     
-    private boolean sendInternal(Long notifId, String eventId, Long userId, String type,
+    private boolean sendInternal(Long notifId, String eventId, Long userId, String userType,
                                  String title, String body, Map<String, String> properties) {
         try {
-            String destination = "/topic/notifications/" + userId + "/" + type;
+            // NEW: Use /topic/{userType}/{userId}/notifications pattern to prevent ID collisions
+            String destination = String.format("/topic/%s/%d/notifications", userType, userId);
             
             WebSocketMessage payload = WebSocketMessage.builder()
                 .notificationId(notifId)
@@ -117,15 +118,26 @@ public class RestaurantNotificationListener extends BaseNotificationListener {
 ## WebSocket Topic Structure
 
 ```
-/topic/notifications/{userId}/{userType}
+/topic/{userType}/{userId}/notifications
+
+⭐ userType values: "restaurant" | "customer" | "agency" | "admin"
 
 Examples:
-- /topic/notifications/50/RESTAURANT
-- /topic/notifications/123/CUSTOMER
-- /topic/notifications/78/AGENCY
-- /topic/notifications/1/ADMIN
+- /topic/restaurant/50/notifications
+- /topic/customer/50/notifications  (different user, same ID=50)
+- /topic/agency/78/notifications
+- /topic/admin/1/notifications
 
 Security: WebSocketChannelInterceptor validates destination ownership
+         Prevents routing to wrong user even if userIds collide across tables
+```
+
+## Reservations Topic (restaurant-scoped)
+
+```
+/topic/restaurant/{restaurantId}/reservations
+
+⭐ This topic is restaurant-scoped (uses restaurantId, NOT userId). All staff subscribe to the restaurant reservations topic to receive full list updates (reservation created, accepted, rejected). For badge counts (campanella) you can still send per-user small notifications on `/topic/{userType}/{userId}/notifications`.
 ```
 
 ## Connection Lifecycle

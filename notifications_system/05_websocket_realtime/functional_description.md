@@ -8,11 +8,19 @@ Delivers notifications in real-time to connected clients via WebSocket/STOMP.
 
 **Delivery**: Best-effort, no retry if client offline
 
-**Topics**:
-- `/topic/notifications/{userId}/RESTAURANT`
-- `/topic/notifications/{userId}/CUSTOMER`
-- `/topic/notifications/{userId}/AGENCY`
-- `/topic/notifications/{userId}/ADMIN`
+**Topics** (with userType prefix to prevent ID collisions):
+- `/topic/restaurant/{userId}/notifications`
+- `/topic/customer/{userId}/notifications`
+- `/topic/agency/{userId}/notifications`
+- `/topic/admin/{userId}/notifications`
+
+**Reservations (restaurant-scoped)**:
+- `/topic/restaurant/{restaurantId}/reservations`  ← used for reservation list updates (create/accept/reject)
+
+⭐ **WHY restaurantId for reservations?** The reservations list is a restaurant-level resource; all staff subscribe to the restaurant reservations topic to see list changes. Badge counts (campanella) can still be delivered per-user via the `/notifications` topic.
+
+⭐ **WHY userType in path?** Different user tables (RUser, Customer, AgencyUser, Admin) have independent auto-increment IDs.
+userId=50 could be both a restaurant user AND a customer user. Including userType prevents routing to wrong user.
 
 **Timing**: Immediately after DB persist in listener (synchronous)
 
@@ -29,11 +37,11 @@ public class NotificationWebSocketSender {
     
     public boolean sendRestaurantNotification(RestaurantUserNotification n) {
         return sendNotificationInternal(n.getId(), n.getEventId(), n.getUserId(),
-            "RESTAURANT", n.getTitle(), n.getBody(), n.getProperties());
+            "restaurant", n.getTitle(), n.getBody(), n.getProperties());
     }
     
     private boolean sendNotificationInternal(Long notifId, String eventId, Long userId,
-                                             String type, String title, String body, Map props) {
+                                             String userType, String title, String body, Map props) {
         try {
             Map<String, Object> payload = new HashMap<>();
             payload.put("notificationId", notifId);
@@ -43,10 +51,9 @@ public class NotificationWebSocketSender {
             payload.put("timestamp", System.currentTimeMillis());
             payload.put("properties", props);
             
-            template.convertAndSend(
-                "/topic/notifications/" + userId + "/" + type,
-                payload
-            );
+            // NEW: Use /topic/{userType}/{userId}/notifications pattern
+            String destination = String.format("/topic/%s/%d/notifications", userType, userId);
+            template.convertAndSend(destination, payload);
             return true;
         } catch (Exception e) {
             log.warn("WebSocket send failed: {}", e.getMessage());

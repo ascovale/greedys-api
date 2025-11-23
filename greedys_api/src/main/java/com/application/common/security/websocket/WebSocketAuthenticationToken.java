@@ -152,4 +152,34 @@ public class WebSocketAuthenticationToken extends AbstractAuthenticationToken {
     public boolean isHubUser() {
         return (userType != null && userType.endsWith("-hub"));
     }
+    
+    /**
+     * Get restaurant ID from JWT claims (if present)
+     * 
+     * @return restaurant ID if claim exists, null otherwise
+     */
+    public Long getRestaurantIdFromClaims() {
+        if (jwtClaims == null || !jwtClaims.containsKey("restaurant_id")) {
+            return null;
+        }
+        Object restaurantIdObj = jwtClaims.get("restaurant_id");
+        return restaurantIdObj instanceof Number ? 
+               ((Number) restaurantIdObj).longValue() : 
+               Long.valueOf((String) restaurantIdObj);
+    }
+    
+    /**
+     * Get agency ID from JWT claims (if present)
+     * 
+     * @return agency ID if claim exists, null otherwise
+     */
+    public Long getAgencyIdFromClaims() {
+        if (jwtClaims == null || !jwtClaims.containsKey("agency_id")) {
+            return null;
+        }
+        Object agencyIdObj = jwtClaims.get("agency_id");
+        return agencyIdObj instanceof Number ? 
+               ((Number) agencyIdObj).longValue() : 
+               Long.valueOf((String) agencyIdObj);
+    }
 }

@@ -62,6 +62,8 @@ public class WebSocketHandshakeInterceptor implements HandshakeInterceptor {
     public static final String WS_USER_TYPE_ATTR = "ws-user-type";
     public static final String WS_USERNAME_ATTR = "ws-username";
     public static final String WS_EMAIL_ATTR = "ws-email";
+    public static final String WS_RESTAURANT_ID_ATTR = "ws-restaurant-id";
+    public static final String WS_AGENCY_ID_ATTR = "ws-agency-id";
     
     /**
      * Invoked before the WebSocket handshake
@@ -129,14 +131,28 @@ public class WebSocketHandshakeInterceptor implements HandshakeInterceptor {
                 userId = userIdObj instanceof Number ? ((Number) userIdObj).longValue() : Long.valueOf((String) userIdObj);
             }
             
+            // Restaurant ID (for restaurant staff - may be null for other user types)
+            Long restaurantId = null;
+            if (claims.containsKey("restaurant_id")) {
+                Object restaurantIdObj = claims.get("restaurant_id");
+                restaurantId = restaurantIdObj instanceof Number ? ((Number) restaurantIdObj).longValue() : Long.valueOf((String) restaurantIdObj);
+            }
+            
+            // Agency ID (for agency staff - may be null for other user types)
+            Long agencyId = null;
+            if (claims.containsKey("agency_id")) {
+                Object agencyIdObj = claims.get("agency_id");
+                agencyId = agencyIdObj instanceof Number ? ((Number) agencyIdObj).longValue() : Long.valueOf((String) agencyIdObj);
+            }
+            
             // If no user_id in claims, try to extract from username (as fallback)
             if (userId == null) {
                 log.debug("⚠️ No user_id found in JWT claims for user: {}", username);
                 // For now, we'll allow it but log the issue
             }
             
-            log.debug("👤 User info extracted: username={}, userType={}, userId={}, email={}", 
-                     username, userType, userId, email);
+            log.debug("👤 User info extracted: username={}, userType={}, userId={}, email={}, restaurantId={}", 
+                     username, userType, userId, email, restaurantId);
             
             // Step 5: Validate user type is known
             if (userType == null || userType.isEmpty()) {
@@ -170,8 +186,15 @@ public class WebSocketHandshakeInterceptor implements HandshakeInterceptor {
             attributes.put(WS_USER_TYPE_ATTR, userType);
             attributes.put(WS_USERNAME_ATTR, username);
             attributes.put(WS_EMAIL_ATTR, email);
+            if (restaurantId != null) {
+                attributes.put(WS_RESTAURANT_ID_ATTR, restaurantId);
+            }
+            if (agencyId != null) {
+                attributes.put(WS_AGENCY_ID_ATTR, agencyId);
+            }
             
-            log.info("✅ WebSocket handshake successful for user: {} (type: {})", username, userType);
+            log.info("✅ WebSocket handshake successful for user: {} (type: {}, restaurantId: {}, agencyId: {})", 
+                    username, userType, restaurantId, agencyId);
             return true;
             
         } catch (Exception e) {

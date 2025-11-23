@@ -21,7 +21,7 @@ import lombok.extern.slf4j.Slf4j;
  * 2. A reservation is accepted (RESERVATION_ACCEPTED)
  * 3. A reservation is rejected (RESERVATION_REJECTED)
  * 
- * Topic: /topic/restaurants/{restaurantId}/reservations
+ * Topic: /topic/restaurant/{restaurantId}/reservations
  * 
  * All staff connected to this topic will see the update in real-time.
  * 
@@ -64,7 +64,7 @@ public class ReservationWebSocketPublisher {
                     .timestamp(Instant.now())
                     .build();
             
-            String topic = "/topic/restaurants/" + restaurantId + "/reservations";
+            String topic = "/topic/restaurant/" + restaurantId + "/reservations";
             simpMessagingTemplate.convertAndSend(topic, event);
             
             log.info("Published RESERVATION_CREATED event: restaurant={}, reservation={}", 
@@ -82,7 +82,7 @@ public class ReservationWebSocketPublisher {
      * Called when a restaurant staff accepts a reservation.
      * All connected staff will see the reservation move from PENDING to ACCEPTED.
      * 
-     * Topic: /topic/restaurants/{restaurantId}/reservations
+    * Topic: /topic/restaurant/{restaurantId}/reservations
      * 
      * @param reservation The accepted reservation
      */
@@ -97,7 +97,7 @@ public class ReservationWebSocketPublisher {
                     .timestamp(Instant.now())
                     .build();
             
-            String topic = "/topic/restaurants/" + restaurantId + "/reservations";
+            String topic = "/topic/restaurant/" + restaurantId + "/reservations";
             simpMessagingTemplate.convertAndSend(topic, event);
             
             log.info("Published RESERVATION_ACCEPTED event: restaurant={}, reservation={}", 
@@ -115,7 +115,7 @@ public class ReservationWebSocketPublisher {
      * Called when a restaurant staff rejects a reservation.
      * All connected staff will see the reservation move from PENDING to REJECTED.
      * 
-     * Topic: /topic/restaurants/{restaurantId}/reservations
+    * Topic: /topic/restaurant/{restaurantId}/reservations
      * 
      * @param reservation The rejected reservation
      */
@@ -130,7 +130,7 @@ public class ReservationWebSocketPublisher {
                     .timestamp(Instant.now())
                     .build();
             
-            String topic = "/topic/restaurants/" + restaurantId + "/reservations";
+            String topic = "/topic/restaurant/" + restaurantId + "/reservations";
             simpMessagingTemplate.convertAndSend(topic, event);
             
             log.info("Published RESERVATION_REJECTED event: restaurant={}, reservation={}", 

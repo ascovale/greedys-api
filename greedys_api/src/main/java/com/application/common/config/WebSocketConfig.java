@@ -26,9 +26,13 @@ import lombok.extern.slf4j.Slf4j;
  * 
  * ⭐ FLOW:
  * 1. Client connette a WebSocket endpoint: /ws
- * 2. Client si iscrive a topic: /user/{userId}/queue/notifications
- * 3. Server invia via SimpMessagingTemplate.convertAndSendToUser()
+ * 2. Client si iscrive a topic: /topic/{userType}/{userId}/notifications
+ *    (userType = "restaurant" | "customer" | "agency" | "admin")
+ * 3. Server invia via SimpMessagingTemplate.convertAndSend()
  * 4. Client riceve messaggi in tempo reale
+ * 
+ * ⭐ DESIGN: Destination include userType per evitare collisioni ID tra tabelle diverse
+ *    (RUser, Customer, AgencyUser, Admin hanno ID independenti con auto-increment)
  * 
  * ⭐ DIFFERENZA DA EMAIL/SMS:
  * - Email/SMS: Persistono in notification_channel_send [L2], hanno retry
@@ -147,7 +151,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
      * var stompClient = Stomp.over(socket);
      * stompClient.connect({}, function(frame) {
      *     // Subscribe to user's personal notification queue
-     *     stompClient.subscribe('/user/123/queue/notifications', function(message) {
+     *     // Pattern: /topic/{userType}/{userId}/notifications
+     *     // Examples: /topic/restaurant/50/notifications, /topic/customer/50/notifications
+     *     stompClient.subscribe('/topic/restaurant/123/notifications', function(message) {
      *         console.log('Received: ' + message.body);
      *     });
      * });
@@ -199,7 +205,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
      *    var stompClient = Stomp.over(socket);
      *    stompClient.connect({}, function(frame) {
      *        // Si iscrive a topic personale
-     *        stompClient.subscribe('/user/queue/notifications', (message) => {
+     *        // Pattern: /topic/{userType}/{userId}/notifications
+     *        stompClient.subscribe('/topic/restaurant/123/notifications', (message) => {
      *            JSON payload = message.body;
      *            console.log('New reservation: ' + payload.title);
      *        });
@@ -213,28 +220,41 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
      *    e. NotificationOutboxPoller legge L1, crea L2
      *    f. ChannelPoller legge L2, trova WEBSOCKET channel:
      *       
-     *       for (staff : staffList) {
-     *           Long staffId = staff.getId();  // e.g., 1
-     *           Map<String, Object> payload = {
-     *               "notificationId": 123,
-     *               "title": "Nuova prenotazione",
-     *               "body": "Tavolo per 4 persone alle 20:00",
-     *               "timestamp": "2025-01-20T14:30:00Z"
-     *           };
-     *           
-     *           simpMessagingTemplate.convertAndSendToUser(
-     *               "1",  // userId come String
-     *               "/queue/notifications",
-     *               payload
-     *           );
-     *       }
+    *       for (staff : staffList) {
+    *           Long staffId = staff.getId();  // e.g., 123
+    *           String userType = "restaurant";  // from recipientType
+    *           Map<String, Object> payload = {
+    *               "notificationId": 123,
+    *               "title": "Nuova prenotazione",
+    *               "body": "Tavolo per 4 persone alle 20:00",
+    *               "timestamp": "2025-01-20T14:30:00Z"
+    *           };
+    *           
+    *           // NEW: Direct destination pattern with userType for personal notifications
+    *           // Personal notifications (badge, generic alerts) use per-user topic:
+    *           //    /topic/{userType}/{userId}/notifications
+    *           String destination = String.format("/topic/%s/%d/notifications", 
+    *                                               userType, staffId);
+    *           simpMessagingTemplate.convertAndSend(destination, payload);
+    *       }
+    *
+    *       // NOTE: Reservation list updates are restaurant-scoped and use restaurantId
+    *       // ChannelPoller / ReservationPublisher should publish list updates to:
+    *       //    /topic/restaurant/{restaurantId}/reservations
+    *       // This destination is NOT per-user; all staff subscribe to the restaurant
+    *       // reservations topic to receive list updates (create/accept/reject).
      * 
      * 3. MESSAGE DELIVERY
      *    a. SimpMessagingTemplate serializza il payload a JSON
-     *    b. Invia a /user/1/queue/notifications
-     *    c. Client browser riceve il messaggio
+     *    b. Invia a /topic/restaurant/123/notifications (con userType prefisso)
+     *    c. Client browser riceve il messaggio dalla destinazione corretta
      *    d. JavaScript callback elabora il payload
      *    e. UI update in REAL-TIME (nessun refresh!)
+     *    
+     *    ⭐ WHY userType IN PATH?
+     *       RUser, Customer, AgencyUser, Admin hanno auto-increment ID indipendenti
+     *       Quindi userId=123 potrebbe essere sia RUser che Customer
+     *       Includere userType nella destinazione previene routing a utente sbagliato
      * 
      * 4. TIMING:
      *    - T+0ms: Service crea event_outbox [L0]
