@@ -104,15 +104,22 @@ public class AgencyAuthenticationService {
         } else {
             // Login intermedio: più agenzie (HUB)
             // Genera JWT hub con refresh token se remember me
-            final String hubJwt = jwtUtil.generateHubToken(userHub);
+            final String hubJwt = jwtUtil.generateAgencyHubToken(userHub);
             
             log.debug("Hub login with {} agencies - Hub JWT generated", associatedUsers.size());
             
             if (authenticationRequest.isRememberMe()) {
-                final String hubRefreshToken = jwtUtil.generateHubRefreshToken(userHub);
-                return new AuthResponseDTO(hubJwt, hubRefreshToken, agencyUserHubMapper.toDTO(userHub));
+                final String hubRefreshToken = jwtUtil.generateAgencyHubRefreshToken(userHub);
+                return AuthResponseDTO.builder()
+                        .jwt(hubJwt)
+                        .refreshToken(hubRefreshToken)
+                        .user(agencyUserHubMapper.toDTO(userHub))
+                        .build();
             } else {
-                return new AuthResponseDTO(hubJwt, agencyUserHubMapper.toDTO(userHub));
+                return AuthResponseDTO.builder()
+                        .jwt(hubJwt)
+                        .user(agencyUserHubMapper.toDTO(userHub))
+                        .build();
             }
         }
     }
@@ -126,7 +133,7 @@ public class AgencyAuthenticationService {
         
         try {
             // Verifica che sia un hub refresh token valido
-            if (!jwtUtil.isHubRefreshToken(refreshToken)) {
+            if (!jwtUtil.isAgencyHubRefreshToken(refreshToken)) {
                 throw new BadCredentialsException("Invalid refresh token type");
             }
             
@@ -137,18 +144,17 @@ public class AgencyAuthenticationService {
             final AgencyUserHub hubUser = agencyUserHubDAO.findByEmail(email)
                     .orElseThrow(() -> new BadCredentialsException("Invalid refresh token"));
             
-            // Valida il refresh token
-            if (!jwtUtil.validateToken(refreshToken, hubUser)) {
-                throw new BadCredentialsException("Invalid or expired refresh token");
-            }
-            
             // Genera nuovi token hub
-            final String newHubJwt = jwtUtil.generateHubToken(hubUser);
-            final String newHubRefreshToken = jwtUtil.generateHubRefreshToken(hubUser);
+            final String newHubJwt = jwtUtil.generateAgencyHubToken(hubUser);
+            final String newHubRefreshToken = jwtUtil.generateAgencyHubRefreshToken(hubUser);
             
             log.debug("New agency hub tokens generated for email: {}", email);
             
-            return new AuthResponseDTO(newHubJwt, newHubRefreshToken, agencyUserHubMapper.toDTO(hubUser));
+            return AuthResponseDTO.builder()
+                    .jwt(newHubJwt)
+                    .refreshToken(newHubRefreshToken)
+                    .user(agencyUserHubMapper.toDTO(hubUser))
+                    .build();
                     
         } catch (Exception e) {
             log.error("Agency hub refresh token validation failed: {}", e.getMessage());
