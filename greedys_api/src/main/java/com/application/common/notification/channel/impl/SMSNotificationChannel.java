@@ -24,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
  * @since 2025-01-20 (SMS Notification Channel)
  */
 @Slf4j
-@Service
+@Service("SMS")
 @RequiredArgsConstructor
 public class SMSNotificationChannel implements INotificationChannel {
 

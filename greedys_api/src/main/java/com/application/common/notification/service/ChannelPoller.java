@@ -48,20 +48,25 @@ import lombok.extern.slf4j.Slf4j;
  * - ChannelPoller torna a processar il messaggio prossima iterazione
  * - Dopo N retry falliti → status=FAILED (abbandonare)
  * 
- * CHANNEL IMPLEMENTATIONS (da implementare):
- * 1. WebSocketNotificationChannel
- *    - Invia real-time via WebSocket
- *    - Sempre succede (se client connesso) o queue per prossima connessione
+ * CHANNEL IMPLEMENTATIONS:
+ * ⭐ WebSocketNotificationChannel: NOT POLLED HERE
+ *    - Delivery is SYNCHRONOUS in BaseNotificationListener.attemptWebSocketSend()
+ *    - Best-effort, no retry if client offline
+ *    - No background polling needed
  * 
- * 2. EmailNotificationChannel
+ * Channels polled by ChannelPoller:
+ * 1. EmailNotificationChannel
+ *    - Polling interval: 30 seconds (batched)
  *    - Invia email via SMTP
  *    - Integrazione con EmailService/JavaMailSender
  * 
- * 3. PushNotificationChannel
+ * 2. PushNotificationChannel
+ *    - Polling interval: 10 seconds
  *    - Invia push notification via Firebase Cloud Messaging
  *    - Integrazione con FCM SDK
  * 
- * 4. SMSNotificationChannel
+ * 3. SMSNotificationChannel
+ *    - Polling interval: 60 seconds (rate-limited)
  *    - Invia SMS via Twilio o simile
  *    - Integrazione con SMS provider
  * 
@@ -84,19 +89,13 @@ public class ChannelPoller {
 	// ==================== POLLING LOOPS ====================
 
 	/**
-	 * Poll WEBSOCKET channel every 5 seconds.
-	 * WEBSOCKET è il canale più veloce, high priority per real-time notifications.
-	 */
-	@Scheduled(fixedDelayString = "${notification.polling.websocket.interval:5000}")
-	@Transactional
-	public void pollWebSocketChannel() {
-		log.debug("🔄 Polling WEBSOCKET channel for pending notifications");
-		pollChannel(NotificationChannel.WEBSOCKET);
-	}
-
-	/**
 	 * Poll EMAIL channel every 30 seconds.
 	 * EMAIL è più lento, batch ogni 30s.
+	 * 
+	 * NOTE: WebSocket is NOT polled here because:
+	 * - WebSocket delivery is SYNCHRONOUS in BaseNotificationListener.attemptWebSocketSend()
+	 * - Called immediately after DB persist, not via background polling
+	 * - Best-effort: if client offline, fails silently (no retry)
 	 */
 	@Scheduled(fixedDelayString = "${notification.polling.email.interval:30000}")
 	@Transactional

@@ -105,6 +105,11 @@ public class CustomerReservationService {
     
     /**
      * Build JSON payload for EventOutbox
+     * 
+     * ⭐ INCLUDES initiated_by=CUSTOMER for intelligent routing
+     * EventOutboxOrchestrator uses this to route to:
+     * - notification.restaurant.reservations (TEAM notifications)
+     * instead of default notification.restaurant.user
      */
     private String buildReservationPayload(Reservation reservation) {
         Long customerId = reservation.getCustomer() != null ? reservation.getCustomer().getId() : null;
@@ -114,7 +119,7 @@ public class CustomerReservationService {
         String notes = reservation.getNotes() != null ? reservation.getNotes().replace("\"", "\\\"") : "";
         
         return String.format(
-            "{\"reservationId\":%d,\"customerId\":%s,\"restaurantId\":%d,\"email\":\"%s\",\"date\":\"%s\",\"pax\":%d,\"kids\":%d,\"notes\":\"%s\"}",
+            "{\"reservationId\":%d,\"customerId\":%s,\"restaurantId\":%d,\"email\":\"%s\",\"date\":\"%s\",\"pax\":%d,\"kids\":%d,\"notes\":\"%s\",\"initiated_by\":\"CUSTOMER\"}",
             reservation.getId(),
             customerId != null ? customerId : "null",
             restaurantId,

@@ -31,6 +31,7 @@ public class RabbitMQConfig {
     // EventOutbox → RabbitMQ queues (by user type)
     public static final String QUEUE_CUSTOMER = "notification.customer";
     public static final String QUEUE_RESTAURANT = "notification.restaurant";
+    public static final String QUEUE_RESTAURANT_TEAM = "notification.restaurant.reservations";
     public static final String QUEUE_ADMIN = "notification.admin";
     public static final String QUEUE_AGENCY = "notification.agency";
     
@@ -43,6 +44,7 @@ public class RabbitMQConfig {
     // ============ ROUTING KEYS ============
     public static final String ROUTING_KEY_CUSTOMER = "notification.customer.*";
     public static final String ROUTING_KEY_RESTAURANT = "notification.restaurant.*";
+    public static final String ROUTING_KEY_RESTAURANT_TEAM = "notification.restaurant.reservations.*";
     public static final String ROUTING_KEY_ADMIN = "notification.admin.*";
     public static final String ROUTING_KEY_AGENCY = "notification.agency.*";
     
@@ -76,6 +78,19 @@ public class RabbitMQConfig {
         return BindingBuilder.bind(restaurantQueue)
                 .to(notificationsExchange)
                 .with(ROUTING_KEY_RESTAURANT);
+    }
+    
+    // ============ RESTAURANT TEAM QUEUE & BINDING ============
+    @Bean
+    public Queue restaurantTeamQueue() {
+        return new Queue(QUEUE_RESTAURANT_TEAM, true, false, false);
+    }
+    
+    @Bean
+    public Binding restaurantTeamBinding(Queue restaurantTeamQueue, TopicExchange notificationsExchange) {
+        return BindingBuilder.bind(restaurantTeamQueue)
+                .to(notificationsExchange)
+                .with(ROUTING_KEY_RESTAURANT_TEAM);
     }
     
     // ============ ADMIN QUEUE & BINDING ============

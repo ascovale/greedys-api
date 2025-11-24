@@ -24,18 +24,37 @@ import java.time.Instant;
 /**
  * ⭐ EVENT OUTBOX ORCHESTRATOR (PRODUCER - LAYER 1)
  * 
- * SIMPLE PUBLISHER: Polls EventOutbox and publishes 1 GENERIC message per recipient type to RabbitMQ.
+ * DISPATCHER: Polls EventOutbox and routes messages to appropriate RabbitMQ queues.
+ * Routes to DIFFERENT QUEUES based on eventType + initiator to handle team vs personal notifications.
  * 
  * RESPONSIBILITY:
  * - Poll EventOutbox table for PENDING events (status = PENDING)
- * - Determine recipient type from aggregateType (RESTAURANT, CUSTOMER, AGENCY, ADMIN)
- * - Publish 1 message per recipient type to RabbitMQ
+ * - Determine target queue based on aggregateType + eventType + initiated_by
+ * - Publish message to correct RabbitMQ queue
  * - Mark event as PROCESSED
+ * 
+ * ROUTING RULES (for RESERVATION events):
+ * 1. RESERVATION_NEW / RESERVATION_MODIFIED / RESERVATION_CANCELLED
+ *    ├─ If initiated_by=CUSTOMER → notification.restaurant.reservations (TEAM)
+ *    ├─ If initiated_by=RESTAURANT → notification.customer (PERSONALI)
+ *    └─ If initiated_by=ADMIN → notification.restaurant.reservations + notification.customer (TEAM + PERSONALI)
+ * 
+ * 2. Other RESTAURANT events
+ *    └─ notification.restaurant.user (PERSONALI staff)
+ * 
+ * 3. CUSTOMER events
+ *    └─ notification.customer (PERSONALI)
+ * 
+ * QUEUE MAPPING:
+ * - notification.restaurant.reservations → RestaurantTeamNotificationListener (TEAM notifications)
+ * - notification.restaurant.user → RestaurantUserNotificationListener (PERSONAL staff notifications)
+ * - notification.customer → CustomerNotificationListener (PERSONAL customer notifications)
+ * - notification.agency → AgencyUserNotificationListener
+ * - notification.admin → AdminNotificationListener
  * 
  * ⭐ IMPORTANT: NO DISAGGREGATION HERE
  * - Does NOT load user preferences
  * - Does NOT load group settings
- * - Does NOT load event routing rules
  * - Does NOT disaggregate by recipient × channel
  * - Disaggregation happens in Layer 2 (NotificationOrchestrator in @RabbitListener)
  * 
@@ -44,44 +63,74 @@ import java.time.Instant;
  *       EventOutboxOrchestrator.orchestrate()
  *       ├─ Poll EventOutbox: SELECT * WHERE status='PENDING' LIMIT 100
  *       ├─ For each event:
- *       │  ├─ Get aggregateType (RESTAURANT, CUSTOMER, AGENCY, ADMIN)
- *       │  ├─ Publish 1 message to RabbitMQ queue (notification.{type})
- *       │  │  {
- *       │  │    event_id: "RES-REQ-12345",
- *       │  │    event_type: "RESERVATION_REQUESTED",
- *       │  │    aggregate_type: "RESTAURANT",
- *       │  │    restaurant_id: 5,
- *       │  │    payload: {...}
- *       │  │  }
+ *       │  ├─ Determine target queue(s) based on eventType + initiated_by
+ *       │  ├─ Publish 1 or more messages to RabbitMQ:
+ *       │  │  - RESERVATION from CUSTOMER → notification.restaurant.reservations
+ *       │  │  - RESERVATION from RESTAURANT → notification.customer
+ *       │  │  - RESERVATION from ADMIN → both queues
+ *       │  │  - Other events → default queue per aggregateType
  *       │  └─ Mark as PROCESSED
  *       └─ Log results
  * 
- * [T1s+] RabbitMQ delivers to correct queue:
- *        ├─ notification.restaurant queue → RestaurantNotificationListener
- *        ├─ notification.customer queue → CustomerNotificationListener
- *        ├─ notification.agency queue → AgencyUserNotificationListener
- *        └─ notification.admin queue → AdminNotificationListener
+ * [T1s+] RabbitMQ delivers to correct queues:
+ *        ├─ notification.restaurant.reservations → RestaurantTeamNotificationListener
+ *        ├─ notification.restaurant.user → RestaurantUserNotificationListener
+ *        ├─ notification.customer → CustomerNotificationListener
+ *        ├─ notification.agency → AgencyUserNotificationListener
+ *        └─ notification.admin → AdminNotificationListener
  * 
  * [T2s+] @RabbitListener processes message:
  *        ├─ Calls BaseNotificationListener.processNotificationMessage()
  *        ├─ Gets type-specific orchestrator from factory
  *        ├─ Orchestrator DISAGGREGATES (1 message → N notifications)
- *        ├─ Listener saves all disaggregated records
+ *        ├─ For TEAM notifications: creates notification with read_by_all=true
+ *        │  destination: /topic/restaurant/{restaurantId}/reservations
+ *        ├─ For PERSONAL notifications: creates notifications for each user
+ *        │  destination: /topic/ruser/{userId}/notifications OR /topic/customer/{userId}/notifications
+ *        ├─ Listener saves all disaggregated records to DB
+ *        ├─ BaseNotificationListener.attemptWebSocketSend() (SYNCHRONOUS, no retry)
  *        └─ ACK
  * 
- * MESSAGE VOLUME:
- * - Input: 1 RESERVATION_REQUESTED event
- * - EventOutboxOrchestrator publishes: 1 message (to notification.restaurant)
- * - RabbitMQ carries: 1 message (LIGHT!)
- * - RestaurantNotificationListener receives: 1 message
- * - Disaggregates to: 8 notification records (staff × channels)
- * - Database saves: 8 rows
+ * MESSAGE FLOW EXAMPLE (NEW_RESERVATION from CUSTOMER):
+ * ├─ Customer creates reservation
+ * ├─ ReservationService inserts Reservation + EventOutbox(event_type=RESERVATION_NEW, initiated_by=CUSTOMER)
+ * ├─ EventOutboxOrchestrator polls EventOutbox
+ * ├─ determineTargetQueue() → "notification.restaurant.reservations"
+ * ├─ Publishes to RabbitMQ queue: notification.restaurant.reservations
+ * ├─ RestaurantTeamNotificationListener receives
+ * ├─ RestaurantTeamOrchestrator disaggregates:
+ * │  ├─ Loads all restaurant staff
+ * │  ├─ Creates RestaurantUserNotification for each staff
+ * │  │  ├─ read_by_all = true (TEAM notification)
+ * │  │  ├─ destination = /topic/restaurant/3/reservations
+ * │  │  └─ channel = WEBSOCKET (+ EMAIL, PUSH, SMS if configured)
+ * │  ├─ Saves 5 records to DB (1 per staff × 1 channel)
+ * │  └─ WebSocketNotificationChannel.send() → /topic/restaurant/3/reservations
+ * └─ Each connected staff member receives real-time notification
+ * 
+ * MESSAGE FLOW EXAMPLE (RESERVATION_ACCEPTED from RESTAURANT):
+ * ├─ Restaurant staff accepts reservation
+ * ├─ ReservationService updates Reservation + EventOutbox(event_type=RESERVATION_ACCEPTED, initiated_by=RESTAURANT)
+ * ├─ EventOutboxOrchestrator polls EventOutbox
+ * ├─ determineTargetQueue() → "notification.customer"
+ * ├─ Publishes to RabbitMQ queue: notification.customer
+ * ├─ CustomerNotificationListener receives
+ * ├─ CustomerOrchestrator disaggregates:
+ * │  ├─ Loads customer (from reservation payload)
+ * │  ├─ Creates CustomerNotification
+ * │  │  ├─ read_by_all = false (PERSONAL notification)
+ * │  │  ├─ destination = /topic/customer/{customerId}/notifications
+ * │  │  └─ channel = WEBSOCKET (+ EMAIL, PUSH, SMS if configured)
+ * │  ├─ Saves 1 record to DB
+ * │  └─ WebSocketNotificationChannel.send() → /topic/customer/{customerId}/notifications
+ * └─ Customer receives real-time notification
  * 
  * BENEFITS:
- * ✅ RabbitMQ traffic is minimal (1 event = 1 message)
- * ✅ Business logic stays in layer 2 (NotificationOrchestrator)
- * ✅ Can add event-type-specific rules in future (override in orchestrator)
- * ✅ Aligns with stream processor pattern (Facebook, Netflix, Amazon)
+ * ✅ RabbitMQ queues are semantically separated (team vs personal)
+ * ✅ Different listeners can apply different business logic per scope
+ * ✅ WebSocket destinations are properly scoped (team or personal)
+ * ✅ Can add channel-specific rules per scope in future
+ * ✅ Admin can easily notify both parties (publishes to both queues)
  * 
  * FUTURE ENHANCEMENT (Optional):
  * - Add event-type-specific publishing rules in EventOutboxOrchestrator
@@ -229,16 +278,32 @@ public class EventOutboxOrchestrator {
     /**
      * ⭐ PUBLISH EVENT TO RABBITMQ
      * 
-     * Publishes 1 GENERIC message per recipient type to RabbitMQ.
-     * No disaggregation, no business logic - just publish.
+     * Publishes message to a SINGLE queue determined by routing rules.
+     * NO disaggregation here - just route to correct queue.
+     * 
+     * ROUTING LOGIC (in determineTargetQueue):
+     * - RESERVATION from CUSTOMER → notification.restaurant.reservations
+     * - RESERVATION from RESTAURANT → notification.customer
+     * - RESERVATION from ADMIN → notification.restaurant.reservations (default, second orchestrator handles both)
+     * - Other events → default queue per aggregateType
      * 
      * @param event EventOutbox entity
      */
     private void publishEvent(EventOutbox event) {
-        // Determine target queue based on aggregateType
-        String aggregateType = event.getAggregateType();
-        String queueName = determineTargetQueue(aggregateType);
+        // Determine single target queue (never split here)
+        String queueName = determineTargetQueue(event);
+        publishToQueue(event, queueName);
+    }
 
+    /**
+     * ⭐ PUBLISH TO SINGLE QUEUE
+     * 
+     * Internal method to publish message to a specific queue.
+     * 
+     * @param event EventOutbox entity
+     * @param queueName Target queue name
+     */
+    private void publishToQueue(EventOutbox event, String queueName) {
         // Build message
         Map<String, Object> message = buildMessage(event);
 
@@ -247,30 +312,101 @@ public class EventOutboxOrchestrator {
         // Publish to RabbitMQ (convertAndSend automatically handles serialization)
         rabbitTemplate.convertAndSend(queueName, message);
 
-        log.debug("✓ Message published to RabbitMQ");
+        log.debug("✓ Message published to RabbitMQ queue: {}", queueName);
     }
 
     /**
      * ⭐ DETERMINE TARGET QUEUE
      * 
-     * Routes message to correct queue based on aggregateType.
+     * Routes message to SINGLE correct queue based on aggregateType + eventType + initiator.
+     * NO disaggregation here - just determines the queue for RabbitMQ routing.
      * 
-     * @param aggregateType Type (RESTAURANT, CUSTOMER, AGENCY, ADMIN)
-     * @return Queue name (notification.{type})
+     * ROUTING LOGIC for RESERVATION events:
+     * - initiated_by=CUSTOMER → notification.restaurant.reservations (TEAM notification)
+     * - initiated_by=RESTAURANT → notification.customer (PERSONAL notification)
+     * - initiated_by=ADMIN → notification.restaurant.reservations (default, TEAM scope)
+     *   Note: Admin events still go to TEAM queue; second orchestrator decides scope
+     * 
+     * ROUTING for other events:
+     * - Default per aggregateType (e.g., CUSTOMER → notification.customer)
+     * 
+     * Returns a String because each event goes to single queue.
+     * 
+     * @param event EventOutbox entity
+     * @return Queue name (e.g., "notification.restaurant.reservations")
      */
-    private String determineTargetQueue(String aggregateType) {
+    private String determineTargetQueue(EventOutbox event) {
+        String aggregateType = event.getAggregateType();
+        String eventType = event.getEventType();
+        
         if (aggregateType == null) {
             throw new IllegalArgumentException("aggregateType cannot be null");
         }
 
+        // For RESERVATION events, route based on initiator
+        if (isReservationEvent(eventType)) {
+            String initiatedBy = extractInitiatedBy(event);
+            
+            if ("CUSTOMER".equalsIgnoreCase(initiatedBy)) {
+                // Customer action → notify restaurant team
+                return "notification.restaurant.reservations";
+            } else if ("RESTAURANT".equalsIgnoreCase(initiatedBy)) {
+                // Restaurant action → notify customer
+                return "notification.customer";
+            }
+            // ADMIN or null → default to restaurant reservations (team scope)
+            // Second orchestrator (RestaurantTeamOrchestrator) handles both if needed
+            return "notification.restaurant.reservations";
+        }
+
+        // Default routing for non-reservation events
         return switch (aggregateType.toUpperCase()) {
-            case "RESTAURANT" -> "notification.restaurant";
+            case "RESTAURANT" -> "notification.restaurant.user";  // Default: personal staff notifications
             case "CUSTOMER" -> "notification.customer";
             case "AGENCY" -> "notification.agency";
             case "ADMIN" -> "notification.admin";
             case "BROADCAST" -> "notification.broadcast";  // Future: broadcast to all users
             default -> throw new IllegalArgumentException("Unknown aggregateType: " + aggregateType);
         };
+    }
+
+    /**
+     * ⭐ CHECK IF EVENT IS RESERVATION-RELATED
+     * 
+     * @param eventType Event type from EventOutbox
+     * @return true if event is about reservations
+     */
+    private boolean isReservationEvent(String eventType) {
+        if (eventType == null) {
+            return false;
+        }
+        return eventType.contains("RESERVATION");
+    }
+
+    /**
+     * ⭐ EXTRACT INITIATOR FROM EVENT
+     * 
+     * Reads "initiated_by" field from payload or defaults to event source.
+     * 
+     * @param event EventOutbox entity
+     * @return "CUSTOMER", "RESTAURANT", "ADMIN", or null
+     */
+    @SuppressWarnings("unchecked")
+    private String extractInitiatedBy(EventOutbox event) {
+        String payload = event.getPayload();
+        if (payload != null && !payload.isEmpty()) {
+            try {
+                ObjectMapper mapper = new ObjectMapper();
+                Map<String, Object> payloadMap = mapper.readValue(payload, Map.class);
+                Object initiatedBy = payloadMap.get("initiated_by");
+                if (initiatedBy != null) {
+                    return initiatedBy.toString().toUpperCase();
+                }
+            } catch (Exception e) {
+                log.debug("Could not extract initiated_by from payload: {}", e.getMessage());
+            }
+        }
+        return null;
     }
 
     /**
