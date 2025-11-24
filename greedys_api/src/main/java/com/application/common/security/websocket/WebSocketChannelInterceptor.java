@@ -107,13 +107,24 @@ public class WebSocketChannelInterceptor implements ChannelInterceptor {
         // Get authentication from message headers (set by handshake interceptor)
         Object auth = accessor.getHeader("ws-authentication");
         
+        // Fallback: check session attributes (handshake sets them here)
+        if (!(auth instanceof WebSocketAuthenticationToken)) {
+            java.util.Map<String, Object> sessionAttributes = accessor.getSessionAttributes();
+            if (sessionAttributes != null) {
+                auth = sessionAttributes.get(WebSocketHandshakeInterceptor.WS_AUTHENTICATION_ATTR);
+                if (auth instanceof WebSocketAuthenticationToken) {
+                    log.debug("Retrieved authentication from session attributes");
+                }
+            }
+        }
+        
         if (auth instanceof WebSocketAuthenticationToken) {
             WebSocketAuthenticationToken token = (WebSocketAuthenticationToken) auth;
-            log.info("CONNECT frame: User {} (type: {}) connected", 
+            log.info("✅ CONNECT frame: User {} (type: {}) connected", 
                      token.getUsername(), token.getUserType());
             return message;
         } else {
-            log.warn("CONNECT frame rejected: No valid authentication for session {}", sessionId);
+            log.warn("❌ CONNECT frame rejected: No valid authentication for session {}", sessionId);
             throw new AccessDeniedException("Not authenticated");
         }
     }
@@ -228,6 +239,16 @@ public class WebSocketChannelInterceptor implements ChannelInterceptor {
         Object auth = accessor.getHeader("ws-authentication");
         if (auth instanceof WebSocketAuthenticationToken) {
             return (WebSocketAuthenticationToken) auth;
+        }
+        
+        // Fallback: try session attributes (set by handshake interceptor)
+        java.util.Map<String, Object> sessionAttributes = accessor.getSessionAttributes();
+        if (sessionAttributes != null) {
+            auth = sessionAttributes.get(WebSocketHandshakeInterceptor.WS_AUTHENTICATION_ATTR);
+            if (auth instanceof WebSocketAuthenticationToken) {
+                log.debug("Retrieved authentication from session attributes");
+                return (WebSocketAuthenticationToken) auth;
+            }
         }
         
         // Try Spring Security user principal
