@@ -7,10 +7,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.application.agency.service.authentication.AgencyAuthenticationService;
 import com.application.common.controller.BaseController;
-import com.application.common.security.jwt.JwtUtil;
 import com.application.common.web.dto.security.AuthResponseDTO;
 import com.application.common.web.dto.security.RefreshTokenRequestDTO;
+import com.application.common.web.dto.security.AuthRequestDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -20,39 +21,51 @@ import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @Tag(name = "Agency Authentication", description = "Controller for agency authentication")
-@RequestMapping("/agency/user/auth")
+@RequestMapping("/api/v1/agency/auth")
 @SecurityRequirement(name = "bearerAuth")
 @RequiredArgsConstructor
 @Slf4j
 public class AgencyAuthenticationController extends BaseController {
 
-    private final JwtUtil jwtUtil;
-    // TODO: Add AgencyAuthenticationService when implemented
+    private final AgencyAuthenticationService agencyAuthenticationService;
 
-    @Operation(summary = "Login to agency", description = "Authenticate agency user with email, password, and agency ID")
+    @Operation(summary = "Login to agency", description = "Authenticate agency user with email, password, and remember me option")
     @PostMapping(value = "/login", produces = "application/json")
-    public ResponseEntity<AuthResponseDTO> login(@RequestBody AgencyLoginRequestDTO request) {
+    public ResponseEntity<AuthResponseDTO> login(@RequestBody AuthRequestDTO request) {
         return execute("agency login", () -> {
-            // TODO: Implement authentication logic
-            throw new UnsupportedOperationException("Agency authentication not yet implemented");
+            return agencyAuthenticationService.loginWithHubSupport(request);
         });
     }
 
-    @Operation(summary = "Refresh JWT token", description = "Refresh an expired JWT token")
+    @Operation(summary = "Refresh Agency User JWT token", description = "Refresh an expired JWT token for agency user (single agency)")
     @PostMapping(value = "/refresh", produces = "application/json")
     public ResponseEntity<AuthResponseDTO> refresh(@RequestBody RefreshTokenRequestDTO request) {
-        return execute("refresh agency token", () -> {
-            // TODO: Implement refresh logic
-            throw new UnsupportedOperationException("Agency token refresh not yet implemented");
+        return execute("refresh agency user token", () -> {
+            return agencyAuthenticationService.refreshAgencyUserToken(request.getRefreshToken());
         });
     }
 
-    @Operation(summary = "Refresh Agency Hub JWT token", description = "Refresh an expired Agency Hub JWT token")
+    @Operation(summary = "Refresh Agency Hub JWT token", description = "Refresh an expired JWT token for agency hub (multi-agency)")
     @PostMapping(value = "/refresh/hub", produces = "application/json")
     public ResponseEntity<AuthResponseDTO> refreshHub(@RequestBody RefreshTokenRequestDTO request) {
         return execute("refresh agency hub token", () -> {
-            // TODO: Implement hub refresh logic
-            throw new UnsupportedOperationException("Agency hub token refresh not yet implemented");
+            return agencyAuthenticationService.refreshHubToken(request.getRefreshToken());
+        });
+    }
+
+    @Operation(summary = "Select agency", description = "Hub user selects a specific agency and gets a new JWT for that agency")
+    @PostMapping(value = "/select-agency", produces = "application/json")
+    public ResponseEntity<AuthResponseDTO> selectAgency(@RequestBody SelectAgencyRequestDTO request) {
+        return execute("select agency", () -> {
+            return agencyAuthenticationService.selectAgency(request.getAgencyId());
+        });
+    }
+
+    @Operation(summary = "Change agency", description = "Hub user changes to a different agency (alias for select-agency)")
+    @PostMapping(value = "/change-agency", produces = "application/json")
+    public ResponseEntity<AuthResponseDTO> changeAgency(@RequestBody SelectAgencyRequestDTO request) {
+        return execute("change agency", () -> {
+            return agencyAuthenticationService.selectAgency(request.getAgencyId());
         });
     }
 
@@ -61,26 +74,13 @@ public class AgencyAuthenticationController extends BaseController {
     public ResponseEntity<Void> logout() {
         return execute("agency logout", () -> {
             SecurityContextHolder.clearContext();
+            log.debug("Agency user logged out");
             return null;
         });
     }
 
-    // Inner DTOs for requests
-    public static class AgencyLoginRequestDTO {
-        private String email;
-        private String password;
-        private Long agencyId;
-
-        // Getters and setters
-        public String getEmail() { return email; }
-        public void setEmail(String email) { this.email = email; }
-        public String getPassword() { return password; }
-        public void setPassword(String password) { this.password = password; }
-        public Long getAgencyId() { return agencyId; }
-        public void setAgencyId(Long agencyId) { this.agencyId = agencyId; }
-    }
-
-    public static class AgencySwitchRequestDTO {
+    // DTOs for requests
+    public static class SelectAgencyRequestDTO {
         private Long agencyId;
 
         public Long getAgencyId() { return agencyId; }

@@ -99,4 +99,10 @@ public interface AgencyUserDAO extends JpaRepository<AgencyUser, Long> {
      */
     @Query("SELECT au FROM AgencyUser au WHERE au.email = :email")
     List<AgencyUser> findAgencyUsersByEmail(@Param("email") String email);
+
+    /**
+     * Find agency user by email and agency ID - for multi-agency support
+     */
+    @Query("SELECT au FROM AgencyUser au WHERE au.email = :email AND au.agency.id = :agencyId")
+    Optional<AgencyUser> findByEmailAndAgencyId(@Param("email") String email, @Param("agencyId") Long agencyId);
 }
