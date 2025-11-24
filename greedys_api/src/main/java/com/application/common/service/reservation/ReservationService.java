@@ -18,8 +18,10 @@ import com.application.common.persistence.mapper.ReservationMapper;
 import com.application.common.persistence.model.reservation.Reservation;
 import com.application.common.persistence.model.reservation.ReservationRequest;
 import com.application.common.persistence.model.reservation.Slot;
+import com.application.common.persistence.model.notification.EventOutbox;
 import com.application.common.web.dto.reservations.ReservationDTO;
 import com.application.common.persistence.mapper.Mapper.Weekday;
+import com.application.common.persistence.dao.EventOutboxDAO;
 import com.application.customer.persistence.dao.CustomerDAO;
 import com.application.customer.persistence.dao.ReservationDAO;
 import com.application.customer.persistence.dao.ReservationRequestDAO;
@@ -55,6 +57,7 @@ public class ReservationService {
     private final ReservationMapper reservationMapper;
     private final RestaurantAgendaService restaurantAgendaService;
     private final ReservationWebSocketPublisher webSocketPublisher;
+    private final EventOutboxDAO eventOutboxDAO;
 
     public void save(Reservation reservation) {
         // Save the reservation
@@ -288,6 +291,10 @@ public class ReservationService {
                 .build();
         reservation = reservationDAO.save(reservation);
         
+        // 📌 CREATE EVENT_OUTBOX: Restaurant staff created reservation
+        // ⭐ INCLUDES initiated_by=RESTAURANT for intelligent routing to notification.customer queue (PERSONAL)
+        createRestaurantReservationCreatedEvent(reservation);
+        
         // 🎯 INTEGRAZIONE AGENDA: Aggiungi automaticamente il cliente all'agenda del ristorante
         try {
             restaurantAgendaService.addToAgendaOnReservation(
@@ -346,6 +353,10 @@ public class ReservationService {
                 .status(Reservation.Status.ACCEPTED)
                 .build();
         reservation = reservationDAO.save(reservation);
+        
+        // 📌 CREATE EVENT_OUTBOX: Restaurant staff created reservation with existing customer
+        // ⭐ INCLUDES initiated_by=RESTAURANT for intelligent routing to notification.customer queue (PERSONAL)
+        createRestaurantReservationCreatedEvent(reservation);
         
         // 🎯 INTEGRAZIONE AGENDA: Customer già esistente nell'agenda - aggiorna info prenotazione
         try {
@@ -524,6 +535,59 @@ public class ReservationService {
         }
         
         return customer;
+    }
+
+    /**
+     * Create RESERVATION_CREATED event (restaurant staff created reservation)
+     * Notifies: CUSTOMER ONLY (confirmation of their reservation)
+     * 
+     * ⭐ INCLUDES initiated_by=RESTAURANT for intelligent routing to notification.customer queue (PERSONAL)
+     */
+    private void createRestaurantReservationCreatedEvent(Reservation reservation) {
+        String eventId = "RESERVATION_CREATED_" + reservation.getId() + "_" + System.currentTimeMillis();
+        String payload = buildReservationPayload(reservation);
+        
+        EventOutbox eventOutbox = EventOutbox.builder()
+            .eventId(eventId)
+            .eventType("RESERVATION_CREATED")
+            .aggregateType("RESTAURANT")
+            .aggregateId(reservation.getId())
+            .payload(payload)
+            .status(EventOutbox.Status.PENDING)
+            .build();
+        
+        eventOutboxDAO.save(eventOutbox);
+        
+        log.info("✅ Created EventOutbox RESERVATION_CREATED: eventId={}, reservationId={}, aggregateType=RESTAURANT, status=PENDING", 
+            eventId, reservation.getId());
+    }
+
+    /**
+     * Build JSON payload for EventOutbox
+     * 
+     * ⭐ INCLUDES initiated_by=RESTAURANT for intelligent routing
+     * EventOutboxOrchestrator uses this to route to:
+     * - notification.customer (PERSONAL customer notifications)
+     * instead of restaurant team notifications
+     */
+    private String buildReservationPayload(Reservation reservation) {
+        Long customerId = reservation.getCustomer() != null ? reservation.getCustomer().getId() : null;
+        String customerEmail = reservation.getCustomer() != null ? reservation.getCustomer().getEmail() : "anonymous";
+        Long restaurantId = reservation.getRestaurant().getId();
+        Integer kids = reservation.getKids() != null ? reservation.getKids() : 0;
+        String notes = reservation.getNotes() != null ? reservation.getNotes().replace("\"", "\\\"") : "";
+        
+        return String.format(
+            "{\"reservationId\":%d,\"customerId\":%s,\"restaurantId\":%d,\"email\":\"%s\",\"date\":\"%s\",\"pax\":%d,\"kids\":%d,\"notes\":\"%s\",\"initiated_by\":\"RESTAURANT\"}",
+            reservation.getId(),
+            customerId != null ? customerId : "null",
+            restaurantId,
+            customerEmail,
+            reservation.getDate().toString(),
+            reservation.getPax(),
+            kids,
+            notes
+        );
     }
 
 }

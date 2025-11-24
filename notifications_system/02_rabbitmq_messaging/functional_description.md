@@ -29,8 +29,9 @@ RabbitMQ:
 
 ### 2. **Queue Routing by Type**
 
-4 separate queues (one per user type):
-- **notification.restaurant**: For restaurant staff notifications → RestaurantNotificationListener
+4 primary queues (one per user type):
+- **notification.restaurant**: For personal restaurant staff notifications → RestaurantNotificationListener
+- **notification.restaurant.reservations**: For TEAM-scoped reservations → RestaurantTeamNotificationListener
 - **notification.customer**: For customer notifications → CustomerNotificationListener
 - **notification.agency**: For agency staff notifications → AgencyUserNotificationListener  
 - **notification.admin**: For admin notifications → AdminNotificationListener

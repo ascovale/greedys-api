@@ -36,7 +36,7 @@ import lombok.extern.slf4j.Slf4j;
  * @since 2025-01-20 (WebSocket Notification Channel)
  */
 @Slf4j
-@Service
+@Service("WEBSOCKET")
 @RequiredArgsConstructor
 public class WebSocketNotificationChannel implements INotificationChannel {
 
@@ -67,8 +67,26 @@ public class WebSocketNotificationChannel implements INotificationChannel {
 					"properties", properties != null ? properties : Map.of(),
 					"timestamp", System.currentTimeMillis());
 
-			// Invia via STOMP to /topic/notifications/{userId}/{notificationType}
-			String destination = String.format("/topic/notifications/%d/%s", recipient, recipientType);
+			// Invia a destinazione corretta in base al tipo
+			String destination;
+			
+			if ("RESTAURANT".equalsIgnoreCase(recipientType)) {
+				// Per singolo RUser: /topic/ruser/{userId}/notifications
+				destination = String.format("/topic/ruser/%d/notifications", recipient);
+			} else if ("CUSTOMER".equalsIgnoreCase(recipientType)) {
+				// Per singolo Customer: /topic/customer/{userId}/notifications
+				destination = String.format("/topic/customer/%d/notifications", recipient);
+			} else if ("ADMIN".equalsIgnoreCase(recipientType)) {
+				// Per singolo Admin: /topic/admin/{userId}/notifications
+				destination = String.format("/topic/admin/%d/notifications", recipient);
+			} else if ("AGENCY".equalsIgnoreCase(recipientType)) {
+				// Per singolo Agency User: /topic/agency/{userId}/notifications
+				destination = String.format("/topic/agency/%d/notifications", recipient);
+			} else {
+				log.error("❌ Unknown recipient type: {}", recipientType);
+				return false;
+			}
+			
 			messagingTemplate.convertAndSend(destination, notification);
 
 			log.info("✅ WebSocket notification sent to {} at {}", recipient, destination);

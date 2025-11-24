@@ -5,10 +5,6 @@ import java.util.Map;
 import org.springframework.stereotype.Service;
 
 import com.application.common.persistence.model.notification.ANotification;
-import com.application.restaurant.persistence.model.RestaurantUserNotification;
-import com.application.customer.persistence.model.CustomerNotification;
-import com.application.agency.persistence.model.AgencyUserNotification;
-import com.application.admin.persistence.model.AdminNotification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -19,9 +15,10 @@ import lombok.extern.slf4j.Slf4j;
  * 
  * USER TYPES:
  * 1. RESTAURANT → RestaurantUserOrchestrator
- * 2. CUSTOMER → CustomerOrchestrator
- * 3. AGENCY → AgencyUserOrchestrator
- * 4. ADMIN → AdminOrchestrator
+ * 2. RESTAURANT_TEAM → RestaurantTeamOrchestrator (TEAM scope for reservations)
+ * 3. CUSTOMER → CustomerOrchestrator
+ * 4. AGENCY → AgencyUserOrchestrator
+ * 5. ADMIN → AdminOrchestrator
  * 
  * USAGE:
  * NotificationOrchestrator<RestaurantUserNotification> orchestrator
@@ -40,6 +37,7 @@ public class NotificationOrchestratorFactory {
 
     // Inject all 4 user-type-specific orchestrators
     private final RestaurantUserOrchestrator restaurantOrchestrator;
+    private final RestaurantTeamOrchestrator restaurantTeamOrchestrator;
     private final CustomerOrchestrator customerOrchestrator;
     private final AgencyUserOrchestrator agencyOrchestrator;
     private final AdminOrchestrator adminOrchestrator;
@@ -78,6 +76,10 @@ public class NotificationOrchestratorFactory {
                 log.debug("🏢 Returning RestaurantUserOrchestrator for type RESTAURANT");
                 yield restaurantOrchestrator;
             }
+            case "RESTAURANT_TEAM" -> {
+                log.debug("🏢👥 Returning RestaurantTeamOrchestrator for type RESTAURANT_TEAM");
+                yield restaurantTeamOrchestrator;
+            }
             case "CUSTOMER" -> {
                 log.debug("👤 Returning CustomerOrchestrator for type CUSTOMER");
                 yield customerOrchestrator;
@@ -102,7 +104,6 @@ public class NotificationOrchestratorFactory {
      * @param userTypeEnum User type enum
      * @return NotificationOrchestrator for the user type
      */
-    @SuppressWarnings("unchecked")
     public <T extends ANotification> NotificationOrchestrator<T> getOrchestrator(UserType userTypeEnum) {
         return getOrchestrator(userTypeEnum.name());
     }

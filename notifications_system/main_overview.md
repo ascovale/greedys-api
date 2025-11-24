@@ -486,8 +486,111 @@ ARCHIVED
 - JWT (authentication)
 - Database (MySQL/PostgreSQL)
 
+## Team Notifications (NEW: November 2025)
+
+### Purpose
+Handle shared notifications where **all restaurant staff see the same notification** (not individual). Commonly used for RESERVATION events initiated by customers.
+
+### Architecture
+
+#### Intelligent Routing Based on Event Initiator
+EventOutboxOrchestrator now routes RESERVATION events based on `initiated_by` field:
+
+```
+RESERVATION_NEW from CUSTOMER:
+  └─ Routes to: notification.restaurant.reservations (TEAM queue)
+     └─ RestaurantTeamNotificationListener
+     └─ RestaurantTeamOrchestrator (loads ALL staff, no preferences)
+     └─ Creates notifications with read_by_all=true
+     └─ WebSocket destination: /topic/restaurant/{restaurantId}/reservations
+
+RESERVATION_NEW from RESTAURANT:
+  └─ Routes to: notification.customer (PERSONAL queue)
+     └─ CustomerNotificationListener
+     └─ Notification for single customer only
+
+RESERVATION_NEW from ADMIN:
+  └─ Routes to: notification.restaurant.reservations (TEAM)
+     └─ Default team scope for admin-created reservations
+```
+
+#### Key Differences: Team vs Personal
+
+| Aspect | Team (Shared) | Personal (Individual) |
+|--------|--------------|----------------------|
+| **Queue** | notification.restaurant.reservations | notification.restaurant |
+| **Orchestrator** | RestaurantTeamOrchestrator | RestaurantUserOrchestrator |
+| **Recipients** | ALL active staff | Filtered by preferences |
+| **read_by_all** | true (shared status) | false (individual) |
+| **WebSocket Channel** | /topic/restaurant/{id}/reservations | /topic/ruser/{userId}/notifications |
+| **Use Case** | Events affecting entire team | Individual task assignments |
+
+#### Team Notification Flow
+
+```
+Customer creates reservation
+  ↓
+EventOutbox(initiated_by=CUSTOMER, event_type=RESERVATION_NEW)
+  ↓
+EventOutboxOrchestrator polls and routes:
+  ├─ Reads: initiated_by=CUSTOMER
+  ├─ Reads: event_type=RESERVATION_*
+  └─ Routes to: notification.restaurant.reservations
+  ↓
+RestaurantTeamNotificationListener receives
+  ├─ Queue: notification.restaurant.reservations
+  ├─ Orchestrator: RESTAURANT_TEAM (from factory)
+  └─ Calls: RestaurantTeamOrchestrator.disaggregateAndProcess()
+  ↓
+RestaurantTeamOrchestrator disaggregates
+  ├─ Loads: ALL active restaurant staff (no filtering)
+  ├─ Per staff:
+  │  ├─ Creates notification with read_by_all=true
+  │  ├─ Sets destination: /topic/restaurant/{restaurantId}/reservations
+  │  ├─ Sets channel: WEBSOCKET, EMAIL, PUSH, SMS (per event rules)
+  │  └─ Saves to: notification_restaurant_user table
+  └─ Returns: List of N notifications (all team-scoped)
+  ↓
+BaseNotificationListener persists & sends
+  ├─ Save all N records to DB (UNIQUE(eventId) prevents duplicates)
+  ├─ Attempt WebSocket send to team channel (synchronous, best-effort)
+  └─ Return ACK to RabbitMQ
+  ↓
+Result: All staff see same notification in team channel
+  └─ When one staff marks as read, others see it as read too (via read_by_all=true)
+```
+
+#### Implementation Classes
+
+- **RestaurantTeamOrchestrator**: `com.application.common.service.notification.orchestrator.RestaurantTeamOrchestrator`
+  - Extends: `NotificationOrchestrator<RestaurantUserNotification>`
+  - Loads ALL staff (no preference filtering for team scope)
+  - Creates notifications with `read_by_all=true`
+
+- **RestaurantTeamNotificationListener**: `com.application.restaurant.service.listener.RestaurantTeamNotificationListener`
+  - Listens to: `notification.restaurant.reservations` queue
+  - Gets orchestrator: `"RESTAURANT_TEAM"` from factory
+  - Processes team-scoped RESERVATION messages
+
+#### Payload Enhancement
+
+All EventOutbox payloads now include `initiated_by` field:
+
+```json
+{
+  "reservationId": 123,
+  "customerId": 456,
+  "restaurantId": 789,
+  "date": "2025-11-24",
+  "pax": 4,
+  "initiated_by": "CUSTOMER"  // NEW: enables intelligent routing
+}
+```
+
+Possible values: `CUSTOMER`, `RESTAURANT`, `ADMIN`
+
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: November 23, 2025  
-**Status**: Current Production Implementation
+**Document Version**: 1.1  
+**Last Updated**: November 24, 2025  
+**Status**: Current Production Implementation + Team Notifications (NEW)
