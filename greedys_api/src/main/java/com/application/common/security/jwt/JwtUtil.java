@@ -102,8 +102,8 @@ public class JwtUtil {
         claims.put("access_type", "access");
         claims.put("user_type", determineUserType(userDetails));
         
-        // Add restaurantId or agencyId if available
-        addOrganizationIdToClaims(claims, userDetails);
+        // Add user_id, restaurantId or agencyId if available
+        addUserAndOrganizationIdsToClaims(claims, userDetails);
         
         return createToken(claims, userDetails.getUsername(), expiration);
     }
@@ -298,15 +298,84 @@ public class JwtUtil {
     }
     
     /**
+     * Aggiunge user_id, restaurantId o agencyId ai claims JWT se disponibili
+     * 
+     * - RUser → aggiunge user_id e restaurant_id
+     * - AgencyUser → aggiunge user_id e agency_id
+     * - Customer, Admin → aggiunge user_id
+     * 
+     * @param claims Mappa dei claims JWT
+     * @param userDetails Dettagli utente (implementazione)
+     */
+    private void addUserAndOrganizationIdsToClaims(Map<String, Object> claims, UserDetails userDetails) {
+        String className = userDetails.getClass().getSimpleName();
+        
+        try {
+            // Always add user_id for all user types
+            Long userId = extractUserIdFromUser(userDetails);
+            if (userId != null) {
+                claims.put("user_id", userId);
+            }
+            
+            switch (className) {
+                case "RUser":
+                    // Estrai restaurant_id via reflection per RUser
+                    Long restaurantId = extractRestaurantIdFromRUser(userDetails);
+                    if (restaurantId != null) {
+                        claims.put("restaurant_id", restaurantId);
+                    }
+                    break;
+                    
+                case "AgencyUser":
+                    // Estrai agency_id via reflection per AgencyUser
+                    Long agencyId = extractAgencyIdFromAgencyUser(userDetails);
+                    if (agencyId != null) {
+                        claims.put("agency_id", agencyId);
+                    }
+                    break;
+                    
+                case "Customer":
+                case "Admin":
+                    // Only user_id needed for customer or admin
+                    break;
+                    
+                default:
+                    log.debug("Unknown user type for organization ID extraction: {}", className);
+            }
+        } catch (Exception e) {
+            log.debug("Could not extract user or organization ID from user: {}", e.getMessage());
+            // Continua senza l'ID (non critico)
+        }
+    }
+    
+    /**
+     * Estrae userId da un User via reflection
+     */
+    private Long extractUserIdFromUser(UserDetails userDetails) {
+        try {
+            var idField = userDetails.getClass().getDeclaredField("id");
+            idField.setAccessible(true);
+            Object id = idField.get(userDetails);
+            return id instanceof Number ? ((Number) id).longValue() : Long.valueOf((String) id);
+        } catch (Exception e) {
+            log.debug("Could not extract id from {}: {}", userDetails.getClass().getSimpleName(), e.getMessage());
+        }
+        return null;
+    }
+    
+    /**
      * Aggiunge restaurantId o agencyId ai claims JWT se l'utente ha un'organizzazione
      * 
      * - RUser → aggiunge restaurant_id
      * - AgencyUser → aggiunge agency_id
      * - Customer, Admin → nessun ID aggiunto
      * 
+     * DEPRECATED: Use addUserAndOrganizationIdsToClaims instead
+     * 
      * @param claims Mappa dei claims JWT
      * @param userDetails Dettagli utente (implementazione)
      */
+    @Deprecated(forRemoval = true, since = "1.0.1")
     private void addOrganizationIdToClaims(Map<String, Object> claims, UserDetails userDetails) {
         String className = userDetails.getClass().getSimpleName();
         
