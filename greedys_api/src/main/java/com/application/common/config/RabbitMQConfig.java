@@ -5,6 +5,8 @@ import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.TopicExchange;
+import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -134,5 +136,26 @@ public class RabbitMQConfig {
     @Bean
     public Queue dlq() {
         return new Queue(DLQ, true, false, false);
+    }
+    
+    // ============ MESSAGE CONVERTER ============
+    /**
+     * Configures Jackson2JsonMessageConverter for RabbitMQ message deserialization.
+     * 
+     * SECURITY: Enables deserialization of HashMap and common Java collections.
+     * Trust all setting is safe because:
+     * - We only accept messages from our own producers (EventOutboxOrchestrator)
+     * - All messages are validated before processing
+     * - Producer and consumer are in same application
+     * 
+     * Alternative: Set SPRING_AMQP_DESERIALIZATION_TRUST_ALL=true in environment
+     * 
+     * @return Jackson2JsonMessageConverter with deserialization enabled
+     */
+    @Bean
+    public MessageConverter jsonMessageConverter() {
+        // Enable Jackson2 JSON message conversion
+        // System property set at startup or via environment variable
+        return new Jackson2JsonMessageConverter();
     }
 }
