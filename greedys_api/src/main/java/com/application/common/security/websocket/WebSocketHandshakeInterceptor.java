@@ -102,9 +102,9 @@ public class WebSocketHandshakeInterceptor implements HandshakeInterceptor {
             Claims claims;
             try {
                 claims = jwtUtil.extractAllClaims(token);
-                log.debug("✅ JWT signature validated successfully");
+                log.info("✅ JWT signature validated successfully (exp: {})", claims.getExpiration());
             } catch (Exception e) {
-                log.warn("❌ WebSocket connection rejected: Invalid JWT token - {}", e.getMessage());
+                log.warn("❌ WebSocket connection rejected: Invalid JWT token - {} (token length: {})", e.getMessage(), token.length());
                 response.setStatusCode(HttpStatus.UNAUTHORIZED);
                 return false;
             }
@@ -240,7 +240,7 @@ public class WebSocketHandshakeInterceptor implements HandshakeInterceptor {
         String authHeader = request.getHeaders().getFirst("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
-            log.debug("JWT extracted from Authorization header");
+            log.info("🔐 JWT extracted from Authorization header (length: {})", token.length());
             return token;
         }
         
@@ -252,7 +252,8 @@ public class WebSocketHandshakeInterceptor implements HandshakeInterceptor {
             
             String token = httpRequest.getParameter("token");
             if (token != null && !token.isEmpty()) {
-                log.debug("JWT extracted from query parameter 'token'");
+                log.info("🔐 JWT extracted from query parameter 'token' (length: {}, first 50 chars: {})", 
+                         token.length(), token.substring(0, Math.min(50, token.length())));
                 return token;
             }
             
@@ -260,12 +261,13 @@ public class WebSocketHandshakeInterceptor implements HandshakeInterceptor {
             // Alternative SockJS parameter name
             token = httpRequest.getParameter("access_token");
             if (token != null && !token.isEmpty()) {
-                log.debug("JWT extracted from query parameter 'access_token'");
+                log.info("🔐 JWT extracted from query parameter 'access_token' (length: {}, first 50 chars: {})", 
+                         token.length(), token.substring(0, Math.min(50, token.length())));
                 return token;
             }
         }
         
-        log.warn("⚠️ No JWT token found in request");
+        log.warn("⚠️ No JWT token found in request (checking request type: {})", request.getClass().getSimpleName());
         return null;
     }
 }
