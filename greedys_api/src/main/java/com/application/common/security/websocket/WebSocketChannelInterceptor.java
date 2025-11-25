@@ -155,26 +155,46 @@ public class WebSocketChannelInterceptor implements ChannelInterceptor {
             throw new AccessDeniedException("Not authenticated");
         }
         
-        // Get restaurantId and agencyId from JWT claims (if available)
-        Long restaurantId = auth.getRestaurantIdFromClaims();
-        Long agencyId = auth.getAgencyIdFromClaims();
+        // Get userId, restaurantId and agencyId from session attributes (populated by handshake interceptor)
+        // This is more reliable than extracting from JWT claims
+        java.util.Map<String, Object> sessionAttributes = accessor.getSessionAttributes();
+        Long userId = null;
+        Long restaurantId = null;
+        Long agencyId = null;
+        
+        if (sessionAttributes != null) {
+            Object userIdObj = sessionAttributes.get(WebSocketHandshakeInterceptor.WS_USER_ID_ATTR);
+            if (userIdObj instanceof Number) {
+                userId = ((Number) userIdObj).longValue();
+            }
+            
+            Object restaurantIdObj = sessionAttributes.get(WebSocketHandshakeInterceptor.WS_RESTAURANT_ID_ATTR);
+            if (restaurantIdObj instanceof Number) {
+                restaurantId = ((Number) restaurantIdObj).longValue();
+            }
+            
+            Object agencyIdObj = sessionAttributes.get(WebSocketHandshakeInterceptor.WS_AGENCY_ID_ATTR);
+            if (agencyIdObj instanceof Number) {
+                agencyId = ((Number) agencyIdObj).longValue();
+            }
+        }
         
         // Validate destination access
         boolean allowed = destinationValidator.canAccess(
                 destination, 
                 auth.getUserType(), 
-                auth.getUserId(),
+                userId,
                 restaurantId,
                 agencyId
         );
         
         if (allowed) {
-            log.info("SUBSCRIBE allowed: User {} (ID: {}, type: {}, restaurantId: {}, agencyId: {}) -> {}", 
-                     auth.getUsername(), auth.getUserId(), auth.getUserType(), restaurantId, agencyId, destination);
+            log.info("✅ SUBSCRIBE allowed: User {} (ID: {}, type: {}, restaurantId: {}, agencyId: {}) -> {}", 
+                     auth.getUsername(), userId, auth.getUserType(), restaurantId, agencyId, destination);
             return message;
         } else {
-            log.warn("SUBSCRIBE denied: User {} (ID: {}, type: {}, restaurantId: {}, agencyId: {}) -> {} (authorization failed)", 
-                     auth.getUsername(), auth.getUserId(), auth.getUserType(), restaurantId, agencyId, destination);
+            log.warn("❌ SUBSCRIBE denied: User {} (ID: {}, type: {}, restaurantId: {}, agencyId: {}) -> {} (authorization failed)", 
+                     auth.getUsername(), userId, auth.getUserType(), restaurantId, agencyId, destination);
             throw new AccessDeniedException(
                     "Not authorized to subscribe to: " + destination + 
                     " (role: " + destinationValidator.getRoleFromUserType(auth.getUserType()) + ")"
