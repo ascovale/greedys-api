@@ -14,6 +14,7 @@ import com.application.restaurant.persistence.dao.RestaurantUserNotificationDAO;
 import com.application.restaurant.persistence.model.RestaurantUserNotification;
 import com.application.common.notification.service.NotificationWebSocketSender;
 import com.application.common.service.notification.listener.BaseNotificationListener;
+import com.application.common.service.notification.dto.NotificationEventPayloadDTO;
 import com.application.common.service.notification.orchestrator.NotificationOrchestrator;
 import com.application.common.service.notification.orchestrator.NotificationOrchestratorFactory;
 import com.rabbitmq.client.Channel;
@@ -85,14 +86,14 @@ public class RestaurantTeamNotificationListener extends BaseNotificationListener
         backoff = @Backoff(delay = 1000)
     )
     public void onTeamNotificationMessage(
-        @Payload Map<String, Object> message,
+        @Payload NotificationEventPayloadDTO payload,
         @Header(AmqpHeaders.DELIVERY_TAG) long deliveryTag,
         Channel channel
     ) {
         log.info("🏢👥 RestaurantTeamNotificationListener: Received TEAM notification from queue");
         
         // Delegate to base class for common processing
-        processNotificationMessage(message, deliveryTag, channel);
+        processNotificationMessage(payload, deliveryTag, channel);
     }
 
     /**
