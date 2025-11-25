@@ -298,156 +298,71 @@ public class JwtUtil {
     }
     
     /**
-     * Aggiunge user_id, restaurantId o agencyId ai claims JWT se disponibili
+     * Aggiunge user_id, restaurant_id o agency_id ai claims JWT
      * 
-     * - RUser → aggiunge user_id e restaurant_id
-     * - AgencyUser → aggiunge user_id e agency_id
-     * - Customer, Admin → aggiunge user_id
+     * - Tutti gli user types → aggiunge user_id via getId()
+     * - RUser → aggiunge anche restaurant_id
+     * - AgencyUser → aggiunge anche agency_id
      * 
      * @param claims Mappa dei claims JWT
-     * @param userDetails Dettagli utente (implementazione)
+     * @param userDetails Dettagli utente
      */
     private void addUserAndOrganizationIdsToClaims(Map<String, Object> claims, UserDetails userDetails) {
-        String className = userDetails.getClass().getSimpleName();
-        
         try {
-            // Always add user_id for all user types
-            Long userId = extractUserIdFromUser(userDetails);
-            if (userId != null) {
-                claims.put("user_id", userId);
+            // Aggiungi user_id per RUser
+            if (userDetails instanceof com.application.restaurant.persistence.model.user.RUser) {
+                com.application.restaurant.persistence.model.user.RUser rUser = 
+                    (com.application.restaurant.persistence.model.user.RUser) userDetails;
+                Long userId = rUser.getId();
+                if (userId != null) {
+                    claims.put("user_id", userId);
+                    log.debug("✅ Added user_id to JWT: {}", userId);
+                }
+                // Aggiungi restaurant_id
+                if (rUser.getRestaurant() != null) {
+                    Long restaurantId = rUser.getRestaurant().getId();
+                    claims.put("restaurant_id", restaurantId);
+                    log.debug("✅ Added restaurant_id to JWT: {}", restaurantId);
+                }
             }
-            
-            switch (className) {
-                case "RUser":
-                    // Estrai restaurant_id via reflection per RUser
-                    Long restaurantId = extractRestaurantIdFromRUser(userDetails);
-                    if (restaurantId != null) {
-                        claims.put("restaurant_id", restaurantId);
-                    }
-                    break;
-                    
-                case "AgencyUser":
-                    // Estrai agency_id via reflection per AgencyUser
-                    Long agencyId = extractAgencyIdFromAgencyUser(userDetails);
-                    if (agencyId != null) {
-                        claims.put("agency_id", agencyId);
-                    }
-                    break;
-                    
-                case "Customer":
-                case "Admin":
-                    // Only user_id needed for customer or admin
-                    break;
-                    
-                default:
-                    log.debug("Unknown user type for organization ID extraction: {}", className);
+            // Aggiungi user_id per AgencyUser
+            else if (userDetails instanceof com.application.agency.persistence.model.user.AgencyUser) {
+                com.application.agency.persistence.model.user.AgencyUser agencyUser = 
+                    (com.application.agency.persistence.model.user.AgencyUser) userDetails;
+                Long userId = agencyUser.getId();
+                if (userId != null) {
+                    claims.put("user_id", userId);
+                    log.debug("✅ Added user_id to JWT: {}", userId);
+                }
+                // Aggiungi agency_id
+                if (agencyUser.getAgency() != null) {
+                    Long agencyId = agencyUser.getAgency().getId();
+                    claims.put("agency_id", agencyId);
+                    log.debug("✅ Added agency_id to JWT: {}", agencyId);
+                }
             }
-        } catch (Exception e) {
-            log.debug("Could not extract user or organization ID from user: {}", e.getMessage());
-            // Continua senza l'ID (non critico)
-        }
-    }
-    
-    /**
-     * Estrae userId da un User via reflection
-     */
-    private Long extractUserIdFromUser(UserDetails userDetails) {
-        try {
-            var idField = userDetails.getClass().getDeclaredField("id");
-            idField.setAccessible(true);
-            Object id = idField.get(userDetails);
-            return id instanceof Number ? ((Number) id).longValue() : Long.valueOf((String) id);
-        } catch (Exception e) {
-            log.debug("Could not extract id from {}: {}", userDetails.getClass().getSimpleName(), e.getMessage());
-        }
-        return null;
-    }
-    
-    /**
-     * Aggiunge restaurantId o agencyId ai claims JWT se l'utente ha un'organizzazione
-     * 
-     * - RUser → aggiunge restaurant_id
-     * - AgencyUser → aggiunge agency_id
-     * - Customer, Admin → nessun ID aggiunto
-     * 
-     * DEPRECATED: Use addUserAndOrganizationIdsToClaims instead
-     * 
-     * @param claims Mappa dei claims JWT
-     * @param userDetails Dettagli utente (implementazione)
-     */
-    @Deprecated(forRemoval = true, since = "1.0.1")
-    private void addOrganizationIdToClaims(Map<String, Object> claims, UserDetails userDetails) {
-        String className = userDetails.getClass().getSimpleName();
-        
-        try {
-            switch (className) {
-                case "RUser":
-                    // Estrai restaurant_id via reflection per RUser
-                    Long restaurantId = extractRestaurantIdFromRUser(userDetails);
-                    if (restaurantId != null) {
-                        claims.put("restaurant_id", restaurantId);
-                    }
-                    break;
-                    
-                case "AgencyUser":
-                    // Estrai agency_id via reflection per AgencyUser
-                    Long agencyId = extractAgencyIdFromAgencyUser(userDetails);
-                    if (agencyId != null) {
-                        claims.put("agency_id", agencyId);
-                    }
-                    break;
-                    
-                case "Customer":
-                case "Admin":
-                    // No organization ID needed for customer or admin
-                    break;
-                    
-                default:
-                    log.debug("Unknown user type for organization ID extraction: {}", className);
+            // Aggiungi user_id per Customer
+            else if (userDetails instanceof com.application.customer.persistence.model.Customer) {
+                com.application.customer.persistence.model.Customer customer = 
+                    (com.application.customer.persistence.model.Customer) userDetails;
+                Long userId = customer.getId();
+                if (userId != null) {
+                    claims.put("user_id", userId);
+                    log.debug("✅ Added user_id to JWT: {}", userId);
+                }
+            }
+            // Aggiungi user_id per Admin
+            else if (userDetails instanceof com.application.admin.persistence.model.Admin) {
+                com.application.admin.persistence.model.Admin admin = 
+                    (com.application.admin.persistence.model.Admin) userDetails;
+                Long userId = admin.getId();
+                if (userId != null) {
+                    claims.put("user_id", userId);
+                    log.debug("✅ Added user_id to JWT: {}", userId);
+                }
             }
         } catch (Exception e) {
-            log.debug("Could not extract organization ID from user: {}", e.getMessage());
-            // Continua senza l'ID organizzazione (non critico)
+            log.warn("⚠️ Error adding IDs to JWT claims: {}", e.getMessage());
         }
-    }
-    
-    /**
-     * Estrae restaurantId da un RUser via reflection
-     */
-    private Long extractRestaurantIdFromRUser(UserDetails userDetails) {
-        try {
-            var restaurantField = userDetails.getClass().getDeclaredField("restaurant");
-            restaurantField.setAccessible(true);
-            var restaurant = restaurantField.get(userDetails);
-            
-            if (restaurant != null) {
-                var idField = restaurant.getClass().getDeclaredField("id");
-                idField.setAccessible(true);
-                return (Long) idField.get(restaurant);
-            }
-        } catch (Exception e) {
-            log.debug("Could not extract restaurant_id from RUser: {}", e.getMessage());
-        }
-        return null;
-    }
-    
-    /**
-     * Estrae agencyId da un AgencyUser via reflection
-     */
-    private Long extractAgencyIdFromAgencyUser(UserDetails userDetails) {
-        try {
-            var agencyField = userDetails.getClass().getDeclaredField("agency");
-            agencyField.setAccessible(true);
-            var agency = agencyField.get(userDetails);
-            
-            if (agency != null) {
-                var idField = agency.getClass().getDeclaredField("id");
-                idField.setAccessible(true);
-                return (Long) idField.get(agency);
-            }
-        } catch (Exception e) {
-            log.debug("Could not extract agency_id from AgencyUser: {}", e.getMessage());
-        }
-        return null;
     }
 }
