@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>End-to-End Reservation & WebSocket Test</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 { font-size: 28px; margin-bottom: 10px; }
+        .header p { opacity: 0.9; font-size: 14px; }
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            min-height: 600px;
+        }
+        .panel {
+            padding: 30px;
+            border-right: 2px solid #eee;
+            overflow-y: auto;
+        }
+        .panel:last-child {
+            border-right: none;
+        }
+        .panel h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        label {
+            display: block;
+            margin-top: 15px;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+            font-size: 13px;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px 12px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: inherit;
+            background: white;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            margin: 15px 0 10px 0;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .status {
+            font-size: 12px;
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 4px solid;
+        }
+        .status.success { background: #d4edda; color: #155724; border-left-color: #28a745; }
+        .status.error { background: #f8d7da; color: #721c24; border-left-color: #dc3545; }
+        .status.info { background: #d1ecf1; color: #0c5460; border-left-color: #17a2b8; }
+        .status.warning { background: #fff3cd; color: #856404; border-left-color: #ffc107; }
+        
+        #reservationLog, #websocketLog {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 6px;
+            height: 350px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            line-height: 1.5;
+            margin-top: 15px;
+            border: 1px solid #ddd;
+        }
+        .log-line { margin: 4px 0; }
+        .log-success { color: #4ade80; }
+        .log-error { color: #ff6b6b; }
+        .log-info { color: #60a5fa; }
+        .log-warn { color: #fbbf24; }
+        .log-msg { color: #90ee90; }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #667eea;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .info-box {
+            background: #f0f4ff;
+            border: 1px solid #e0e7ff;
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 15px;
+            font-size: 12px;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 1024px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+            .panel {
+                border-right: none;
+                border-bottom: 2px solid #eee;
+            }
+            .panel:last-child {
+                border-bottom: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>🚀 End-to-End Reservation & WebSocket Test</h1>
+        <p>Create Reservation → RabbitMQ → WebSocket Notification</p>
+    </div>
+
+    <div class="content">
+        <!-- LEFT PANEL: RESERVATION CREATION -->
+        <div class="panel">
+            <h2>📝 Create Reservation</h2>
+
+            <div class="section-title">🔐 Customer Login</div>
+            <label>Customer Email:</label>
+            <input type="text" id="customerEmail" value="giulia.bianchi@example.com" placeholder="Customer email">
+            
+            <label>Customer Password:</label>
+            <input type="password" id="customerPassword" value="TestPass123!" placeholder="Password">
+
+            <button onclick="loginCustomer()">🔑 Login Customer</button>
+            <div id="loginStatus" class="status info" style="display:none;"></div>
+
+            <div class="section-title">🏪 Restaurant (Staff) Login</div>
+            <label>Restaurant Staff Email:</label>
+            <input type="text" id="staffEmail" value="test@test.it" placeholder="Staff email">
+            
+            <label>Staff Password:</label>
+            <input type="password" id="staffPassword" value="TestPass123!" placeholder="Password">
+
+            <button onclick="loginStaff()">🔑 Login Staff & Connect WebSocket</button>
+            <div id="staffLoginStatus" class="status info" style="display:none;"></div>
+
+            <div class="section-title">📅 Reservation Details</div>
+            <label>Date:</label>
+            <input type="date" id="reservationDate" placeholder="Reservation date">
+            
+            <label>Time:</label>
+            <input type="time" id="reservationTime" value="20:00" placeholder="Reservation time">
+            
+            <label>Guests:</label>
+            <input type="number" id="guests" value="4" min="1" max="20" placeholder="Number of guests">
+            
+            <label>Service:</label>
+            <select id="serviceId">
+                <option value="">Loading services...</option>
+            </select>
+
+            <button onclick="createReservation()">✅ Create Reservation</button>
+            <div id="reservationStatus" class="status info" style="display:none;"></div>
+
+            <div class="section-title">📋 Reservation Log</div>
+            <div id="reservationLog"></div>
+
+            <div class="info-box">
+                <strong>⭐ Flow:</strong><br>
+                1️⃣ Login customer<br>
+                2️⃣ Login staff + connect WebSocket<br>
+                3️⃣ Create reservation<br>
+                4️⃣ Watch right panel for WebSocket message
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL: WEBSOCKET LISTENER -->
+        <div class="panel">
+            <h2>🔔 WebSocket Notifications</h2>
+
+            <div class="section-title">📊 Connection Status</div>
+            <div id="wsStatus" class="status info" style="display:none;"></div>
+
+            <div class="section-title">🎯 Listening To</div>
+            <div style="background: #f0f4ff; border: 1px solid #e0e7ff; border-radius: 6px; padding: 12px; margin: 10px 0; font-size: 12px; font-family: monospace;">
+                ✅ <strong>Topic:</strong> /topic/restaurant/{restaurantId}/reservations<br>
+                ✅ <strong>Queue:</strong> notification.restaurant.reservations (RabbitMQ)
+            </div>
+
+            <div class="section-title">📨 Messages Received</div>
+            <div id="websocketLog"></div>
+
+            <div class="info-box">
+                <strong>⭐ Expected Flow:</strong><br>
+                1️⃣ Reservation created<br>
+                2️⃣ EventOutbox RESERVATION_REQUESTED event<br>
+                3️⃣ Message published to RabbitMQ<br>
+                4️⃣ RestaurantNotificationListener deserializes (MessageConverter)<br>
+                5️⃣ WebSocket MESSAGE received ✅
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let customerToken = null;
+let staffToken = null;
+let staffUserId = null;
+let restaurantId = null;
+let staffWs = null;
+let servicesData = [];
+
+const log = (logElementId, message, type = 'info') => {
+    const logEl = document.getElementById(logElementId);
+    const timestamp = new Date().toLocaleTimeString('it-IT');
+    const className = type === 'success' ? 'log-success' : 
+                      type === 'error' ? 'log-error' : 
+                      type === 'warn' ? 'log-warn' : 
+                      type === 'msg' ? 'log-msg' : 'log-info';
+    const line = `<div class="log-line"><span class="${className}">[${timestamp}] ${message}</span></div>`;
+    logEl.innerHTML += line;
+    logEl.scrollTop = logEl.scrollHeight;
+};
+
+const showStatus = (elementId, message, type) => {
+    const el = document.getElementById(elementId);
+    el.textContent = message;
+    el.className = `status ${type}`;
+    el.style.display = 'block';
+};
+
+const parseJwt = (token) => {
+    try {
+        const parts = token.split('.');
+        if (parts.length !== 3) throw new Error('Invalid JWT');
+        const base64Url = parts[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const decoded = atob(base64);
+        const jsonPayload = decodeURIComponent(decoded.split('').map(c => 
+            '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+        ).join(''));
+        return JSON.parse(jsonPayload);
+    } catch (e) {
+        console.error('Error parsing JWT:', e);
+        return null;
+    }
+};
+
+const loginCustomer = async () => {
+    const email = document.getElementById('customerEmail').value;
+    const password = document.getElementById('customerPassword').value;
+    
+    try {
+        log('reservationLog', '🔄 Logging in customer...', 'info');
+        
+        const response = await fetch('https://api.greedys.it/customer/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: email, password })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        customerToken = data.jwt;
+        
+        log('reservationLog', `✅ Customer logged in: ${email}`, 'success');
+        showStatus('loginStatus', `✅ Customer logged in`, 'success');
+    } catch (error) {
+        log('reservationLog', `❌ Customer login failed: ${error.message}`, 'error');
+        showStatus('loginStatus', `❌ ${error.message}`, 'error');
+    }
+};
+
+const loginStaff = async () => {
+    const email = document.getElementById('staffEmail').value;
+    const password = document.getElementById('staffPassword').value;
+    
+    try {
+        log('reservationLog', '🔄 Logging in staff...', 'info');
+        
+        const response = await fetch('https://api.greedys.it/restaurant/user/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: email, password })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        staffToken = data.jwt;
+        
+        const claims = parseJwt(staffToken);
+        staffUserId = claims.user_id;
+        restaurantId = claims.restaurant_id;
+        
+        log('reservationLog', `✅ Staff logged in: ${email} (ID: ${staffUserId}, Restaurant: ${restaurantId})`, 'success');
+        showStatus('staffLoginStatus', `✅ Staff logged in & ready`, 'success');
+        
+        // Connect WebSocket
+        connectWebSocket();
+    } catch (error) {
+        log('reservationLog', `❌ Staff login failed: ${error.message}`, 'error');
+        showStatus('staffLoginStatus', `❌ ${error.message}`, 'error');
+    }
+};
+
+const connectWebSocket = async () => {
+    if (!staffToken || !restaurantId) {
+        log('reservationLog', '❌ Staff not logged in', 'error');
+        return;
+    }
+    
+    try {
+        log('websocketLog', '🔄 Connecting WebSocket...', 'info');
+        
+        const wsUrl = `wss://api.greedys.it/stomp?token=${staffToken}`;
+        staffWs = new WebSocket(wsUrl);
+        
+        staffWs.onopen = () => {
+            log('websocketLog', '✅ WebSocket OPENED', 'success');
+            showStatus('wsStatus', '✅ Connected', 'success');
+            
+            // Send STOMP CONNECT
+            const connectFrame = `CONNECT
+accept-version:1.2
+heart-beat:0,0
+
+\x00`;
+            staffWs.send(connectFrame);
+            log('websocketLog', '📤 Sent STOMP CONNECT', 'info');
+        };
+        
+        staffWs.onmessage = (event) => {
+            const message = event.data;
+            
+            if (message.includes('CONNECTED')) {
+                log('websocketLog', '✅ STOMP CONNECTED', 'success');
+                
+                // Subscribe to restaurant reservations topic
+                const subscribeFrame = `SUBSCRIBE
+id:sub-0
+destination:/topic/restaurant/${restaurantId}/reservations
+receipt:sub-0
+
+\x00`;
+                staffWs.send(subscribeFrame);
+                log('websocketLog', `📤 Subscribed to /topic/restaurant/${restaurantId}/reservations`, 'info');
+            } else if (message.includes('RECEIPT')) {
+                log('websocketLog', '✅ RECEIPT received - subscription confirmed', 'success');
+            } else if (message.includes('MESSAGE')) {
+                log('websocketLog', '🎉 MESSAGE RECEIVED FROM WEBSOCKET', 'success');
+                
+                // Parse the message body
+                try {
+                    const lines = message.split('\n');
+                    let bodyStart = false;
+                    let bodyLines = [];
+                    
+                    for (let line of lines) {
+                        if (bodyStart) {
+                            bodyLines.push(line);
+                        } else if (line.trim() === '') {
+                            bodyStart = true;
+                        }
+                    }
+                    
+                    const bodyText = bodyLines.join('\n').trim().replace(/\x00$/, '');
+                    if (bodyText) {
+                        const payload = JSON.parse(bodyText);
+                        log('websocketLog', `📨 Payload: ${JSON.stringify(payload).substring(0, 150)}...`, 'msg');
+                        log('websocketLog', `✅ ✅ ✅ END-TO-END SUCCESS ✅ ✅ ✅`, 'success');
+                    }
+                } catch (e) {
+                    log('websocketLog', `⚠️ Could not parse message: ${e.message}`, 'warn');
+                }
+            } else if (message.includes('ERROR')) {
+                log('websocketLog', `❌ Server ERROR: ${message.substring(0, 100)}`, 'error');
+            } else {
+                log('websocketLog', `📨 ${message.substring(0, 100)}...`, 'info');
+            }
+        };
+        
+        staffWs.onerror = (error) => {
+            log('websocketLog', `❌ WebSocket error: ${error}`, 'error');
+            showStatus('wsStatus', '❌ Connection error', 'error');
+        };
+        
+        staffWs.onclose = () => {
+            log('websocketLog', '🔌 WebSocket CLOSED', 'warn');
+            showStatus('wsStatus', '🔌 Disconnected', 'info');
+        };
+    } catch (error) {
+        log('websocketLog', `❌ Failed to connect: ${error.message}`, 'error');
+        showStatus('wsStatus', `❌ ${error.message}`, 'error');
+    }
+};
+
+const loadServices = async () => {
+    try {
+        log('reservationLog', '🔄 Loading services...', 'info');
+        
+        const response = await fetch('https://api.greedys.it/services?restaurantId=3', {
+            headers: { 'Authorization': `Bearer ${customerToken}` }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            servicesData = data;
+            
+            const serviceSelect = document.getElementById('serviceId');
+            serviceSelect.innerHTML = '';
+            
+            if (data.length > 0) {
+                data.forEach(service => {
+                    const option = document.createElement('option');
+                    option.value = service.id;
+                    option.textContent = `${service.name} (${service.minGuests}-${service.maxGuests} guests)`;
+                    serviceSelect.appendChild(option);
+                });
+                log('reservationLog', `✅ Loaded ${data.length} services`, 'success');
+            } else {
+                log('reservationLog', '⚠️ No services available', 'warn');
+            }
+        }
+    } catch (error) {
+        log('reservationLog', `⚠️ Could not load services: ${error.message}`, 'warn');
+    }
+};
+
+const createReservation = async () => {
+    if (!customerToken) {
+        showStatus('reservationStatus', '❌ Please login as customer first', 'error');
+        return;
+    }
+    
+    const date = document.getElementById('reservationDate').value;
+    const time = document.getElementById('reservationTime').value;
+    const guests = parseInt(document.getElementById('guests').value);
+    const serviceId = document.getElementById('serviceId').value;
+    
+    if (!date || !time || !serviceId) {
+        showStatus('reservationStatus', '❌ Please fill all fields', 'error');
+        return;
+    }
+    
+    try {
+        log('reservationLog', '🔄 Creating reservation...', 'info');
+        
+        const reservationDateTime = new Date(`${date}T${time}:00`).toISOString();
+        
+        const response = await fetch('https://api.greedys.it/customer/reservations', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${customerToken}`
+            },
+            body: JSON.stringify({
+                reservationDateTime,
+                numberOfGuests: guests,
+                serviceId: parseInt(serviceId),
+                restaurantId: 3,
+                notes: 'Test reservation from WebSocket integration test'
+            })
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || `HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        log('reservationLog', `✅ Reservation created (ID: ${data.id})`, 'success');
+        log('reservationLog', `⏳ Waiting for WebSocket notification...`, 'info');
+        showStatus('reservationStatus', `✅ Reservation created! Watch right panel...`, 'success');
+    } catch (error) {
+        log('reservationLog', `❌ Reservation creation failed: ${error.message}`, 'error');
+        showStatus('reservationStatus', `❌ ${error.message}`, 'error');
+    }
+};
+
+// Set today's date as default
+document.getElementById('reservationDate').valueAsDate = new Date();
+
+// Load services on page load
+log('reservationLog', '🚀 Page loaded', 'info');
+log('websocketLog', '⏳ Waiting for connection...', 'info');
+</script>
+
+</body>
+</html>

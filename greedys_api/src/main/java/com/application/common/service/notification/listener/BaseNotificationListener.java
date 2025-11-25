@@ -11,6 +11,7 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.application.common.persistence.model.notification.ANotification;
+import com.application.common.service.notification.dto.NotificationEventPayloadDTO;
 import com.application.common.service.notification.orchestrator.NotificationOrchestrator;
 import com.application.common.service.notification.orchestrator.NotificationOrchestratorFactory;
 import com.rabbitmq.client.Channel;
@@ -65,30 +66,28 @@ public abstract class BaseNotificationListener<T extends ANotification> {
      * Template method for processing notification messages.
      * Called by @RabbitListener in subclasses.
      * 
-     * @param message Map with message content
+     * @param payload NotificationEventPayloadDTO deserialized from JSON
      * @param deliveryTag RabbitMQ delivery tag for ACK/NACK
      * @param channel RabbitMQ channel
      */
     @Transactional
     protected void processNotificationMessage(
-        @Payload Map<String, Object> message,
+        @Payload NotificationEventPayloadDTO payload,
         @Header(AmqpHeaders.DELIVERY_TAG) long deliveryTag,
         Channel channel
     ) {
         try {
             log.info("📩 {}: received message on queue", this.getClass().getSimpleName());
             
-            // ⭐ STEP 1: Parse message
-            String eventId = (String) message.get("event_id");
-            String eventType = (String) message.get("event_type");
-            String aggregateType = (String) message.get("aggregate_type");
-            String recipientType = (String) message.getOrDefault("recipientType", "TARGETED");  // BROADCAST or TARGETED
+            // ⭐ STEP 1: Extract from DTO
+            String eventId = payload.getEventId();
+            String eventType = payload.getEventType();
+            String recipientType = payload.getRecipientType();
+            Long recipientId = payload.getRecipientId();
+            Map<String, Object> data = payload.getData();
             
-            @SuppressWarnings("unchecked")
-            Map<String, Object> payload = (Map<String, Object>) message.get("payload");
-            
-            log.info("🔍 Processing event: eventId={}, eventType={}, aggregateType={}, recipientType={}", 
-                eventId, eventType, aggregateType, recipientType);
+            log.info("🔍 Processing event: eventId={}, eventType={}, recipientType={}, recipientId={}", 
+                eventId, eventType, recipientType, recipientId);
             
             // ⭐ STEP 2: Idempotency check
             if (existsByEventId(eventId)) {
@@ -98,6 +97,14 @@ public abstract class BaseNotificationListener<T extends ANotification> {
             }
             
             // ⭐ STEP 3: Get type-specific orchestrator
+            // Convert DTO back to Map for backward compatibility with orchestrator interface
+            Map<String, Object> message = new HashMap<>();
+            message.put("eventId", eventId);
+            message.put("eventType", eventType);
+            message.put("recipientType", recipientType);
+            message.put("recipientId", recipientId);
+            message.put("data", data);
+            
             NotificationOrchestrator<T> orchestrator = getTypeSpecificOrchestrator(message);
             
             // ⭐ STEP 4: Disaggregate - returns list of notification records
