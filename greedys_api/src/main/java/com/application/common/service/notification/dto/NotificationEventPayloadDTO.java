@@ -68,6 +68,31 @@ public class NotificationEventPayloadDTO {
     private Long recipientId;
     
     /**
+     * Restaurant ID (for TEAM-scoped notifications from CUSTOMER events)
+     * Added by EventOutboxOrchestrator.addTypeSpecificIds() for RESERVATION events
+     */
+    @JsonProperty("restaurant_id")
+    private Long restaurantId;
+    
+    /**
+     * Customer ID (for CUSTOMER-scoped notifications)
+     */
+    @JsonProperty("customer_id")
+    private Long customerId;
+    
+    /**
+     * Agency ID (for AGENCY-scoped notifications)
+     */
+    @JsonProperty("agency_id")
+    private Long agencyId;
+    
+    /**
+     * Admin ID (for ADMIN-scoped notifications)
+     */
+    @JsonProperty("admin_id")
+    private Long adminId;
+    
+    /**
      * Event timestamp (ISO 8601)
      */
     @JsonProperty("timestamp")
