@@ -13,8 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.application.common.persistence.model.notification.ANotification;
 import com.application.common.service.notification.dto.NotificationEventPayloadDTO;
 import com.application.common.service.notification.orchestrator.NotificationOrchestrator;
-import com.application.common.service.notification.orchestrator.NotificationOrchestratorFactory;
 import com.rabbitmq.client.Channel;
+
 import lombok.extern.slf4j.Slf4j;
 
 /**

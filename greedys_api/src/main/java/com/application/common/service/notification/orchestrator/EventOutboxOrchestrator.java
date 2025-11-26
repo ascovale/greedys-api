@@ -502,12 +502,18 @@ public class EventOutboxOrchestrator {
      * Adds convenient ID fields based on aggregateType.
      * Makes it easier for listeners to extract relevant IDs.
      * 
+     * IMPORTANT: For CUSTOMER aggregateType with RESERVATION events,
+     * also extracts restaurant_id from payload and adds to top-level
+     * so that RestaurantTeamOrchestrator can find it directly.
+     * 
      * @param message Message map
      * @param event EventOutbox entity
      */
     private void addTypeSpecificIds(Map<String, Object> message, EventOutbox event) {
         String aggregateType = event.getAggregateType();
         Long aggregateId = event.getAggregateId();
+        String eventType = event.getEventType();
+        String payload = event.getPayload();
 
         switch (aggregateType.toUpperCase()) {
             case "RESTAURANT":
@@ -515,6 +521,21 @@ public class EventOutboxOrchestrator {
                 break;
             case "CUSTOMER":
                 message.put("customer_id", aggregateId);
+                
+                // ⭐ SPECIAL HANDLING: If RESERVATION event from CUSTOMER,
+                // extract restaurant_id from payload and add to top-level
+                // This way RestaurantTeamOrchestrator finds it with message.get("restaurant_id")
+                if (eventType != null && eventType.contains("RESERVATION") && payload != null) {
+                    try {
+                        Long restaurantId = extractRestaurantIdFromPayload(payload);
+                        if (restaurantId != null) {
+                            message.put("restaurant_id", restaurantId);
+                            log.debug("✅ Extracted restaurant_id={} from CUSTOMER RESERVATION payload", restaurantId);
+                        }
+                    } catch (Exception e) {
+                        log.debug("Could not extract restaurant_id from payload: {}", e.getMessage());
+                    }
+                }
                 break;
             case "AGENCY":
                 message.put("agency_id", aggregateId);
@@ -523,6 +544,29 @@ public class EventOutboxOrchestrator {
                 message.put("admin_id", aggregateId);
                 break;
         }
+    }
+
+    /**
+     * ⭐ EXTRACT RESTAURANT ID FROM JSON PAYLOAD
+     * 
+     * Parses the JSON payload string and extracts restaurantId field.
+     * Used for CUSTOMER RESERVATION events to add restaurant_id to top-level message.
+     * 
+     * @param payloadJson JSON string with restaurantId field
+     * @return restaurantId as Long, or null if not found
+     */
+    @SuppressWarnings("unchecked")
+    private Long extractRestaurantIdFromPayload(String payloadJson) throws Exception {
+        if (payloadJson == null || payloadJson.isEmpty()) {
+            return null;
+        }
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String, Object> payloadMap = mapper.readValue(payloadJson, Map.class);
+        Object restaurantIdObj = payloadMap.get("restaurantId");
+        if (restaurantIdObj instanceof Number) {
+            return ((Number) restaurantIdObj).longValue();
+        }
+        return null;
     }
 
     /**
