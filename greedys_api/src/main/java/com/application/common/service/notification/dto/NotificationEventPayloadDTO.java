@@ -43,19 +43,19 @@ public class NotificationEventPayloadDTO {
     /**
      * Unique event identifier for idempotency check
      */
-    @JsonProperty("eventId")
+    @JsonProperty("event_id")
     private String eventId;
     
     /**
      * Event type: RESERVATION_NEW, RESERVATION_MODIFIED, RESERVATION_CANCELLED, etc
      */
-    @JsonProperty("eventType")
+    @JsonProperty("event_type")
     private String eventType;
     
     /**
      * Recipient type: RESTAURANT_TEAM, RESTAURANT_USER, CUSTOMER, ADMIN, etc
      */
-    @JsonProperty("recipientType")
+    @JsonProperty("recipient_type")
     private String recipientType;
     
     /**
@@ -64,7 +64,7 @@ public class NotificationEventPayloadDTO {
      * For CUSTOMER: customerId
      * For ADMIN: adminId
      */
-    @JsonProperty("recipientId")
+    @JsonProperty("recipient_id")
     private Long recipientId;
     
     /**
