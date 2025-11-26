@@ -80,6 +80,23 @@ public class AdminNotificationListener extends BaseNotificationListener<AdminNot
 	}
 
 	/**
+	 * ⭐ IMPLEMENTATION: Enrich message with ADMIN-specific fields
+	 * 
+	 * For ADMIN scope, adds "admin_id" from recipientId.
+	 * 
+	 * @param message Map to enrich
+	 * @param payload Original DTO
+	 */
+	@Override
+	protected void enrichMessageWithTypeSpecificFields(
+		Map<String, Object> message,
+		com.application.common.service.notification.dto.NotificationEventPayloadDTO payload
+	) {
+		// For ADMIN: recipientId IS the admin_id
+		message.put("admin_id", payload.getRecipientId());
+	}
+
+	/**
 	 * ⭐ IMPLEMENT ABSTRACT METHOD
 	 * Verifica idempotency: se eventId già processato
 	 */

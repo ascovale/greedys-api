@@ -114,6 +114,23 @@ public class RestaurantNotificationListener extends BaseNotificationListener<Res
     }
 
     /**
+     * ⭐ IMPLEMENTATION: Enrich message with RESTAURANT-specific fields
+     * 
+     * For RESTAURANT scope, adds "restaurant_id" from recipientId.
+     * 
+     * @param message Map to enrich
+     * @param payload Original DTO
+     */
+    @Override
+    protected void enrichMessageWithTypeSpecificFields(
+        Map<String, Object> message,
+        com.application.common.service.notification.dto.NotificationEventPayloadDTO payload
+    ) {
+        // For RESTAURANT: recipientId IS the restaurant_id
+        message.put("restaurant_id", payload.getRecipientId());
+    }
+
+    /**
      * ⭐ IMPLEMENTATION: Check idempotency
      * 
      * Uses RestaurantUserNotificationDAO to check if eventId already exists.

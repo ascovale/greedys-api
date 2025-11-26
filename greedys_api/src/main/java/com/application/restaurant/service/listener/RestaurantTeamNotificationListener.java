@@ -115,6 +115,24 @@ public class RestaurantTeamNotificationListener extends BaseNotificationListener
     }
 
     /**
+     * ⭐ IMPLEMENTATION: Enrich message with TEAM-specific fields
+     * 
+     * For TEAM scope, adds "restaurant_id" from recipientId.
+     * TEAM notifications target a specific restaurant, all staff see them.
+     * 
+     * @param message Map to enrich
+     * @param payload Original DTO
+     */
+    @Override
+    protected void enrichMessageWithTypeSpecificFields(
+        Map<String, Object> message,
+        com.application.common.service.notification.dto.NotificationEventPayloadDTO payload
+    ) {
+        // For TEAM: recipientId IS the restaurant_id
+        message.put("restaurant_id", payload.getRecipientId());
+    }
+
+    /**
      * ⭐ IMPLEMENTATION: Check idempotency
      * 
      * Uses RestaurantUserNotificationDAO to check if eventId already exists.

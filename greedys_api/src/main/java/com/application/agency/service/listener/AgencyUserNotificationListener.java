@@ -79,6 +79,23 @@ public class AgencyUserNotificationListener extends BaseNotificationListener<Age
 	}
 
 	/**
+	 * ⭐ IMPLEMENTATION: Enrich message with AGENCY-specific fields
+	 * 
+	 * For AGENCY scope, adds "agency_id" from recipientId.
+	 * 
+	 * @param message Map to enrich
+	 * @param payload Original DTO
+	 */
+	@Override
+	protected void enrichMessageWithTypeSpecificFields(
+		Map<String, Object> message,
+		com.application.common.service.notification.dto.NotificationEventPayloadDTO payload
+	) {
+		// For AGENCY: recipientId IS the agency_id
+		message.put("agency_id", payload.getRecipientId());
+	}
+
+	/**
 	 * ⭐ IMPLEMENT ABSTRACT METHOD
 	 * Verifica idempotency: se eventId già processato
 	 */
