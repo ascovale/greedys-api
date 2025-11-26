@@ -84,10 +84,12 @@ public abstract class BaseNotificationListener<T extends ANotification> {
             String eventType = payload.getEventType();
             String recipientType = payload.getRecipientType();
             Long recipientId = payload.getRecipientId();
+            Long restaurantId = payload.getRestaurantId();
+            Long customerId = payload.getCustomerId();
             Map<String, Object> data = payload.getData();
             
-            log.info("🔍 Processing event: eventId={}, eventType={}, recipientType={}, recipientId={}", 
-                eventId, eventType, recipientType, recipientId);
+            log.info("🎯🎯🎯 [LISTENER-DTO] Received DTO: eventId={}, eventType={}, restaurant_id={}, customer_id={}, recipientType={}, recipientId={}", 
+                eventId, eventType, restaurantId, customerId, recipientType, recipientId);
             
             // ⭐ STEP 2: Idempotency check
             if (existsByEventId(eventId)) {
@@ -108,6 +110,9 @@ public abstract class BaseNotificationListener<T extends ANotification> {
             
             // ⭐ Let subclass enrich the message with type-specific fields
             enrichMessageWithTypeSpecificFields(message, payload);
+            
+            log.info("🎯🎯🎯 [LISTENER-MAP] Created message map keys: {} | restaurant_id: {} | customer_id: {}", 
+                message.keySet(), message.get("restaurant_id"), message.get("customer_id"));
             
             NotificationOrchestrator<T> orchestrator = getTypeSpecificOrchestrator(message);
             

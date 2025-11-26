@@ -324,6 +324,9 @@ public class JwtUtil {
                     claims.put("restaurant_id", restaurantId);
                     log.debug("✅ Added restaurant_id to JWT: {}", restaurantId);
                 }
+                // DISTINCTIVE LOG
+                log.info("🔐🔐🔐 [JWT-RUSER] Generated JWT with claims: user_id={}, restaurant_id={}, user_type={}", 
+                         userId, rUser.getRestaurant() != null ? rUser.getRestaurant().getId() : null, "restaurant-user");
             }
             // Aggiungi user_id per AgencyUser
             else if (userDetails instanceof com.application.agency.persistence.model.user.AgencyUser) {
@@ -340,6 +343,9 @@ public class JwtUtil {
                     claims.put("agency_id", agencyId);
                     log.debug("✅ Added agency_id to JWT: {}", agencyId);
                 }
+                // DISTINCTIVE LOG
+                log.info("🔐🔐🔐 [JWT-AGENCY] Generated JWT with claims: user_id={}, agency_id={}, user_type={}", 
+                         userId, agencyUser.getAgency() != null ? agencyUser.getAgency().getId() : null, "agency-user");
             }
             // Aggiungi user_id per Customer
             else if (userDetails instanceof com.application.customer.persistence.model.Customer) {
@@ -350,6 +356,8 @@ public class JwtUtil {
                     claims.put("user_id", userId);
                     log.debug("✅ Added user_id to JWT: {}", userId);
                 }
+                // DISTINCTIVE LOG
+                log.info("🔐🔐🔐 [JWT-CUSTOMER] Generated JWT with claims: user_id={}, user_type={}", userId, "customer");
             }
             // Aggiungi user_id per Admin
             else if (userDetails instanceof com.application.admin.persistence.model.Admin) {
@@ -360,6 +368,8 @@ public class JwtUtil {
                     claims.put("user_id", userId);
                     log.debug("✅ Added user_id to JWT: {}", userId);
                 }
+                // DISTINCTIVE LOG
+                log.info("🔐🔐🔐 [JWT-ADMIN] Generated JWT with claims: user_id={}, user_type={}", userId, "admin");
             }
         } catch (Exception e) {
             log.warn("⚠️ Error adding IDs to JWT claims: {}", e.getMessage());

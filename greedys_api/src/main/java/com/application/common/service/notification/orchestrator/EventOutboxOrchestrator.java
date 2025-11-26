@@ -307,7 +307,9 @@ public class EventOutboxOrchestrator {
         // Build message
         Map<String, Object> message = buildMessage(event);
 
-        log.debug("📤 Publishing message to queue: {}", queueName);
+        log.info("�🚀🚀 [PRODUCER] Publishing to queue: {} | Message keys: {} | restaurant_id: {} | customer_id: {} | event_id: {}", 
+            queueName, message.keySet(), message.get("restaurant_id"), message.get("customer_id"), message.get("event_id"));
+        log.debug("📤 Full message content: {}", message);
 
         // Publish to RabbitMQ (convertAndSend automatically handles serialization)
         rabbitTemplate.convertAndSend(queueName, message);
