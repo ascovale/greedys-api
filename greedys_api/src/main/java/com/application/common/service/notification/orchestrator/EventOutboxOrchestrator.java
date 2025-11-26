@@ -526,15 +526,20 @@ public class EventOutboxOrchestrator {
                 // extract restaurant_id from payload and add to top-level
                 // This way RestaurantTeamOrchestrator finds it with message.get("restaurant_id")
                 if (eventType != null && eventType.contains("RESERVATION") && payload != null) {
+                    log.info("🔍 Attempting to extract restaurant_id from CUSTOMER RESERVATION: eventType={}, payloadLen={}", eventType, payload.length());
                     try {
                         Long restaurantId = extractRestaurantIdFromPayload(payload);
                         if (restaurantId != null) {
                             message.put("restaurant_id", restaurantId);
-                            log.debug("✅ Extracted restaurant_id={} from CUSTOMER RESERVATION payload", restaurantId);
+                            log.info("✅ Successfully extracted restaurant_id={} from CUSTOMER RESERVATION payload", restaurantId);
+                        } else {
+                            log.warn("⚠️ extractRestaurantIdFromPayload returned null for payload: {}", payload);
                         }
                     } catch (Exception e) {
-                        log.debug("Could not extract restaurant_id from payload: {}", e.getMessage());
+                        log.error("❌ Exception extracting restaurant_id from payload: {}", e.getMessage(), e);
                     }
+                } else {
+                    log.debug("⏭️ Skipping restaurant_id extraction: eventType={}, payload={}", eventType, payload != null ? "present" : "null");
                 }
                 break;
             case "AGENCY":
@@ -558,14 +563,23 @@ public class EventOutboxOrchestrator {
     @SuppressWarnings("unchecked")
     private Long extractRestaurantIdFromPayload(String payloadJson) throws Exception {
         if (payloadJson == null || payloadJson.isEmpty()) {
+            log.warn("⚠️ Payload is null or empty");
             return null;
         }
+        log.debug("Parsing payload JSON: {}", payloadJson);
         ObjectMapper mapper = new ObjectMapper();
         Map<String, Object> payloadMap = mapper.readValue(payloadJson, Map.class);
+        log.debug("Parsed payload map keys: {}", payloadMap.keySet());
+        
         Object restaurantIdObj = payloadMap.get("restaurantId");
+        log.debug("restaurantId object: {} (type: {})", restaurantIdObj, restaurantIdObj != null ? restaurantIdObj.getClass().getName() : "null");
+        
         if (restaurantIdObj instanceof Number) {
-            return ((Number) restaurantIdObj).longValue();
+            Long result = ((Number) restaurantIdObj).longValue();
+            log.info("✅ Extracted restaurantId={} from payload", result);
+            return result;
         }
+        log.warn("⚠️ restaurantId is not a Number: {}", restaurantIdObj);
         return null;
     }
 
