@@ -98,12 +98,16 @@ public abstract class BaseNotificationListener<T extends ANotification> {
             
             // ⭐ STEP 3: Get type-specific orchestrator
             // Convert DTO back to Map for backward compatibility with orchestrator interface
+            // ⚠️ IMPORTANT: Use snake_case keys to match orchestrator expectations
             Map<String, Object> message = new HashMap<>();
-            message.put("eventId", eventId);
-            message.put("eventType", eventType);
-            message.put("recipientType", recipientType);
-            message.put("recipientId", recipientId);
+            message.put("event_id", eventId);
+            message.put("event_type", eventType);
+            message.put("recipient_type", recipientType);
+            message.put("recipient_id", recipientId);
             message.put("data", data);
+            
+            // ⭐ Let subclass enrich the message with type-specific fields
+            enrichMessageWithTypeSpecificFields(message, payload);
             
             NotificationOrchestrator<T> orchestrator = getTypeSpecificOrchestrator(message);
             
@@ -166,6 +170,22 @@ public abstract class BaseNotificationListener<T extends ANotification> {
      * @return NotificationOrchestrator<T> for this user type
      */
     protected abstract NotificationOrchestrator<T> getTypeSpecificOrchestrator(Map<String, Object> message);
+
+    /**
+     * Enriches the message map with type-specific fields.
+     * Each subclass adds the fields its orchestrator expects.
+     * 
+     * For RESTAURANT_TEAM: adds "restaurant_id" from recipientId
+     * For CUSTOMER: adds "customer_id" from recipientId
+     * etc.
+     * 
+     * @param message Map to enrich (already has event_id, event_type, recipient_type, recipient_id, data)
+     * @param payload Original DTO for context
+     */
+    protected abstract void enrichMessageWithTypeSpecificFields(
+        Map<String, Object> message, 
+        NotificationEventPayloadDTO payload
+    );
 
     /**
      * Checks if notification with given eventId already exists (idempotency).
