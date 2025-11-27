@@ -126,9 +126,18 @@ public abstract class AEventNotification {
      * - EmailNotificationChannel: Sostituire placeholder in template HTML
      * - SMSNotificationChannel: Personalizzare messaggio SMS
      * - WebSocketNotificationChannel: Usare per UI context
+     * 
+     * ⭐ NOTE: foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT)
+     * - notification_id references MULTIPLE tables (restaurant_user_notification, customer_notification, admin_notification, agency_user_notification)
+     * - Cannot use standard FK constraint pointing to single table
+     * - Integrity managed at application level
      */
     @ElementCollection
-    @CollectionTable(name = "notification_event_properties", joinColumns = @JoinColumn(name = "notification_id"))
+    @CollectionTable(
+        name = "notification_event_properties", 
+        joinColumns = @JoinColumn(name = "notification_id"),
+        foreignKey = @jakarta.persistence.ForeignKey(jakarta.persistence.ConstraintMode.NO_CONSTRAINT)
+    )
     @MapKeyColumn(name = "property_key")
     @Column(name = "property_value")
     @Builder.Default
