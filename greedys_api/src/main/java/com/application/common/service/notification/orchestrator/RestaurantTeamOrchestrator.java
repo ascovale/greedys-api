@@ -303,6 +303,7 @@ public class RestaurantTeamOrchestrator extends NotificationOrchestrator<Restaur
             .eventId(eventId)
             .eventOutboxId(eventOutboxId)
             .userId(staffId)
+            .userType("RESTAURANT_USER")  // ⭐ FIX: Set user_type for RUser recipients
             .restaurantId(restaurantId)
             .channel(NotificationChannel.valueOf(channel))
             .status(DeliveryStatus.PENDING)

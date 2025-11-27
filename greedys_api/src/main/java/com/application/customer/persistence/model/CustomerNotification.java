@@ -77,17 +77,18 @@ import lombok.experimental.SuperBuilder;
 public class CustomerNotification extends ANotification {
 
 	/**
-	 * ⭐ UNIQUE IDEMPOTENCY KEY
+	 * ⭐ EVENT ID FOR IDEMPOTENCY TRACKING
 	 * 
-	 * Generato come: SHA256(aggregateType + eventId + userId + channel)
+	 * Generato come: aggregateType + eventId + userId + channel
 	 * 
 	 * Usato da CustomerNotificationListener per idempotency check:
 	 * - Se esiste già row con questo eventId → skip (duplicato da retry)
 	 * - Se non esiste → crea nuova row
 	 * 
 	 * Garantisce che retry da RabbitMQ non crea duplicati.
+	 * NON è UNIQUE nel DB - idempotency check avviene in listener prima del loop.
 	 */
-	@Column(name = "event_id", unique = true, nullable = false, length = 255)
+	@Column(name = "event_id", nullable = false, length = 255)
 	private String eventId;
 
 	/**
