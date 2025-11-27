@@ -75,7 +75,8 @@ public class CustomerNotificationListener extends BaseNotificationListener<Custo
     /**
      * ⭐ IMPLEMENTATION: Enrich message with CUSTOMER-specific fields
      * 
-     * For CUSTOMER scope, adds "customer_id" from recipientId.
+     * For CUSTOMER scope, uses recipientId if available, otherwise uses customerId from DTO.
+     * Also preserves "restaurant_id" from DTO.
      * 
      * @param message Map to enrich
      * @param payload Original DTO
@@ -85,8 +86,12 @@ public class CustomerNotificationListener extends BaseNotificationListener<Custo
         Map<String, Object> message,
         com.application.common.service.notification.dto.NotificationEventPayloadDTO payload
     ) {
-        // For CUSTOMER: recipientId IS the customer_id
-        message.put("customer_id", payload.getRecipientId());
+        // For CUSTOMER: prefer recipientId if available, otherwise use customerId from DTO
+        if (payload.getRecipientId() != null) {
+            message.put("customer_id", payload.getRecipientId());
+        }
+        // Note: If recipientId is null, customer_id was already added by BaseNotificationListener
+        // from DTO.customerId, so we don't overwrite it here
     }
 
     /**

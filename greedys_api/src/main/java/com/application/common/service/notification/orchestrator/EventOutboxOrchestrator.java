@@ -349,20 +349,22 @@ public class EventOutboxOrchestrator {
         if (isReservationEvent(eventType)) {
             String initiatedBy = extractInitiatedBy(event);
             
+            log.info("🎯🎯🎯 [QUEUE-ROUTING] eventType={}, initiatedBy={}, aggregateType={}", eventType, initiatedBy, aggregateType);
+            
             if ("CUSTOMER".equalsIgnoreCase(initiatedBy)) {
-                // Customer action → notify restaurant team
+                log.info("🎯🎯🎯 [QUEUE-DECISION] CUSTOMER initiated → returning: notification.restaurant.reservations");
                 return "notification.restaurant.reservations";
             } else if ("RESTAURANT".equalsIgnoreCase(initiatedBy)) {
-                // Restaurant action → notify customer
+                log.info("🎯🎯🎯 [QUEUE-DECISION] RESTAURANT initiated → returning: notification.customer");
                 return "notification.customer";
             }
             // ADMIN or null → default to restaurant reservations (team scope)
-            // Second orchestrator (RestaurantTeamOrchestrator) handles both if needed
+            log.info("🎯🎯🎯 [QUEUE-DECISION] ADMIN or NULL initiated → returning: notification.restaurant.reservations");
             return "notification.restaurant.reservations";
         }
 
         // Default routing for non-reservation events
-        return switch (aggregateType.toUpperCase()) {
+        String queue = switch (aggregateType.toUpperCase()) {
             case "RESTAURANT" -> "notification.restaurant.user";  // Default: personal staff notifications
             case "CUSTOMER" -> "notification.customer";
             case "AGENCY" -> "notification.agency";
@@ -370,6 +372,8 @@ public class EventOutboxOrchestrator {
             case "BROADCAST" -> "notification.broadcast";  // Future: broadcast to all users
             default -> throw new IllegalArgumentException("Unknown aggregateType: " + aggregateType);
         };
+        log.info("🎯🎯🎯 [QUEUE-ROUTING] Non-reservation event: aggregateType={} → queue={}", aggregateType, queue);
+        return queue;
     }
 
     /**
