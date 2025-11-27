@@ -79,6 +79,8 @@ public abstract class BaseNotificationListener<T extends ANotification> {
         try {
             log.info("📩 {}: received message on queue", this.getClass().getSimpleName());
             
+            log.info("📬📬📬 [LISTENER-RECEIVED] Listener class: {}", this.getClass().getSimpleName());
+            
             // ⭐ STEP 1: Extract from DTO
             String eventId = payload.getEventId();
             String eventType = payload.getEventType();
@@ -138,11 +140,18 @@ public abstract class BaseNotificationListener<T extends ANotification> {
                 try {
                     persistNotification(notification);
                     
+                    log.info("💾💾💾 [PERSIST] Persisted notification: eventId={}, userId={}", 
+                        eventId, notification.getUserId());
+                    
                     // ⭐ SYNCHRONOUS WEBSOCKET SEND: happens immediately after DB persist
                     // If client is online → delivery succeeds (real-time)
                     // If client offline → send fails silently, no retry (best-effort)
                     // If service crashes between persist and send → client doesn't receive (acceptable)
                     attemptWebSocketSend(notification);
+                    
+                    log.info("📡📡📡 [WEBSOCKET-SENT] Attempted WebSocket send: eventId={}, userId={}", 
+                        eventId, notification.getUserId());
+                    
                     sentCount++;
                     
                 } catch (DataIntegrityViolationException e) {

@@ -216,6 +216,9 @@ public class EventOutboxOrchestrator {
     @Transactional
     private void processEvent(EventOutbox event) {
         try {
+            log.info("⏳⏳⏳ [POLLER-START] Processing event: eventId={}, eventType={}, aggregateType={}", 
+                event.getEventId(), event.getEventType(), event.getAggregateType());
+            
             // ⭐ MAX RETRY LOGIC: Check if exceeded max retries
             if (event.getRetryCount() >= MAX_RETRY_ATTEMPTS) {
                 event.setStatus(Status.FAILED);
@@ -234,8 +237,12 @@ public class EventOutboxOrchestrator {
             processed.setStatus(ProcessingStatus.PROCESSING);
             processedEventRepository.save(processed);
             
+            log.info("⏳⏳⏳ [POLLER-LOCK] Idempotency lock acquired for eventId={}", event.getEventId());
+            
             // ⭐ PROBLEM #1 & #2: Step 2 - Publish to RabbitMQ (if lock insert succeeded)
             publishEvent(event);
+            
+            log.info("⏳⏳⏳ [POLLER-PUBLISHED] Event published to RabbitMQ: eventId={}", event.getEventId());
             
             // ⭐ PROBLEM #1 & #2: Step 3 - Mark as PROCESSED only if publish succeeds
             event.setStatus(Status.PROCESSED);
