@@ -236,15 +236,26 @@ public class NotificationWebSocketSender {
 			//    → Use that (e.g., "/topic/restaurant/3/reservations" for TEAM notifications)
 			// 2. Else fallback to personal channel
 			//    → "/topic/{userType}/{userId}/notifications"
+			
+			log.info("🔴🔴🔴 [WEBSOCKET-BEFORE-CHECK] About to send notification: notificationId={}, eventId={}, userId={}, recipientType={}", 
+				notificationId, eventId, userId, recipientType);
+			
+			if (properties != null) {
+				log.info("🔴 [WEBSOCKET-PROPERTIES-CHECK] Properties found: keys={}, values={}", 
+					properties.keySet(), properties.values());
+			} else {
+				log.info("🔴 [WEBSOCKET-PROPERTIES-CHECK] Properties is NULL");
+			}
+			
 			String destination;
 			if (properties != null && properties.containsKey("destination")) {
 				destination = properties.get("destination");
-				log.debug("📍 Using explicit destination from properties: {}", destination);
+				log.info("�🟢🟢 [WEBSOCKET-USING-TEAM] ✅ USING EXPLICIT TEAM DESTINATION from properties: {}", destination);
 			} else {
 				// Fallback to personal notification channel
 				String userTypePath = recipientType.toLowerCase();  // "restaurant", "customer", "agency", "admin"
 				destination = String.format("/topic/%s/%d/notifications", userTypePath, userId);
-				log.debug("📍 Using fallback personal channel: {}", destination);
+				log.info("🟡🟡� [WEBSOCKET-USING-PERSONAL] ⚠️ USING FALLBACK PERSONAL CHANNEL: {}", destination);
 			}
 
 			// Build WebSocket payload with client-side deduplication info
@@ -259,16 +270,19 @@ public class NotificationWebSocketSender {
 				payload.put("properties", properties);
 			}
 
+			log.info("🔵 [WEBSOCKET-BEFORE-SEND] About to call messagingTemplate.convertAndSend() to destination: {}", destination);
+
 			// Send via Spring WebSocket/STOMP
 			messagingTemplate.convertAndSend(destination, payload);
 
-			log.info("📤📤📤 [WEBSOCKET-SENT] Sent via STOMP: notificationId={}, userId={}, recipientType={}, destination={}", 
+			log.info("✅✅✅ [WEBSOCKET-SENT-SUCCESS] Successfully sent via STOMP: notificationId={}, userId={}, recipientType={}, destination={}", 
 				notificationId, userId, recipientType, destination);
 			return true;
 
 		} catch (Exception e) {
-			log.warn("⚠️ WebSocket send failed for notificationId={}, userId={}: {}", 
-				notificationId, userId, e.getMessage());
+			log.warn("❌❌❌ [WEBSOCKET-SEND-FAILED] WebSocket send FAILED for notificationId={}, userId={}, eventId={}: exception={}, message={}", 
+				notificationId, userId, eventId, e.getClass().getSimpleName(), e.getMessage());
+			e.printStackTrace();
 			return false;
 		}
 	}

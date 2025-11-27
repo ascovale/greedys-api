@@ -175,12 +175,30 @@ public class RestaurantTeamNotificationListener extends BaseNotificationListener
      */
     @Override
     protected void attemptWebSocketSend(RestaurantUserNotification notification) {
+        log.info("🟣🟣🟣 [WEBSOCKET-CHECK-START] Checking if should send WebSocket: notification={}, channel={}, isNull={}", 
+            notification.getId(), notification.getChannel(), notification.getChannel() == null);
+        
         // Only attempt send if channel is WEBSOCKET
         if (notification.getChannel() != null && 
             notification.getChannel().toString().equals("WEBSOCKET")) {
-            log.info("📤📤📤 [WEBSOCKET-ATTEMPT] Sending TEAM notification to WebSocket: userId={}, channel={}, destination={}", 
-                notification.getUserId(), notification.getChannel(), notification.getProperties().get("destination"));
-            webSocketSender.sendRestaurantNotification(notification);
+            
+            log.info("� [WEBSOCKET-ENTRY] ✅ ENTERING WebSocket send for notification: notificationId={}, userId={}, eventId={}", 
+                notification.getId(), notification.getUserId(), notification.getEventId());
+            
+            String destFromProps = notification.getProperties() != null ? 
+                notification.getProperties().get("destination") : "NULL";
+            log.info("🟢 [WEBSOCKET-PROPS] notification.getProperties()={}, destination={}", 
+                notification.getProperties(), destFromProps);
+            
+            log.info("🟢 [WEBSOCKET-BEFORE-CALL] About to call webSocketSender.sendRestaurantNotification() for notificationId={}", 
+                notification.getId());
+            
+            boolean result = webSocketSender.sendRestaurantNotification(notification);
+            
+            log.info("🟢 [WEBSOCKET-AFTER-CALL] webSocketSender.sendRestaurantNotification() returned: {}", result);
+        } else {
+            log.info("🟡 [WEBSOCKET-SKIP] ⏭️ SKIPPING WebSocket send - channel is NOT WEBSOCKET: channel={}, isNull={}", 
+                notification.getChannel(), notification.getChannel() == null);
         }
     }
 }
