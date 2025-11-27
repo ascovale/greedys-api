@@ -1,5 +1,6 @@
 package com.application.customer.service.listener;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -122,5 +123,18 @@ public class CustomerNotificationListener extends BaseNotificationListener<Custo
             notification.getChannel().toString().equals("WEBSOCKET")) {
             webSocketSender.sendCustomerNotification(notification);
         }
+    }
+
+    /**
+     * ⭐ IDEMPOTENCY: Check if all disaggregated notifications already exist
+     */
+    @Override
+    protected boolean checkIfAllNotificationsExist(List<CustomerNotification> notifications) {
+        if (notifications == null || notifications.isEmpty()) {
+            return false;
+        }
+        // Simple check: if first notification exists, assume all exist (same eventId)
+        String eventId = notifications.get(0).getEventId();
+        return notificationDAO.existsByEventId(eventId);
     }
 }
