@@ -135,24 +135,36 @@ public abstract class BaseNotificationListener<T extends ANotification> {
             // ⭐ STEP 5: Persist all disaggregated notifications
             // ⭐ STEP 6: Immediately attempt WebSocket delivery (best-effort, no retry)
             // ⭐ LEVEL 2 IDEMPOTENCY: Catch DataIntegrityViolationException for duplicate notifications
+            log.info("🟠🟠🟠 [LOOP-BEFORE] About to loop through {} disaggregated notifications for eventId={}", 
+                disaggregatedNotifications.size(), eventId);
+            
             int sentCount = 0;
             for (T notification : disaggregatedNotifications) {
                 try {
+                    log.info("🟠 [LOOP-ITERATION-START] Processing notification #{} for eventId={}, userId={}", 
+                        sentCount + 1, eventId, notification.getUserId());
+                    
                     persistNotification(notification);
                     
-                    log.info("💾💾💾 [PERSIST] Persisted notification: eventId={}, userId={}", 
-                        eventId, notification.getUserId());
+                    log.info("💾💾💾 [PERSIST-SUCCESS] ✅ Persisted notification: eventId={}, userId={}, notificationId={}", 
+                        eventId, notification.getUserId(), notification.getId());
                     
                     // ⭐ SYNCHRONOUS WEBSOCKET SEND: happens immediately after DB persist
                     // If client is online → delivery succeeds (real-time)
                     // If client offline → send fails silently, no retry (best-effort)
                     // If service crashes between persist and send → client doesn't receive (acceptable)
+                    log.info("🟠 [WEBSOCKET-BEFORE-ATTEMPT] About to call attemptWebSocketSend() for userId={}, notification={}", 
+                        notification.getUserId(), notification.getId());
+                    
                     attemptWebSocketSend(notification);
                     
-                    log.info("📡📡📡 [WEBSOCKET-SENT] Attempted WebSocket send: eventId={}, userId={}", 
+                    log.info("📡📡📡 [WEBSOCKET-AFTER-ATTEMPT] ✅ Completed attemptWebSocketSend() for eventId={}, userId={}", 
                         eventId, notification.getUserId());
                     
                     sentCount++;
+                    
+                    log.info("🟠 [LOOP-ITERATION-END] ✅ Completed iteration #{} for eventId={}", 
+                        sentCount, eventId);
                     
                 } catch (DataIntegrityViolationException e) {
                     // ⭐ UNIQUE constraint violation = notification already exists
@@ -160,8 +172,16 @@ public abstract class BaseNotificationListener<T extends ANotification> {
                     // Could happen if event is reprocessed by listener after crash
                     log.debug("⏭️  Notification already exists (idempotent), skipping: eventId={}, userId={}", 
                         eventId, notification.getUserId());
+                } catch (Exception loopException) {
+                    log.error("❌❌❌ [LOOP-ERROR] Exception in notification loop iteration: eventId={}, userId={}, exception={}, message={}", 
+                        eventId, notification.getUserId(), loopException.getClass().getSimpleName(), loopException.getMessage());
+                    loopException.printStackTrace();
+                    throw loopException;
                 }
             }
+            
+            log.info("🟠🟠🟠 [LOOP-AFTER] Completed loop: processed {} notifications for eventId={}", 
+                disaggregatedNotifications.size(), eventId);
             
             log.info("✅ Successfully persisted {} disaggregated notifications for eventId={}, WebSocket attempts: {}", 
                 disaggregatedNotifications.size(), eventId, sentCount);
