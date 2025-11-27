@@ -195,7 +195,7 @@ public class NotificationWebSocketSender {
 
 			messagingTemplate.convertAndSend(destination, payload);
 
-			log.debug("📤 Reservation status update sent: reservationId={}, userId={}, status={}, destination={}", 
+			log.info("📤📤📤 [WEBSOCKET-SENT] Reservation update via STOMP: reservationId={}, userId={}, status={}, destination={}", 
 				reservationId, userId, status, destination);
 			return true;
 
@@ -250,7 +250,7 @@ public class NotificationWebSocketSender {
 			// Send via Spring WebSocket/STOMP
 			messagingTemplate.convertAndSend(destination, payload);
 
-			log.debug("📤 WebSocket notification sent: notificationId={}, userId={}, recipientType={}, destination={}", 
+			log.info("📤📤📤 [WEBSOCKET-SENT] Sent via STOMP: notificationId={}, userId={}, recipientType={}, destination={}", 
 				notificationId, userId, recipientType, destination);
 			return true;
 
