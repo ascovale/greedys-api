@@ -114,6 +114,14 @@ public abstract class BaseNotificationListener<T extends ANotification> {
             message.put("recipient_id", recipientId);
             message.put("data", data);
             
+            // ⭐ CRITICAL: Add payload map (required by orchestrator)
+            // Payload contains properties like destination for WebSocket
+            Map<String, Object> payloadMap = new HashMap<>();
+            if (data != null) {
+                payloadMap.putAll(data);
+            }
+            message.put("payload", payloadMap);
+            
             // ⭐ ADD MISSING ORCHESTRATOR FIELDS FROM DTO
             if (payload.getAggregateType() != null) {
                 message.put("aggregate_type", payload.getAggregateType());
