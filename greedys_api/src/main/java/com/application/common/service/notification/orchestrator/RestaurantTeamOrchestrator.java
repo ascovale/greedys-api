@@ -295,6 +295,10 @@ public class RestaurantTeamOrchestrator extends NotificationOrchestrator<Restaur
         log.info("📝📝📝 [TEAM-RECORD-CREATE] Creating RestaurantUserNotification: eventId={}, staffId={}, channel={}, restaurantId={}, readByAll={}, destination={}", 
             eventId, staffId, channel, restaurantId, readByAll, props.get("destination"));
 
+        // ⭐ Generate title and body from event type and payload data
+        String title = generateNotificationTitle(eventType, payload);
+        String body = generateNotificationBody(eventType, payload);
+
         return RestaurantUserNotification.builder()
             .eventId(eventId)
             .eventOutboxId(eventOutboxId)
@@ -304,8 +308,8 @@ public class RestaurantTeamOrchestrator extends NotificationOrchestrator<Restaur
             .status(DeliveryStatus.PENDING)
             .readByAll(readByAll)  // TEAM SHARED
             .priority(priority)
-            .title((String) payload.get("title"))
-            .body((String) payload.get("body"))
+            .title(title)
+            .body(body)
             .eventType(eventType)
             .aggregateType(aggregateType)
             .properties(props)
@@ -343,5 +347,60 @@ public class RestaurantTeamOrchestrator extends NotificationOrchestrator<Restaur
         }
 
         return notification;
+    }
+
+    /**
+     * ⭐ GENERATE NOTIFICATION TITLE
+     * Creates appropriate title based on event type
+     * 
+     * @param eventType Type of event (RESERVATION_REQUESTED, RESERVATION_CANCELLED, etc)
+     * @param payload Event payload containing details
+     * @return Notification title
+     */
+    private String generateNotificationTitle(String eventType, Map<String, Object> payload) {
+        return switch (eventType) {
+            case "RESERVATION_REQUESTED" -> "Nuova Prenotazione";
+            case "RESERVATION_CANCELLED" -> "Prenotazione Cancellata";
+            case "RESERVATION_MODIFIED" -> "Prenotazione Modificata";
+            case "RESERVATION_CONFIRMED" -> "Prenotazione Confermata";
+            case "RESERVATION_REJECTED" -> "Prenotazione Rifiutata";
+            default -> "Notifica Ristorante";
+        };
+    }
+
+    /**
+     * ⭐ GENERATE NOTIFICATION BODY
+     * Creates appropriate body text based on event type and payload
+     * 
+     * @param eventType Type of event
+     * @param payload Event payload with reservation details
+     * @return Notification body text
+     */
+    private String generateNotificationBody(String eventType, Map<String, Object> payload) {
+        if (payload == null) {
+            return "Nuova notifica dal ristorante";
+        }
+        
+        Object paxObj = payload.get("pax");
+        Object dateObj = payload.get("date");
+        Object nameObj = payload.getOrDefault("customerName", payload.get("email"));
+        
+        int pax = paxObj instanceof Number ? ((Number) paxObj).intValue() : 1;
+        String date = dateObj != null ? dateObj.toString() : "Data non specificata";
+        String name = nameObj != null ? nameObj.toString() : "Cliente";
+        
+        return switch (eventType) {
+            case "RESERVATION_REQUESTED" -> 
+                String.format("Nuova prenotazione da %s per %d persone il %s", name, pax, date);
+            case "RESERVATION_CANCELLED" -> 
+                String.format("Prenotazione di %s per %d persone cancellata", name, pax);
+            case "RESERVATION_MODIFIED" -> 
+                String.format("Prenotazione di %s modificata - %d persone il %s", name, pax, date);
+            case "RESERVATION_CONFIRMED" -> 
+                String.format("Prenotazione di %s confermata per %d persone", name, pax);
+            case "RESERVATION_REJECTED" -> 
+                String.format("Prenotazione di %s rifiutata", name);
+            default -> "Nuova notifica dal ristorante";
+        };
     }
 }
