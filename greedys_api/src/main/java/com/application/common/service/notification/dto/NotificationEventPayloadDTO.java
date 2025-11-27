@@ -104,4 +104,25 @@ public class NotificationEventPayloadDTO {
      */
     @JsonProperty("data")
     private java.util.Map<String, Object> data;
+    
+    /**
+     * Aggregate type from EventOutbox (RESTAURANT, CUSTOMER, AGENCY, ADMIN, BROADCAST)
+     * Required by orchestrator to determine notification behavior
+     */
+    @JsonProperty("aggregate_type")
+    private String aggregateType;
+    
+    /**
+     * Aggregate ID (e.g., restaurantId when aggregateType=RESTAURANT)
+     * Required by orchestrator for audit trail and routing
+     */
+    @JsonProperty("aggregate_id")
+    private Long aggregateId;
+    
+    /**
+     * EventOutbox ID for audit trail
+     * Links notification back to original event_outbox record
+     */
+    @JsonProperty("event_outbox_id")
+    private Long eventOutboxId;
 }

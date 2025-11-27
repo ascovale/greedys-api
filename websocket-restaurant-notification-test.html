@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant WebSocket Notification Test</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 { font-size: 28px; margin-bottom: 10px; }
+        .header p { opacity: 0.9; font-size: 14px; }
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            min-height: 600px;
+        }
+        .panel {
+            padding: 30px;
+            border-right: 2px solid #eee;
+            overflow-y: auto;
+        }
+        .panel:last-child {
+            border-right: none;
+        }
+        .panel h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        label {
+            display: block;
+            margin-top: 15px;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+            font-size: 13px;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px 12px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: inherit;
+            background: white;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            margin: 15px 0 10px 0;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .status {
+            font-size: 12px;
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 4px solid;
+        }
+        .status.success { background: #d4edda; color: #155724; border-left-color: #28a745; }
+        .status.error { background: #f8d7da; color: #721c24; border-left-color: #dc3545; }
+        .status.info { background: #d1ecf1; color: #0c5460; border-left-color: #17a2b8; }
+        .status.warning { background: #fff3cd; color: #856404; border-left-color: #ffc107; }
+        
+        #clientLog, #websocketLog {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 6px;
+            height: 350px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            line-height: 1.5;
+            margin-top: 15px;
+            border: 1px solid #ddd;
+        }
+        .log-line { margin: 4px 0; }
+        .log-success { color: #4ade80; }
+        .log-error { color: #ff6b6b; }
+        .log-info { color: #60a5fa; }
+        .log-warn { color: #fbbf24; }
+        .log-msg { color: #90ee90; }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #667eea;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .info-box {
+            background: #f0f4ff;
+            border: 1px solid #e0e7ff;
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 15px;
+            font-size: 12px;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 1024px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+            .panel {
+                border-right: none;
+                border-bottom: 2px solid #eee;
+            }
+            .panel:last-child {
+                border-bottom: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>🔔 Restaurant WebSocket Notification Test</h1>
+        <p>Restaurant Staff: Connect & Wait for Real-time Notifications</p>
+    </div>
+
+    <div class="content">
+        <!-- LEFT PANEL: LOGIN & CONNECTION -->
+        <div class="panel">
+            <h2>🔐 Staff Connection</h2>
+
+            <div class="section-title">👨‍💼 Restaurant Staff Login</div>
+            <label>Staff Email:</label>
+            <input type="text" id="staffEmail" value="test@test.it" placeholder="Staff email">
+            
+            <label>Password:</label>
+            <input type="password" id="staffPassword" value="TestPass123!" placeholder="Password">
+
+            <button onclick="loginStaff()">🔑 Login & Connect WebSocket</button>
+            <div id="staffLoginStatus" class="status info" style="display:none;"></div>
+
+            <div class="section-title">🏪 Restaurant Info</div>
+            <label>Restaurant ID:</label>
+            <input type="text" id="restaurantId" value="3" placeholder="Restaurant ID" readonly>
+            
+            <label>Staff ID (from JWT):</label>
+            <input type="text" id="staffUserId" placeholder="Will be set after login" readonly>
+            
+            <label>Staff Name:</label>
+            <input type="text" id="staffName" placeholder="Will be set after login" readonly>
+
+            <div class="section-title">🔗 Connection Status</div>
+            <div id="connectionStatus" class="status info" style="display:none;"></div>
+
+            <div class="section-title">📋 Client Log</div>
+            <div id="clientLog"></div>
+
+            <div class="info-box">
+                <strong>⭐ What to do:</strong><br>
+                1️⃣ Click "Login & Connect WebSocket"<br>
+                2️⃣ Wait for connection (see right panel)<br>
+                3️⃣ Run Newman to create reservation<br>
+                4️⃣ Notification appears in right panel ✅
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL: WEBSOCKET LISTENER -->
+        <div class="panel">
+            <h2>🔔 WebSocket Notifications (LIVE)</h2>
+
+            <div class="section-title">📊 STOMP Connection</div>
+            <div id="wsStatus" class="status info" style="display:none;"></div>
+
+            <div class="section-title">🎯 Subscribed To</div>
+            <div style="background: #f0f4ff; border: 1px solid #e0e7ff; border-radius: 6px; padding: 12px; margin: 10px 0; font-size: 12px; font-family: monospace;">
+                📍 <strong>Topic:</strong> /topic/restaurant/3/reservations<br>
+                📨 <strong>Queue:</strong> notification.restaurant.reservations<br>
+                🔊 <strong>Scope:</strong> TEAM notifications
+            </div>
+
+            <div class="section-title">📨 Messages Received</div>
+            <div id="websocketLog"></div>
+
+            <div class="info-box">
+                <strong>⭐ Expected Flow:</strong><br>
+                1️⃣ Customer creates reservation<br>
+                2️⃣ RESERVATION_REQUESTED event published<br>
+                3️⃣ RabbitMQ → notification.restaurant.reservations<br>
+                4️⃣ RestaurantTeamNotificationListener processes<br>
+                5️⃣ WebSocket MESSAGE appears here ✅
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let staffToken = null;
+let staffUserId = null;
+let restaurantId = 3;
+let staffWs = null;
+
+const log = (logElementId, message, type = 'info') => {
+    const logEl = document.getElementById(logElementId);
+    const timestamp = new Date().toLocaleTimeString('it-IT');
+    const className = type === 'success' ? 'log-success' : 
+                      type === 'error' ? 'log-error' : 
+                      type === 'warn' ? 'log-warn' : 
+                      type === 'msg' ? 'log-msg' : 'log-info';
+    const line = `<div class="log-line"><span class="${className}">[${timestamp}] ${message}</span></div>`;
+    logEl.innerHTML += line;
+    logEl.scrollTop = logEl.scrollHeight;
+};
+
+const showStatus = (elementId, message, type) => {
+    const el = document.getElementById(elementId);
+    el.textContent = message;
+    el.className = `status ${type}`;
+    el.style.display = 'block';
+};
+
+const parseJwt = (token) => {
+    try {
+        const parts = token.split('.');
+        if (parts.length !== 3) throw new Error('Invalid JWT');
+        const base64Url = parts[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const decoded = atob(base64);
+        const jsonPayload = decodeURIComponent(decoded.split('').map(c => 
+            '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+        ).join(''));
+        return JSON.parse(jsonPayload);
+    } catch (e) {
+        console.error('Error parsing JWT:', e);
+        return null;
+    }
+};
+
+const loginStaff = async () => {
+    const email = document.getElementById('staffEmail').value;
+    const password = document.getElementById('staffPassword').value;
+    
+    try {
+        log('clientLog', '🔄 Authenticating staff...', 'info');
+        
+        const response = await fetch('https://api.greedys.it/restaurant/user/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: email, password })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        staffToken = data.jwt;
+        
+        const claims = parseJwt(staffToken);
+        staffUserId = claims.user_id;
+        restaurantId = claims.restaurant_id || 3;
+        
+        document.getElementById('staffUserId').value = staffUserId;
+        document.getElementById('staffName').value = email;
+        document.getElementById('restaurantId').value = restaurantId;
+        
+        log('clientLog', `✅ Authentication successful: ${email}`, 'success');
+        log('clientLog', `👤 Staff ID: ${staffUserId} | 🏪 Restaurant ID: ${restaurantId}`, 'success');
+        showStatus('staffLoginStatus', `✅ Staff authenticated`, 'success');
+        
+        // Connect WebSocket
+        connectWebSocket();
+    } catch (error) {
+        log('clientLog', `❌ Authentication failed: ${error.message}`, 'error');
+        showStatus('staffLoginStatus', `❌ ${error.message}`, 'error');
+    }
+};
+
+const connectWebSocket = async () => {
+    if (!staffToken) {
+        log('clientLog', '❌ No token available', 'error');
+        return;
+    }
+    
+    try {
+        log('websocketLog', '🔄 Connecting to WebSocket (STOMP)...', 'info');
+        
+        const wsUrl = `wss://api.greedys.it/stomp?token=${staffToken}`;
+        staffWs = new WebSocket(wsUrl);
+        
+        staffWs.onopen = () => {
+            log('clientLog', '✅ WebSocket connection opened', 'success');
+            log('websocketLog', '✅ WebSocket OPENED', 'success');
+            showStatus('wsStatus', '✅ Connected', 'success');
+            
+            // Send STOMP CONNECT
+            const connectFrame = `CONNECT
+accept-version:1.2
+heart-beat:0,0
+
+\x00`;
+            staffWs.send(connectFrame);
+            log('clientLog', '📤 Sent STOMP CONNECT frame', 'info');
+            log('websocketLog', '📤 STOMP CONNECT sent', 'info');
+        };
+        
+        staffWs.onmessage = (event) => {
+            const message = event.data;
+            
+            if (message.includes('CONNECTED')) {
+                log('clientLog', '✅ STOMP protocol established', 'success');
+                log('websocketLog', '✅ STOMP CONNECTED', 'success');
+                
+                // Subscribe to restaurant reservations topic
+                const subscribeFrame = `SUBSCRIBE
+id:sub-0
+destination:/topic/restaurant/${restaurantId}/reservations
+receipt:sub-0
+
+\x00`;
+                staffWs.send(subscribeFrame);
+                log('clientLog', `📤 Subscribed to /topic/restaurant/${restaurantId}/reservations`, 'info');
+                log('websocketLog', `📤 SUBSCRIBE sent to team channel`, 'info');
+            } else if (message.includes('RECEIPT')) {
+                log('clientLog', '✅ STOMP subscription confirmed', 'success');
+                log('websocketLog', '✅ RECEIPT received - ready for messages', 'success');
+                showStatus('connectionStatus', '✅ Ready to receive notifications', 'success');
+            } else if (message.includes('MESSAGE')) {
+                log('clientLog', '🎉🎉🎉 WEBSOCKET NOTIFICATION RECEIVED 🎉🎉🎉', 'success');
+                log('websocketLog', '🎉 MESSAGE RECEIVED FROM BROKER', 'success');
+                
+                // Parse the message body
+                try {
+                    const lines = message.split('\n');
+                    let bodyStart = false;
+                    let bodyLines = [];
+                    
+                    for (let line of lines) {
+                        if (bodyStart) {
+                            bodyLines.push(line);
+                        } else if (line.trim() === '') {
+                            bodyStart = true;
+                        }
+                    }
+                    
+                    const bodyText = bodyLines.join('\n').trim().replace(/\x00$/, '');
+                    if (bodyText) {
+                        const payload = JSON.parse(bodyText);
+                        log('clientLog', `📦 Payload received: ${JSON.stringify(payload).substring(0, 100)}...`, 'msg');
+                        log('websocketLog', `📨 Title: ${payload.title}`, 'msg');
+                        log('websocketLog', `📨 Body: ${payload.body}`, 'msg');
+                        log('websocketLog', `📨 EventID: ${payload.eventId}`, 'msg');
+                        log('clientLog', `✅ ✅ ✅ END-TO-END WEBSOCKET DELIVERY SUCCESS ✅ ✅ ✅`, 'success');
+                        log('websocketLog', `✅ ✅ ✅ NOTIFICATION DELIVERED SUCCESSFULLY ✅ ✅ ✅`, 'success');
+                    }
+                } catch (e) {
+                    log('websocketLog', `⚠️ Could not parse message: ${e.message}`, 'warn');
+                }
+            } else if (message.includes('ERROR')) {
+                log('clientLog', `❌ Server ERROR`, 'error');
+                log('websocketLog', `❌ ERROR: ${message.substring(0, 100)}`, 'error');
+            } else {
+                log('websocketLog', `📨 ${message.substring(0, 60)}...`, 'info');
+            }
+        };
+        
+        staffWs.onerror = (error) => {
+            log('clientLog', `❌ WebSocket error: ${error}`, 'error');
+            log('websocketLog', `❌ WebSocket error`, 'error');
+            showStatus('wsStatus', '❌ Connection error', 'error');
+        };
+        
+        staffWs.onclose = () => {
+            log('clientLog', '🔌 WebSocket connection closed', 'warn');
+            log('websocketLog', '🔌 WebSocket CLOSED', 'warn');
+            showStatus('wsStatus', '🔌 Disconnected', 'info');
+        };
+    } catch (error) {
+        log('clientLog', `❌ WebSocket connection failed: ${error.message}`, 'error');
+        log('websocketLog', `❌ Failed to connect: ${error.message}`, 'error');
+        showStatus('wsStatus', `❌ ${error.message}`, 'error');
+    }
+};
+
+// Initialize on page load
+log('clientLog', '🚀 Page loaded - ready to authenticate', 'info');
+log('websocketLog', '⏳ Waiting for authentication...', 'info');
+</script>
+
+</body>
+</html>

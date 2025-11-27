@@ -93,6 +93,10 @@ public abstract class BaseNotificationListener<T extends ANotification> {
             log.info("🎯🎯🎯 [LISTENER-DTO] Received DTO: eventId={}, eventType={}, restaurant_id={}, customer_id={}, recipientType={}, recipientId={}", 
                 eventId, eventType, restaurantId, customerId, recipientType, recipientId);
             
+            // ⭐ LOG DESERIALIZED ORCHESTRATOR FIELDS
+            log.info("🔍🔍🔍 [LISTENER-DESER] Deserialized fields: aggregateType={}, aggregateId={}, eventOutboxId={}", 
+                payload.getAggregateType(), payload.getAggregateId(), payload.getEventOutboxId());
+            
             // ⭐ STEP 2: Idempotency check
             if (existsByEventId(eventId)) {
                 log.warn("⚠️  Duplicate eventId detected: {}. Skipping (already processed)", eventId);
@@ -109,6 +113,20 @@ public abstract class BaseNotificationListener<T extends ANotification> {
             message.put("recipient_type", recipientType);
             message.put("recipient_id", recipientId);
             message.put("data", data);
+            
+            // ⭐ ADD MISSING ORCHESTRATOR FIELDS FROM DTO
+            if (payload.getAggregateType() != null) {
+                message.put("aggregate_type", payload.getAggregateType());
+            }
+            if (payload.getAggregateId() != null) {
+                message.put("aggregate_id", payload.getAggregateId());
+            }
+            if (payload.getEventOutboxId() != null) {
+                message.put("event_outbox_id", payload.getEventOutboxId());
+            }
+            
+            log.info("✅✅✅ [LISTENER-MAP-BUILT] Message map now contains: aggregate_type={}, aggregate_id={}, event_outbox_id={}", 
+                message.get("aggregate_type"), message.get("aggregate_id"), message.get("event_outbox_id"));
             
             // ⭐ ADD ORGANIZATION IDs FROM DTO TO MAP
             if (restaurantId != null) {
