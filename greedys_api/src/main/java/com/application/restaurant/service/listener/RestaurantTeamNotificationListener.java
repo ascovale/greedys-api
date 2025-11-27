@@ -178,8 +178,8 @@ public class RestaurantTeamNotificationListener extends BaseNotificationListener
         // Only attempt send if channel is WEBSOCKET
         if (notification.getChannel() != null && 
             notification.getChannel().toString().equals("WEBSOCKET")) {
-            log.debug("📤 Sending TEAM notification to WebSocket: destination={}", 
-                notification.getProperties().get("destination"));
+            log.info("📤📤📤 [WEBSOCKET-ATTEMPT] Sending TEAM notification to WebSocket: userId={}, channel={}, destination={}", 
+                notification.getUserId(), notification.getChannel(), notification.getProperties().get("destination"));
             webSocketSender.sendRestaurantNotification(notification);
         }
     }
