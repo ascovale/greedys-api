@@ -167,6 +167,13 @@ public abstract class BaseNotificationListener<T extends ANotification> {
                 return;
             }
             
+            // ⭐ CHECK: If no notifications were disaggregated (all channels disabled for recipient)
+            if (disaggregatedNotifications.isEmpty()) {
+                log.warn("⚠️  No notifications disaggregated for eventId={} - all channels disabled or no recipients. Logging and ACKing.", eventId);
+                channel.basicAck(deliveryTag, false);
+                return;
+            }
+            
             // ⭐ STEP 5: Persist all disaggregated notifications
             // ⭐ STEP 6: Immediately attempt WebSocket delivery (best-effort, no retry)
             // ⭐ LEVEL 2 IDEMPOTENCY: Catch DataIntegrityViolationException for duplicate notifications
@@ -174,10 +181,11 @@ public abstract class BaseNotificationListener<T extends ANotification> {
                 disaggregatedNotifications.size(), eventId);
             
             int sentCount = 0;
+            int failedCount = 0;
             for (T notification : disaggregatedNotifications) {
                 try {
                     log.info("🟠 [LOOP-ITERATION-START] Processing notification #{} for eventId={}, userId={}", 
-                        sentCount + 1, eventId, notification.getUserId());
+                        sentCount + failedCount + 1, eventId, notification.getUserId());
                     
                     persistNotification(notification);
                     
@@ -207,19 +215,20 @@ public abstract class BaseNotificationListener<T extends ANotification> {
                     // Could happen if event is reprocessed by listener after crash
                     log.debug("⏭️  Notification already exists (idempotent), skipping: eventId={}, userId={}", 
                         eventId, notification.getUserId());
+                    failedCount++;
                 } catch (Exception loopException) {
-                    log.error("❌❌❌ [LOOP-ERROR] Exception in notification loop iteration: eventId={}, userId={}, exception={}, message={}", 
+                    // ⭐ PARTIAL FAILURE: Don't rollback entire transaction
+                    // Some notifications may have been saved, continue processing others
+                    // This prevents loop infinito if one notification fails
+                    log.error("❌ [LOOP-ERROR] Exception in notification iteration (continuing): eventId={}, userId={}, exception={}, message={}", 
                         eventId, notification.getUserId(), loopException.getClass().getSimpleName(), loopException.getMessage());
-                    loopException.printStackTrace();
-                    throw loopException;
+                    failedCount++;
+                    // Continue to next notification instead of throwing
                 }
             }
             
-            log.info("🟠🟠🟠 [LOOP-AFTER] Completed loop: processed {} notifications for eventId={}", 
-                disaggregatedNotifications.size(), eventId);
-            
-            log.info("✅ Successfully persisted {} disaggregated notifications for eventId={}, WebSocket attempts: {}", 
-                disaggregatedNotifications.size(), eventId, sentCount);
+            log.info("✅ Loop completed: {} notifications processed for eventId={}, success={}, failed={}", 
+                disaggregatedNotifications.size(), eventId, sentCount, failedCount);
             
             // ⭐ STEP 6: Manual ACK (only after success)
             channel.basicAck(deliveryTag, false);
