@@ -7,7 +7,9 @@ import java.util.Map;
 import org.springframework.stereotype.Service;
 
 import com.application.restaurant.persistence.dao.RestaurantUserNotificationDAO;
+import com.application.restaurant.persistence.dao.RUserDAO;
 import com.application.restaurant.persistence.model.RestaurantUserNotification;
+import com.application.restaurant.persistence.model.user.RUser;
 import com.application.common.persistence.model.notification.DeliveryStatus;
 import com.application.common.persistence.model.notification.NotificationChannel;
 import com.application.common.persistence.model.notification.NotificationPriority;
@@ -66,6 +68,7 @@ public class RestaurantTeamOrchestrator extends NotificationOrchestrator<Restaur
 
     @SuppressWarnings("unused")
     private final RestaurantUserNotificationDAO restaurantNotificationDAO;
+    private final RUserDAO rUserDAO;
     // TODO: Iniettare RestaurantStaffService quando disponibile
     // private final RestaurantStaffService staffService;
 
@@ -163,10 +166,20 @@ public class RestaurantTeamOrchestrator extends NotificationOrchestrator<Restaur
         // TEAM scope: Load ALL active staff (no filtering)
         log.info("📢 TEAM SCOPE: Loading ALL active staff for restaurant {}", restaurantId);
         
-        // TODO: Iniettare RestaurantStaffService.findActiveStaffByRestaurantId(restaurantId)
-        // For now, return empty list (stub)
-        // This will be populated when RestaurantStaffService is injected
-        return new ArrayList<>();
+        // Query all restaurant users (staff members) for this restaurant
+        List<RUser> staffMembers = (List<RUser>) rUserDAO.findByRestaurantId(restaurantId);
+        List<Long> staffIds = new ArrayList<>();
+        
+        for (RUser staff : staffMembers) {
+            if (staff != null && staff.getId() != null) {
+                staffIds.add(staff.getId());
+            }
+        }
+        
+        log.info("✅ Loaded {} active staff members for restaurant {} (TEAM notification)", 
+            staffIds.size(), restaurantId);
+        
+        return staffIds;
     }
 
     /**
