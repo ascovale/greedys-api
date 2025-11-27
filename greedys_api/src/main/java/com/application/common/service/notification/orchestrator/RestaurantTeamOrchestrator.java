@@ -283,8 +283,17 @@ public class RestaurantTeamOrchestrator extends NotificationOrchestrator<Restaur
 
         // Set team-specific destination for WebSocket
         if ("WEBSOCKET".equals(channel)) {
-            props.put("destination", "/topic/restaurant/" + restaurantId + "/reservations");
+            String teamDestination = "/topic/restaurant/" + restaurantId + "/reservations";
+            props.put("destination", teamDestination);
+            log.info("🌐🌐🌐 [TEAM-DESTINATION-SET] ✅ Set TEAM WebSocket destination: {} for staffId={}, eventId={}", 
+                teamDestination, staffId, eventId);
+        } else {
+            log.info("🌐 [TEAM-NO-WEBSOCKET] Channel is NOT WEBSOCKET (channel={}), no destination set for staffId={}", 
+                channel, staffId);
         }
+
+        log.info("📝📝📝 [TEAM-RECORD-CREATE] Creating RestaurantUserNotification: eventId={}, staffId={}, channel={}, restaurantId={}, readByAll={}, destination={}", 
+            eventId, staffId, channel, restaurantId, readByAll, props.get("destination"));
 
         return RestaurantUserNotification.builder()
             .eventId(eventId)
