@@ -231,9 +231,21 @@ public class NotificationWebSocketSender {
 			Map<String, String> properties) {
 
 		try {
-			// Use userType in path to avoid ID collisions across different user tables
-			String userTypePath = recipientType.toLowerCase();  // "restaurant", "customer", "agency", "admin"
-			String destination = String.format("/topic/%s/%d/notifications", userTypePath, userId);
+			// ⭐ DESTINATION PRIORITY:
+			// 1. If properties contain explicit destination (e.g., team channel for TEAM scope)
+			//    → Use that (e.g., "/topic/restaurant/3/reservations" for TEAM notifications)
+			// 2. Else fallback to personal channel
+			//    → "/topic/{userType}/{userId}/notifications"
+			String destination;
+			if (properties != null && properties.containsKey("destination")) {
+				destination = properties.get("destination");
+				log.debug("📍 Using explicit destination from properties: {}", destination);
+			} else {
+				// Fallback to personal notification channel
+				String userTypePath = recipientType.toLowerCase();  // "restaurant", "customer", "agency", "admin"
+				destination = String.format("/topic/%s/%d/notifications", userTypePath, userId);
+				log.debug("📍 Using fallback personal channel: {}", destination);
+			}
 
 			// Build WebSocket payload with client-side deduplication info
 			Map<String, Object> payload = new HashMap<>();
