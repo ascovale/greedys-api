@@ -108,6 +108,14 @@ public abstract class BaseNotificationListener<T extends ANotification> {
             message.put("recipient_id", recipientId);
             message.put("data", data);
             
+            // ⭐ ADD ORGANIZATION IDs FROM DTO TO MAP
+            if (restaurantId != null) {
+                message.put("restaurant_id", restaurantId);
+            }
+            if (customerId != null) {
+                message.put("customer_id", customerId);
+            }
+            
             // ⭐ Let subclass enrich the message with type-specific fields
             enrichMessageWithTypeSpecificFields(message, payload);
             
