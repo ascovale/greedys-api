@@ -158,6 +158,15 @@ public abstract class BaseNotificationListener<T extends ANotification> {
             log.info("✅ Orchestrator disaggregated {} notifications for eventId={}", 
                 disaggregatedNotifications.size(), eventId);
             
+            // ⭐ IDEMPOTENCY CHECK: If all notifications already exist, skip processing
+            // This prevents retries from re-persisting and losing WebSocket delivery
+            boolean allNotificationsExist = checkIfAllNotificationsExist(disaggregatedNotifications);
+            if (allNotificationsExist) {
+                log.warn("⚠️  All notifications already exist for eventId={} - likely a retry. Skipping processing and ACKing message.", eventId);
+                channel.basicAck(deliveryTag, false);
+                return;
+            }
+            
             // ⭐ STEP 5: Persist all disaggregated notifications
             // ⭐ STEP 6: Immediately attempt WebSocket delivery (best-effort, no retry)
             // ⭐ LEVEL 2 IDEMPOTENCY: Catch DataIntegrityViolationException for duplicate notifications
@@ -346,4 +355,16 @@ public abstract class BaseNotificationListener<T extends ANotification> {
     protected Map<String, String> extractProperties(Map<String, Object> payload) {
         return (Map<String, String>) payload.getOrDefault("properties", new HashMap<>());
     }
+
+    /**
+     * ⭐ CHECK IF ALL NOTIFICATIONS ALREADY EXIST
+     * 
+     * For idempotency: if all disaggregated notifications already exist in DB,
+     * this is a RETRY (listener processing same message again).
+     * Skip the loop entirely to prevent double-persistence and preserve WebSocket delivery from first attempt.
+     * 
+     * @param notifications List of disaggregated notifications to check
+     * @return true if ALL notifications exist; false if ANY is missing
+     */
+    protected abstract boolean checkIfAllNotificationsExist(List<T> notifications);
 }

@@ -173,4 +173,17 @@ public class RestaurantNotificationListener extends BaseNotificationListener<Res
             webSocketSender.sendRestaurantNotification(notification);
         }
     }
+
+    /**
+     * ⭐ IDEMPOTENCY: Check if all disaggregated notifications already exist
+     */
+    @Override
+    protected boolean checkIfAllNotificationsExist(java.util.List<RestaurantUserNotification> notifications) {
+        if (notifications == null || notifications.isEmpty()) {
+            return false;
+        }
+        // Simple check: if first notification exists, assume all exist (same eventId)
+        String eventId = notifications.get(0).getEventId();
+        return notificationDAO.existsByEventId(eventId);
+    }
 }

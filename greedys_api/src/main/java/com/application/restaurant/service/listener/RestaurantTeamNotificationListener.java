@@ -1,5 +1,6 @@
 package com.application.restaurant.service.listener;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -199,6 +200,47 @@ public class RestaurantTeamNotificationListener extends BaseNotificationListener
         } else {
             log.info("🟡 [WEBSOCKET-SKIP] ⏭️ SKIPPING WebSocket send - channel is NOT WEBSOCKET: channel={}, isNull={}", 
                 notification.getChannel(), notification.getChannel() == null);
+        }
+    }
+
+    /**
+     * ⭐ IDEMPOTENCY: Check if all disaggregated notifications already exist
+     * 
+     * For a TEAM notification, checks if notifications for all 4 channels (WEBSOCKET, EMAIL, PUSH, SMS)
+     * already exist in the database. If all exist, this is a RETRY and we should skip processing.
+     * 
+     * Since all 4 notifications share the same eventId, checking if one exists is enough.
+     * 
+     * @param notifications List of disaggregated notifications for all channels
+     * @return true if all notifications exist (idempotent retry); false if any is missing (first attempt)
+     */
+    @Override
+    protected boolean checkIfAllNotificationsExist(List<RestaurantUserNotification> notifications) {
+        if (notifications == null || notifications.isEmpty()) {
+            return false;
+        }
+        
+        // Check if the first notification exists by eventId
+        // All 4 notifications have the same eventId, so if first exists, all exist
+        RestaurantUserNotification firstNotification = notifications.get(0);
+        String eventId = firstNotification.getEventId();
+        
+        try {
+            // Try to find any notification with this eventId
+            java.util.Optional<RestaurantUserNotification> existing = notificationDAO.findByEventId(eventId);
+            
+            if (existing.isPresent()) {
+                log.warn("⚠️  [IDEMPOTENCY] Notification already exists for eventId={} - likely a retry. All {} notifications exist.", 
+                    eventId, notifications.size());
+                return true;
+            } else {
+                log.debug("✅ [IDEMPOTENCY] No notifications exist yet for eventId={} - first attempt", eventId);
+                return false;
+            }
+        } catch (Exception e) {
+            log.error("❌ Error checking notification idempotency: {}", e.getMessage());
+            // On error, assume not all exist and proceed (fail open)
+            return false;
         }
     }
 }
