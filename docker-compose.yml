@@ -78,9 +78,7 @@ services:
     secrets:
       - db_password
       - email_password
-      - service_account
       - jwt_secret
-      - rabbitmq_uri
     labels:
       # API Router con HTTPS
       - "traefik.enable=true"
