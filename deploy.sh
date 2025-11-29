@@ -5,6 +5,9 @@ set -e  # Exit immediately if a command exits with a non-zero status
 echo "Pulling the latest Docker image..."
 docker pull registry.gitlab.com/greedysgroup/greedys_api:latest
 
+echo "Initializing Docker Swarm if not already active..."
+docker swarm init 2>/dev/null || echo "Swarm already initialized"
+
 echo "Checking and creating traefik directory..."
 mkdir -p traefik
 
