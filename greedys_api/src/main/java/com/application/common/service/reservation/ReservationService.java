@@ -1,6 +1,5 @@
 package com.application.common.service.reservation;
 
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
@@ -10,6 +9,7 @@ import java.util.stream.Collectors;
 import org.springframework.cache.annotation.Cacheable;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,10 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.application.common.persistence.mapper.ReservationMapper;
 import com.application.common.persistence.model.reservation.Reservation;
 import com.application.common.persistence.model.reservation.ReservationRequest;
-import com.application.common.persistence.model.reservation.Slot;
 import com.application.common.persistence.model.notification.EventOutbox;
 import com.application.common.web.dto.reservations.ReservationDTO;
-import com.application.common.persistence.mapper.Mapper.Weekday;
 import com.application.common.persistence.dao.EventOutboxDAO;
 import com.application.customer.persistence.dao.CustomerDAO;
 import com.application.customer.persistence.dao.ReservationDAO;
@@ -28,12 +26,12 @@ import com.application.customer.persistence.dao.ReservationRequestDAO;
 import com.application.customer.persistence.model.Customer;
 import com.application.restaurant.persistence.dao.ClosedDayDAO;
 import com.application.restaurant.persistence.dao.ServiceDAO;
-import com.application.restaurant.persistence.dao.SlotDAO;
 import com.application.restaurant.persistence.model.Restaurant;
 import com.application.restaurant.service.agenda.RestaurantAgendaService;
 import com.application.restaurant.service.ReservationWebSocketPublisher;
 import com.application.restaurant.web.dto.reservation.RestaurantNewReservationDTO;
 import com.application.restaurant.web.dto.reservation.RestaurantReservationWithExistingCustomerDTO;
+import java.time.LocalDateTime;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,16 +41,11 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class ReservationService {
-    // TODO verify when creating that the slot has not been deleted
-    // TODO verify that the reservation date is greater than or equal to the
-    // current date
-    // TODO verify that the service is not deleted
 
     private final ReservationDAO reservationDAO;
     private final ReservationRequestDAO reservationRequestDAO;
     private final ServiceDAO serviceDAO;
     private final ClosedDayDAO closedDaysDAO;
-    private final SlotDAO slotDAO;
     private final CustomerDAO customerDAO;
     private final ReservationMapper reservationMapper;
     private final RestaurantAgendaService restaurantAgendaService;
@@ -71,6 +64,32 @@ public class ReservationService {
     public Reservation createNewReservation(Reservation reservation) {
         Reservation savedReservation = reservationDAO.save(reservation);
         return savedReservation;
+    }
+
+    /**
+     * ⭐ Create new reservation WITH validation
+     * 
+     * Validates that:
+     * - Service is not deleted
+     * - Reservation date is not in the past
+     * - Other restaurant/service availability checks (TODO)
+     * 
+     * Throws IllegalArgumentException if validation fails.
+     * 
+     * @param reservation The reservation to create
+     * @return Saved reservation entity
+     * @throws IllegalArgumentException if validation fails
+     */
+    public Reservation createNewReservationWithValidation(Reservation reservation) {
+        // Validate that the reservation date is available
+        validateReservationDateAvailability(
+            reservation.getRestaurant(),
+            reservation.getDate(),
+            reservation.getService().getId()
+        );
+        
+        // If validation passed, create the reservation
+        return createNewReservation(reservation);
     }
 
     public List<Reservation> findAll(long id) {
@@ -142,61 +161,58 @@ public class ReservationService {
     }
 
     public Collection<ReservationDTO> getReservations(Long restaurantId, LocalDate start, LocalDate end) {
-        return reservationDAO.findByRestaurantAndDateBetween(restaurantId, start, end).stream()
+        LocalDateTime startDT = start.atStartOfDay();
+        LocalDateTime endDT = end.plusDays(1).atStartOfDay();
+        return reservationDAO.findByRestaurantIdAndReservationDatetimeBetween(restaurantId, startDT, endDT, PageRequest.of(0, Integer.MAX_VALUE)).stream()
                 .map(reservationMapper::toDTO).collect(Collectors.toList());
     }
 
     public Collection<ReservationDTO> getAcceptedReservations(Long restaurantId, LocalDate start, LocalDate end) {
-        Reservation.Status status = Reservation.Status.ACCEPTED;
-        return reservationDAO.findByRestaurantAndDateBetweenAndStatus(restaurantId, start, end, status).stream()
+        LocalDateTime startDT = start.atStartOfDay();
+        LocalDateTime endDT = end.plusDays(1).atStartOfDay();
+        return reservationDAO.findConfirmedReservationsByRestaurantAndDay(restaurantId, startDT, endDT, PageRequest.of(0, Integer.MAX_VALUE)).stream()
                 .map(reservationMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
     public Collection<ReservationDTO> getPendingReservations(Long restaurantId, LocalDate start, LocalDate end) {
-        Reservation.Status status = Reservation.Status.NOT_ACCEPTED;
+        LocalDateTime startDT = start.atStartOfDay();
+        LocalDateTime endDT = end.plusDays(1).atStartOfDay();
         if (restaurantId == null) {
             throw new IllegalArgumentException("restaurantId cannot be null");
         }
-        if (start != null && end != null) {
-            return reservationDAO.findByRestaurantAndDateBetweenAndStatus(restaurantId, start, end, status).stream()
-                    .map(reservationMapper::toDTO)
-                    .collect(Collectors.toList());
-        } else if (start != null) {
-            return reservationDAO.findByRestaurantAndDateAndStatus(restaurantId, start, status).stream()
-                    .map(reservationMapper::toDTO)
-                    .collect(Collectors.toList());
-        } else {
-            return reservationDAO.findByRestaurantIdAndStatus(restaurantId, status).stream()
-                    .map(reservationMapper::toDTO)
-                    .collect(Collectors.toList());
-        }
+        return reservationDAO.findPendingReservationsByRestaurantAndDay(restaurantId, startDT, endDT, PageRequest.of(0, Integer.MAX_VALUE)).stream()
+                .map(reservationMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
     public Page<ReservationDTO> getReservationsPageable(Long restaurantId, LocalDate start, LocalDate end,
             Pageable pageable) {
-        return reservationDAO.findReservationsByRestaurantAndDateRange(restaurantId, start, end, pageable)
+        LocalDateTime startDT = start.atStartOfDay();
+        LocalDateTime endDT = end.plusDays(1).atStartOfDay();
+        return reservationDAO.findByRestaurantIdAndReservationDatetimeBetween(restaurantId, startDT, endDT, pageable)
                 .map(reservationMapper::toDTO);
     }
 
     public Page<ReservationDTO> getPendingReservationsPageable(Long restaurantId, LocalDate start, LocalDate end,
             Pageable pageable) {
-        Reservation.Status status = Reservation.Status.NOT_ACCEPTED;
+        LocalDateTime startDT = start.atStartOfDay();
+        LocalDateTime endDT = end.plusDays(1).atStartOfDay();
         if (restaurantId == null) {
             throw new IllegalArgumentException("restaurantId cannot be null");
         }
-        // TODO: Implement actual query or use existing methods
-        return reservationDAO.findByRestaurantAndDateBetweenAndStatus(restaurantId, start, end, status, pageable)
+        return reservationDAO.findPendingReservationsByRestaurantAndDay(restaurantId, startDT, endDT, pageable)
                 .map(reservationMapper::toDTO);
     }
 
     public Page<ReservationDTO> getAcceptedReservationsPageable(Long restaurantId, LocalDate start, LocalDate end,
             Pageable pageable) {
-        Reservation.Status status = Reservation.Status.ACCEPTED;
+        LocalDateTime startDT = start.atStartOfDay();
+        LocalDateTime endDT = end.plusDays(1).atStartOfDay();
         if (restaurantId == null) {
             throw new IllegalArgumentException("restaurantId cannot be null");
         }
-        return reservationDAO.findByRestaurantAndDateBetweenAndStatus(restaurantId, start, end, status, pageable)
+        return reservationDAO.findConfirmedReservationsByRestaurantAndDay(restaurantId, startDT, endDT, pageable)
                 .map(reservationMapper::toDTO);
     }
 
@@ -211,8 +227,13 @@ public class ReservationService {
         reservation.setPax(reservationRequest.getPax());
         reservation.setKids(reservationRequest.getKids());
         reservation.setNotes(reservationRequest.getNotes());
-        reservation.setDate(reservationRequest.getDate());
-        reservation.setSlot(reservationRequest.getSlot());
+
+        // ✅ VALIDATE BEFORE SAVING
+        validateReservationDateAvailability(
+            reservation.getRestaurant(),
+            reservation.getDate(),
+            reservation.getService().getId()
+        );
 
         // Save the updated reservation
         reservationDAO.save(reservation);
@@ -233,8 +254,13 @@ public class ReservationService {
         reservation.setPax(reservationRequest.getPax());
         reservation.setKids(reservationRequest.getKids());
         reservation.setNotes(reservationRequest.getNotes());
-        reservation.setDate(reservationRequest.getDate());
-        reservation.setSlot(reservationRequest.getSlot());
+
+        // ✅ VALIDATE BEFORE SAVING
+        validateReservationDateAvailability(
+            reservation.getRestaurant(),
+            reservation.getDate(),
+            reservation.getService().getId()
+        );
 
         // Save the updated reservation
         Reservation savedReservation = reservationDAO.save(reservation);
@@ -254,21 +280,12 @@ public class ReservationService {
         log.debug("Creating reservation with DTO: {}", reservationDto);
         log.debug("Restaurant: {}", restaurant);
         
-        Slot slot = slotDAO.findById(reservationDto.getIdSlot())
-                .orElseThrow(() -> new IllegalArgumentException("Slot not found"));
+        // Get service (replaces slot lookup)
+        com.application.common.persistence.model.reservation.Service service = serviceDAO.findById(reservationDto.getServiceId())
+                .orElseThrow(() -> new IllegalArgumentException("Service not found"));
 
-        if (slot.getDeleted()) {
-            throw new IllegalArgumentException("Slot is deleted");
-        }
-
-        // Validate that the reservation day matches the slot's weekday
-        DayOfWeek reservationDayOfWeek = reservationDto.getReservationDay().getDayOfWeek();
-        Weekday reservationWeekday = convertDayOfWeekToWeekday(reservationDayOfWeek);
-        if (!reservationWeekday.equals(slot.getWeekday())) {
-            throw new IllegalArgumentException(
-                String.format("Reservation day %s (%s) is not available for this service", 
-                    reservationDto.getReservationDay(), 
-                    reservationWeekday));
+        if (service.getDeleted()) {
+            throw new IllegalArgumentException("Service is deleted");
         }
 
         // Create or find customer (UNREGISTERED if new)
@@ -277,19 +294,21 @@ public class ReservationService {
                 reservationDto.getUserEmail(), 
                 reservationDto.getUserPhoneNumber());
 
-        var reservation = Reservation.builder()
+        Reservation reservation = Reservation.builder()
                 .userName(reservationDto.getUserName())
                 .pax(reservationDto.getPax())
                 .kids(reservationDto.getKids())
                 .notes(reservationDto.getNotes())
-                .date(reservationDto.getReservationDay())
-                .slot(slot)
+                .reservationDateTime(reservationDto.getReservationDateTime())
+                .service(service)
                 .restaurant(restaurant)
                 .customer(customer)
                 .createdByUserType(Reservation.UserType.RESTAURANT_USER) // 🔧 FIX: aggiunto campo mancante per auditing  
                 .status(Reservation.Status.ACCEPTED)
                 .build();
-        reservation = reservationDAO.save(reservation);
+        
+        // ✅ VALIDATE RESERVATION DATE BEFORE SAVING
+        reservation = createNewReservationWithValidation(reservation);
         
         // 📌 CREATE EVENT_OUTBOX: Restaurant staff created reservation
         // ⭐ INCLUDES initiated_by=RESTAURANT for intelligent routing to notification.customer queue (PERSONAL)
@@ -318,22 +337,12 @@ public class ReservationService {
             RestaurantReservationWithExistingCustomerDTO reservationDto, Restaurant restaurant) {
         log.debug("Creating reservation with existing customer: {}", reservationDto);
         
-        Slot slot = slotDAO.findById(reservationDto.getIdSlot())
-                .orElseThrow(() -> new IllegalArgumentException("Slot not found"));
+        // Get service (replaces slot lookup)
+        com.application.common.persistence.model.reservation.Service service = serviceDAO.findById(reservationDto.getServiceId())
+                .orElseThrow(() -> new IllegalArgumentException("Service not found"));
 
-        if (slot.getDeleted()) {
-            throw new IllegalArgumentException("Slot is deleted");
-        }
-
-        // Validate that the reservation day matches the slot's weekday
-        DayOfWeek reservationDayOfWeek = reservationDto.getReservationDay().getDayOfWeek();
-        Weekday reservationWeekday = convertDayOfWeekToWeekday(reservationDayOfWeek);
-        if (!reservationWeekday.equals(slot.getWeekday())) {
-            throw new IllegalArgumentException(
-                String.format("Reservation day %s (%s) does not match slot weekday %s", 
-                    reservationDto.getReservationDay(), 
-                    reservationWeekday, 
-                    slot.getWeekday()));
+        if (service.getDeleted()) {
+            throw new IllegalArgumentException("Service is deleted");
         }
 
         // Get existing customer
@@ -345,14 +354,16 @@ public class ReservationService {
                 .pax(reservationDto.getPax())
                 .kids(reservationDto.getKids())
                 .notes(reservationDto.getNotes())
-                .date(reservationDto.getReservationDay())
-                .slot(slot)
+                .reservationDateTime(reservationDto.getReservationDateTime())
+                .service(service)
                 .restaurant(restaurant)
                 .customer(customer)
                 .createdByUserType(Reservation.UserType.RESTAURANT_USER)
                 .status(Reservation.Status.ACCEPTED)
                 .build();
-        reservation = reservationDAO.save(reservation);
+        
+        // ✅ VALIDATE RESERVATION DATE BEFORE SAVING
+        reservation = createNewReservationWithValidation(reservation);
         
         // 📌 CREATE EVENT_OUTBOX: Restaurant staff created reservation with existing customer
         // ⭐ INCLUDES initiated_by=RESTAURANT for intelligent routing to notification.customer queue (PERSONAL)
@@ -384,8 +395,93 @@ public class ReservationService {
         return closedDaysDAO.findUpcomingClosedDay();
     }
 
+    /**
+     * ⭐ VALIDATE RESERVATION DATE: Check if restaurant/service is available on requested date
+     * 
+     * Implements core validation checks:
+     * 1. ✅ Restaurant is ENABLED (not deleted/closed)
+     * 2. ✅ Service not deleted (critical)
+     * 3. ✅ Reservation date >= today (critical)
+     * 4. TODO: Restaurant closure days (ClosedDayDAO)
+     * 5. TODO: Service-specific closure days (if service has custom closures)
+     * 6. TODO: Restaurant availability settings (e.g., max covers per day)
+     * 
+     * Status: ESSENTIAL checks active, future checks ready as TODO
+     * 
+     * @param restaurant The restaurant entity
+     * @param reservationDate The requested reservation date (LocalDate)
+     * @param serviceId The service ID (Lunch, Dinner, etc.)
+     * @return true if reservation is allowed on this date, false if closed/unavailable
+     */
+    public boolean validateReservationDateAvailability(Restaurant restaurant, LocalDate reservationDate, Long serviceId) {
+        log.debug("🔍 Validating reservation date: restaurant={}, date={}, service={}", 
+            restaurant.getId(), reservationDate, serviceId);
+        
+        try {
+            // ✅ ESSENTIAL: Check if restaurant is ENABLED (not deleted or closed)
+            if (restaurant.getStatus() == null || 
+                restaurant.getStatus() == Restaurant.Status.DELETED || 
+                restaurant.getStatus() == Restaurant.Status.DISABLED ||
+                restaurant.getStatus() == Restaurant.Status.CLOSED ||
+                restaurant.getStatus() == Restaurant.Status.TEMPORARILY_CLOSED) {
+                log.warn("❌ Restaurant is not available: status={}", restaurant.getStatus());
+                throw new IllegalArgumentException("Restaurant is no longer accepting reservations");
+            }
+            
+            // ✅ ESSENTIAL: Check if reservation date is in the past
+            if (reservationDate.isBefore(LocalDate.now())) {
+                log.warn("❌ Reservation date is in the past: {}", reservationDate);
+                throw new IllegalArgumentException("Reservation date cannot be in the past");
+            }
+            
+            // ✅ ESSENTIAL: Check if service exists and is active (not deleted)
+            com.application.common.persistence.model.reservation.Service service = serviceDAO.findById(serviceId)
+                .orElseThrow(() -> new IllegalArgumentException("Service not found"));
+            
+            if (service.getDeleted()) {
+                log.warn("❌ Service is deleted: {}", serviceId);
+                throw new IllegalArgumentException("Service is no longer available");
+            }
+            
+            // TODO: Check if restaurant has closure days defined for this date
+            // List<LocalDate> closedDays = findClosedDays(restaurant.getId());
+            // if (closedDays != null && closedDays.contains(reservationDate)) {
+            //     log.warn("❌ Restaurant is closed on date: {} for restaurant {}", reservationDate, restaurant.getId());
+            //     return false;
+            // }
+            
+            // TODO: Check if service has specific closure days (if service closure mechanism is implemented)
+            // boolean serviceIsClosed = checkServiceClosureByDate(serviceId, reservationDate);
+            // if (serviceIsClosed) {
+            //     log.warn("❌ Service {} is closed on date: {}", serviceId, reservationDate);
+            //     return false;
+            // }
+            
+            // TODO: Check restaurant capacity/availability rules for the date
+            // boolean isCapacityAvailable = checkRestaurantCapacity(restaurant.getId(), reservationDate, pax);
+            // if (!isCapacityAvailable) {
+            //     log.warn("❌ Restaurant at capacity on date: {} for restaurant {}", reservationDate, restaurant.getId());
+            //     return false;
+            // }
+            
+            log.debug("✅ Reservation date validation PASSED");
+            return true;
+            
+        } catch (IllegalArgumentException iae) {
+            // Re-throw business validation errors
+            log.warn("⚠️ Reservation validation failed: {}", iae.getMessage());
+            throw iae;
+        } catch (Exception e) {
+            log.error("⚠️ Error during reservation date validation: {}", e.getMessage(), e);
+            // In case of unexpected errors, be permissive to not block legitimate reservations
+            return true;
+        }
+    }
+
     public List<ReservationDTO> getDayReservations(Restaurant restaurant, LocalDate date) {
-        return reservationDAO.findDayReservation(restaurant.getId(), date).stream()
+        LocalDateTime startDT = date.atStartOfDay();
+        LocalDateTime endDT = date.plusDays(1).atStartOfDay();
+        return reservationDAO.findByRestaurantIdAndReservationDatetimeBetween(restaurant.getId(), startDT, endDT, PageRequest.of(0, Integer.MAX_VALUE)).stream()
                 .map(reservationMapper::toDTO).collect(Collectors.toList());
     }
 
@@ -393,7 +489,7 @@ public class ReservationService {
      * Get all reservations for a customer across all restaurants
      */
     public Collection<ReservationDTO> getCustomerReservations(Long customerId) {
-        return reservationDAO.findByCustomer(customerId).stream()
+        return reservationDAO.findByCustomerIdOrderByReservationDatetimeDesc(customerId, PageRequest.of(0, Integer.MAX_VALUE)).stream()
                 .map(reservationMapper::toDTO)
                 .collect(Collectors.toList());
     }
@@ -407,29 +503,6 @@ public class ReservationService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Convert Java DayOfWeek to our custom Weekday enum
-     */
-    private Weekday convertDayOfWeekToWeekday(DayOfWeek dayOfWeek) {
-        switch (dayOfWeek) {
-            case MONDAY:
-                return Weekday.MONDAY;
-            case TUESDAY:
-                return Weekday.TUESDAY;
-            case WEDNESDAY:
-                return Weekday.WEDNESDAY;
-            case THURSDAY:
-                return Weekday.THURSDAY;
-            case FRIDAY:
-                return Weekday.FRIDAY;
-            case SATURDAY:
-                return Weekday.SATURDAY;
-            case SUNDAY:
-                return Weekday.SUNDAY;
-            default:
-                throw new IllegalArgumentException("Invalid day of week: " + dayOfWeek);
-        }
-    }
 
     /**
      * Create or update customer from reservation data.

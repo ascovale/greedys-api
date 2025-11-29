@@ -1,6 +1,5 @@
 package com.application.admin.service;
 
-import java.time.DayOfWeek;
 import java.util.Collection;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -10,10 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.application.admin.web.dto.reservation.AdminNewReservationDTO;
 import com.application.common.persistence.mapper.ReservationMapper;
-import com.application.common.persistence.mapper.Mapper.Weekday;
 import com.application.common.persistence.model.reservation.Reservation;
 import com.application.common.persistence.model.reservation.Reservation.Status;
-import com.application.common.persistence.model.reservation.Slot;
 import com.application.common.persistence.model.notification.EventOutbox;
 import com.application.common.service.reservation.ReservationService;
 import com.application.common.web.dto.reservations.ReservationDTO;
@@ -22,8 +19,9 @@ import com.application.customer.persistence.dao.CustomerDAO;
 import com.application.customer.persistence.dao.ReservationDAO;
 import com.application.customer.persistence.model.Customer;
 import com.application.restaurant.persistence.dao.RestaurantDAO;
-import com.application.restaurant.persistence.dao.SlotDAO;
+import com.application.restaurant.persistence.dao.ServiceDAO;
 import com.application.restaurant.persistence.model.Restaurant;
+import org.springframework.data.domain.PageRequest;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,27 +37,13 @@ public class AdminReservationService {
     private final ReservationMapper reservationMapper;
     private final CustomerDAO customerDAO;
     private final RestaurantDAO restaurantDAO;
-    private final SlotDAO slotDAO;
+    private final ServiceDAO serviceDAO;
     private final EventOutboxDAO eventOutboxDAO;
 
     public ReservationDTO createReservation(AdminNewReservationDTO reservationDto) {
-        // Validate slot exists and is not deleted
-        Slot slot = slotDAO.findById(reservationDto.getIdSlot())
-                .orElseThrow(() -> new IllegalArgumentException("Slot not found"));
-        if (slot.getDeleted()) {
-            throw new IllegalArgumentException("Slot is deleted");
-        }
-        
-        // Validate that the reservation day matches the slot's weekday
-        DayOfWeek reservationDayOfWeek = reservationDto.getReservationDay().getDayOfWeek();
-        Weekday reservationWeekday = convertDayOfWeekToWeekday(reservationDayOfWeek);
-        if (!reservationWeekday.equals(slot.getWeekday())) {
-            throw new IllegalArgumentException(
-                String.format("Reservation day %s (%s) does not match slot weekday %s", 
-                    reservationDto.getReservationDay(), 
-                    reservationWeekday, 
-                    slot.getWeekday()));
-        }
+        // Validate service exists and is not deleted
+        com.application.common.persistence.model.reservation.Service service = serviceDAO.findById(reservationDto.getServiceId())
+                .orElseThrow(() -> new IllegalArgumentException("Service not found"));
         
         // Get restaurant
         Restaurant restaurant = restaurantDAO.findById(reservationDto.getRestaurantId())
@@ -80,17 +64,19 @@ public class AdminReservationService {
                 .pax(reservationDto.getPax())
                 .kids(reservationDto.getKids())
                 .notes(reservationDto.getNotes())
-                .date(reservationDto.getReservationDay())
-                .slot(slot)
+                .date(reservationDto.getReservationDateTime().toLocalDate())
+                .reservationDateTime(reservationDto.getReservationDateTime())
+                .service(service)
                 .customer(customer)
                 .restaurant(restaurant)
+                .userName(reservationDto.getUserName())
                 .createdBy(customer) // For anonymous reservations this will be null
-                .createdByUserType(customer != null ? Reservation.UserType.CUSTOMER : Reservation.UserType.ADMIN) // 🔧 FIX: aggiunto campo mancante per auditing
+                .createdByUserType(customer != null ? Reservation.UserType.CUSTOMER : Reservation.UserType.ADMIN)
                 .status(reservationStatus)
                 .build();
         
         // Use the common service that publishes the event
-        Reservation savedReservation = reservationService.createNewReservation(reservation);
+        Reservation savedReservation = reservationService.createNewReservationWithValidation(reservation);
         
         // 📌 CREATE CUSTOMER_RESERVATION_CREATED EVENT (notifies customer only)
         createCustomerReservationCreatedEvent(savedReservation);
@@ -132,17 +118,17 @@ public class AdminReservationService {
     private String buildReservationPayload(Reservation reservation) {
         Long customerId = reservation.getCustomer() != null ? reservation.getCustomer().getId() : null;
         String customerEmail = reservation.getCustomer() != null ? reservation.getCustomer().getEmail() : "anonymous";
-        Long restaurantId = reservation.getSlot().getService().getRestaurant().getId();
+        Long restaurantId = reservation.getRestaurant().getId();
         Integer kids = reservation.getKids() != null ? reservation.getKids() : 0;
         String notes = reservation.getNotes() != null ? reservation.getNotes().replace("\"", "\\\"") : "";
         
         return String.format(
-            "{\"reservationId\":%d,\"customerId\":%s,\"restaurantId\":%d,\"email\":\"%s\",\"date\":\"%s\",\"pax\":%d,\"kids\":%d,\"notes\":\"%s\",\"initiated_by\":\"ADMIN\"}",
+            "{\"reservationId\":%d,\"customerId\":%s,\"restaurantId\":%d,\"email\":\"%s\",\"datetime\":\"%s\",\"pax\":%d,\"kids\":%d,\"notes\":\"%s\",\"initiated_by\":\"ADMIN\"}",
             reservation.getId(),
             customerId != null ? customerId : "null",
             restaurantId,
             customerEmail,
-            reservation.getDate().toString(),
+            reservation.getReservationDateTime().toString(),
             reservation.getPax(),
             kids,
             notes
@@ -150,21 +136,23 @@ public class AdminReservationService {
     }
 
     public Collection<ReservationDTO> findAllCustomerReservations(Long customerId) {
-        return reservationDAO.findByCustomer(customerId).stream()
+        return reservationDAO.findByCustomerIdOrderByReservationDatetimeDesc(customerId, PageRequest.of(0, Integer.MAX_VALUE)).stream()
                 .map(reservationMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
     public Collection<ReservationDTO> findAcceptedCustomerReservations(Long customerId) {
         Status status = Status.ACCEPTED;
-        return reservationDAO.findByCustomerAndStatus(customerId, status).stream()
+        return reservationDAO.findByCustomerIdOrderByReservationDatetimeDesc(customerId, PageRequest.of(0, Integer.MAX_VALUE)).stream()
+                .filter(r -> r.getStatus() == status)
                 .map(reservationMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
     public Collection<ReservationDTO> findPendingCustomerReservations(Long customerId) {
         Status status = Status.NOT_ACCEPTED;
-        return reservationDAO.findByCustomerAndStatus(customerId, status).stream()
+        return reservationDAO.findByCustomerIdOrderByReservationDatetimeDesc(customerId, PageRequest.of(0, Integer.MAX_VALUE)).stream()
+                .filter(r -> r.getStatus() == status)
                 .map(reservationMapper::toDTO)
                 .collect(Collectors.toList());
     }
@@ -210,32 +198,17 @@ public class AdminReservationService {
         Reservation reservation = reservationDAO.findById(reservationId)
                 .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
 
-        // Update slot if provided and exists
-        if (reservationDto.getIdSlot() != null) {
-            Slot slot = slotDAO.findById(reservationDto.getIdSlot())
-                    .orElseThrow(() -> new IllegalArgumentException("Slot not found"));
-            if (slot.getDeleted()) {
-                throw new IllegalArgumentException("Slot is deleted");
-            }
-            reservation.setSlot(slot);
+        // Update service if provided
+        if (reservationDto.getServiceId() != null) {
+            com.application.common.persistence.model.reservation.Service service = serviceDAO.findById(reservationDto.getServiceId())
+                    .orElseThrow(() -> new IllegalArgumentException("Service not found"));
+            reservation.setService(service);
         }
 
-        // Update reservation date if provided
-        if (reservationDto.getReservationDay() != null) {
-            reservation.setDate(reservationDto.getReservationDay());
-        }
-
-        // Validate weekday consistency if both slot and date are set
-        if (reservation.getSlot() != null && reservation.getDate() != null) {
-            DayOfWeek reservationDayOfWeek = reservation.getDate().getDayOfWeek();
-            Weekday reservationWeekday = convertDayOfWeekToWeekday(reservationDayOfWeek);
-            if (!reservationWeekday.equals(reservation.getSlot().getWeekday())) {
-                throw new IllegalArgumentException(
-                    String.format("Reservation day %s (%s) does not match slot weekday %s", 
-                        reservation.getDate(), 
-                        reservationWeekday, 
-                        reservation.getSlot().getWeekday()));
-            }
+        // Update reservation datetime if provided
+        if (reservationDto.getReservationDateTime() != null) {
+            reservation.setReservationDateTime(reservationDto.getReservationDateTime());
+            reservation.setDate(reservationDto.getReservationDateTime().toLocalDate());
         }
 
         // Update restaurant if provided
@@ -269,6 +242,13 @@ public class AdminReservationService {
         if (reservationDto.getStatus() != null) {
             reservation.setStatus(reservationDto.getStatus());
         }
+
+        // ✅ VALIDATE BEFORE SAVING (service/date may have changed)
+        reservationService.validateReservationDateAvailability(
+            reservation.getRestaurant(),
+            reservation.getDate(),
+            reservation.getService().getId()
+        );
 
         Reservation saved = reservationDAO.save(reservation);
         return reservationMapper.toDTO(saved);
@@ -304,29 +284,5 @@ public class AdminReservationService {
         String message = "✅ Fixed " + count + " reservations with default userName";
         log.info(message);
         return message;
-    }
-
-    /**
-     * Convert Java DayOfWeek to our custom Weekday enum
-     */
-    private Weekday convertDayOfWeekToWeekday(DayOfWeek dayOfWeek) {
-        switch (dayOfWeek) {
-            case MONDAY:
-                return Weekday.MONDAY;
-            case TUESDAY:
-                return Weekday.TUESDAY;
-            case WEDNESDAY:
-                return Weekday.WEDNESDAY;
-            case THURSDAY:
-                return Weekday.THURSDAY;
-            case FRIDAY:
-                return Weekday.FRIDAY;
-            case SATURDAY:
-                return Weekday.SATURDAY;
-            case SUNDAY:
-                return Weekday.SUNDAY;
-            default:
-                throw new IllegalArgumentException("Invalid day of week: " + dayOfWeek);
-        }
     }
 }

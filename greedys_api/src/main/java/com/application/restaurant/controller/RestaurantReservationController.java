@@ -62,8 +62,6 @@ public class RestaurantReservationController extends BaseController {
 	public ResponseEntity<ReservationDTO> createReservation(@RequestBody RestaurantNewReservationDTO dto,
 			@AuthenticationPrincipal RUser rUser) {
 		log.debug("Received reservation DTO: {}", dto);
-		log.debug("DTO userName: {}, userEmail: {}, userPhoneNumber: {}, pax: {}, kids: {}, idSlot: {}, reservationDay: {}", 
-			dto.getUserName(), dto.getUserEmail(), dto.getUserPhoneNumber(), dto.getPax(), dto.getKids(), dto.getIdSlot(), dto.getReservationDay());
 		return executeCreate("create reservation", "Reservation created successfully", () -> {
 			return reservationService.createReservation(dto, rUser.getRestaurant());
 		});
@@ -77,8 +75,6 @@ public class RestaurantReservationController extends BaseController {
 	public ResponseEntity<ReservationDTO> createReservationWithExistingCustomer(@RequestBody RestaurantReservationWithExistingCustomerDTO dto,
 			@AuthenticationPrincipal RUser rUser) {
 		log.debug("Received reservation DTO with existing customer: {}", dto);
-		log.debug("DTO customerId: {}, userName: {}, pax: {}, kids: {}, idSlot: {}, reservationDay: {}", 
-			dto.getCustomerId(), dto.getUserName(), dto.getPax(), dto.getKids(), dto.getIdSlot(), dto.getReservationDay());
 		return executeCreate("create reservation with existing customer", "Reservation created successfully", () -> {
 			return reservationService.createReservationWithExistingCustomer(dto, rUser.getRestaurant());
 		});

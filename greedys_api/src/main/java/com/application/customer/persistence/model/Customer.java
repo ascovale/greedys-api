@@ -18,6 +18,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
@@ -38,6 +39,10 @@ public class Customer extends AbstractUser {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "createdBy")
     @Builder.Default
     private Set<Reservation> reservations = new HashSet<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reservation_as_guest_id")
+    private Reservation reservationAsGuest;
 
     @ManyToMany
     @JoinTable(name = "customer_has_role", 

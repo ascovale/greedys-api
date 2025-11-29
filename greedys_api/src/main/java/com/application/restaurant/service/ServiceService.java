@@ -16,14 +16,12 @@ import com.application.admin.web.dto.service.AdminNewServiceDTO;
 import com.application.common.persistence.mapper.Mapper.Weekday;
 import com.application.common.persistence.mapper.ServiceDtoMapper;
 import com.application.common.persistence.mapper.ServiceMapper;
-import com.application.common.persistence.model.reservation.Reservation;
 import com.application.common.persistence.model.reservation.Service;
 import com.application.common.persistence.model.reservation.ServiceType;
 import com.application.common.persistence.model.reservation.Slot;
 import com.application.common.web.dto.restaurant.ServiceDTO;
 import com.application.common.web.dto.restaurant.ServiceSlotsDto;
 import com.application.common.web.dto.restaurant.ServiceTypeDto;
-import com.application.customer.persistence.dao.ReservationDAO;
 import com.application.restaurant.persistence.dao.RUserDAO;
 import com.application.restaurant.persistence.dao.RestaurantDAO;
 import com.application.restaurant.persistence.dao.ServiceDAO;
@@ -43,7 +41,6 @@ public class ServiceService {
 
 	private final ServiceDAO serviceDAO;
 	private final ServiceTypeDAO serviceTypeDAO;
-	private final ReservationDAO reservationDAO;
 	private final SlotDAO slotDAO;
 	private final RestaurantDAO rDAO;
 	private final RUserDAO RUserDAO;
@@ -214,12 +211,12 @@ public class ServiceService {
 		for (Slot slot : slots) {
 			slot.setDeleted(true);
 			slotDAO.save(slot);
-			Collection<Reservation> reservations = reservationDAO.findBySlot_Id(slot.getId());
-			for (Reservation reservation : reservations) {
-				reservation.setStatus(Reservation.Status.DELETED);
-				// reservation.setCancelUser(getCurrentUser());
-				reservationDAO.save(reservation);
-			}
+			// TODO: Implementare quando il modello di Reservation supporterà il collegamento diretto a Slot
+			// Collection<Reservation> reservations = reservationDAO.findBySlot_Id(slot.getId());
+			// for (Reservation reservation : reservations) {
+			// 	reservation.setStatus(Reservation.Status.DELETED);
+			// 	reservationDAO.save(reservation);
+			// }
 		}
 	}
 

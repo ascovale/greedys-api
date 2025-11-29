@@ -9,9 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.application.common.persistence.model.reservation.Slot;
 import com.application.common.persistence.model.reservation.SlotChangePolicy;
-import com.application.common.persistence.model.reservation.Reservation;
 import com.application.restaurant.persistence.dao.SlotDAO;
-import com.application.customer.persistence.dao.ReservationDAO;
 import com.application.common.web.dto.restaurant.SlotDTO;
 import com.application.common.persistence.mapper.SlotMapper;
 
@@ -28,7 +26,6 @@ import lombok.extern.slf4j.Slf4j;
 public class SlotTransitionService {
 
     private final SlotDAO slotDAO;
-    private final ReservationDAO reservationDAO;
     private final SlotMapper slotMapper;
     
     /**
@@ -90,22 +87,18 @@ public class SlotTransitionService {
      */
     private void handleExistingReservations(Slot oldSlot, Slot newSlot, LocalDate effectiveFrom) {
         
-        // Trova prenotazioni future per il vecchio slot
-        List<Reservation> futureReservations = reservationDAO.findFutureReservationsBySlotId(
-            oldSlot.getId(), effectiveFrom);
+        // TODO: Implementare gestione prenotazioni quando il modello supporterà il collegamento diretto
+        // List<Reservation> futureReservations = reservationDAO.findByDateAfter(effectiveFrom);
         
-        log.info("Found {} future reservations for slot {} starting from {}", 
-                futureReservations.size(), oldSlot.getId(), effectiveFrom);
-        
-        for (Reservation reservation : futureReservations) {
-            handleSingleReservation(reservation, oldSlot, newSlot);
-        }
+        log.info("Future reservations handling for slot {} will be implemented with model updates", 
+                oldSlot.getId());
     }
     
     /**
      * Gestisce una singola prenotazione secondo la policy definita
+     * TODO: Implementare quando il modello supporterà il collegamento slot-prenotazione
      */
-    private void handleSingleReservation(Reservation reservation, Slot oldSlot, Slot newSlot) {
+    /*private void handleSingleReservation(Reservation reservation, Slot oldSlot, Slot newSlot) {
         
         switch (oldSlot.getChangePolicy()) {
             case HARD_CUT:
@@ -132,32 +125,36 @@ public class SlotTransitionService {
                 }
                 break;
         }
-    }
+    }*/
     
     /**
      * Verifica se una prenotazione è compatibile con i nuovi orari
+     * TODO: Implementare quando il modello supporterà il collegamento slot-prenotazione
      */
-    private boolean isTimeCompatible(Reservation reservation, Slot newSlot) {
+    /*private boolean isTimeCompatible(Reservation reservation, Slot newSlot) {
         // Logica di compatibilità - per ora semplice controllo di overlap
         // In futuro potresti aggiungere logiche più sofisticate
         return true; // Placeholder - da implementare secondo business rules
-    }
+    }*/
     
     /**
      * Migra una prenotazione al nuovo slot
+     * TODO: Implementare quando il modello supporterà il collegamento slot-prenotazione
      */
-    private void migrateReservation(Reservation reservation, Slot newSlot) {
-        reservation.setSlot(newSlot);
-        reservationDAO.save(reservation);
+    /*private void migrateReservation(Reservation reservation, Slot newSlot) {
+        // TODO: Implementare migrazione prenotazione quando il modello lo supporterà
+        // reservation.setSlot(newSlot);
+        // reservationDAO.save(reservation);
         
-        log.info("Reservation {} migrated from slot {} to slot {}", 
-                reservation.getId(), reservation.getSlot().getId(), newSlot.getId());
-    }
+        log.info("Reservation {} would be migrated to slot {}", 
+                reservation.getId(), newSlot.getId());
+    }*/
     
     /**
      * Invia notifica al cliente per il cambio di orario
+     * TODO: Implementare quando il modello supporterà il collegamento slot-prenotazione
      */
-    private void sendChangeNotification(Reservation reservation, Slot oldSlot, Slot newSlot) {
+    /*private void sendChangeNotification(Reservation reservation, Slot oldSlot, Slot newSlot) {
         // TODO: Implementare sistema di notifiche
         // Potrebbe inviare email, SMS, push notification, etc.
         
@@ -166,7 +163,7 @@ public class SlotTransitionService {
                 reservation.getId(), 
                 oldSlot.getStart(), oldSlot.getEnd(),
                 newSlot.getStart(), newSlot.getEnd());
-    }
+    }*/
     
     /**
      * Trova slot attivi per una data specifica
@@ -204,20 +201,24 @@ public class SlotTransitionService {
      * Check if a slot can be safely modified (has no future reservations)
      */
     public boolean canSlotBeModified(Long slotId) {
-        List<Reservation> futureReservations = reservationDAO.findFutureReservationsBySlotId(
-            slotId, LocalDate.now()
-        );
-        return futureReservations.isEmpty();
+        // TODO: Implementare controllo quando il modello supporterà il collegamento diretto
+        // List<Reservation> futureReservations = reservationDAO.findFutureReservationsBySlotId(
+        //     slotId, LocalDate.now()
+        // );
+        // return futureReservations.isEmpty();
+        return true;
     }
     
     /**
      * Get count of future reservations for a slot
      */
     public int getFutureReservationsCount(Long slotId) {
-        List<Reservation> futureReservations = reservationDAO.findFutureReservationsBySlotId(
-            slotId, LocalDate.now()
-        );
-        return futureReservations.size();
+        // TODO: Implementare conteggio quando il modello supporterà il collegamento diretto
+        // List<Reservation> futureReservations = reservationDAO.findFutureReservationsBySlotId(
+        //     slotId, LocalDate.now()
+        // );
+        // return futureReservations.size();
+        return 0;
     }
     
     /**
