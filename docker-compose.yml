@@ -199,18 +199,6 @@ secrets:
     external: true
   email_password:
     external: true
-  service_account:
-    external: true
   jwt_secret:
-    external: true
-  rabbitmq_user:
-    external: true
-  rabbitmq_password:
-    external: true
-  rabbitmq_uri:
-    external: true
-  rabbitmq_user_v2:
-    external: true
-  rabbitmq_password_v2:
     external: true
 
