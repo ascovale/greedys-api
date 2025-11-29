@@ -1,11 +1,9 @@
 package com.application.common.web.dto.reservations;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import com.application.common.controller.validators.ValidEmail;
 import com.application.common.persistence.model.reservation.Reservation.Status;
-import com.application.common.web.dto.restaurant.SlotDTO;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -17,26 +15,69 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(name = "ReservationDTO", description = "DTO for reservation details")
+@Schema(name = "ReservationDTO", description = "DTO for reservation details (no longer contains slot)")
 public class ReservationDTO {
 
+	@Schema(description = "Reservation ID", example = "101")
 	private Long id;
-	private SlotDTO slot;
+
+	@Schema(description = "Reservation date and time (combined datetime)", example = "2025-01-15T19:30:00")
+	private LocalDateTime reservationDateTime;
+
+	@Schema(description = "Number of adults", example = "4")
 	private Integer pax;
+
 	@Builder.Default
+	@Schema(description = "Number of children", example = "0")
 	private Integer kids = 0;
+
+	@Schema(description = "Name of reservation holder", example = "John Doe")
 	private String name;
+
+	@Schema(description = "Phone number", example = "+39...")
 	private String phone;
+
 	@ValidEmail
+	@Schema(description = "Email address", example = "john@example.com")
 	private String email;
+
+	@Schema(description = "Special notes for reservation", example = "Window seat preferred")
 	private String notes;
-	private LocalDate reservationDay;
+
+	@Schema(description = "Service ID (Lunch, Dinner, etc.)", example = "2")
+	private Long serviceId;
+
+	@Schema(description = "Service name (Lunch, Dinner, etc.)", example = "Dinner")
+	private String serviceName;
+
+	@Schema(description = "Restaurant ID", example = "1")
 	private Long restaurant;
+
 	@Schema(description = "ID of the customer who made the reservation", example = "103")
 	private Long customerId;
+
+	@Schema(description = "Table number if seated", example = "A5")
+	private Integer tableNumber;
+
+	@Schema(description = "Reservation status", example = "ACCEPTED")
 	private Status status;
+
+	@Schema(description = "User who created this reservation")
 	private String createdBy;
+
+	@Schema(description = "Type of user who created (CUSTOMER|ADMIN|RESTAURANT_USER|AGENCY_USER)")
 	private String createdByUserType;
+
+	@Schema(description = "When the reservation was created")
 	private LocalDateTime createdAt;
+
+	@Schema(hidden = true)
+	private LocalDateTime modifiedAt;
+
+	@Schema(hidden = true)
+	private String modifiedBy;
+
+	@Schema(hidden = true)
+	private String modifiedByUserType;
 
 }

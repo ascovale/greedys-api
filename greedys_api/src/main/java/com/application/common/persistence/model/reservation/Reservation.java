@@ -2,14 +2,17 @@ package com.application.common.persistence.model.reservation;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import com.application.common.config.CustomAuditingEntityListener;
 import com.application.common.persistence.model.user.AbstractUser;
 import com.application.customer.persistence.model.Customer;
 import com.application.restaurant.persistence.model.Restaurant;
+import com.application.common.persistence.model.reservation.Service;
 
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -21,8 +24,11 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
+import java.util.HashSet;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -58,9 +64,12 @@ public class Reservation {
     @Column(name = "r_date", nullable = false)
     private LocalDate date;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "slot_id", nullable = false)
-    private Slot slot;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "service_id", nullable = false)
+    private Service service;
+
+    @Column(name = "reservation_datetime", nullable = false)
+    private LocalDateTime reservationDateTime;
 
     @Column(nullable = false)
     private Integer pax;
@@ -93,6 +102,10 @@ public class Reservation {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id")
     private Customer customer;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "reservationAsGuest", cascade = CascadeType.REMOVE)
+    @Builder.Default
+    private Set<Customer> dinnerGuests = new HashSet<>();
 
     // -- Auditing fields -- //
 
@@ -146,10 +159,24 @@ public class Reservation {
     }
 
     /**
-     * Combines date and slot start into a single LocalDateTime.
+     * Returns the reservation date and time (explicit datetime, no slot dependency).
      */
     public LocalDateTime getReservationDateTime() {
-        return LocalDateTime.of(date, slot.getStart());
+        return reservationDateTime;
+    }
+
+    /**
+     * Returns the time portion of the reservation datetime.
+     */
+    public LocalTime getReservationTime() {
+        return reservationDateTime != null ? reservationDateTime.toLocalTime() : null;
+    }
+
+    /**
+     * Returns the date portion of the reservation datetime.
+     */
+    public LocalDate getReservationDate() {
+        return reservationDateTime != null ? reservationDateTime.toLocalDate() : null;
     }
 
     /**
@@ -157,8 +184,54 @@ public class Reservation {
      */
 	// TODO: MOVE TO A SERVICE
     public boolean isAfterNoShowTimeLimit(LocalDateTime now) {
-        return getReservationDateTime()
+        return reservationDateTime
                 .plusMinutes(restaurant.getNoShowTimeLimit())
                 .isBefore(now.plusNanos(1));
+    }
+
+    /**
+     * Adds a customer as a dinner guest for this reservation.
+     * 
+     * @param guest The customer to add as a dinner guest
+     * @return true if the guest was added, false if already present
+     */
+    public boolean addDinnerGuest(Customer guest) {
+        if (guest != null && dinnerGuests.add(guest)) {
+            guest.setReservationAsGuest(this);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Removes a customer from the dinner guests.
+     * 
+     * @param guest The customer to remove
+     * @return true if the guest was removed, false if not present
+     */
+    public boolean removeDinnerGuest(Customer guest) {
+        if (guest != null && dinnerGuests.remove(guest)) {
+            guest.setReservationAsGuest(null);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Clears all dinner guests from this reservation.
+     */
+    public void clearDinnerGuests() {
+        for (Customer guest : new HashSet<>(dinnerGuests)) {
+            removeDinnerGuest(guest);
+        }
+    }
+
+    /**
+     * Returns the total number of dinner participants (including the main customer and guests).
+     * 
+     * @return Total participants count
+     */
+    public int getTotalParticipants() {
+        return 1 + (dinnerGuests != null ? dinnerGuests.size() : 0); // 1 per il customer principale
     }
 }

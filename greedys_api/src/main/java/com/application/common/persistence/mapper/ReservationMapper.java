@@ -27,16 +27,18 @@ public interface ReservationMapper {
      * Converte un'entità Reservation in ReservationDTO
      */
     @Mapping(target = "name", source = "userName")
-    @Mapping(target = "reservationDay", source = "date")
-    @Mapping(target = "restaurant", source = "slot.service.restaurant.id")
+    @Mapping(target = "reservationDateTime", source = "reservationDateTime")
+    @Mapping(target = "restaurant", source = "restaurant.id")
     @Mapping(target = "customerId", source = "customer.id")
-    @Mapping(target = "phone", ignore = true) // Non presente in entità
-    @Mapping(target = "email", ignore = true) // Non presente in entità
-    @Mapping(target = "slot.service.restaurantId", source = "slot.service.restaurant.id")
-    @Mapping(target = "slot.service.serviceType", ignore = true) // Troppo complesso per MapStruct
+    @Mapping(target = "serviceId", source = "service.id")
+    @Mapping(target = "serviceName", source = "service.name")
+    @Mapping(target = "phone", ignore = true)
+    @Mapping(target = "email", ignore = true)
     @Mapping(target = "createdBy", source = "createdBy.username")
     @Mapping(target = "createdByUserType", source = "createdByUserType")
     @Mapping(target = "createdAt", source = "createdAt")
+    @Mapping(target = "modifiedBy", ignore = true)
+    @Mapping(target = "modifiedByUserType", ignore = true)
     ReservationDTO toDTO(Reservation reservation);
 
     /**
@@ -44,12 +46,13 @@ public interface ReservationMapper {
      */
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "userName", source = "userName")
-    @Mapping(target = "date", source = "reservationDay")
-    @Mapping(target = "slot", ignore = true) // Sarà gestito dal service
-    @Mapping(target = "restaurant", ignore = true) // Sarà gestito dal service
-    @Mapping(target = "customer", ignore = true) // Sarà gestito dal service
+    @Mapping(target = "date", ignore = true)
+    @Mapping(target = "reservationDateTime", source = "reservationDateTime")
+    @Mapping(target = "service", ignore = true)
+    @Mapping(target = "restaurant", ignore = true)
+    @Mapping(target = "customer", ignore = true)
     @Mapping(target = "table", ignore = true)
-    @Mapping(target = "status", ignore = true) // Sarà impostato dal service
+    @Mapping(target = "status", ignore = true)
     @Mapping(target = "version", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "modifiedAt", ignore = true)
@@ -61,6 +64,7 @@ public interface ReservationMapper {
     @Mapping(target = "acceptedAt", ignore = true)
     @Mapping(target = "tableNumber", ignore = true)
     @Mapping(target = "rejectionReason", ignore = true)
+    @Mapping(target = "dinnerGuests", ignore = true)
     Reservation fromCustomerNewReservationDTO(CustomerNewReservationDTO dto);
 
     /**
@@ -68,12 +72,13 @@ public interface ReservationMapper {
      */
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "userName", source = "userName")
-    @Mapping(target = "date", source = "reservationDay")
-    @Mapping(target = "slot", ignore = true) // Sarà gestito dal service
-    @Mapping(target = "restaurant", ignore = true) // Sarà gestito dal service
-    @Mapping(target = "customer", ignore = true) // Sarà gestito dal service
+    @Mapping(target = "date", ignore = true)
+    @Mapping(target = "reservationDateTime", source = "reservationDateTime")
+    @Mapping(target = "service", ignore = true)
+    @Mapping(target = "restaurant", ignore = true)
+    @Mapping(target = "customer", ignore = true)
     @Mapping(target = "table", ignore = true)
-    @Mapping(target = "status", ignore = true) // Sarà impostato dal service
+    @Mapping(target = "status", ignore = true)
     @Mapping(target = "version", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "modifiedAt", ignore = true)
@@ -85,6 +90,7 @@ public interface ReservationMapper {
     @Mapping(target = "acceptedAt", ignore = true)
     @Mapping(target = "tableNumber", ignore = true)
     @Mapping(target = "rejectionReason", ignore = true)
+    @Mapping(target = "dinnerGuests", ignore = true)
     Reservation fromRestaurantNewReservationDTO(RestaurantNewReservationDTO dto);
 
     /**
@@ -92,55 +98,9 @@ public interface ReservationMapper {
      */
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "userName", source = "userName")
-    @Mapping(target = "date", source = "reservationDay")
-    @Mapping(target = "slot", ignore = true) // Sarà gestito dal service
-    @Mapping(target = "restaurant", ignore = true) // Sarà gestito dal service
-    @Mapping(target = "customer", ignore = true) // Sarà gestito dal service
-    @Mapping(target = "table", ignore = true)
-    @Mapping(target = "version", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "modifiedAt", ignore = true)
-    @Mapping(target = "createdBy", ignore = true)
-    @Mapping(target = "modifiedBy", ignore = true)
-    @Mapping(target = "createdByUserType", ignore = true)
-    @Mapping(target = "modifiedByUserType", ignore = true)
-    @Mapping(target = "acceptedBy", ignore = true)
-    @Mapping(target = "acceptedAt", ignore = true)
-    @Mapping(target = "tableNumber", ignore = true)
-    @Mapping(target = "rejectionReason", ignore = true)
-    Reservation fromAdminNewReservationDTO(AdminNewReservationDTO dto);
-
-    /**
-     * Metodo generico per mappare dalla classe base NewBaseReservationDTO
-     */
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "userName", source = "userName")
-    @Mapping(target = "date", source = "reservationDay")
-    @Mapping(target = "slot", ignore = true) // Sarà gestito dal service
-    @Mapping(target = "restaurant", ignore = true) // Sarà gestito dal service
-    @Mapping(target = "customer", ignore = true) // Sarà gestito dal service
-    @Mapping(target = "table", ignore = true)
-    @Mapping(target = "status", ignore = true) // Sarà impostato dal service
-    @Mapping(target = "version", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "modifiedAt", ignore = true)
-    @Mapping(target = "createdBy", ignore = true)
-    @Mapping(target = "modifiedBy", ignore = true)
-    @Mapping(target = "createdByUserType", ignore = true)
-    @Mapping(target = "modifiedByUserType", ignore = true)
-    @Mapping(target = "acceptedBy", ignore = true)
-    @Mapping(target = "acceptedAt", ignore = true)
-    @Mapping(target = "tableNumber", ignore = true)
-    @Mapping(target = "rejectionReason", ignore = true)
-    Reservation fromNewBaseReservationDTO(NewBaseReservationDTO dto);
-
-    /**
-     * Aggiorna un'entità Reservation esistente con i dati dal ReservationDTO
-     */
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "userName", source = "name")
-    @Mapping(target = "date", source = "reservationDay")
-    @Mapping(target = "slot", ignore = true)
+    @Mapping(target = "date", ignore = true)
+    @Mapping(target = "reservationDateTime", source = "reservationDateTime")
+    @Mapping(target = "service", ignore = true)
     @Mapping(target = "restaurant", ignore = true)
     @Mapping(target = "customer", ignore = true)
     @Mapping(target = "table", ignore = true)
@@ -155,5 +115,57 @@ public interface ReservationMapper {
     @Mapping(target = "acceptedAt", ignore = true)
     @Mapping(target = "tableNumber", ignore = true)
     @Mapping(target = "rejectionReason", ignore = true)
+    @Mapping(target = "dinnerGuests", ignore = true)
+    Reservation fromAdminNewReservationDTO(AdminNewReservationDTO dto);
+
+    /**
+     * Metodo generico per mappare dalla classe base NewBaseReservationDTO
+     */
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "userName", source = "userName")
+    @Mapping(target = "date", ignore = true)
+    @Mapping(target = "reservationDateTime", source = "reservationDateTime")
+    @Mapping(target = "service", ignore = true)
+    @Mapping(target = "restaurant", ignore = true)
+    @Mapping(target = "customer", ignore = true)
+    @Mapping(target = "table", ignore = true)
+    @Mapping(target = "status", ignore = true)
+    @Mapping(target = "version", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "modifiedAt", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "modifiedBy", ignore = true)
+    @Mapping(target = "createdByUserType", ignore = true)
+    @Mapping(target = "modifiedByUserType", ignore = true)
+    @Mapping(target = "acceptedBy", ignore = true)
+    @Mapping(target = "acceptedAt", ignore = true)
+    @Mapping(target = "tableNumber", ignore = true)
+    @Mapping(target = "rejectionReason", ignore = true)
+    @Mapping(target = "dinnerGuests", ignore = true)
+    Reservation fromNewBaseReservationDTO(NewBaseReservationDTO dto);
+
+    /**
+     * Aggiorna un'entità Reservation esistente con i dati dal ReservationDTO
+     */
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "userName", source = "name")
+    @Mapping(target = "date", ignore = true)
+    @Mapping(target = "reservationDateTime", ignore = true)
+    @Mapping(target = "service", ignore = true)
+    @Mapping(target = "restaurant", ignore = true)
+    @Mapping(target = "customer", ignore = true)
+    @Mapping(target = "table", ignore = true)
+    @Mapping(target = "version", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "modifiedAt", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "modifiedBy", ignore = true)
+    @Mapping(target = "createdByUserType", ignore = true)
+    @Mapping(target = "modifiedByUserType", ignore = true)
+    @Mapping(target = "acceptedBy", ignore = true)
+    @Mapping(target = "acceptedAt", ignore = true)
+    @Mapping(target = "tableNumber", ignore = true)
+    @Mapping(target = "rejectionReason", ignore = true)
+    @Mapping(target = "dinnerGuests", ignore = true)
     void updateEntityFromDTO(ReservationDTO dto, @MappingTarget Reservation entity);
 }

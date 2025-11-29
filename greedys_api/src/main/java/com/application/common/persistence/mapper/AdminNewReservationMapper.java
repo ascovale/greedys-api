@@ -23,18 +23,19 @@ public interface AdminNewReservationMapper {
      * Converte un AdminNewReservationDTO in entità Reservation
      */
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "restaurant", ignore = true) // Sarà impostato dal service usando restaurantId
-    @Mapping(target = "slot", ignore = true) // Sarà impostato dal service usando slotId
-    @Mapping(target = "customer", ignore = true) // Sarà impostato dal service usando userId
-    @Mapping(target = "table", ignore = true) // Sarà gestito dal service usando tableIds
-    @Mapping(target = "date", source = "reservationDay") // Campo mappato dal DTO base
-    @Mapping(target = "version", ignore = true) // Campo gestito automaticamente
-    @Mapping(target = "createdAt", ignore = true) // Campo automatico
-    @Mapping(target = "modifiedAt", ignore = true) // Campo automatico
-    @Mapping(target = "createdBy", ignore = true) // Campo automatico
-    @Mapping(target = "modifiedBy", ignore = true) // Campo automatico
-    @Mapping(target = "acceptedBy", ignore = true) // Campo gestito dal service
-    @Mapping(target = "acceptedAt", ignore = true) // Campo gestito dal service
+    @Mapping(target = "restaurant", ignore = true)
+    @Mapping(target = "service", ignore = true)
+    @Mapping(target = "customer", ignore = true)
+    @Mapping(target = "table", ignore = true)
+    @Mapping(target = "date", ignore = true)
+    @Mapping(target = "reservationDateTime", source = "reservationDateTime")
+    @Mapping(target = "version", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "modifiedAt", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "modifiedBy", ignore = true)
+    @Mapping(target = "acceptedBy", ignore = true)
+    @Mapping(target = "acceptedAt", ignore = true)
     Reservation fromNewDTO(AdminNewReservationDTO adminNewReservationDTO);
 
     /**
@@ -42,10 +43,11 @@ public interface AdminNewReservationMapper {
      */
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "restaurant", ignore = true)
-    @Mapping(target = "slot", ignore = true)
+    @Mapping(target = "service", ignore = true)
     @Mapping(target = "customer", ignore = true)
     @Mapping(target = "table", ignore = true)
-    @Mapping(target = "date", source = "reservationDay")
+    @Mapping(target = "date", ignore = true)
+    @Mapping(target = "reservationDateTime", source = "reservationDateTime")
     @Mapping(target = "version", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "modifiedAt", ignore = true)

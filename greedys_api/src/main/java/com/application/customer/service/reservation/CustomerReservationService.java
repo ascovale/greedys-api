@@ -1,6 +1,5 @@
 package com.application.customer.service.reservation;
 
-import java.time.DayOfWeek;
 import java.util.Collection;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -9,11 +8,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.application.common.persistence.mapper.ReservationMapper;
-import com.application.common.persistence.mapper.Mapper.Weekday;
 import com.application.common.persistence.model.reservation.Reservation;
 import com.application.common.persistence.model.reservation.Reservation.Status;
 import com.application.common.persistence.model.reservation.ReservationRequest;
-import com.application.common.persistence.model.reservation.Slot;
 import com.application.common.persistence.model.notification.EventOutbox;
 import com.application.common.service.reservation.ReservationService;
 import com.application.common.web.dto.reservations.ReservationDTO;
@@ -22,7 +19,8 @@ import com.application.customer.persistence.dao.ReservationDAO;
 import com.application.customer.persistence.dao.ReservationRequestDAO;
 import com.application.customer.persistence.model.Customer;
 import com.application.customer.web.dto.reservations.CustomerNewReservationDTO;
-import com.application.restaurant.persistence.dao.SlotDAO;
+import com.application.restaurant.persistence.dao.ServiceDAO;
+import org.springframework.data.domain.PageRequest;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,43 +34,32 @@ public class CustomerReservationService {
     private final ReservationDAO reservationDAO;
     private final ReservationRequestDAO reservationRequestDAO;
     private final ReservationService reservationService;
-    private final SlotDAO slotDAO;
+    private final ServiceDAO serviceDAO;
     private final ReservationMapper reservationMapper;
     private final EventOutboxDAO eventOutboxDAO;
 
     public ReservationDTO createReservation(CustomerNewReservationDTO reservationDto, Customer customer) {
-        Slot slot = slotDAO.getReferenceById(reservationDto.getIdSlot());
-        if (slot == null || slot.getDeleted()) {
-            throw new IllegalArgumentException("Slot is either null or deleted");
-        }
-        
-        // Validate that the reservation day matches the slot's weekday
-        DayOfWeek reservationDayOfWeek = reservationDto.getReservationDay().getDayOfWeek();
-        Weekday reservationWeekday = convertDayOfWeekToWeekday(reservationDayOfWeek);
-        if (!reservationWeekday.equals(slot.getWeekday())) {
-            throw new IllegalArgumentException(
-                String.format("Reservation day %s (%s) does not match slot weekday %s", 
-                    reservationDto.getReservationDay(), 
-                    reservationWeekday, 
-                    slot.getWeekday()));
-        }
+        // Validate service exists
+        com.application.common.persistence.model.reservation.Service service = serviceDAO.findById(reservationDto.getServiceId())
+                .orElseThrow(() -> new IllegalArgumentException("Service not found"));
         
         Reservation reservation = Reservation.builder()
-                .userName(reservationDto.getUserName()) // 🎯 AGGIUNTO: nome utente per la prenotazione
+                .userName(reservationDto.getUserName())
                 .pax(reservationDto.getPax())
                 .kids(reservationDto.getKids())
                 .notes(reservationDto.getNotes())
-                .date(reservationDto.getReservationDay())
-                .slot(slot)
-                .restaurant(slot.getService().getRestaurant()) // 🎯 AGGIUNTO: restaurant dal slot
+                .date(reservationDto.getReservationDateTime().toLocalDate())
+                .reservationDateTime(reservationDto.getReservationDateTime())
+                .service(service)
+                .restaurant(service.getRestaurant())
                 .customer(customer)
-                .createdBy(customer) // TODO : Test this that it works
-                .createdByUserType(Reservation.UserType.CUSTOMER) // 🔧 FIX: aggiunto campo mancante per auditing
-                .status(Reservation.Status.NOT_ACCEPTED) // 🔧 FIX: customer reservations should wait for restaurant approval
+                .createdBy(customer)
+                .createdByUserType(Reservation.UserType.CUSTOMER)
+                .status(Reservation.Status.NOT_ACCEPTED)
                 .build();
         
-        // 🎯 USA IL SERVICE COMUNE CHE PUBBLICA L'EVENTO
-        Reservation savedReservation = reservationService.createNewReservation(reservation);
+        // 🎯 USE COMMON SERVICE THAT PUBLISHES THE EVENT
+        Reservation savedReservation = reservationService.createNewReservationWithValidation(reservation);
         
         // 📌 CREATE RESERVATION_REQUESTED EVENT (notifies restaurant staff)
         createReservationRequestedEvent(savedReservation);
@@ -114,17 +101,17 @@ public class CustomerReservationService {
     private String buildReservationPayload(Reservation reservation) {
         Long customerId = reservation.getCustomer() != null ? reservation.getCustomer().getId() : null;
         String customerEmail = reservation.getCustomer() != null ? reservation.getCustomer().getEmail() : "anonymous";
-        Long restaurantId = reservation.getSlot().getService().getRestaurant().getId();
+        Long restaurantId = reservation.getRestaurant().getId();
         Integer kids = reservation.getKids() != null ? reservation.getKids() : 0;
         String notes = reservation.getNotes() != null ? reservation.getNotes().replace("\"", "\\\"") : "";
         
         return String.format(
-            "{\"reservationId\":%d,\"customerId\":%s,\"restaurantId\":%d,\"email\":\"%s\",\"date\":\"%s\",\"pax\":%d,\"kids\":%d,\"notes\":\"%s\",\"initiated_by\":\"CUSTOMER\"}",
+            "{\"reservationId\":%d,\"customerId\":%s,\"restaurantId\":%d,\"email\":\"%s\",\"datetime\":\"%s\",\"pax\":%d,\"kids\":%d,\"notes\":\"%s\",\"initiated_by\":\"CUSTOMER\"}",
             reservation.getId(),
             customerId != null ? customerId : "null",
             restaurantId,
             customerEmail,
-            reservation.getDate().toString(),
+            reservation.getReservationDateTime().toString(),
             reservation.getPax(),
             kids,
             notes
@@ -141,14 +128,19 @@ public class CustomerReservationService {
             throw new IllegalStateException("Cannot modify this reservation");
         }
 
-        Slot slot = slotDAO.getReferenceById(dTO.getIdSlot());
+        // ✅ VALIDATE NEW RESERVATION DATE BEFORE STORING REQUEST
+        reservationService.validateReservationDateAvailability(
+            reservation.getRestaurant(),
+            dTO.getReservationDateTime().toLocalDate(),
+            reservation.getService().getId()
+        );
 
+        // For now, just store the request data - ReservationRequest still uses slot-based structure
         ReservationRequest reservationRequest = ReservationRequest.builder()
                 .pax(dTO.getPax())
                 .kids(dTO.getKids())
                 .notes(dTO.getNotes())
-                .date(dTO.getReservationDay())
-                .slot(slot)
+                .date(dTO.getReservationDateTime().toLocalDate())
                 .reservation(reservation)
                 .customer(currentUser)
                 .build();
@@ -157,19 +149,21 @@ public class CustomerReservationService {
     }
 
     public Collection<ReservationDTO> findAllCustomerReservations(Long customerId) {
-        return reservationDAO.findByCustomer(customerId).stream()
+        return reservationDAO.findByCustomerIdOrderByReservationDatetimeDesc(customerId, PageRequest.of(0, Integer.MAX_VALUE)).stream()
                 .map(reservationMapper::toDTO).collect(Collectors.toList());
     }
 
     public Collection<ReservationDTO> findAcceptedCustomerReservations(Long customerId) {
         Status status = Reservation.Status.ACCEPTED;
-        return reservationDAO.findByCustomerAndStatus(customerId, status).stream()
+        return reservationDAO.findByCustomerIdOrderByReservationDatetimeDesc(customerId, PageRequest.of(0, Integer.MAX_VALUE)).stream()
+                .filter(r -> r.getStatus() == status)
                 .map(reservationMapper::toDTO).collect(Collectors.toList());
     }
 
     public Collection<ReservationDTO> findPendingCustomerReservations(Long customerId) {
         Status status = Reservation.Status.NOT_ACCEPTED;
-        return reservationDAO.findByCustomerAndStatus(customerId, status).stream()
+        return reservationDAO.findByCustomerIdOrderByReservationDatetimeDesc(customerId, PageRequest.of(0, Integer.MAX_VALUE)).stream()
+                .filter(r -> r.getStatus() == status)
                 .map(reservationMapper::toDTO).collect(Collectors.toList());
     }
 
@@ -193,29 +187,4 @@ public class CustomerReservationService {
                 .map(reservationMapper::toDTO)
                 .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
     }
-
-    /**
-     * Convert Java DayOfWeek to our custom Weekday enum
-     */
-    private Weekday convertDayOfWeekToWeekday(DayOfWeek dayOfWeek) {
-        switch (dayOfWeek) {
-            case MONDAY:
-                return Weekday.MONDAY;
-            case TUESDAY:
-                return Weekday.TUESDAY;
-            case WEDNESDAY:
-                return Weekday.WEDNESDAY;
-            case THURSDAY:
-                return Weekday.THURSDAY;
-            case FRIDAY:
-                return Weekday.FRIDAY;
-            case SATURDAY:
-                return Weekday.SATURDAY;
-            case SUNDAY:
-                return Weekday.SUNDAY;
-            default:
-                throw new IllegalArgumentException("Invalid day of week: " + dayOfWeek);
-        }
-    }
-
 }
