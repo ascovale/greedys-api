@@ -94,10 +94,6 @@ public class Service {
 		return active;
 	}
 
-	@OneToMany(mappedBy = "service", fetch = FetchType.LAZY)
-	@Builder.Default
-	private Set<Reservation> reservations = new HashSet<>();
-
 	public void addServiceType(ServiceType pranzoType) {
 		if (serviceTypes == null) {
 			serviceTypes = new HashSet<>();
