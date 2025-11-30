@@ -44,11 +44,8 @@ public class ReservationDTO {
 	@Schema(description = "Special notes for reservation", example = "Window seat preferred")
 	private String notes;
 
-	@Schema(description = "Service ID (Lunch, Dinner, etc.)", example = "2")
-	private Long serviceId;
-
-	@Schema(description = "Service name (Lunch, Dinner, etc.)", example = "Dinner")
-	private String serviceName;
+	@Schema(description = "ServiceVersion ID (versioned service config)", example = "5")
+	private Long serviceVersionId;
 
 	@Schema(description = "Restaurant ID", example = "1")
 	private Long restaurant;
@@ -65,19 +62,10 @@ public class ReservationDTO {
 	@Schema(description = "User who created this reservation")
 	private String createdBy;
 
-	@Schema(description = "Type of user who created (CUSTOMER|ADMIN|RESTAURANT_USER|AGENCY_USER)")
-	private String createdByUserType;
-
 	@Schema(description = "When the reservation was created")
 	private LocalDateTime createdAt;
 
 	@Schema(hidden = true)
 	private LocalDateTime modifiedAt;
-
-	@Schema(hidden = true)
-	private String modifiedBy;
-
-	@Schema(hidden = true)
-	private String modifiedByUserType;
 
 }

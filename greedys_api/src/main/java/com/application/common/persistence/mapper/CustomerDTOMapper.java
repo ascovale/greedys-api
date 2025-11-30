@@ -39,9 +39,14 @@ public interface CustomerDTOMapper {
     @Mapping(target = "password", ignore = true) // Sarà gestita separatamente
     @Mapping(target = "allergies", ignore = true) // Sarà gestito dal service
     @Mapping(target = "reservations", ignore = true) // Sarà gestito dal service
+    @Mapping(target = "reservationAsGuest", ignore = true) // Sarà gestito dal service
     @Mapping(target = "customerOptions", ignore = true) // Sarà gestito dal service
     @Mapping(target = "dateOfBirth", ignore = true) // Non presente nel DTO
     @Mapping(target = "roles", ignore = true) // Sarà gestito dal service
+    @Mapping(target = "createdAt", ignore = true) // Gestito da CustomAuditingEntityListener
+    @Mapping(target = "createdBy", ignore = true) // Gestito da CustomAuditingEntityListener
+    @Mapping(target = "modifiedAt", ignore = true) // Gestito da CustomAuditingEntityListener
+    @Mapping(target = "modifiedBy", ignore = true) // Gestito da CustomAuditingEntityListener
     Customer toEntity(CustomerDTO customerDTO);
 
     /**
@@ -56,10 +61,15 @@ public interface CustomerDTOMapper {
     @Mapping(target = "password", ignore = true) // Sarà gestita separatamente nel service
     @Mapping(target = "allergies", ignore = true) // Sarà gestito dal service
     @Mapping(target = "reservations", ignore = true) // Sarà gestito dal service
+    @Mapping(target = "reservationAsGuest", ignore = true) // Sarà gestito dal service
     @Mapping(target = "customerOptions", ignore = true) // Sarà gestito dal service
     @Mapping(target = "dateOfBirth", ignore = true) // Non presente nel DTO
     @Mapping(target = "roles", ignore = true) // Sarà gestito dal service
     @Mapping(target = "status", ignore = true) // Sarà impostato dal service
+    @Mapping(target = "createdAt", ignore = true) // Gestito da CustomAuditingEntityListener
+    @Mapping(target = "createdBy", ignore = true) // Gestito da CustomAuditingEntityListener
+    @Mapping(target = "modifiedAt", ignore = true) // Gestito da CustomAuditingEntityListener
+    @Mapping(target = "modifiedBy", ignore = true) // Gestito da CustomAuditingEntityListener
     Customer toEntity(NewCustomerDTO newCustomerDTO);
 
     /**
@@ -74,6 +84,7 @@ public interface CustomerDTOMapper {
     @Mapping(target = "password", ignore = true) // Sarà gestita separatamente
     @Mapping(target = "allergies", ignore = true)
     @Mapping(target = "reservations", ignore = true)
+    @Mapping(target = "reservationAsGuest", ignore = true)
     @Mapping(target = "customerOptions", ignore = true)
     @Mapping(target = "dateOfBirth", ignore = true)
     @Mapping(target = "roles", ignore = true)
@@ -81,6 +92,10 @@ public interface CustomerDTOMapper {
     @Mapping(target = "authorities", ignore = true) // Metodo derivato dall'AbstractUser
     @Mapping(target = "privileges", ignore = true) // Metodo derivato dall'AbstractUser
     @Mapping(target = "privilegesStrings", ignore = true) // Metodo derivato dall'AbstractUser
+    @Mapping(target = "createdAt", ignore = true) // Gestito da CustomAuditingEntityListener
+    @Mapping(target = "createdBy", ignore = true) // Gestito da CustomAuditingEntityListener
+    @Mapping(target = "modifiedAt", ignore = true) // Gestito da CustomAuditingEntityListener
+    @Mapping(target = "modifiedBy", ignore = true) // Gestito da CustomAuditingEntityListener
     void updateEntityFromDTO(NewCustomerDTO dto, @MappingTarget Customer entity);
 
     /**

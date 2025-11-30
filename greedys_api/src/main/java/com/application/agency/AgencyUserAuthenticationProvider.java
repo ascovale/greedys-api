@@ -1,28 +1,21 @@
 package com.application.agency;
 
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import com.application.agency.persistence.dao.AgencyUserDAO;
-import com.application.agency.persistence.model.user.AgencyUser;
 import com.application.agency.service.security.AgencyUserDetailsService;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class AgencyUserAuthenticationProvider extends DaoAuthenticationProvider {
-    
-    private final AgencyUserDAO agencyUserDAO;
 
-    public AgencyUserAuthenticationProvider(AgencyUserDAO agencyUserDAO, 
-                                           AgencyUserDetailsService userDetailsService,
+    public AgencyUserAuthenticationProvider(AgencyUserDetailsService userDetailsService,
                                            PasswordEncoder passwordEncoder) {
         super(userDetailsService);
-        this.agencyUserDAO = agencyUserDAO;
         super.setPasswordEncoder(passwordEncoder);
     }
 
@@ -36,14 +29,6 @@ public class AgencyUserAuthenticationProvider extends DaoAuthenticationProvider 
             log.error("Authentication error: {}", e.getMessage());
             throw e;
         }
-    }
-
-    /**
-     * Determina il messaggio di errore basato sullo status dell'utente
-     */
-    private String getStatusMessage(AgencyUser.Status status) {
-        // TODO: Verificare gli status effettivi di AgencyUser
-        return "Account not accessible - Status: " + status;
     }
 
     @Override

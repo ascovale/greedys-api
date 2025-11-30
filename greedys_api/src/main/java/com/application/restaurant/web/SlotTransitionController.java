@@ -25,10 +25,27 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
+ * DEPRECATED: Use ServiceVersionScheduleController instead.
+ * 
+ * This controller is based on the legacy Slot architecture.
+ * Will be removed in v3.0 (planned for Q2 2025).
+ * 
+ * <strong>Method Mapping:</strong>
+ * <ul>
+ *   <li>changeSlotSchedule() → ServiceVersionScheduleController.updateSlotConfig()</li>
+ *   <li>getActiveSlotsForService() → ServiceVersionScheduleController.getActiveTimeSlots()</li>
+ *   <li>deactivateSlot() → ServiceVersionScheduleController.deactivateSchedule()</li>
+ *   <li>reactivateSlot() → ServiceVersionScheduleController.reactivateSchedule()</li>
+ * </ul>
+ * 
  * REST Controller for managing slot schedule transitions and changes.
  * Handles slot modifications while preserving existing reservation integrity.
+ * 
+ * @deprecated Since v2.0, use {@link ServiceVersionScheduleController}
+ * @see ServiceVersionScheduleController
  */
-@Tag(name = "Slot Transitions", description = "Manage slot schedule changes and transitions")
+@Deprecated(since = "2.0", forRemoval = true)
+@Tag(name = "Slot Transitions (DEPRECATED)", description = "DEPRECATED - Use Service Version Schedules API instead")
 @RestController
 @RequestMapping("/api/restaurant/slot-transitions")
 @PreAuthorize("hasRole('RESTAURANT')")
@@ -39,7 +56,10 @@ public class SlotTransitionController {
 
     /**
      * Change slot schedule with specified policy for handling existing reservations
+     * 
+     * @deprecated Since v2.0, use ServiceVersionScheduleController.updateSlotConfig() instead
      */
+    @Deprecated(since = "2.0", forRemoval = true)
     @PostMapping("/change-schedule")
     @Operation(summary = "Change slot schedule", 
               description = "Modify slot times with specified policy for handling existing reservations")
@@ -71,7 +91,10 @@ public class SlotTransitionController {
 
     /**
      * Get active slots for a service on a specific date
+     * 
+     * @deprecated Since v2.0, use ServiceVersionScheduleController.getActiveTimeSlots() instead
      */
+    @Deprecated(since = "2.0", forRemoval = true)
     @GetMapping("/active-slots/service/{serviceId}")
     @Operation(summary = "Get active slots for service", 
               description = "Retrieve all active slots for a service on a specific date")
@@ -85,7 +108,10 @@ public class SlotTransitionController {
 
     /**
      * Check if a slot can be safely modified
+     * 
+     * @deprecated Since v2.0, use ServiceVersionScheduleController methods instead
      */
+    @Deprecated(since = "2.0", forRemoval = true)
     @GetMapping("/can-modify/{slotId}")
     @Operation(summary = "Check if slot can be modified", 
               description = "Check if a slot can be safely modified based on existing reservations")
@@ -105,7 +131,10 @@ public class SlotTransitionController {
 
     /**
      * Deactivate a slot starting from a specific date
+     * 
+     * @deprecated Since v2.0, use ServiceVersionScheduleController.deactivateSchedule() instead
      */
+    @Deprecated(since = "2.0", forRemoval = true)
     @PostMapping("/deactivate/{slotId}")
     @Operation(summary = "Deactivate slot", 
               description = "Deactivate a slot starting from a specific date")
@@ -124,7 +153,10 @@ public class SlotTransitionController {
 
     /**
      * Reactivate a deactivated slot
+     * 
+     * @deprecated Since v2.0, use ServiceVersionScheduleController.reactivateSchedule() instead
      */
+    @Deprecated(since = "2.0", forRemoval = true)
     @PostMapping("/reactivate/{slotId}")
     @Operation(summary = "Reactivate slot", 
               description = "Reactivate a previously deactivated slot")

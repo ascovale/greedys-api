@@ -30,7 +30,6 @@ public class NotificationPreferenceService {
 
         NotificationPreferences prefs = NotificationPreferences.builder()
                 .userId(userId)
-                .userType("CUSTOMER") // Default, adjust based on context
                 .build();
 
         return preferencesRepository.save(prefs);

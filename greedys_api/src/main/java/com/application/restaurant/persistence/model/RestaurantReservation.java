@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 
 import com.application.common.persistence.model.reservation.Reservation;
 import com.application.customer.persistence.model.Customer;
-import com.application.restaurant.persistence.model.Restaurant;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import jakarta.persistence.Column;

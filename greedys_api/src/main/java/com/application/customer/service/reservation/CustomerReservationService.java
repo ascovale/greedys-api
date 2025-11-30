@@ -10,16 +10,18 @@ import org.springframework.transaction.annotation.Transactional;
 import com.application.common.persistence.mapper.ReservationMapper;
 import com.application.common.persistence.model.reservation.Reservation;
 import com.application.common.persistence.model.reservation.Reservation.Status;
-import com.application.common.persistence.model.reservation.ReservationRequest;
+import com.application.common.persistence.model.reservation.ReservationModificationRequest;
+import com.application.common.persistence.model.reservation.ServiceVersion;
 import com.application.common.persistence.model.notification.EventOutbox;
 import com.application.common.service.reservation.ReservationService;
 import com.application.common.web.dto.reservations.ReservationDTO;
 import com.application.common.persistence.dao.EventOutboxDAO;
 import com.application.customer.persistence.dao.ReservationDAO;
-import com.application.customer.persistence.dao.ReservationRequestDAO;
+import com.application.customer.persistence.dao.ReservationModificationRequestDAO;
 import com.application.customer.persistence.model.Customer;
 import com.application.customer.web.dto.reservations.CustomerNewReservationDTO;
 import com.application.restaurant.persistence.dao.ServiceDAO;
+import com.application.restaurant.persistence.dao.ServiceVersionDAO;
 import org.springframework.data.domain.PageRequest;
 
 import lombok.RequiredArgsConstructor;
@@ -32,9 +34,10 @@ import lombok.extern.slf4j.Slf4j;
 public class CustomerReservationService {
 
     private final ReservationDAO reservationDAO;
-    private final ReservationRequestDAO reservationRequestDAO;
+    private final ReservationModificationRequestDAO modificationRequestDAO;
     private final ReservationService reservationService;
     private final ServiceDAO serviceDAO;
+    private final ServiceVersionDAO serviceVersionDAO;
     private final ReservationMapper reservationMapper;
     private final EventOutboxDAO eventOutboxDAO;
 
@@ -43,6 +46,14 @@ public class CustomerReservationService {
         com.application.common.persistence.model.reservation.Service service = serviceDAO.findById(reservationDto.getServiceId())
                 .orElseThrow(() -> new IllegalArgumentException("Service not found"));
         
+        // Find active service version for the reservation date
+        ServiceVersion serviceVersion = serviceVersionDAO
+            .findActiveVersionByServiceAndDate(
+                reservationDto.getServiceId(), 
+                reservationDto.getReservationDateTime().toLocalDate()
+            )
+            .orElseThrow(() -> new IllegalArgumentException("No active service version found for the requested date"));
+        
         Reservation reservation = Reservation.builder()
                 .userName(reservationDto.getUserName())
                 .pax(reservationDto.getPax())
@@ -50,11 +61,10 @@ public class CustomerReservationService {
                 .notes(reservationDto.getNotes())
                 .date(reservationDto.getReservationDateTime().toLocalDate())
                 .reservationDateTime(reservationDto.getReservationDateTime())
-                .service(service)
+                .serviceVersion(serviceVersion)
                 .restaurant(service.getRestaurant())
                 .customer(customer)
                 .createdBy(customer)
-                .createdByUserType(Reservation.UserType.CUSTOMER)
                 .status(Reservation.Status.NOT_ACCEPTED)
                 .build();
         
@@ -132,20 +142,39 @@ public class CustomerReservationService {
         reservationService.validateReservationDateAvailability(
             reservation.getRestaurant(),
             dTO.getReservationDateTime().toLocalDate(),
-            reservation.getService().getId()
+            reservation.getServiceVersion()
         );
 
-        // For now, just store the request data - ReservationRequest still uses slot-based structure
-        ReservationRequest reservationRequest = ReservationRequest.builder()
-                .pax(dTO.getPax())
-                .kids(dTO.getKids())
-                .notes(dTO.getNotes())
-                .date(dTO.getReservationDateTime().toLocalDate())
+        // Create ReservationModificationRequest with PENDING_APPROVAL status
+        // This stores both original and requested values for comparison
+        ReservationModificationRequest modificationRequest = ReservationModificationRequest.builder()
                 .reservation(reservation)
-                .customer(currentUser)
+                .status(ReservationModificationRequest.Status.PENDING_APPROVAL)
+                // Original values (from current reservation)
+                .originalDate(reservation.getDate())
+                .originalDateTime(reservation.getReservationDateTime())
+                .originalPax(reservation.getPax())
+                .originalKids(reservation.getKids())
+                .originalNotes(reservation.getNotes())
+                // Requested new values (from customer)
+                .requestedDate(dTO.getReservationDateTime().toLocalDate())
+                .requestedDateTime(dTO.getReservationDateTime())
+                .requestedPax(dTO.getPax())
+                .requestedKids(dTO.getKids())
+                .requestedNotes(dTO.getNotes())
+                // Auditing
+                .requestedBy(currentUser)
+                .requestedAt(java.time.LocalDateTime.now())
                 .build();
 
-        reservationRequestDAO.save(reservationRequest);
+        // Save the modification request
+        modificationRequestDAO.save(modificationRequest);
+        
+        // 📌 CREATE EVENT: RESERVATION_MODIFICATION_REQUESTED (notifies restaurant staff)
+        // Audit is handled when restaurant reviews the request (approve/reject)
+        createReservationModificationRequestedEvent(reservation, modificationRequest);
+        
+        log.info("✅ Customer {} requested modification for reservation {}", currentUser.getId(), oldReservationId);
     }
 
     public Collection<ReservationDTO> findAllCustomerReservations(Long customerId) {
@@ -186,5 +215,72 @@ public class CustomerReservationService {
         return reservationDAO.findById(reservationId)
                 .map(reservationMapper::toDTO)
                 .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
+    }
+
+    /**
+     * Create RESERVATION_MODIFICATION_REQUESTED event
+     * 
+     * Triggered when: CUSTOMER requests a modification to their reservation
+     * Notifies: RESTAURANT STAFF (for approval/rejection)
+     * Event Type: RESERVATION_MODIFICATION_REQUESTED
+     * Aggregate Type: CUSTOMER (shows it's initiated by customer)
+     */
+    private void createReservationModificationRequestedEvent(Reservation reservation, ReservationModificationRequest modRequest) {
+        String eventId = "RESERVATION_MODIFICATION_REQUESTED_" + modRequest.getId() + "_" + System.currentTimeMillis();
+        String payload = buildReservationModificationPayload(reservation, modRequest);
+        
+        EventOutbox eventOutbox = EventOutbox.builder()
+            .eventId(eventId)
+            .eventType("RESERVATION_MODIFICATION_REQUESTED")
+            .aggregateType("CUSTOMER")
+            .aggregateId(modRequest.getId())
+            .payload(payload)
+            .status(EventOutbox.Status.PENDING)
+            .build();
+        
+        eventOutboxDAO.save(eventOutbox);
+        
+        log.info("✅ Created EventOutbox RESERVATION_MODIFICATION_REQUESTED: eventId={}, modificationRequestId={}, reservationId={}, status=PENDING", 
+            eventId, modRequest.getId(), reservation.getId());
+    }
+
+    /**
+     * Build JSON payload for RESERVATION_MODIFICATION_REQUESTED event
+     * 
+     * Includes both original and requested values for comparison
+     * Includes initiated_by=CUSTOMER for intelligent routing to restaurant staff
+     */
+    private String buildReservationModificationPayload(Reservation reservation, ReservationModificationRequest modRequest) {
+        Long customerId = reservation.getCustomer() != null ? reservation.getCustomer().getId() : null;
+        String customerEmail = reservation.getCustomer() != null ? reservation.getCustomer().getEmail() : "anonymous";
+        Long restaurantId = reservation.getRestaurant().getId();
+        
+        // Escape special characters in notes
+        String originalNotes = modRequest.getOriginalNotes() != null ? modRequest.getOriginalNotes().replace("\"", "\\\"") : "";
+        String requestedNotes = modRequest.getRequestedNotes() != null ? modRequest.getRequestedNotes().replace("\"", "\\\"") : "";
+        String customerReason = modRequest.getCustomerReason() != null ? modRequest.getCustomerReason().replace("\"", "\\\"") : "";
+        
+        return String.format(
+            "{\"modificationRequestId\":%d,\"reservationId\":%d,\"customerId\":%s,\"restaurantId\":%d,\"email\":\"%s\"," +
+            "\"originalDate\":\"%s\",\"requestedDate\":\"%s\"," +
+            "\"originalPax\":%d,\"requestedPax\":%d," +
+            "\"originalKids\":%d,\"requestedKids\":%d," +
+            "\"originalNotes\":\"%s\",\"requestedNotes\":\"%s\",\"customerReason\":\"%s\"," +
+            "\"initiated_by\":\"CUSTOMER\"}",
+            modRequest.getId(),
+            reservation.getId(),
+            customerId != null ? customerId : "null",
+            restaurantId,
+            customerEmail,
+            modRequest.getOriginalDate() != null ? modRequest.getOriginalDate().toString() : "",
+            modRequest.getRequestedDate() != null ? modRequest.getRequestedDate().toString() : "",
+            modRequest.getOriginalPax() != null ? modRequest.getOriginalPax() : 0,
+            modRequest.getRequestedPax() != null ? modRequest.getRequestedPax() : 0,
+            modRequest.getOriginalKids() != null ? modRequest.getOriginalKids() : 0,
+            modRequest.getRequestedKids() != null ? modRequest.getRequestedKids() : 0,
+            originalNotes,
+            requestedNotes,
+            customerReason
+        );
     }
 }

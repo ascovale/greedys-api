@@ -10,7 +10,7 @@ import java.time.Instant;
 @Table(name = "notification_preferences", indexes = {
     @Index(name = "idx_user", columnList = "user_id")
 }, uniqueConstraints = {
-    @UniqueConstraint(name = "uk_user", columnNames = {"user_id", "user_type"})
+    @UniqueConstraint(name = "uk_user_id", columnNames = {"user_id"})
 })
 @Getter
 @Setter
@@ -26,8 +26,8 @@ public class NotificationPreferences {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    @Column(name = "user_type", nullable = false, length = 50)
-    private String userType;
+    // NOTE: user_type removed - with JOINED inheritance, userId references AbstractUser directly
+    // Use polymorphic queries or class-specific tables to determine user type
 
     // Channel enable/disable
     @Column(name = "email_enabled", nullable = false)

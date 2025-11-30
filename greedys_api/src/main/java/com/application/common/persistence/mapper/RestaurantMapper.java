@@ -25,7 +25,7 @@ public interface RestaurantMapper {
      * Converte un'entità Restaurant in RestaurantDTO
      */
     @Mapping(target = "post_code", source = "postCode")
-    @Mapping(target = "pi", source = "vatNumber") // Per retrocompatibilità
+    @Mapping(target = "pi", ignore = true) // Campo deprecated, gestito dal costruttore del DTO
     @Mapping(target = "restaurantImage", ignore = true) // Gestito separatamente
     RestaurantDTO toDTO(Restaurant restaurant);
 

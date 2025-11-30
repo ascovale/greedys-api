@@ -29,7 +29,6 @@ import com.application.admin.service.security.AdminUserDetailsService;
 import com.application.agency.AgencyUserAuthenticationProvider;
 import com.application.agency.AgencyUserHubValidationFilter;
 import com.application.agency.AgencyUserRequestFilter;
-import com.application.agency.persistence.dao.AgencyUserDAO;
 import com.application.agency.service.security.AgencyUserDetailsService;
 import com.application.common.security.SecurityPatterns;
 import com.application.common.security.TokenTypeValidationFilter;
@@ -320,10 +319,9 @@ public class SecurityConfig {
 
         @Bean
         public AgencyUserAuthenticationProvider agencyUserAuthenticationProvider(
-                        AgencyUserDAO agencyUserDAO,
                         AgencyUserDetailsService agencyUserDetailsService,
                         PasswordEncoder passwordEncoder) {
-                return new AgencyUserAuthenticationProvider(agencyUserDAO, agencyUserDetailsService, passwordEncoder);
+                return new AgencyUserAuthenticationProvider(agencyUserDetailsService, passwordEncoder);
         }
 
         /**

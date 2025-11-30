@@ -25,7 +25,7 @@ public interface NewBaseReservationMapper {
      */
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "restaurant", ignore = true)
-    @Mapping(target = "service", ignore = true)
+    @Mapping(target = "serviceVersion", ignore = true)
     @Mapping(target = "customer", ignore = true)
     @Mapping(target = "table", ignore = true)
     @Mapping(target = "date", ignore = true)
@@ -45,7 +45,7 @@ public interface NewBaseReservationMapper {
      */
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "restaurant", ignore = true)
-    @Mapping(target = "service", ignore = true)
+    @Mapping(target = "serviceVersion", ignore = true)
     @Mapping(target = "customer", ignore = true)
     @Mapping(target = "table", ignore = true)
     @Mapping(target = "date", ignore = true)

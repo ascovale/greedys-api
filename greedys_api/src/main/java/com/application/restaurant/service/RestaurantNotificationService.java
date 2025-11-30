@@ -39,7 +39,6 @@ public class RestaurantNotificationService {
                     .title(title)
                     .body(body)
                     .userId(RUser.getId())
-                    .userType("RESTAURANT_USER")
                     .read(false)
                     .creationTime(Instant.now())
                     .build();

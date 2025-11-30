@@ -62,10 +62,9 @@ public class ReservationAuditService {
      * 
      * @param reservation The newly created reservation
      * @param changedByUser User who created the reservation (nullable for system-created)
-     * @param userType Type of user (CUSTOMER, ADMIN, RESTAURANT_USER, AGENCY_USER)
      */
     @Transactional
-    public void recordCreated(Reservation reservation, RUser changedByUser, Reservation.UserType userType) {
+    public void recordCreated(Reservation reservation, RUser changedByUser) {
         log.debug("Recording reservation creation: reservation_id={}", reservation.getId());
         
         List<FieldChange> changes = new ArrayList<>();
@@ -85,7 +84,6 @@ public class ReservationAuditService {
                 .changeReason("Reservation created")
                 .changedAt(LocalDateTime.now())
                 .changedBy(changedByUser)
-                .changedByUserType(userType)
                 .build();
         
         auditDAO.save(audit);
@@ -100,12 +98,11 @@ public class ReservationAuditService {
      * @param newStatus New status
      * @param reason Reason for change
      * @param changedByUser User making the change
-     * @param userType Type of user
      */
     @Transactional
     public void recordStatusChanged(Reservation reservation, Reservation.Status oldStatus, 
                                     Reservation.Status newStatus, String reason, 
-                                    RUser changedByUser, Reservation.UserType userType) {
+                                    RUser changedByUser) {
         log.debug("Recording status change for reservation {}: {} -> {}", 
                   reservation.getId(), oldStatus, newStatus);
         
@@ -119,7 +116,6 @@ public class ReservationAuditService {
                 .changeReason(reason != null ? reason : "Status changed to " + newStatus)
                 .changedAt(LocalDateTime.now())
                 .changedBy(changedByUser)
-                .changedByUserType(userType)
                 .build();
         
         auditDAO.save(audit);
@@ -134,11 +130,10 @@ public class ReservationAuditService {
      * @param changes Map of field changes (fieldName -> [oldValue, newValue])
      * @param reason Reason for update
      * @param changedByUser User making the change
-     * @param userType Type of user
      */
     @Transactional
     public void recordUpdated(Reservation reservation, List<FieldChange> changes, String reason,
-                              RUser changedByUser, Reservation.UserType userType) {
+                              RUser changedByUser) {
         log.debug("Recording update for reservation {} with {} field changes", 
                   reservation.getId(), changes.size());
         
@@ -149,7 +144,6 @@ public class ReservationAuditService {
                 .changeReason(reason != null ? reason : "Reservation updated")
                 .changedAt(LocalDateTime.now())
                 .changedBy(changedByUser)
-                .changedByUserType(userType)
                 .build();
         
         auditDAO.save(audit);
@@ -162,11 +156,10 @@ public class ReservationAuditService {
      * @param reservation The reservation
      * @param reason Reason for deletion
      * @param changedByUser User making the deletion
-     * @param userType Type of user
      */
     @Transactional
     public void recordDeleted(Reservation reservation, String reason,
-                              RUser changedByUser, Reservation.UserType userType) {
+                              RUser changedByUser) {
         log.debug("Recording deletion for reservation {}", reservation.getId());
         
         List<FieldChange> changes = new ArrayList<>();
@@ -179,11 +172,124 @@ public class ReservationAuditService {
                 .changeReason(reason != null ? reason : "Reservation deleted")
                 .changedAt(LocalDateTime.now())
                 .changedBy(changedByUser)
-                .changedByUserType(userType)
                 .build();
         
         auditDAO.save(audit);
         log.info("Recorded deletion for reservation {}", reservation.getId());
+    }
+
+    /**
+     * Record reservation modification requested by customer
+     * 
+     * @param reservation The reservation being modified
+     * @param originalValues The original values before modification request
+     * @param requestedValues The requested new values
+     * @param reason Customer's reason for requesting modification
+     * @param changedByUser User (customer) making the request
+     */
+    @Transactional
+    public void recordModificationRequested(Reservation reservation, 
+                                           List<FieldChange> changes,
+                                           String reason,
+                                           RUser changedByUser) {
+        log.debug("Recording modification request for reservation {}", reservation.getId());
+        
+        ReservationAudit audit = ReservationAudit.builder()
+                .reservation(reservation)
+                .action(AuditAction.MODIFICATION_REQUESTED)
+                .changedFields(changesListToJson(changes))
+                .changeReason(reason != null ? reason : "Modification requested by customer")
+                .changedAt(LocalDateTime.now())
+                .changedBy(changedByUser)
+                .build();
+        
+        auditDAO.save(audit);
+        log.info("Recorded modification request for reservation {}", reservation.getId());
+    }
+
+    /**
+     * Record reservation modification approved by restaurant
+     * 
+     * @param reservation The reservation
+     * @param changes The field changes that were approved
+     * @param reason Reason for approval
+     * @param changedByUser User (restaurant staff) approving the modification
+     */
+    @Transactional
+    public void recordModificationApproved(Reservation reservation,
+                                          List<FieldChange> changes,
+                                          String reason,
+                                          RUser changedByUser) {
+        log.debug("Recording modification approval for reservation {}", reservation.getId());
+        
+        ReservationAudit audit = ReservationAudit.builder()
+                .reservation(reservation)
+                .action(AuditAction.MODIFICATION_APPROVED)
+                .changedFields(changesListToJson(changes))
+                .changeReason(reason != null ? reason : "Modification approved by restaurant staff")
+                .changedAt(LocalDateTime.now())
+                .changedBy(changedByUser)
+                .build();
+        
+        auditDAO.save(audit);
+        log.info("Recorded modification approval for reservation {}", reservation.getId());
+    }
+
+    /**
+     * Record reservation modification rejected by restaurant
+     * 
+     * @param reservation The reservation
+     * @param requestedChanges The field changes that were rejected
+     * @param reason Reason for rejection
+     * @param changedByUser User (restaurant staff) rejecting the modification
+     */
+    @Transactional
+    public void recordModificationRejected(Reservation reservation,
+                                          List<FieldChange> requestedChanges,
+                                          String reason,
+                                          RUser changedByUser) {
+        log.debug("Recording modification rejection for reservation {}", reservation.getId());
+        
+        ReservationAudit audit = ReservationAudit.builder()
+                .reservation(reservation)
+                .action(AuditAction.MODIFICATION_REJECTED)
+                .changedFields(changesListToJson(requestedChanges))
+                .changeReason(reason != null ? reason : "Modification rejected by restaurant staff")
+                .changedAt(LocalDateTime.now())
+                .changedBy(changedByUser)
+                .build();
+        
+        auditDAO.save(audit);
+        log.info("Recorded modification rejection for reservation {}", reservation.getId());
+    }
+
+    /**
+     * Record reservation modified directly by restaurant staff
+     * (Not through customer request, direct edit by staff)
+     * 
+     * @param reservation The reservation
+     * @param changes The field changes applied
+     * @param reason Reason for modification
+     * @param changedByUser User (restaurant staff) making the direct modification
+     */
+    @Transactional
+    public void recordModifiedByRestaurant(Reservation reservation,
+                                          List<FieldChange> changes,
+                                          String reason,
+                                          RUser changedByUser) {
+        log.debug("Recording direct modification for reservation {}", reservation.getId());
+        
+        ReservationAudit audit = ReservationAudit.builder()
+                .reservation(reservation)
+                .action(AuditAction.MODIFIED_BY_RESTAURANT)
+                .changedFields(changesListToJson(changes))
+                .changeReason(reason != null ? reason : "Modified directly by restaurant staff")
+                .changedAt(LocalDateTime.now())
+                .changedBy(changedByUser)
+                .build();
+        
+        auditDAO.save(audit);
+        log.info("Recorded direct modification for reservation {}", reservation.getId());
     }
 
     @Transactional(readOnly = true)
@@ -336,14 +442,13 @@ public class ReservationAuditService {
                 PageRequest.of(0, Integer.MAX_VALUE)).getContent();
         
         StringBuilder csv = new StringBuilder();
-        csv.append("Action,ChangedAt,ChangedBy,UserType,Reason,Changes\n");
+        csv.append("Action,ChangedAt,ChangedBy,Reason,Changes\n");
         
         for (ReservationAudit audit : audits) {
-            csv.append(String.format("%s,%s,%s,%s,%s,%s\n",
+            csv.append(String.format("%s,%s,%s,%s,%s\n",
                     audit.getAction(),
                     audit.getChangedAt(),
                     audit.getChangedBy() != null ? audit.getChangedBy().getUsername() : "SYSTEM",
-                    audit.getChangedByUserType(),
                     audit.getChangeReason(),
                     escapeCSV(formatChangesForCSVFromJson(audit.getChangedFields()))));
         }
