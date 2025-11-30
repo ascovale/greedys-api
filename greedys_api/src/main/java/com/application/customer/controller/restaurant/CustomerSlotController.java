@@ -18,7 +18,17 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Tag(name = "Restaurant Slots", description = "Controller for handling requests related to restaurant slots")
+/**
+ * DEPRECATED: Use CustomerServiceVersionScheduleController instead.
+ * 
+ * This controller is based on the legacy Slot architecture.
+ * Will be removed in v3.0 (planned for Q2 2025).
+ * 
+ * @deprecated Since v2.0, use {@link CustomerServiceVersionScheduleController}
+ * @see CustomerServiceVersionScheduleController
+ */
+@Deprecated(since = "2.0", forRemoval = true)
+@Tag(name = "Restaurant Slots (DEPRECATED)", description = "DEPRECATED - Use Customer Service Version Schedules API instead")
 @RequestMapping("/customer/restaurant")
 @RestController
 @RequiredArgsConstructor
@@ -30,16 +40,20 @@ public class CustomerSlotController extends BaseController {
 	@GetMapping("/{restaurantId}/slots")
 	@Operation(summary = "Get all slots by restaurant ID", description = "Retrieve all available slots for a specific restaurant")
 	@ReadApiResponses
+	@Deprecated(since = "2.0", forRemoval = true)
 	
     public ResponseEntity<List<SlotDTO>> getAllSlotsByRestaurantId(@PathVariable Long restaurantId) {
+		log.warn("DEPRECATED: getAllSlotsByRestaurantId() will be removed in v3.0. Use CustomerServiceVersionScheduleController.getActiveScheduleForRestaurant() instead.");
 		return executeList("get all slots by restaurant", () -> slotService.findSlotsByRestaurantId(restaurantId));
 	}
 
 	@Operation(summary = "Get slot by id", description = "Retrieve a slot by its ID")
 	@ReadApiResponses
 	@GetMapping("/slot/{slotId}")
+	@Deprecated(since = "2.0", forRemoval = true)
 	
     public ResponseEntity<SlotDTO> getSlotById(@PathVariable Long slotId) {
+		log.warn("DEPRECATED: getSlotById() will be removed in v3.0. Use CustomerServiceVersionScheduleController.getTimeSlotDetails() instead.");
 		return execute("get slot by id", () -> slotService.findById(slotId));
 	}
 }

@@ -19,7 +19,7 @@ import com.application.customer.persistence.dao.CustomerDAO;
 import com.application.customer.persistence.dao.ReservationDAO;
 import com.application.customer.persistence.model.Customer;
 import com.application.restaurant.persistence.dao.RestaurantDAO;
-import com.application.restaurant.persistence.dao.ServiceDAO;
+import com.application.restaurant.persistence.dao.ServiceVersionDAO;
 import com.application.restaurant.persistence.model.Restaurant;
 import org.springframework.data.domain.PageRequest;
 
@@ -37,17 +37,21 @@ public class AdminReservationService {
     private final ReservationMapper reservationMapper;
     private final CustomerDAO customerDAO;
     private final RestaurantDAO restaurantDAO;
-    private final ServiceDAO serviceDAO;
+    private final ServiceVersionDAO serviceVersionDAO;
     private final EventOutboxDAO eventOutboxDAO;
 
     public ReservationDTO createReservation(AdminNewReservationDTO reservationDto) {
-        // Validate service exists and is not deleted
-        com.application.common.persistence.model.reservation.Service service = serviceDAO.findById(reservationDto.getServiceId())
-                .orElseThrow(() -> new IllegalArgumentException("Service not found"));
-        
         // Get restaurant
         Restaurant restaurant = restaurantDAO.findById(reservationDto.getRestaurantId())
                 .orElseThrow(() -> new IllegalArgumentException("Restaurant not found"));
+        
+        // Find active service version for the reservation date
+        com.application.common.persistence.model.reservation.ServiceVersion serviceVersion = serviceVersionDAO
+            .findActiveVersionByServiceAndDate(
+                reservationDto.getServiceId(),
+                reservationDto.getReservationDateTime().toLocalDate()
+            )
+            .orElseThrow(() -> new IllegalArgumentException("No active service version found for the requested date"));
         
         // Handle customer - can be anonymous or existing customer
         Customer customer = null;
@@ -66,12 +70,11 @@ public class AdminReservationService {
                 .notes(reservationDto.getNotes())
                 .date(reservationDto.getReservationDateTime().toLocalDate())
                 .reservationDateTime(reservationDto.getReservationDateTime())
-                .service(service)
+                .serviceVersion(serviceVersion)
                 .customer(customer)
                 .restaurant(restaurant)
                 .userName(reservationDto.getUserName())
-                .createdBy(customer) // For anonymous reservations this will be null
-                .createdByUserType(customer != null ? Reservation.UserType.CUSTOMER : Reservation.UserType.ADMIN)
+                .createdBy(customer)
                 .status(reservationStatus)
                 .build();
         
@@ -200,9 +203,15 @@ public class AdminReservationService {
 
         // Update service if provided
         if (reservationDto.getServiceId() != null) {
-            com.application.common.persistence.model.reservation.Service service = serviceDAO.findById(reservationDto.getServiceId())
-                    .orElseThrow(() -> new IllegalArgumentException("Service not found"));
-            reservation.setService(service);
+            com.application.common.persistence.model.reservation.ServiceVersion serviceVersion = serviceVersionDAO
+                .findActiveVersionByServiceAndDate(
+                    reservationDto.getServiceId(),
+                    reservationDto.getReservationDateTime() != null ? 
+                        reservationDto.getReservationDateTime().toLocalDate() : 
+                        reservation.getDate()
+                )
+                .orElseThrow(() -> new IllegalArgumentException("No active service version found for the requested date"));
+            reservation.setServiceVersion(serviceVersion);
         }
 
         // Update reservation datetime if provided
@@ -243,11 +252,11 @@ public class AdminReservationService {
             reservation.setStatus(reservationDto.getStatus());
         }
 
-        // ✅ VALIDATE BEFORE SAVING (service/date may have changed)
+        // ✅ VALIDATE BEFORE SAVING (service/date may have changed) - use ServiceVersion instead of serviceId
         reservationService.validateReservationDateAvailability(
             reservation.getRestaurant(),
             reservation.getDate(),
-            reservation.getService().getId()
+            reservation.getServiceVersion()
         );
 
         Reservation saved = reservationDAO.save(reservation);

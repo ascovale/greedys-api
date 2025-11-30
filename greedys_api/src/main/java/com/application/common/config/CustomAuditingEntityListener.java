@@ -17,10 +17,16 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 
 /**
- * Custom Entity Listener that automatically handles complete auditing:
- * - Creation and modification timestamps
- * - User reference and user type discrimination
- * This replaces Spring Data JPA's default auditing for entities requiring user type tracking.
+ * Custom Entity Listener that automatically handles auditing for AbstractUser and Reservation.
+ * 
+ * With JOINED inheritance:
+ * - createdBy/modifiedBy/acceptedBy now reference AbstractUser directly (unified ID)
+ * - No more need for createdByUserType/modifiedByUserType - use instanceof to determine type
+ * 
+ * ✅ REFACTORING BENEFITS:
+ * - Type-safe user references: No ambiguous userId
+ * - Cleaner code: No separate user_type columns
+ * - Polymorphic queries: Can query AbstractUser directly
  */
 @Component
 public class CustomAuditingEntityListener {
@@ -30,6 +36,9 @@ public class CustomAuditingEntityListener {
         if (target instanceof Reservation) {
             setCreationAuditingFields((Reservation) target);
         }
+        if (target instanceof AbstractUser) {
+            setCreationAuditingFields((AbstractUser) target);
+        }
     }
 
     @PreUpdate
@@ -37,10 +46,15 @@ public class CustomAuditingEntityListener {
         if (target instanceof Reservation) {
             setModificationAuditingFields((Reservation) target);
         }
+        if (target instanceof AbstractUser) {
+            setModificationAuditingFields((AbstractUser) target);
+        }
     }
 
+    // ========== RESERVATION AUDITING ========== //
+
     /**
-     * Sets creation auditing fields when entity is first persisted
+     * Sets creation auditing fields when Reservation is first persisted
      */
     private void setCreationAuditingFields(Reservation reservation) {
         LocalDateTime now = LocalDateTime.now();
@@ -49,15 +63,14 @@ public class CustomAuditingEntityListener {
         // Set creation timestamp
         reservation.setCreatedAt(now);
         
-        // Set creation user info
+        // Set creation user reference (no need for createdByUserType - use instanceof if needed)
         if (currentUser != null) {
             reservation.setCreatedBy(currentUser);
-            reservation.setCreatedByUserType(determineUserType(currentUser));
         }
     }
 
     /**
-     * Sets modification auditing fields when entity is updated
+     * Sets modification auditing fields when Reservation is updated
      */
     private void setModificationAuditingFields(Reservation reservation) {
         LocalDateTime now = LocalDateTime.now();
@@ -66,12 +79,47 @@ public class CustomAuditingEntityListener {
         // Set modification timestamp
         reservation.setModifiedAt(now);
         
-        // Set modification user info
+        // Set modification user reference
         if (currentUser != null) {
             reservation.setModifiedBy(currentUser);
-            reservation.setModifiedByUserType(determineUserType(currentUser));
         }
     }
+
+    // ========== ABSTRACTUSER AUDITING ========== //
+
+    /**
+     * Sets creation auditing fields when AbstractUser is first persisted
+     */
+    private void setCreationAuditingFields(AbstractUser user) {
+        LocalDateTime now = LocalDateTime.now();
+        AbstractUser currentUser = getCurrentUser();
+        
+        // Set creation timestamp
+        user.setCreatedAt(now);
+        
+        // Set creation user reference (typically null for user registration)
+        if (currentUser != null) {
+            user.setCreatedBy(currentUser);
+        }
+    }
+
+    /**
+     * Sets modification auditing fields when AbstractUser is updated
+     */
+    private void setModificationAuditingFields(AbstractUser user) {
+        LocalDateTime now = LocalDateTime.now();
+        AbstractUser currentUser = getCurrentUser();
+        
+        // Set modification timestamp
+        user.setModifiedAt(now);
+        
+        // Set modification user reference
+        if (currentUser != null) {
+            user.setModifiedBy(currentUser);
+        }
+    }
+
+    // ========== HELPER METHODS ========== //
 
     /**
      * Retrieves the current authenticated user from Spring Security context
@@ -89,26 +137,23 @@ public class CustomAuditingEntityListener {
             return (AbstractUser) principal;
         }
         
-        // If principal is UserDetails but not AbstractUser, you might need additional logic
-        // depending on your security configuration
         return null;
     }
 
     /**
-     * Determines the user type based on the concrete class of AbstractUser
+     * Determines the user type based on concrete class (for logging/reference purposes)
+     * ⭐ Note: With JOINED inheritance, this is optional - use instanceof when needed
      */
-    private Reservation.UserType determineUserType(AbstractUser user) {
+    public static String determineUserTypeName(AbstractUser user) {
         if (user instanceof Customer) {
-            return Reservation.UserType.CUSTOMER;
+            return "CUSTOMER";
         } else if (user instanceof Admin) {
-            return Reservation.UserType.ADMIN;
+            return "ADMIN";
         } else if (user instanceof RUser) {
-            return Reservation.UserType.RESTAURANT_USER;
+            return "RESTAURANT_USER";
         } else if (user instanceof AgencyUser) {
-            return Reservation.UserType.AGENCY_USER;
+            return "AGENCY_USER";
         }
-        
-        // Fallback - you might want to throw an exception or log a warning
-        return null;
+        return "UNKNOWN";
     }
 }

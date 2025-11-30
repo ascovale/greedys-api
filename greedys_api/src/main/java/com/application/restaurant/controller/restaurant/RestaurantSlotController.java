@@ -24,7 +24,23 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Tag(name = "Slot Management", description = "Controller for managing slots")
+/**
+ * DEPRECATED: Use ServiceVersionScheduleController instead.
+ * 
+ * This controller is based on the legacy Slot architecture.
+ * Will be removed in v3.0 (planned for Q2 2025).
+ * 
+ * <strong>Method Mapping:</strong>
+ * <ul>
+ *   <li>newSlot() → ServiceVersionScheduleController.createServiceVersion()</li>
+ *   <li>cancelSlot() → ServiceVersionScheduleController.deactivateSlot()</li>
+ * </ul>
+ * 
+ * @deprecated Since v2.0, use {@link ServiceVersionScheduleController}
+ * @see ServiceVersionScheduleController
+ */
+@Deprecated(since = "2.0", forRemoval = true)
+@Tag(name = "Slot Management (DEPRECATED)", description = "DEPRECATED - Use Service Version Schedules API instead")
 @RestController
 @RequestMapping("/restaurant/slot")
 @SecurityRequirement(name = "bearerAuth")
@@ -37,8 +53,10 @@ public class RestaurantSlotController extends BaseController {
     @CreateApiResponses
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SLOT_WRITE')")
     @PostMapping("/new")
+    @Deprecated(since = "2.0", forRemoval = true)
     public ResponseEntity<SlotDTO> newSlot(@RequestBody RestaurantNewSlotDTO slotDto,
             @AuthenticationPrincipal RUser rUser) {
+        log.warn("DEPRECATED: newSlot() will be removed in v3.0. Use ServiceVersionScheduleController.updateSlotConfig() instead.");
         return executeCreate("create new slot", "Slot created successfully", () -> {
             return slotService.addSlot(rUser.getId(), slotDto);
         });
@@ -48,7 +66,9 @@ public class RestaurantSlotController extends BaseController {
     @ReadApiResponses
     @PreAuthorize("hasAuthority('PRIVILEGE_RESTAURANT_USER_SLOT_WRITE')")
     @DeleteMapping("/cancel/{slotId}")
+    @Deprecated(since = "2.0", forRemoval = true)
     public ResponseEntity<String> cancelSlot(@PathVariable Long slotId,@AuthenticationPrincipal RUser rUser) {
+        log.warn("DEPRECATED: cancelSlot() will be removed in v3.0. Use ServiceVersionScheduleController.deactivateSchedule() instead.");
         return execute("cancel slot", () -> {
             boolean isCanceled = slotService.cancelSlot(rUser.getId(), slotId);
             if (isCanceled) {

@@ -8,10 +8,8 @@ import com.application.common.config.CustomAuditingEntityListener;
 import com.application.common.persistence.model.user.AbstractUser;
 import com.application.customer.persistence.model.Customer;
 import com.application.restaurant.persistence.model.Restaurant;
-import com.application.common.persistence.model.reservation.Service;
 
 import io.swagger.v3.oas.annotations.Hidden;
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -65,8 +63,8 @@ public class Reservation {
     private LocalDate date;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "service_id", nullable = false)
-    private Service service;
+    @JoinColumn(name = "service_version_id", nullable = false)
+    private ServiceVersion serviceVersion;
 
     @Column(name = "reservation_datetime", nullable = false)
     private LocalDateTime reservationDateTime;
@@ -115,26 +113,14 @@ public class Reservation {
     @Column(name = "modified_at")
     private LocalDateTime modifiedAt;
 
-    // Rimuoviamo @CreatedBy e @LastModifiedBy perché gestiti dal CustomAuditingEntityListener
-    @Schema(hidden = true)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by_user_id", updatable = false)
     private AbstractUser createdBy;
 
-    @Column(name = "created_by_user_type", updatable = false)
-    @Enumerated(EnumType.STRING)
-    private UserType createdByUserType;
-
-    @Schema(hidden = true)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "modified_by_user_id")
     private AbstractUser modifiedBy;
 
-    @Column(name = "modified_by_user_type")
-    @Enumerated(EnumType.STRING)
-    private UserType modifiedByUserType;
-
-    @Schema(hidden = true)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "accepted_by_user_id")
     private AbstractUser acceptedBy;
@@ -142,12 +128,9 @@ public class Reservation {
     @Column(name = "accepted_at")
     private LocalDateTime acceptedAt;
 
-    public enum UserType {
-        CUSTOMER,
-        ADMIN,
-        RESTAURANT_USER,
-        AGENCY_USER
-    }
+    // Auditing fields moved to AbstractUser with JOINED inheritance
+    // createdBy, modifiedBy, acceptedBy now reference AbstractUser directly
+    // (no more need for createdByUserType/modifiedByUserType - use instanceof to determine type)
 
     public enum Status {
         NOT_ACCEPTED,

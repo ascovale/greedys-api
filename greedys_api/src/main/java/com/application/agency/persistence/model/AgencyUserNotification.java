@@ -314,6 +314,16 @@ public class AgencyUserNotification extends ANotification {
         return getReadAt() != null && status == DeliveryStatus.READ;
     }
 
+    @Override
+    public Long getRecipientId() {
+        return getUserId();
+    }
+
+    @Override
+    public String getRecipientType() {
+        return "AGENCY_USER";
+    }
+
     @PrePersist
     protected void onCreate() {
         if (createdAt == null) {

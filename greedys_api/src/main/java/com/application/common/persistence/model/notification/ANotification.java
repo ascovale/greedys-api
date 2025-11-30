@@ -1,6 +1,5 @@
 package com.application.common.persistence.model.notification;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -8,38 +7,32 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 /**
- * ⭐ GERARCHIA 2: NOTIFICHE RECIPIENT-SPECIFICHE (con userId/userType)
+ * ⭐ GERARCHIA 2: NOTIFICHE RECIPIENT-SPECIFICHE (con userId polimomorfico)
  * 
  * Estende AEventNotification e aggiunge campi specifici per il RECIPIENT destinatario.
+ * 
+ * REFACTORING con JOINED inheritance:
+ * - PRIMA: ANotification aveva (user_id: Long, user_type: String)
+ *   - Problema: user_id è ambiguo (quale tabella? customer? ruser? admin?)
+ * 
+ * - DOPO: Sottoclassi tipizzate di ANotification
+ *   - CustomerNotification extends ANotification (+ customerId FK a Customer.id)
+ *   - RestaurantNotification extends ANotification (+ rUserId FK a RUser.id)
+ *   - AdminNotification extends ANotification (+ adminId FK to Admin.id)
+ *   - AgencyNotification extends ANotification (+ agencyUserId FK to AgencyUser.id)
  * 
  * FLOW:
  * 1. Evento generato (ReservationRequested, CustomerRegistered, etc)
  * 2. Listener crea AEventNotification (AdminEventNotification, RestaurantEventNotification)
- * 3. Per OGNI recipient di quella entità, crea ANotification con userId/userType
- *    - Es: For Restaurant con 50 staff, crea 50 rows di RestaurantNotification (ciascuno con userId di uno staff)
+ * 3. Per OGNI recipient di quella entità, crea sottoclasse di ANotification con userId tipizzato
+ *    - Es: For Restaurant con 50 staff, crea 50 rows di RestaurantNotification (ciascuno con rUserId di uno staff)
  * 4. NotificationChannelSend ha: notificationId + channelType (SMS, EMAIL, PUSH, etc)
  * 
- * ✅ DIFFERENZE:
- * - AEventNotification: Entity-level (title, body, no userId) → Per restaurant, customer, admin, agency
- * - ANotification: Recipient-level (+ userId, userType) → Per singolo staff/customer/admin
- * 
- * ESEMPI:
- * 
- * EVENT: ReservationRequestedEvent
- * ↓
- * AdminEventNotification (id=1, title="Nuova prenotazione", restaurant_id=10)
- * ↓
- * For each admin in admins of restaurant:
- *   ├─ AdminNotification (id=100, user_id=50, user_type=ADMIN_USER) → extends ANotification
- *   ├─ AdminNotification (id=101, user_id=51, user_type=ADMIN_USER)
- *   └─ AdminNotification (id=102, user_id=52, user_type=ADMIN_USER)
- * 
- * ↓↓↓
- * For each notification:
- *   ├─ NotificationChannelSend (notification_id=100, channel=SMS)
- *   ├─ NotificationChannelSend (notification_id=100, channel=EMAIL)
- *   ├─ NotificationChannelSend (notification_id=100, channel=PUSH)
- *   └─ NotificationChannelSend (notification_id=100, channel=WEBSOCKET)
+ * ✅ VANTAGGI:
+ * - Type-safe: userId referenzia la colonna giusta (customer_id, ruser_id, admin_id, agency_user_id)
+ * - No ambiguity: Sappiamo esattamente quale utente riceve la notifica
+ * - Migrare da user_type string a class hierarchy
+ * - WebSocket routing: Usa class type invece di user_type string
  * 
  * @author Greedy's System
  * @since 2025-01-20 (Recipient-Specific Notifications)
@@ -52,40 +45,34 @@ import lombok.experimental.SuperBuilder;
 public abstract class ANotification extends AEventNotification {
     
     /**
-     * User ID del recipient destinatario
+     * User ID del recipient (generico, tipo-specifico implementato in sottoclassi)
      * 
-     * Questo è l'utente SPECIFICO che riceverà la notifica:
-     * - Se è admin: Admin user ID (dalla tabella admin_users)
-     * - Se è customer: Customer user ID (dalla tabella customers)
-     * - Se è staff ristorante: RUser ID (dalla tabella restaurant_users)
-     * - Se è agency: Agency user ID
+     * Questo campo viene usato da:
+     * - NotificationWebSocketSender.sendNotificationInternal() → passa a send()
+     * - ChannelPoller.sendNotification() → usato per recipient lookup
+     * - ReadStatusService.markXxxNotificationAsRead() → controlla ownership
      * 
-     * ⭐ IMPORTANTE: Un AEventNotification può generare N ANotification (una per recipient)
-     * 
-     * Esempio per ReservationRequestedEvent:
-     * - AdminEventNotification (title="Nuova prenotazione", NO userId)
-     * - AdminNotification #1 (user_id=50, user_type=ADMIN_USER)
-     * - AdminNotification #2 (user_id=51, user_type=ADMIN_USER)
-     * - AdminNotification #3 (user_id=52, user_type=ADMIN_USER)
+     * Sottoclassi implementano mappando a loro FK specifiche:
+     * - CustomerNotification: userId = customerId
+     * - RestaurantUserNotification: userId = user_id (RUser)
+     * - AdminNotification: userId = user_id (Admin)
+     * - AgencyUserNotification: userId = user_id (AgencyUser)
      */
-    @Column(name = "user_id", nullable = false)
+    @jakarta.persistence.Column(name = "user_id", nullable = false)
     private Long userId;
+    
+    /**
+     * Ritorna il recipient ID specifico della sottoclasse
+     * - CustomerNotification: restituisce customerId (FK to Customer)
+     * - RestaurantNotification: restituisce rUserId (FK to RUser)
+     * - AdminNotification: restituisce adminId (FK to Admin)
+     * - AgencyNotification: restituisce agencyUserId (FK to AgencyUser)
+     */
+    public abstract Long getRecipientId();
 
     /**
-     * Tipo di utente destinatario
-     * 
-     * Enum values:
-     * - CUSTOMER: Customer user
-     * - RESTAURANT_USER: Staff di ristorante (RUser)
-     * - ADMIN_USER: Admin dell'app
-     * - AGENCY_USER: Utente agency
-     * 
-     * Usato per:
-     * - Multi-channel resolution: Sapere quale tabella querare per email/phone/etc.
-     * - Permission checks: Se ricevi notifica SMS, sei CUSTOMER o RESTAURANT_USER
-     * - Template rendering: Personalizzare messaggio per tipo utente
+     * Ritorna il tipo di recipient (CUSTOMER, RESTAURANT_USER, ADMIN_USER, AGENCY_USER)
+     * Derivato dal class type, non da una colonna user_type
      */
-    @Column(name = "user_type", nullable = false, length = 50)
-    private String userType;
-
+    public abstract String getRecipientType();
 }

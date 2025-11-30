@@ -48,4 +48,14 @@ public class RestaurantNotification extends ANotification {
 	@Column(name = "type", nullable = false)
 	private RNotificationType type;
 
+	@Override
+	public Long getRecipientId() {
+		return getUserId();
+	}
+
+	@Override
+	public String getRecipientType() {
+		return "RESTAURANT_USER";
+	}
+
 }

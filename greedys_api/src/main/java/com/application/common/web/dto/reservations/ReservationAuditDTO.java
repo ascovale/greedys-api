@@ -5,7 +5,6 @@ import java.util.List;
 
 import com.application.common.persistence.model.reservation.FieldChange;
 import com.application.common.persistence.model.reservation.ReservationAudit.AuditAction;
-import com.application.common.persistence.model.reservation.Reservation.UserType;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -58,11 +57,6 @@ public class ReservationAuditDTO {
     private String changedByUsername;
 
     /**
-     * Type of user who made the change
-     */
-    private UserType changedByUserType;
-
-    /**
      * Display-friendly version of action
      */
     public String getActionDisplay() {
@@ -73,6 +67,11 @@ public class ReservationAuditDTO {
             case CREATED -> "Created";
             case UPDATED -> "Updated";
             case STATUS_CHANGED -> "Status Changed";
+            case MODIFICATION_REQUESTED -> "Modification Requested";
+            case MODIFICATION_APPROVED -> "Modification Approved";
+            case MODIFICATION_REJECTED -> "Modification Rejected";
+            case MODIFICATION_APPLIED -> "Modification Applied";
+            case MODIFIED_BY_RESTAURANT -> "Modified by Restaurant";
             case DELETED -> "Deleted";
         };
     }

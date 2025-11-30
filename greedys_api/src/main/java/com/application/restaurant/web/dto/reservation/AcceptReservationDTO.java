@@ -1,6 +1,5 @@
 package com.application.restaurant.web.dto.reservation;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

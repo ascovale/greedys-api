@@ -102,7 +102,6 @@ public class ReservationEventListener {
                             .title(title)
                             .body(body)
                             .userId(staffUserId)
-                            .userType("RESTAURANT_USER")
                             .type(RNotificationType.RESERVATION_REQUEST)
                             .creationTime(Instant.now())
                             .build();

@@ -3,7 +3,6 @@ package com.application.common.persistence.model.reservation;
 import java.time.LocalDateTime;
 
 import com.application.common.persistence.model.user.AbstractUser;
-import com.application.common.persistence.model.reservation.Reservation.UserType;
 
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.persistence.Column;
@@ -93,19 +92,17 @@ public class ReservationAudit {
     private AbstractUser changedBy;
 
     /**
-     * Type of user who made the change (CUSTOMER, ADMIN, RESTAURANT_USER, AGENCY_USER).
-     */
-    @Column(name = "changed_by_user_type")
-    @Enumerated(EnumType.STRING)
-    private UserType changedByUserType;
-
-    /**
      * Enum for audit action types.
      */
     public enum AuditAction {
-        CREATED,         // Reservation was created
-        UPDATED,         // Reservation details were updated
-        STATUS_CHANGED,  // Status changed (NOT_ACCEPTED → ACCEPTED, etc.)
-        DELETED          // Reservation was deleted
+        CREATED,                        // Reservation was created
+        UPDATED,                        // Reservation details were updated
+        STATUS_CHANGED,                 // Status changed (NOT_ACCEPTED → ACCEPTED, etc.)
+        MODIFICATION_REQUESTED,         // Customer requested a modification
+        MODIFICATION_APPROVED,          // Restaurant approved a modification request
+        MODIFICATION_REJECTED,          // Restaurant rejected a modification request
+        MODIFICATION_APPLIED,           // Approved modification was applied to reservation
+        MODIFIED_BY_RESTAURANT,         // Restaurant staff modified directly (no approval needed)
+        DELETED                         // Reservation was deleted
     }
 }
