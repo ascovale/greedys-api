@@ -45,7 +45,7 @@ import lombok.Setter;
     indexes = {
         @Index(name = "idx_mod_req_reservation", columnList = "reservation_id"),
         @Index(name = "idx_mod_req_status", columnList = "status"),
-        @Index(name = "idx_mod_req_created_at", columnList = "created_at DESC"),
+        @Index(name = "idx_mod_req_requested_at", columnList = "requested_at DESC"),
         @Index(name = "idx_mod_req_reservation_status", columnList = "reservation_id, status")
     }
 )
