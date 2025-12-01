@@ -103,4 +103,20 @@ public interface ServiceVersionDAO extends JpaRepository<ServiceVersion, Long> {
     """)
     Optional<ServiceVersion> findMostRecentVersionByService(@Param("serviceId") Long serviceId);
 
+    /**
+     * Find all active service versions for a restaurant.
+     * Used by customers to see available services for booking.
+     * 
+     * @param restaurantId the restaurant ID
+     * @return collection of active service versions
+     */
+    @Query("""
+        SELECT sv FROM ServiceVersion sv
+        WHERE sv.service.restaurant.id = :restaurantId
+          AND sv.state = 'ACTIVE'
+          AND (sv.effectiveTo IS NULL OR sv.effectiveTo >= CURRENT_DATE)
+        ORDER BY sv.service.name, sv.effectiveFrom DESC
+    """)
+    Collection<ServiceVersion> findActiveByRestaurantId(@Param("restaurantId") Long restaurantId);
+
 }

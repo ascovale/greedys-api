@@ -14,6 +14,7 @@ import org.springframework.stereotype.Repository;
 
 import com.application.common.persistence.model.reservation.Reservation;
 import com.application.common.web.dto.reservations.ReservationDTO;
+import com.application.customer.persistence.model.Customer;
 
 @Repository
 public interface ReservationDAO extends JpaRepository<Reservation, Long> {
@@ -98,7 +99,7 @@ public interface ReservationDAO extends JpaRepository<Reservation, Long> {
     @Query("""
         SELECT r FROM Reservation r
         WHERE r.restaurant.id = :restaurantId
-          AND r.service.id = :serviceId
+                    AND r.serviceVersion.service.id = :serviceId
           AND r.reservationDateTime BETWEEN :dayStart AND :dayEnd
         ORDER BY r.reservationDateTime ASC
     """)
@@ -157,7 +158,7 @@ public interface ReservationDAO extends JpaRepository<Reservation, Long> {
      */
     @Query("""
         SELECT r FROM Reservation r
-        WHERE r.service.id = :serviceId
+        WHERE r.serviceVersion.service.id = :serviceId
           AND r.reservationDateTime >= :fromDateTime
         ORDER BY r.reservationDateTime ASC
     """)
@@ -216,7 +217,7 @@ public interface ReservationDAO extends JpaRepository<Reservation, Long> {
                 AND r.customer IS NOT NULL
             ORDER BY r.customer.name, r.customer.surname
             """)
-    List<com.application.customer.persistence.model.Customer> findCustomersByRestaurantId(Long restaurantId);
+    List<Customer> findCustomersByRestaurantId(Long restaurantId);
 
     /**
      * Find customers with pagination
@@ -226,7 +227,7 @@ public interface ReservationDAO extends JpaRepository<Reservation, Long> {
             WHERE r.restaurant.id = :restaurantId 
                 AND r.customer IS NOT NULL
             """)
-    Page<com.application.customer.persistence.model.Customer> findCustomersByRestaurantIdPageable(Long restaurantId, Pageable pageable);
+    Page<Customer> findCustomersByRestaurantIdPageable(Long restaurantId, Pageable pageable);
 
     /**
      * Search customers by name, email, or phone
@@ -241,7 +242,7 @@ public interface ReservationDAO extends JpaRepository<Reservation, Long> {
                     OR r.customer.phoneNumber LIKE CONCAT('%', :searchTerm, '%'))
             ORDER BY r.customer.name, r.customer.surname
             """)
-    List<com.application.customer.persistence.model.Customer> searchCustomersByRestaurantId(Long restaurantId, String searchTerm);
+    List<Customer> searchCustomersByRestaurantId(Long restaurantId, String searchTerm);
 
     /**
      * Find unregistered customers (UNREGISTERED status)
@@ -253,7 +254,7 @@ public interface ReservationDAO extends JpaRepository<Reservation, Long> {
                 AND r.customer.status = 'UNREGISTERED'
             ORDER BY r.customer.name, r.customer.surname
             """)
-    List<com.application.customer.persistence.model.Customer> findUnregisteredCustomersByRestaurantId(Long restaurantId);
+    List<Customer> findUnregisteredCustomersByRestaurantId(Long restaurantId);
 
     /**
      * Count total unique customers for a restaurant

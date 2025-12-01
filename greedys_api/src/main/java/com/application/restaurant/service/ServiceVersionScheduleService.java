@@ -385,6 +385,112 @@ public class ServiceVersionScheduleService {
     }
 
     // ============================================
+    // 9. CUSTOMER-FACING METHODS (Read-only)
+    // ============================================
+
+    /**
+     * Get active time slots for a restaurant on a specific date.
+     * Used by customers to see available booking times.
+     * 
+     * @param restaurantId ID of the restaurant
+     * @param date Target date
+     * @return List of available time slots across all active services
+     */
+    public List<TimeSlotDto> getActiveTimeSlotsForRestaurant(Long restaurantId, LocalDate date) {
+        log.info("Getting active time slots for restaurant {} on {}", restaurantId, date);
+
+        List<TimeSlotDto> allSlots = new ArrayList<>();
+
+        // Get all active service versions for this restaurant
+        Collection<ServiceVersion> activeVersions = serviceVersionDAO
+            .findActiveByRestaurantId(restaurantId);
+
+        for (ServiceVersion sv : activeVersions) {
+            try {
+                List<TimeSlotDto> serviceSlots = getActiveTimeSlotsForDate(
+                    sv.getId(), date, restaurantId, null);
+                allSlots.addAll(serviceSlots);
+            } catch (Exception e) {
+                log.warn("Error getting slots for serviceVersion {}: {}", sv.getId(), e.getMessage());
+            }
+        }
+
+        // Sort by start time
+        allSlots.sort((a, b) -> a.getSlotStart().compareTo(b.getSlotStart()));
+        return allSlots;
+    }
+
+    /**
+     * Get active time slots for a specific service version (customer view).
+     * No ownership validation required - public data.
+     * 
+     * @param serviceVersionId ID of the service version
+     * @param restaurantId ID of the restaurant
+     * @param date Target date
+     * @return List of available time slots
+     */
+    public List<TimeSlotDto> getActiveTimeSlotsForServiceVersion(
+            Long serviceVersionId, 
+            Long restaurantId, 
+            LocalDate date) {
+        log.info("Getting active time slots for serviceVersion {} on {}", serviceVersionId, date);
+
+        // No ownership validation - this is public data for customers
+        return getActiveTimeSlotsForDate(serviceVersionId, date, restaurantId, null);
+    }
+
+    /**
+     * Get weekly schedule for customer view (read-only, no ownership check).
+     * 
+     * @param serviceVersionId ID of the service version
+     * @param restaurantId ID of the restaurant (for validation)
+     * @return Weekly schedule (7 days)
+     */
+    public List<ServiceVersionDayDto> getWeeklyScheduleForCustomer(
+            Long serviceVersionId, 
+            Long restaurantId) {
+        log.info("Getting weekly schedule for customer: serviceVersion={}, restaurant={}", 
+                 serviceVersionId, restaurantId);
+
+        // Load all 7 days (no ownership validation - public data)
+        Collection<ServiceVersionDay> days = serviceVersionDayDAO.findAllByServiceVersionId(serviceVersionId);
+
+        return days.stream()
+            .map(this::toServiceVersionDayDto)
+            .sorted((a, b) -> a.getDayOfWeek().compareTo(b.getDayOfWeek()))
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * Get details of a specific time slot.
+     * 
+     * @param serviceVersionId ID of the service version
+     * @param restaurantId ID of the restaurant
+     * @param date Date of the slot
+     * @param time Start time of the slot
+     * @return Time slot details or null if not available
+     */
+    public TimeSlotDto getTimeSlotDetails(
+            Long serviceVersionId, 
+            Long restaurantId, 
+            LocalDate date, 
+            LocalTime time) {
+        log.info("Getting time slot details: serviceVersion={}, date={}, time={}", 
+                 serviceVersionId, date, time);
+
+        // Get all slots for the date
+        List<TimeSlotDto> slots = getActiveTimeSlotsForServiceVersion(
+            serviceVersionId, restaurantId, date);
+
+        // Find the matching slot
+        return slots.stream()
+            .filter(slot -> slot.getSlotStart().toLocalTime().equals(time))
+            .findFirst()
+            .orElseThrow(() -> new IllegalArgumentException(
+                "Time slot not found: " + date + " " + time));
+    }
+
+    // ============================================
     // HELPER METHODS
     // ============================================
 
