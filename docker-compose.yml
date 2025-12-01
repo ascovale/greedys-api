@@ -79,6 +79,7 @@ services:
       - db_password
       - email_password
       - jwt_secret
+      - service_account
     labels:
       # API Router con HTTPS
       - "traefik.enable=true"
@@ -198,5 +199,7 @@ secrets:
   email_password:
     external: true
   jwt_secret:
+    external: true
+  service_account:
     external: true
 
