@@ -28,15 +28,6 @@ public interface NotificationPreferencesDAO extends JpaRepository<NotificationPr
     Optional<NotificationPreferences> findByUserId(Long userId);
     
     /**
-     * Trova le preferenze per un utente e tipo di utente specifico
-     * 
-     * @param userId ID dell'utente
-     * @param userType Tipo di utente (CUSTOMER, RESTAURANT_USER, ADMIN_USER, AGENCY_USER)
-     * @return Optional contenente le preferenze se trovate
-     */
-    Optional<NotificationPreferences> findByUserIdAndUserType(Long userId, String userType);
-    
-    /**
      * Verifica se un utente ha la notifica via email abilitata
      * 
      * @param userId ID dell'utente
