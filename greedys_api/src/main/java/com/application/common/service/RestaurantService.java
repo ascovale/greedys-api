@@ -307,5 +307,29 @@ public class RestaurantService {
 	public Page<RestaurantDTO> findAllPaginatedEnabled(Pageable pageable) {
 		return rDAO.findByStatus(Restaurant.Status.ENABLED, pageable).map(RestaurantDTO::new);
 	}*/
+
+	/**
+	 * Aggiorna la descrizione del ristorante
+	 * @param restaurantId ID del ristorante
+	 * @param description Nuova descrizione
+	 */
+	public void updateDescription(Long restaurantId, String description) {
+		Restaurant restaurant = rDAO.findById(restaurantId)
+				.orElseThrow(() -> new IllegalArgumentException("Restaurant not found with ID: " + restaurantId));
+		restaurant.setDescription(description);
+		rDAO.save(restaurant);
+		log.info("Description updated for restaurant ID: {}", restaurantId);
+	}
+
+	/**
+	 * Ottiene la descrizione del ristorante
+	 * @param restaurantId ID del ristorante
+	 * @return La descrizione del ristorante
+	 */
+	public String getDescription(Long restaurantId) {
+		Restaurant restaurant = rDAO.findById(restaurantId)
+				.orElseThrow(() -> new IllegalArgumentException("Restaurant not found with ID: " + restaurantId));
+		return restaurant.getDescription();
+	}
 	
 }

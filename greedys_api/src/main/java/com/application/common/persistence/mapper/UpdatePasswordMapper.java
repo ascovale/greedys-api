@@ -36,6 +36,10 @@ public interface UpdatePasswordMapper {
     @Mapping(target = "privileges", ignore = true) // Metodo astratto
     @Mapping(target = "privilegesStrings", ignore = true) // Metodo astratto
     @Mapping(target = "roles", ignore = true) // Metodo astratto
+    @Mapping(target = "createdAt", ignore = true) // Audit field
+    @Mapping(target = "createdBy", ignore = true) // Audit field
+    @Mapping(target = "modifiedAt", ignore = true) // Audit field
+    @Mapping(target = "modifiedBy", ignore = true) // Audit field
     @Mapping(target = "password", source = "newPassword") // Solo la nuova password viene mappata
     void updatePasswordFromDTO(UpdatePasswordDTO dto, @MappingTarget AbstractUser entity);
 }

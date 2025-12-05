@@ -1,5 +1,6 @@
 package com.application.customer.persistence.dao;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -80,7 +81,7 @@ public interface CustomerNotificationDAO extends JpaRepository<CustomerNotificat
      * @return liste di notifiche da elaborare
      */
     @Query(value = """
-        SELECT * FROM notification 
+        SELECT * FROM customer_notification 
         WHERE channel = :channel 
         AND status = 'PENDING'
         ORDER BY priority DESC, created_at ASC
@@ -113,10 +114,11 @@ public interface CustomerNotificationDAO extends JpaRepository<CustomerNotificat
      */
     @Modifying
     @Transactional
-    @Query("UPDATE CustomerNotificationEntity c SET c.status = :status, c.updatedAt = CURRENT_TIMESTAMP WHERE c.id = :notificationId")
+    @Query("UPDATE CustomerNotificationEntity c SET c.status = :status, c.updatedAt = :now WHERE c.id = :notificationId")
     int updateStatus(
         @Param("notificationId") Long notificationId,
-        @Param("status") DeliveryStatus status
+        @Param("status") DeliveryStatus status,
+        @Param("now") Instant now
     );
 
     /**
@@ -167,7 +169,7 @@ public interface CustomerNotificationDAO extends JpaRepository<CustomerNotificat
     @Modifying
     @Transactional
     @Query(value = """
-        DELETE FROM notification 
+        DELETE FROM customer_notification 
         WHERE status = 'READ' 
         AND created_at < DATE_SUB(CURRENT_TIMESTAMP, INTERVAL :daysOld DAY)
         """, nativeQuery = true)

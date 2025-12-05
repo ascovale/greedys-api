@@ -1,5 +1,6 @@
 package com.application.admin.persistence.dao;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -113,10 +114,11 @@ public interface AdminNotificationDAO extends JpaRepository<AdminNotification, L
      */
     @Modifying
     @Transactional
-    @Query("UPDATE AdminNotification a SET a.status = :status, a.updatedAt = CURRENT_TIMESTAMP WHERE a.id = :notificationId")
+    @Query("UPDATE AdminNotification a SET a.status = :status, a.updatedAt = :now WHERE a.id = :notificationId")
     int updateStatus(
         @Param("notificationId") Long notificationId,
-        @Param("status") DeliveryStatus status
+        @Param("status") DeliveryStatus status,
+        @Param("now") Instant now
     );
 
     /**

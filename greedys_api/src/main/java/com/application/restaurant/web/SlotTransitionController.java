@@ -47,7 +47,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Deprecated(since = "2.0", forRemoval = true)
 @Tag(name = "Slot Transitions (DEPRECATED)", description = "DEPRECATED - Use Service Version Schedules API instead")
 @RestController
-@RequestMapping("/api/restaurant/slot-transitions")
+@RequestMapping("/restaurant/slot-transitions")
 @PreAuthorize("hasRole('RESTAURANT')")
 public class SlotTransitionController {
 

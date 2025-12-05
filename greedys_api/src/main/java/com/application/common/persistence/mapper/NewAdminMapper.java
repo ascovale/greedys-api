@@ -32,6 +32,10 @@ public interface NewAdminMapper {
     @Mapping(target = "password", ignore = true) // Sarà codificata separatamente dal service
     @Mapping(target = "adminRoles", ignore = true) // Sarà gestito dal service usando role
     @Mapping(target = "status", ignore = true) // Valore di default
+    @Mapping(target = "createdAt", ignore = true) // Audit field
+    @Mapping(target = "createdBy", ignore = true) // Audit field
+    @Mapping(target = "modifiedAt", ignore = true) // Audit field
+    @Mapping(target = "modifiedBy", ignore = true) // Audit field
     Admin fromNewDTO(NewAdminDTO newAdminDTO);
 
     /**
@@ -51,5 +55,9 @@ public interface NewAdminMapper {
     @Mapping(target = "privileges", ignore = true) // Metodo derivato dall'AbstractUser
     @Mapping(target = "privilegesStrings", ignore = true) // Metodo derivato dall'AbstractUser
     @Mapping(target = "roles", ignore = true) // Metodo derivato dall'AbstractUser
+    @Mapping(target = "createdAt", ignore = true) // Audit field
+    @Mapping(target = "createdBy", ignore = true) // Audit field
+    @Mapping(target = "modifiedAt", ignore = true) // Audit field
+    @Mapping(target = "modifiedBy", ignore = true) // Audit field
     void updateEntityFromNewDTO(NewAdminDTO dto, @MappingTarget Admin entity);
 }

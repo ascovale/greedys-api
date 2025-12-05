@@ -11,6 +11,9 @@ import com.application.common.web.dto.restaurant.ServiceVersionDTO;
 
 /**
  * MapStruct mapper for converting between ServiceVersion entity and ServiceVersionDTO
+ * 
+ * NOTE: ServiceVersion is now used for temporal scheduling only (effectiveFrom/To dates).
+ * Reservations no longer reference ServiceVersion directly - they reference Service + snapshot fields.
  */
 @Mapper(
     componentModel = "spring",
@@ -35,7 +38,6 @@ public interface ServiceVersionMapper {
     @Mapping(target = "state", ignore = true) // Will be set by service layer
     @Mapping(target = "createdAt", ignore = true) // Will be set by service layer
     @Mapping(target = "updatedAt", ignore = true) // Will be set by service layer
-    @Mapping(target = "reservations", ignore = true) // Not mapped in basic DTO
     @Mapping(target = "availabilityExceptions", ignore = true) // Not mapped in basic DTO
     @Mapping(target = "serviceDays", ignore = true) // Not mapped in basic DTO
     @Mapping(target = "slotConfigs", ignore = true) // Not mapped in basic DTO
@@ -50,7 +52,6 @@ public interface ServiceVersionMapper {
     @Mapping(target = "state", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "reservations", ignore = true)
     @Mapping(target = "availabilityExceptions", ignore = true)
     @Mapping(target = "serviceDays", ignore = true)
     @Mapping(target = "slotConfigs", ignore = true)

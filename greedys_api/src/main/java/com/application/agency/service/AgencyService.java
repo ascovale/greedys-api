@@ -195,6 +195,25 @@ public class AgencyService {
         agencyDAO.save(agency);
     }
 
+    // Description Management
+
+    /**
+     * Update agency description
+     */
+    public void updateDescription(Long agencyId, String description) {
+        Agency agency = findAgencyById(agencyId);
+        agency.setDescription(description);
+        agencyDAO.save(agency);
+    }
+
+    /**
+     * Get agency description
+     */
+    public String getDescription(Long agencyId) {
+        Agency agency = findAgencyById(agencyId);
+        return agency.getDescription();
+    }
+
     // Statistics
 
     /**

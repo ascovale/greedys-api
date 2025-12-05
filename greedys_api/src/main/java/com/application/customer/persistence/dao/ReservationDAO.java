@@ -99,7 +99,7 @@ public interface ReservationDAO extends JpaRepository<Reservation, Long> {
     @Query("""
         SELECT r FROM Reservation r
         WHERE r.restaurant.id = :restaurantId
-                    AND r.serviceVersion.service.id = :serviceId
+          AND r.service.id = :serviceId
           AND r.reservationDateTime BETWEEN :dayStart AND :dayEnd
         ORDER BY r.reservationDateTime ASC
     """)
@@ -158,7 +158,7 @@ public interface ReservationDAO extends JpaRepository<Reservation, Long> {
      */
     @Query("""
         SELECT r FROM Reservation r
-        WHERE r.serviceVersion.service.id = :serviceId
+        WHERE r.service.id = :serviceId
           AND r.reservationDateTime >= :fromDateTime
         ORDER BY r.reservationDateTime ASC
     """)

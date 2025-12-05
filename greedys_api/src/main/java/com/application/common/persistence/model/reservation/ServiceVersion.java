@@ -132,12 +132,9 @@ public class ServiceVersion {
     @Builder.Default
     private Set<ServiceVersionDay> serviceDays = new HashSet<>();
 
-    /**
-     * One-to-many relationship with Reservations using this version
-     */
-    @OneToMany(mappedBy = "serviceVersion", fetch = FetchType.LAZY)
-    @Builder.Default
-    private Set<Reservation> reservations = new HashSet<>();
+    // NOTE: Reservations no longer reference ServiceVersion directly.
+    // Reservations now reference Service + snapshot fields (bookedServiceName, bookedSlotDuration, etc.)
+    // See: Reservation.java - service field and booked* snapshot fields
 
     public enum VersionState {
         ACTIVE,

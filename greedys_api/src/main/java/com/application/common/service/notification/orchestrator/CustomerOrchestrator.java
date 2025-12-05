@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
+import com.application.common.service.notification.preferences.NotificationBlockService;
 import com.application.customer.persistence.dao.CustomerNotificationDAO;
 import com.application.customer.persistence.model.CustomerNotification;
 import com.application.customer.persistence.model.CustomerNotification.DeliveryStatus;
@@ -62,8 +63,7 @@ import lombok.extern.slf4j.Slf4j;
 public class CustomerOrchestrator extends NotificationOrchestrator<CustomerNotification> {
 
     private final CustomerNotificationDAO customerNotificationDAO;
-    // TODO: Iniettare CustomerPreferencesService quando disponibile
-    // private final CustomerPreferencesService preferencesService;
+    private final NotificationBlockService notificationBlockService;
 
     /**
      * Disaggregates message for customer.
@@ -80,12 +80,16 @@ public class CustomerOrchestrator extends NotificationOrchestrator<CustomerNotif
         // Extract from message
         String eventId = extractString(message, "event_id");
         String eventType = extractString(message, "event_type");
-        String aggregateType = extractString(message, "aggregate_type");
         Long customerId = extractLong(message, "customer_id");
-        Map<String, Object> payload = extractPayload(message);
 
         log.info("📊 Disaggregating: eventId={}, eventType={}, customerId={}", 
             eventId, eventType, customerId);
+
+        // LIVELLO 0: Check blocco globale
+        if (notificationBlockService.isGloballyBlocked(eventType)) {
+            log.info("🚫 EventType {} bloccato globalmente, skip", eventType);
+            return disaggregated;
+        }
 
         // Load recipients (just the customer)
         List<Long> recipients = loadRecipients(message);
@@ -122,8 +126,15 @@ public class CustomerOrchestrator extends NotificationOrchestrator<CustomerNotif
 
         log.debug("📋 Customer {}: final channels = {}", customerId_actual, finalChannels);
 
-        // Create notification record per channel
+        // Create notification record per channel (con verifica blocchi)
         for (String channel : finalChannels) {
+            // LIVELLI 1-4: Verifica blocchi (Customer non ha org/hub, solo user)
+            if (!notificationBlockService.canSendNotification(eventType, channel, customerId_actual)) {
+                log.debug("🚫 Canale {} bloccato per customer {} su evento {}", 
+                    channel, customerId_actual, eventType);
+                continue;
+            }
+
             String disaggregatedEventId = generateDisaggregatedEventId(eventId, customerId_actual, channel);
 
             CustomerNotification notification = createNotificationRecord(
@@ -270,10 +281,17 @@ public class CustomerOrchestrator extends NotificationOrchestrator<CustomerNotif
         Long eventOutboxId = extractLong(message, "event_outbox_id");
         Map<String, Object> payload = extractPayload(message);
 
+        // Null-safe extraction of properties
         @SuppressWarnings("unchecked")
-        Map<String, String> props = (Map<String, String>) payload.getOrDefault("properties", new java.util.HashMap<>());
+        Map<String, String> props = (payload != null) 
+            ? (Map<String, String>) payload.getOrDefault("properties", new java.util.HashMap<>())
+            : new java.util.HashMap<>();
 
         NotificationPriority priority = determinePriority(eventType);
+        
+        // Null-safe extraction of title and body
+        String title = (payload != null) ? (String) payload.get("title") : null;
+        String body = (payload != null) ? (String) payload.get("body") : null;
 
         return CustomerNotification.builder()
             .eventId(eventId)
@@ -282,8 +300,8 @@ public class CustomerOrchestrator extends NotificationOrchestrator<CustomerNotif
             .channel(NotificationChannel.valueOf(channel))
             .status(DeliveryStatus.PENDING)
             .priority(priority)
-            .title((String) payload.get("title"))
-            .body((String) payload.get("body"))
+            .title(title)
+            .body(body)
             .eventType(eventType)
             .aggregateType(aggregateType)
             .properties(props)

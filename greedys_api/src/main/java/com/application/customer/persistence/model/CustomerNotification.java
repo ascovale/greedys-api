@@ -66,11 +66,11 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @Entity(name = "CustomerNotificationEntity")
 @Table(
-    name = "notification",
+    name = "customer_notification",
     uniqueConstraints = {
         @UniqueConstraint(
             name = "uk_customer_notification_idempotency",
-            columnNames = {"event_id", "user_id", "notification_type"}
+            columnNames = {"event_id", "user_id", "channel"}
         )
     }
 )

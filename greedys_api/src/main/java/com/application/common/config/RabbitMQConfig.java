@@ -43,12 +43,32 @@ public class RabbitMQConfig {
     // Dead Letter Queue for failed messages
     public static final String DLQ = "notification.dlq";
     
+    // ============ 🆕 CHAT QUEUE NAMES ============
+    public static final String QUEUE_CHAT_DIRECT = "notification.chat.direct";
+    public static final String QUEUE_CHAT_GROUP = "notification.chat.group";
+    public static final String QUEUE_CHAT_SUPPORT = "notification.chat.support";
+    public static final String QUEUE_CHAT_RESERVATION = "notification.chat.reservation";
+    
+    // ============ 🆕 SOCIAL QUEUE NAMES ============
+    public static final String QUEUE_SOCIAL_FEED = "notification.social.feed";
+    public static final String QUEUE_SOCIAL_EVENTS = "notification.social.events";
+    
     // ============ ROUTING KEYS ============
     public static final String ROUTING_KEY_CUSTOMER = "notification.customer.*";
     public static final String ROUTING_KEY_RESTAURANT = "notification.restaurant.*";
     public static final String ROUTING_KEY_RESTAURANT_TEAM = "notification.restaurant.reservations.*";
     public static final String ROUTING_KEY_ADMIN = "notification.admin.*";
     public static final String ROUTING_KEY_AGENCY = "notification.agency.*";
+    
+    // ============ 🆕 CHAT ROUTING KEYS ============
+    public static final String ROUTING_KEY_CHAT_DIRECT = "notification.chat.direct.*";
+    public static final String ROUTING_KEY_CHAT_GROUP = "notification.chat.group.*";
+    public static final String ROUTING_KEY_CHAT_SUPPORT = "notification.chat.support.*";
+    public static final String ROUTING_KEY_CHAT_RESERVATION = "notification.chat.reservation.*";
+    
+    // ============ 🆕 SOCIAL ROUTING KEYS ============
+    public static final String ROUTING_KEY_SOCIAL_FEED = "notification.social.feed.*";
+    public static final String ROUTING_KEY_SOCIAL_EVENTS = "notification.social.events.*";
     
     // ============ TOPIC EXCHANGE ============
     @Bean
@@ -136,6 +156,80 @@ public class RabbitMQConfig {
     @Bean
     public Queue dlq() {
         return new Queue(DLQ, true, false, false);
+    }
+    
+    // ============ 🆕 CHAT QUEUES & BINDINGS ============
+    @Bean
+    public Queue chatDirectQueue() {
+        return new Queue(QUEUE_CHAT_DIRECT, true, false, false);
+    }
+    
+    @Bean
+    public Queue chatGroupQueue() {
+        return new Queue(QUEUE_CHAT_GROUP, true, false, false);
+    }
+    
+    @Bean
+    public Queue chatSupportQueue() {
+        return new Queue(QUEUE_CHAT_SUPPORT, true, false, false);
+    }
+    
+    @Bean
+    public Queue chatReservationQueue() {
+        return new Queue(QUEUE_CHAT_RESERVATION, true, false, false);
+    }
+    
+    @Bean
+    public Binding chatDirectBinding(Queue chatDirectQueue, TopicExchange notificationsExchange) {
+        return BindingBuilder.bind(chatDirectQueue)
+                .to(notificationsExchange)
+                .with(ROUTING_KEY_CHAT_DIRECT);
+    }
+    
+    @Bean
+    public Binding chatGroupBinding(Queue chatGroupQueue, TopicExchange notificationsExchange) {
+        return BindingBuilder.bind(chatGroupQueue)
+                .to(notificationsExchange)
+                .with(ROUTING_KEY_CHAT_GROUP);
+    }
+    
+    @Bean
+    public Binding chatSupportBinding(Queue chatSupportQueue, TopicExchange notificationsExchange) {
+        return BindingBuilder.bind(chatSupportQueue)
+                .to(notificationsExchange)
+                .with(ROUTING_KEY_CHAT_SUPPORT);
+    }
+    
+    @Bean
+    public Binding chatReservationBinding(Queue chatReservationQueue, TopicExchange notificationsExchange) {
+        return BindingBuilder.bind(chatReservationQueue)
+                .to(notificationsExchange)
+                .with(ROUTING_KEY_CHAT_RESERVATION);
+    }
+    
+    // ============ 🆕 SOCIAL QUEUES & BINDINGS ============
+    @Bean
+    public Queue socialFeedQueue() {
+        return new Queue(QUEUE_SOCIAL_FEED, true, false, false);
+    }
+    
+    @Bean
+    public Queue socialEventsQueue() {
+        return new Queue(QUEUE_SOCIAL_EVENTS, true, false, false);
+    }
+    
+    @Bean
+    public Binding socialFeedBinding(Queue socialFeedQueue, TopicExchange notificationsExchange) {
+        return BindingBuilder.bind(socialFeedQueue)
+                .to(notificationsExchange)
+                .with(ROUTING_KEY_SOCIAL_FEED);
+    }
+    
+    @Bean
+    public Binding socialEventsBinding(Queue socialEventsQueue, TopicExchange notificationsExchange) {
+        return BindingBuilder.bind(socialEventsQueue)
+                .to(notificationsExchange)
+                .with(ROUTING_KEY_SOCIAL_EVENTS);
     }
     
     // ============ MESSAGE CONVERTER ============

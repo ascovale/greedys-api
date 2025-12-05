@@ -8,6 +8,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.application.common.domain.event.EventType;
 import com.application.common.persistence.dao.NotificationOutboxDAO;
 import com.application.common.persistence.dao.RestaurantNotificationDAO;
 import com.application.common.service.events.ReservationCreatedEvent;
@@ -119,7 +120,7 @@ public class ReservationEventListener {
                             .notificationType("RESTAURANT")
                             .aggregateType("RESERVATION")
                             .aggregateId(restaurantId)
-                            .eventType("RESERVATION_REQUESTED")
+                            .eventType(EventType.RESERVATION_REQUESTED.name())
                             .payload(objectMapper.writeValueAsString(properties))
                             .status(com.application.common.persistence.model.notification.NotificationOutbox.Status.PENDING)
                             .createdAt(Instant.now())

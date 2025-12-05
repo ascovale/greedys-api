@@ -62,12 +62,59 @@ public class Reservation {
     @Column(name = "r_date", nullable = false)
     private LocalDate date;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "service_version_id", nullable = false)
-    private ServiceVersion serviceVersion;
+    /**
+     * Reference to the Service (current configuration).
+     * Use snapshot fields for booking-time values.
+     * 
+     * NULLABLE: Per prenotazioni di gruppo o fuori orario, il service può essere null.
+     * In questo caso, usare i campi snapshot (bookedServiceName) per identificare il contesto.
+     */
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "service_id", nullable = true)
+    private Service service;
+
+    /**
+     * Tipo di prenotazione speciale. NULL = prenotazione standard.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "special_booking_type", length = 30)
+    private SpecialBookingType specialBookingType;
 
     @Column(name = "reservation_datetime", nullable = false)
     private LocalDateTime reservationDateTime;
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // SNAPSHOT FIELDS - Values captured at booking time (contract terms)
+    // These preserve the original booking conditions even if Service changes later
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Service name at time of booking.
+     * Preserved even if service is renamed later.
+     */
+    @Column(name = "booked_service_name", length = 100)
+    private String bookedServiceName;
+
+    /**
+     * Slot duration in minutes at time of booking.
+     * E.g., 30, 60, 90, 120 minutes.
+     */
+    @Column(name = "booked_slot_duration")
+    private Integer bookedSlotDuration;
+
+    /**
+     * Opening time at time of booking.
+     * E.g., 12:00 for lunch service.
+     */
+    @Column(name = "booked_opening_time")
+    private LocalTime bookedOpeningTime;
+
+    /**
+     * Closing time at time of booking.
+     * E.g., 15:00 for lunch service.
+     */
+    @Column(name = "booked_closing_time")
+    private LocalTime bookedClosingTime;
 
     @Column(nullable = false)
     private Integer pax;

@@ -5,11 +5,11 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.application.admin.persistence.dao.AdminDAO;
 import com.application.admin.persistence.model.Admin;
-import com.application.admin.service.security.AdminUserDetailsService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -19,7 +19,7 @@ public class AdminAuthenticationProvider extends DaoAuthenticationProvider {
     private final AdminDAO adminDAO;
 
     public AdminAuthenticationProvider(AdminDAO adminDAO, 
-                                     AdminUserDetailsService userDetailsService,
+                                     UserDetailsService userDetailsService,
                                      PasswordEncoder passwordEncoder) {
         super(userDetailsService);
         this.adminDAO = adminDAO;

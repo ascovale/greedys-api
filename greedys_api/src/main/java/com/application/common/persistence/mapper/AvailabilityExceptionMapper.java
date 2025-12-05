@@ -34,6 +34,11 @@ public interface AvailabilityExceptionMapper {
     @Mapping(target = "exceptionType", ignore = true) // Will be set by service layer
     @Mapping(target = "createdAt", ignore = true) // Will be set by service layer
     @Mapping(target = "updatedAt", ignore = true) // Will be set by service layer
+    @Mapping(target = "startTime", ignore = true) // Derived from exceptionDate
+    @Mapping(target = "endTime", ignore = true) // Derived from exceptionDate
+    @Mapping(target = "isFullyClosed", ignore = true) // Derived from exceptionType
+    @Mapping(target = "overrideOpeningTime", ignore = true) // Set by service layer
+    @Mapping(target = "overrideClosingTime", ignore = true) // Set by service layer
     AvailabilityException toEntity(AvailabilityExceptionDTO dto);
 
     /**
@@ -44,6 +49,11 @@ public interface AvailabilityExceptionMapper {
     @Mapping(target = "exceptionType", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "startTime", ignore = true)
+    @Mapping(target = "endTime", ignore = true)
+    @Mapping(target = "isFullyClosed", ignore = true)
+    @Mapping(target = "overrideOpeningTime", ignore = true)
+    @Mapping(target = "overrideClosingTime", ignore = true)
     void updateEntityFromDTO(AvailabilityExceptionDTO dto, @MappingTarget AvailabilityException entity);
 
 }

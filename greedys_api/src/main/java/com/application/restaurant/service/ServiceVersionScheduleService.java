@@ -16,6 +16,8 @@ import com.application.common.persistence.model.reservation.AvailabilityExceptio
 import com.application.common.persistence.model.reservation.ServiceVersion;
 import com.application.common.persistence.model.reservation.ServiceVersionDay;
 import com.application.common.persistence.model.reservation.ServiceVersionSlotConfig;
+import com.application.common.persistence.model.audit.ScheduleAuditLog.EntityType;
+import com.application.common.service.audit.AuditService;
 import com.application.restaurant.persistence.dao.AvailabilityExceptionDAO;
 import com.application.restaurant.persistence.dao.ServiceVersionDAO;
 import com.application.restaurant.persistence.dao.ServiceVersionDayDAO;
@@ -54,6 +56,7 @@ public class ServiceVersionScheduleService {
     private final ServiceVersionSlotConfigDAO serviceVersionSlotConfigDAO;
     private final AvailabilityExceptionDAO availabilityExceptionDAO;
     private final ServiceVersionDAO serviceVersionDAO;
+    private final AuditService auditService;
 
     // ============================================
     // 1. GET WEEKLY SCHEDULE (Template)
@@ -209,6 +212,19 @@ public class ServiceVersionScheduleService {
         config = serviceVersionSlotConfigDAO.save(config);
         log.info("Slot config updated successfully for serviceVersion={}", serviceVersionId);
 
+        // 📝 AUDIT: Log slot config update
+        ServiceVersion sv = config.getServiceVersion();
+        auditService.auditScheduleUpdated(
+            EntityType.SLOT_CONFIG,
+            config.getId(),
+            sv.getService().getId(),
+            sv.getService().getRestaurant().getId(),
+            userId,
+            null, // Old value (could capture before update)
+            config,
+            "Slot configuration updated"
+        );
+
         return toServiceVersionSlotConfigDto(config);
     }
 
@@ -257,6 +273,19 @@ public class ServiceVersionScheduleService {
         day = serviceVersionDayDAO.save(day);
         log.info("Day schedule updated for serviceVersion={}, dayOfWeek={}", serviceVersionId, dayOfWeek);
 
+        // 📝 AUDIT: Log day schedule update
+        ServiceVersion sv = day.getServiceVersion();
+        auditService.auditScheduleUpdated(
+            EntityType.DAY_SCHEDULE,
+            day.getId(),
+            sv.getService().getId(),
+            sv.getService().getRestaurant().getId(),
+            userId,
+            null, // Old value
+            day,
+            "Day schedule updated for " + dayOfWeek
+        );
+
         return toServiceVersionDayDto(day);
     }
 
@@ -302,6 +331,17 @@ public class ServiceVersionScheduleService {
         exception = availabilityExceptionDAO.save(exception);
         log.info("Availability exception created: id={}", exception.getId());
 
+        // 📝 AUDIT: Log exception creation
+        auditService.auditScheduleCreated(
+            EntityType.AVAILABILITY_EXCEPTION,
+            exception.getId(),
+            sv.getService().getId(),
+            sv.getService().getRestaurant().getId(),
+            userId,
+            exception,
+            "Availability exception created for " + exceptionDto.getExceptionDate()
+        );
+
         return toAvailabilityExceptionDto(exception);
     }
 
@@ -324,6 +364,18 @@ public class ServiceVersionScheduleService {
 
         // Validate access
         validateOwnershipByException(exception, restaurantId, userId);
+
+        // 📝 AUDIT: Log exception deletion (before delete)
+        ServiceVersion sv = exception.getServiceVersion();
+        auditService.auditScheduleDeleted(
+            EntityType.AVAILABILITY_EXCEPTION,
+            exception.getId(),
+            sv.getService().getId(),
+            sv.getService().getRestaurant().getId(),
+            userId,
+            exception,
+            "Availability exception deleted for " + exception.getExceptionDate()
+        );
 
         availabilityExceptionDAO.delete(exception);
         log.info("Availability exception deleted: id={}", exceptionId);
@@ -354,6 +406,15 @@ public class ServiceVersionScheduleService {
         sv.setState(ServiceVersion.VersionState.ARCHIVED);
 
         serviceVersionDAO.save(sv);
+        
+        // 📝 AUDIT: Log schedule deactivation
+        auditService.auditScheduleDeactivated(
+            sv.getService().getId(),
+            sv.getService().getRestaurant().getId(),
+            userId,
+            "Schedule deactivated from " + fromDate
+        );
+        
         log.info("Schedule deactivated for serviceVersion={}", serviceVersionId);
     }
 
@@ -381,6 +442,15 @@ public class ServiceVersionScheduleService {
         sv.setState(ServiceVersion.VersionState.ACTIVE);
 
         serviceVersionDAO.save(sv);
+        
+        // 📝 AUDIT: Log schedule reactivation
+        auditService.auditScheduleActivated(
+            sv.getService().getId(),
+            sv.getService().getRestaurant().getId(),
+            userId,
+            "Schedule reactivated"
+        );
+        
         log.info("Schedule reactivated for serviceVersion={}", serviceVersionId);
     }
 

@@ -17,7 +17,7 @@ import lombok.experimental.SuperBuilder;
 @Schema(name = "RestaurantReservationWithExistingCustomerDTO", description = "DTO for creating a new restaurant reservation with existing customer from agenda")
 public class RestaurantReservationWithExistingCustomerDTO extends NewBaseReservationDTO {
     
-    @Schema(description = "ID of existing customer from restaurant agenda. Customer email/phone will be taken from agenda, but userName can be overridden for this specific reservation.", required = true, example = "123")
+    @Schema(description = "ID of existing customer from restaurant agenda. Customer email/phone will be taken from agenda, but userName can be overridden for this specific reservation.", requiredMode = Schema.RequiredMode.REQUIRED, example = "123")
     private Long customerId;
 
 }

@@ -30,7 +30,8 @@ import lombok.RequiredArgsConstructor;
     "com.application.agency.persistence.dao",
     "com.application.customer.persistence.dao",
     "com.application.restaurant.persistence.dao",
-    "com.application.common.persistence.dao"
+    "com.application.common.persistence.dao",
+    "com.application.challenge.persistence.dao"
 })
 @EnableTransactionManagement
 @EnableJpaAuditing(auditorAwareRef = "devAuditorProvider")
@@ -64,7 +65,8 @@ public class DevPersistenceConfig {
             "com.application.agency.persistence.model",
             "com.application.customer.persistence.model",
             "com.application.restaurant.persistence.model",
-            "com.application.common.persistence.model"
+            "com.application.common.persistence.model",
+            "com.application.challenge.persistence.model"
         );
 
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();

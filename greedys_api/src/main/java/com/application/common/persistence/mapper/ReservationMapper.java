@@ -15,6 +15,10 @@ import com.application.restaurant.web.dto.reservation.RestaurantNewReservationDT
 
 /**
  * MapStruct mapper per la conversione tra Reservation e i vari DTO
+ * 
+ * SNAPSHOT PATTERN:
+ * - Reservation now references Service directly (not ServiceVersion)
+ * - Snapshot fields (bookedServiceName, bookedSlotDuration, etc.) preserve booking conditions
  */
 @Mapper(
     componentModel = "spring",
@@ -30,7 +34,11 @@ public interface ReservationMapper {
     @Mapping(target = "reservationDateTime", source = "reservationDateTime")
     @Mapping(target = "restaurant", source = "restaurant.id")
     @Mapping(target = "customerId", source = "customer.id")
-    @Mapping(target = "serviceVersionId", source = "serviceVersion.id")
+    @Mapping(target = "serviceId", source = "service.id")
+    @Mapping(target = "bookedServiceName", source = "bookedServiceName")
+    @Mapping(target = "bookedSlotDuration", source = "bookedSlotDuration")
+    @Mapping(target = "bookedOpeningTime", source = "bookedOpeningTime")
+    @Mapping(target = "bookedClosingTime", source = "bookedClosingTime")
     @Mapping(target = "phone", ignore = true)
     @Mapping(target = "email", ignore = true)
     @Mapping(target = "createdBy", source = "createdBy.username")
@@ -45,7 +53,11 @@ public interface ReservationMapper {
     @Mapping(target = "userName", source = "userName")
     @Mapping(target = "date", ignore = true)
     @Mapping(target = "reservationDateTime", source = "reservationDateTime")
-    @Mapping(target = "serviceVersion", ignore = true)
+    @Mapping(target = "service", ignore = true)
+    @Mapping(target = "bookedServiceName", ignore = true)
+    @Mapping(target = "bookedSlotDuration", ignore = true)
+    @Mapping(target = "bookedOpeningTime", ignore = true)
+    @Mapping(target = "bookedClosingTime", ignore = true)
     @Mapping(target = "restaurant", ignore = true)
     @Mapping(target = "customer", ignore = true)
     @Mapping(target = "table", ignore = true)
@@ -69,7 +81,11 @@ public interface ReservationMapper {
     @Mapping(target = "userName", source = "userName")
     @Mapping(target = "date", ignore = true)
     @Mapping(target = "reservationDateTime", source = "reservationDateTime")
-    @Mapping(target = "serviceVersion", ignore = true)
+    @Mapping(target = "service", ignore = true)
+    @Mapping(target = "bookedServiceName", ignore = true)
+    @Mapping(target = "bookedSlotDuration", ignore = true)
+    @Mapping(target = "bookedOpeningTime", ignore = true)
+    @Mapping(target = "bookedClosingTime", ignore = true)
     @Mapping(target = "restaurant", ignore = true)
     @Mapping(target = "customer", ignore = true)
     @Mapping(target = "table", ignore = true)
@@ -93,7 +109,11 @@ public interface ReservationMapper {
     @Mapping(target = "userName", source = "userName")
     @Mapping(target = "date", ignore = true)
     @Mapping(target = "reservationDateTime", source = "reservationDateTime")
-    @Mapping(target = "serviceVersion", ignore = true)
+    @Mapping(target = "service", ignore = true)
+    @Mapping(target = "bookedServiceName", ignore = true)
+    @Mapping(target = "bookedSlotDuration", ignore = true)
+    @Mapping(target = "bookedOpeningTime", ignore = true)
+    @Mapping(target = "bookedClosingTime", ignore = true)
     @Mapping(target = "restaurant", ignore = true)
     @Mapping(target = "customer", ignore = true)
     @Mapping(target = "table", ignore = true)
@@ -116,7 +136,11 @@ public interface ReservationMapper {
     @Mapping(target = "userName", source = "userName")
     @Mapping(target = "date", ignore = true)
     @Mapping(target = "reservationDateTime", source = "reservationDateTime")
-    @Mapping(target = "serviceVersion", ignore = true)
+    @Mapping(target = "service", ignore = true)
+    @Mapping(target = "bookedServiceName", ignore = true)
+    @Mapping(target = "bookedSlotDuration", ignore = true)
+    @Mapping(target = "bookedOpeningTime", ignore = true)
+    @Mapping(target = "bookedClosingTime", ignore = true)
     @Mapping(target = "restaurant", ignore = true)
     @Mapping(target = "customer", ignore = true)
     @Mapping(target = "table", ignore = true)
@@ -135,12 +159,17 @@ public interface ReservationMapper {
 
     /**
      * Aggiorna un'entità Reservation esistente con i dati dal ReservationDTO
+     * NOTE: Snapshot fields should NOT be updated after booking creation
      */
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "userName", source = "name")
     @Mapping(target = "date", ignore = true)
     @Mapping(target = "reservationDateTime", ignore = true)
-    @Mapping(target = "serviceVersion", ignore = true)
+    @Mapping(target = "service", ignore = true)
+    @Mapping(target = "bookedServiceName", ignore = true)
+    @Mapping(target = "bookedSlotDuration", ignore = true)
+    @Mapping(target = "bookedOpeningTime", ignore = true)
+    @Mapping(target = "bookedClosingTime", ignore = true)
     @Mapping(target = "restaurant", ignore = true)
     @Mapping(target = "customer", ignore = true)
     @Mapping(target = "table", ignore = true)

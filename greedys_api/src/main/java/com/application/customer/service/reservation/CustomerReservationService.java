@@ -7,12 +7,15 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.application.common.domain.event.EventType;
 import com.application.common.persistence.mapper.ReservationMapper;
 import com.application.common.persistence.model.reservation.Reservation;
 import com.application.common.persistence.model.reservation.Reservation.Status;
 import com.application.common.persistence.model.reservation.ReservationModificationRequest;
 import com.application.common.persistence.model.reservation.ServiceVersion;
 import com.application.common.persistence.model.notification.EventOutbox;
+import com.application.common.persistence.model.audit.ReservationAuditLog.UserType;
+import com.application.common.service.audit.AuditService;
 import com.application.common.service.reservation.ReservationService;
 import com.application.common.web.dto.reservations.ReservationDTO;
 import com.application.common.persistence.dao.EventOutboxDAO;
@@ -40,13 +43,14 @@ public class CustomerReservationService {
     private final ServiceVersionDAO serviceVersionDAO;
     private final ReservationMapper reservationMapper;
     private final EventOutboxDAO eventOutboxDAO;
+    private final AuditService auditService;
 
     public ReservationDTO createReservation(CustomerNewReservationDTO reservationDto, Customer customer) {
         // Validate service exists
         com.application.common.persistence.model.reservation.Service service = serviceDAO.findById(reservationDto.getServiceId())
                 .orElseThrow(() -> new IllegalArgumentException("Service not found"));
         
-        // Find active service version for the reservation date
+        // Find active service version for scheduling validation and snapshot data
         ServiceVersion serviceVersion = serviceVersionDAO
             .findActiveVersionByServiceAndDate(
                 reservationDto.getServiceId(), 
@@ -54,6 +58,7 @@ public class CustomerReservationService {
             )
             .orElseThrow(() -> new IllegalArgumentException("No active service version found for the requested date"));
         
+        // Build reservation with Service reference + snapshot fields
         Reservation reservation = Reservation.builder()
                 .userName(reservationDto.getUserName())
                 .pax(reservationDto.getPax())
@@ -61,7 +66,10 @@ public class CustomerReservationService {
                 .notes(reservationDto.getNotes())
                 .date(reservationDto.getReservationDateTime().toLocalDate())
                 .reservationDateTime(reservationDto.getReservationDateTime())
-                .serviceVersion(serviceVersion)
+                .service(service) // Reference to Service (not ServiceVersion)
+                // SNAPSHOT FIELDS - Capture at booking time
+                .bookedServiceName(service.getName())
+                .bookedSlotDuration(serviceVersion.getDuration())
                 .restaurant(service.getRestaurant())
                 .customer(customer)
                 .createdBy(customer)
@@ -74,6 +82,15 @@ public class CustomerReservationService {
         // 📌 CREATE RESERVATION_REQUESTED EVENT (notifies restaurant staff)
         createReservationRequestedEvent(savedReservation);
         
+        // 📝 AUDIT: Log reservation creation by customer
+        auditService.auditReservationCreated(
+            savedReservation.getId(),
+            savedReservation.getRestaurant().getId(),
+            customer.getId(),
+            UserType.CUSTOMER,
+            buildAuditReservationData(savedReservation)
+        );
+        
         return reservationMapper.toDTO(savedReservation);
     }
     
@@ -82,12 +99,12 @@ public class CustomerReservationService {
      * Notifies: RESTAURANT STAFF
      */
     private void createReservationRequestedEvent(Reservation reservation) {
-        String eventId = "RESERVATION_REQUESTED_" + reservation.getId() + "_" + System.currentTimeMillis();
+        String eventId = EventType.RESERVATION_REQUESTED.name() + "_" + reservation.getId() + "_" + System.currentTimeMillis();
         String payload = buildReservationPayload(reservation);
         
         EventOutbox eventOutbox = EventOutbox.builder()
             .eventId(eventId)
-            .eventType("RESERVATION_REQUESTED")
+            .eventType(EventType.RESERVATION_REQUESTED.name())
             .aggregateType("CUSTOMER")
             .aggregateId(reservation.getId())
             .payload(payload)
@@ -96,8 +113,8 @@ public class CustomerReservationService {
         
         eventOutboxDAO.save(eventOutbox);
         
-        log.info("✅ Created EventOutbox RESERVATION_REQUESTED: eventId={}, reservationId={}, aggregateType=CUSTOMER, status=PENDING", 
-            eventId, reservation.getId());
+        log.info("✅ Created EventOutbox {}: eventId={}, reservationId={}, aggregateType=CUSTOMER, status=PENDING", 
+            EventType.RESERVATION_REQUESTED.name(), eventId, reservation.getId());
     }
     
     /**
@@ -142,7 +159,7 @@ public class CustomerReservationService {
         reservationService.validateReservationDateAvailability(
             reservation.getRestaurant(),
             dTO.getReservationDateTime().toLocalDate(),
-            reservation.getServiceVersion()
+            reservation.getService()
         );
 
         // Create ReservationModificationRequest with PENDING_APPROVAL status
@@ -174,6 +191,22 @@ public class CustomerReservationService {
         // Audit is handled when restaurant reviews the request (approve/reject)
         createReservationModificationRequestedEvent(reservation, modificationRequest);
         
+        // 📝 AUDIT: Log modification request by customer
+        auditService.auditReservationUpdated(
+            oldReservationId,
+            reservation.getRestaurant().getId(),
+            currentUser.getId(),
+            UserType.CUSTOMER,
+            "modification_request",
+            null,
+            String.format("date:%s->%s, pax:%d->%d", 
+                modificationRequest.getOriginalDate(), 
+                modificationRequest.getRequestedDate(),
+                modificationRequest.getOriginalPax(),
+                modificationRequest.getRequestedPax()),
+            "Customer requested modification"
+        );
+        
         log.info("✅ Customer {} requested modification for reservation {}", currentUser.getId(), oldReservationId);
     }
 
@@ -199,16 +232,40 @@ public class CustomerReservationService {
     @Transactional
     public void deleteReservation(Long reservationId) {
         var reservation = reservationDAO.findById(reservationId).orElseThrow(() -> new IllegalArgumentException("Reservation not found"));
+        String oldStatus = reservation.getStatus().name();
         reservation.setStatus(Reservation.Status.DELETED);
         reservationDAO.save(reservation);
+        
+        // 📝 AUDIT: Log deletion by customer
+        Long customerId = reservation.getCustomer() != null ? reservation.getCustomer().getId() : null;
+        auditService.auditReservationCancelled(
+            reservationId,
+            reservation.getRestaurant().getId(),
+            customerId,
+            UserType.CUSTOMER,
+            "Customer deleted reservation (was " + oldStatus + ")"
+        );
     }
 
     public void rejectReservation(Long reservationId) {
         Reservation.Status status = Reservation.Status.REJECTED;
         Reservation reservation = reservationDAO.findById(reservationId)
                 .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
+        String oldStatus = reservation.getStatus().name();
         reservation.setStatus(status);
         reservationDAO.save(reservation);
+        
+        // 📝 AUDIT: Log rejection by customer
+        Long customerId = reservation.getCustomer() != null ? reservation.getCustomer().getId() : null;
+        auditService.auditReservationStatusChanged(
+            reservationId,
+            reservation.getRestaurant().getId(),
+            customerId,
+            UserType.CUSTOMER,
+            oldStatus,
+            status.name(),
+            "Customer rejected reservation"
+        );
     }
 
     public ReservationDTO findReservationById(Long reservationId) {
@@ -226,12 +283,12 @@ public class CustomerReservationService {
      * Aggregate Type: CUSTOMER (shows it's initiated by customer)
      */
     private void createReservationModificationRequestedEvent(Reservation reservation, ReservationModificationRequest modRequest) {
-        String eventId = "RESERVATION_MODIFICATION_REQUESTED_" + modRequest.getId() + "_" + System.currentTimeMillis();
+        String eventId = EventType.RESERVATION_MODIFICATION_REQUESTED.name() + "_" + modRequest.getId() + "_" + System.currentTimeMillis();
         String payload = buildReservationModificationPayload(reservation, modRequest);
         
         EventOutbox eventOutbox = EventOutbox.builder()
             .eventId(eventId)
-            .eventType("RESERVATION_MODIFICATION_REQUESTED")
+            .eventType(EventType.RESERVATION_MODIFICATION_REQUESTED.name())
             .aggregateType("CUSTOMER")
             .aggregateId(modRequest.getId())
             .payload(payload)
@@ -240,8 +297,8 @@ public class CustomerReservationService {
         
         eventOutboxDAO.save(eventOutbox);
         
-        log.info("✅ Created EventOutbox RESERVATION_MODIFICATION_REQUESTED: eventId={}, modificationRequestId={}, reservationId={}, status=PENDING", 
-            eventId, modRequest.getId(), reservation.getId());
+        log.info("✅ Created EventOutbox {}: eventId={}, modificationRequestId={}, reservationId={}, status=PENDING", 
+            EventType.RESERVATION_MODIFICATION_REQUESTED.name(), eventId, modRequest.getId(), reservation.getId());
     }
 
     /**
@@ -282,5 +339,26 @@ public class CustomerReservationService {
             requestedNotes,
             customerReason
         );
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // AUDIT HELPER METHODS
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Build a map of reservation data for audit logging
+     */
+    private java.util.Map<String, Object> buildAuditReservationData(Reservation reservation) {
+        java.util.Map<String, Object> data = new java.util.HashMap<>();
+        data.put("reservationId", reservation.getId());
+        data.put("serviceId", reservation.getService() != null ? reservation.getService().getId() : null);
+        data.put("serviceName", reservation.getBookedServiceName());
+        data.put("date", reservation.getDate() != null ? reservation.getDate().toString() : null);
+        data.put("dateTime", reservation.getReservationDateTime() != null ? reservation.getReservationDateTime().toString() : null);
+        data.put("pax", reservation.getPax());
+        data.put("kids", reservation.getKids());
+        data.put("status", reservation.getStatus() != null ? reservation.getStatus().name() : null);
+        data.put("bookedSlotDuration", reservation.getBookedSlotDuration());
+        return data;
     }
 }

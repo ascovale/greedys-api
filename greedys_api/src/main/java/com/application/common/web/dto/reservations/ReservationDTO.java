@@ -1,6 +1,7 @@
 package com.application.common.web.dto.reservations;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import com.application.common.controller.validators.ValidEmail;
 import com.application.common.persistence.model.reservation.Reservation.Status;
@@ -15,7 +16,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(name = "ReservationDTO", description = "DTO for reservation details (no longer contains slot)")
+@Schema(name = "ReservationDTO", description = "DTO for reservation details with snapshot fields")
 public class ReservationDTO {
 
 	@Schema(description = "Reservation ID", example = "101")
@@ -44,8 +45,33 @@ public class ReservationDTO {
 	@Schema(description = "Special notes for reservation", example = "Window seat preferred")
 	private String notes;
 
-	@Schema(description = "ServiceVersion ID (versioned service config)", example = "5")
-	private Long serviceVersionId;
+	// ─────────────────────────────────────────────────────────────────────────────
+	// SERVICE REFERENCE
+	// ─────────────────────────────────────────────────────────────────────────────
+
+	@Schema(description = "Service ID (current service reference)", example = "5")
+	private Long serviceId;
+
+	// ─────────────────────────────────────────────────────────────────────────────
+	// SNAPSHOT FIELDS - Values captured at booking time (contract terms)
+	// These preserve the original booking conditions even if Service changes later
+	// ─────────────────────────────────────────────────────────────────────────────
+
+	@Schema(description = "Service name at time of booking", example = "Pranzo")
+	private String bookedServiceName;
+
+	@Schema(description = "Slot duration in minutes at time of booking", example = "30")
+	private Integer bookedSlotDuration;
+
+	@Schema(description = "Opening time at time of booking", example = "12:00:00")
+	private LocalTime bookedOpeningTime;
+
+	@Schema(description = "Closing time at time of booking", example = "15:00:00")
+	private LocalTime bookedClosingTime;
+
+	// ─────────────────────────────────────────────────────────────────────────────
+	// OTHER FIELDS
+	// ─────────────────────────────────────────────────────────────────────────────
 
 	@Schema(description = "Restaurant ID", example = "1")
 	private Long restaurant;

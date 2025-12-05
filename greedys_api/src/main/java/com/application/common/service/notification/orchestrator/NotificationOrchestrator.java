@@ -252,33 +252,111 @@ public abstract class NotificationOrchestrator<T extends ANotification> {
         );
     }
 
+    // ========================================================================
+    // HELPER METHODS - NULL-SAFE con supporto snake_case e camelCase
+    // ========================================================================
+
     /**
-     * Helper: safely extract String from map
+     * Helper: safely extract String from map (null-safe)
+     * Supporta sia snake_case che camelCase
      */
     protected String extractString(Map<String, Object> map, String key) {
+        if (map == null) return null;
+        
+        // Try snake_case first, then camelCase
         Object value = map.get(key);
+        if (value == null) {
+            value = map.get(toCamelCase(key));
+        }
+        if (value == null) {
+            value = map.get(toSnakeCase(key));
+        }
+        
         if (value instanceof String) {
             return (String) value;
         }
-        throw new IllegalArgumentException("Expected string for key: " + key);
+        return null;
     }
 
     /**
-     * Helper: safely extract Long from map
+     * Helper: safely extract Long from map (null-safe)
+     * Supporta sia snake_case che camelCase
      */
     protected Long extractLong(Map<String, Object> map, String key) {
+        if (map == null) return null;
+        
+        // Try snake_case first, then camelCase
         Object value = map.get(key);
+        if (value == null) {
+            value = map.get(toCamelCase(key));
+        }
+        if (value == null) {
+            value = map.get(toSnakeCase(key));
+        }
+        
         if (value instanceof Number) {
             return ((Number) value).longValue();
         }
-        throw new IllegalArgumentException("Expected number for key: " + key);
+        return null;
     }
 
     /**
-     * Helper: safely extract and cast payload
+     * Helper: safely extract and cast payload (null-safe)
+     * Supporta sia snake_case che camelCase
      */
     @SuppressWarnings("unchecked")
     protected Map<String, Object> extractPayload(Map<String, Object> message) {
-        return (Map<String, Object>) message.get("payload");
+        if (message == null) return null;
+        
+        Object payload = message.get("payload");
+        if (payload == null) {
+            payload = message.get("Payload");
+        }
+        
+        if (payload instanceof Map) {
+            return (Map<String, Object>) payload;
+        }
+        return null;
+    }
+
+    /**
+     * Helper: convert snake_case to camelCase
+     * Example: event_type -> eventType
+     */
+    protected String toCamelCase(String snakeCase) {
+        if (snakeCase == null || !snakeCase.contains("_")) {
+            return snakeCase;
+        }
+        StringBuilder result = new StringBuilder();
+        boolean capitalizeNext = false;
+        for (char c : snakeCase.toCharArray()) {
+            if (c == '_') {
+                capitalizeNext = true;
+            } else if (capitalizeNext) {
+                result.append(Character.toUpperCase(c));
+                capitalizeNext = false;
+            } else {
+                result.append(c);
+            }
+        }
+        return result.toString();
+    }
+
+    /**
+     * Helper: convert camelCase to snake_case
+     * Example: eventType -> event_type
+     */
+    protected String toSnakeCase(String camelCase) {
+        if (camelCase == null) return null;
+        StringBuilder result = new StringBuilder();
+        for (char c : camelCase.toCharArray()) {
+            if (Character.isUpperCase(c)) {
+                result.append('_');
+                result.append(Character.toLowerCase(c));
+            } else {
+                result.append(c);
+            }
+        }
+        return result.toString();
     }
 }

@@ -15,7 +15,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Service
+@Service("adminUserDetailsService")
 @Transactional
 @RequiredArgsConstructor
 @Slf4j

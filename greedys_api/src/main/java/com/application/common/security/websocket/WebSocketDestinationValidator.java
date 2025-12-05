@@ -24,14 +24,32 @@ import lombok.extern.slf4j.Slf4j;
  *    - ADMIN users: /topic/admin/*
  *    - AGENCY users: /topic/agency/*
  * 
- * 3. GROUP CHANNELS (/group/{groupId}/*)
+ * 3. 🆕 CHAT TOPICS (/topic/chat/*)
+ *    - /topic/chat/conversation/{conversationId} - Conversation messages
+ *    - /topic/chat/typing/{conversationId} - Typing indicators
+ *    - /topic/chat/user/{userId} - User's chat notifications
+ *    - Requires: User must be participant in conversation
+ * 
+ * 4. 🆕 SOCIAL TOPICS (/topic/social/*)
+ *    - /topic/social/feed/{userId} - User's social feed updates
+ *    - /topic/social/post/{postId} - Post interaction updates
+ *    - /topic/social/user/{userId}/notifications - Social notifications
+ *    - Requires: User authenticated
+ * 
+ * 5. 🆕 EVENT TOPICS (/topic/event/*)
+ *    - /topic/event/{eventId} - Event updates
+ *    - /topic/event/{eventId}/rsvp - RSVP updates
+ *    - /topic/event/restaurant/{restaurantId} - Restaurant's events
+ *    - Requires: User authenticated (customer/restaurant staff)
+ * 
+ * 6. GROUP CHANNELS (/group/{groupId}/*)
  *    - User can subscribe if they're member of the group (future enhancement)
  *    - Would require database lookup to verify membership
  * 
- * 4. BROADCAST TOPICS (/broadcast/*)
+ * 7. BROADCAST TOPICS (/broadcast/*)
  *    - Restricted to admin users only
  * 
- * 5. HUB-SPECIFIC QUEUES (/hub/{hubId}/queue/*)
+ * 8. HUB-SPECIFIC QUEUES (/hub/{hubId}/queue/*)
  *    - Hub users can access queues for restaurants/agencies they manage
  * 
  * ARCHITECTURE:
@@ -61,6 +79,12 @@ public class WebSocketDestinationValidator {
     private static final String GROUP_PREFIX = "/group/";
     private static final String BROADCAST_PREFIX = "/broadcast/";
     private static final String HUB_PREFIX = "/hub/";
+    
+    // 🆕 Chat, Social, Event prefixes
+    private static final String CHAT_TOPIC_PREFIX = "/topic/chat/";
+    private static final String SOCIAL_TOPIC_PREFIX = "/topic/social/";
+    private static final String EVENT_TOPIC_PREFIX = "/topic/event/";
+    private static final String SUPPORT_TOPIC_PREFIX = "/topic/support/";
     
     /**
      * Validates if a user can access a specific WebSocket destination
@@ -99,6 +123,18 @@ public class WebSocketDestinationValidator {
         // Parse destination type
         if (destination.startsWith(USER_PREFIX)) {
             return validateUserSpecificQueue(destination, userId);
+        } else if (destination.startsWith(CHAT_TOPIC_PREFIX)) {
+            // 🆕 Chat topics - require authenticated user
+            return validateChatTopicAccess(destination, userType, userId);
+        } else if (destination.startsWith(SOCIAL_TOPIC_PREFIX)) {
+            // 🆕 Social topics - require authenticated user
+            return validateSocialTopicAccess(destination, userType, userId);
+        } else if (destination.startsWith(EVENT_TOPIC_PREFIX)) {
+            // 🆕 Event topics - require authenticated user
+            return validateEventTopicAccess(destination, userType, userId);
+        } else if (destination.startsWith(SUPPORT_TOPIC_PREFIX)) {
+            // 🆕 Support topics - require authenticated user
+            return validateSupportTopicAccess(destination, userType, userId);
         } else if (destination.startsWith(TOPIC_PREFIX)) {
             // Check for organization-specific patterns first (requires ID validation)
             if (isRUserNotificationsTopic(destination)) {
@@ -487,5 +523,288 @@ public class WebSocketDestinationValidator {
             return userType.endsWith("-hub") ? "AGENCY_HUB" : "AGENCY";
         }
         return "UNKNOWN";
+    }
+    
+    // ==================== 🆕 CHAT TOPIC VALIDATION ====================
+    
+    /**
+     * Validates access to chat topics (/topic/chat/...)
+     * 
+     * SUPPORTED PATTERNS:
+     * - /topic/chat/conversation/{conversationId} - Conversation messages
+     * - /topic/chat/typing/{conversationId} - Typing indicators
+     * - /topic/chat/user/{userId} - User's chat notifications
+     * - /topic/chat/direct/{userId} - Direct message notifications
+     * - /topic/chat/group/{groupId} - Group chat updates
+     * 
+     * Security: Requires authenticated user. 
+     * For user-specific topics, validates userId matches.
+     * TODO: For conversation topics, validate user is participant.
+     * 
+     * @param destination The chat topic destination
+     * @param userType The user's type
+     * @param userId The authenticated user's ID
+     * @return true if access is allowed
+     */
+    private boolean validateChatTopicAccess(String destination, String userType, Long userId) {
+        if (userType == null || userId == null) {
+            log.warn("❌ Unauthenticated access denied to chat topic: {}", destination);
+            return false;
+        }
+        
+        String subPath = destination.substring(CHAT_TOPIC_PREFIX.length());
+        String[] parts = subPath.split("/");
+        
+        if (parts.length < 2) {
+            // General chat topic - allow for authenticated users
+            log.debug("✅ Authenticated user {} allowed to access chat topic: {}", userId, destination);
+            return true;
+        }
+        
+        String topicType = parts[0]; // "conversation", "typing", "user", "direct", "group"
+        
+        switch (topicType.toLowerCase()) {
+            case "user":
+            case "direct":
+                // /topic/chat/user/{userId} - must match authenticated user
+                try {
+                    Long destinationUserId = Long.parseLong(parts[1]);
+                    if (!destinationUserId.equals(userId)) {
+                        log.warn("❌ User {} denied access to chat topic for user {}", userId, destinationUserId);
+                        return false;
+                    }
+                    log.debug("✅ User {} allowed to access own chat topic: {}", userId, destination);
+                    return true;
+                } catch (NumberFormatException e) {
+                    log.warn("❌ Invalid user ID in chat topic: {}", parts[1]);
+                    return false;
+                }
+                
+            case "conversation":
+            case "typing":
+            case "group":
+                // TODO: Validate user is participant in conversation/group
+                // For now, allow authenticated users
+                log.debug("✅ Authenticated user {} allowed to access chat topic: {}", userId, destination);
+                return true;
+                
+            default:
+                log.debug("✅ Authenticated user {} allowed to access chat topic: {}", userId, destination);
+                return true;
+        }
+    }
+    
+    // ==================== 🆕 SOCIAL TOPIC VALIDATION ====================
+    
+    /**
+     * Validates access to social topics (/topic/social/...)
+     * 
+     * SUPPORTED PATTERNS:
+     * - /topic/social/feed/{userId} - User's social feed updates
+     * - /topic/social/post/{postId} - Post interaction updates
+     * - /topic/social/user/{userId}/notifications - Social notifications
+     * - /topic/social/restaurant/{restaurantId} - Restaurant social updates
+     * 
+     * Security: Requires authenticated user.
+     * For user-specific notifications, validates userId matches.
+     * 
+     * @param destination The social topic destination
+     * @param userType The user's type
+     * @param userId The authenticated user's ID
+     * @return true if access is allowed
+     */
+    private boolean validateSocialTopicAccess(String destination, String userType, Long userId) {
+        if (userType == null || userId == null) {
+            log.warn("❌ Unauthenticated access denied to social topic: {}", destination);
+            return false;
+        }
+        
+        String subPath = destination.substring(SOCIAL_TOPIC_PREFIX.length());
+        String[] parts = subPath.split("/");
+        
+        if (parts.length < 2) {
+            // General social topic
+            log.debug("✅ Authenticated user {} allowed to access social topic: {}", userId, destination);
+            return true;
+        }
+        
+        String topicType = parts[0]; // "feed", "post", "user", "restaurant"
+        
+        switch (topicType.toLowerCase()) {
+            case "user":
+                // /topic/social/user/{userId}/* - must match authenticated user
+                try {
+                    Long destinationUserId = Long.parseLong(parts[1]);
+                    if (!destinationUserId.equals(userId)) {
+                        log.warn("❌ User {} denied access to social notifications for user {}", userId, destinationUserId);
+                        return false;
+                    }
+                    log.debug("✅ User {} allowed to access own social notifications: {}", userId, destination);
+                    return true;
+                } catch (NumberFormatException e) {
+                    log.warn("❌ Invalid user ID in social topic: {}", parts[1]);
+                    return false;
+                }
+                
+            case "feed":
+            case "post":
+            case "restaurant":
+                // Allow authenticated users to subscribe to feeds, posts, restaurant updates
+                log.debug("✅ Authenticated user {} allowed to access social topic: {}", userId, destination);
+                return true;
+                
+            default:
+                log.debug("✅ Authenticated user {} allowed to access social topic: {}", userId, destination);
+                return true;
+        }
+    }
+    
+    // ==================== 🆕 EVENT TOPIC VALIDATION ====================
+    
+    /**
+     * Validates access to event topics (/topic/event/...)
+     * 
+     * SUPPORTED PATTERNS:
+     * - /topic/event/{eventId} - Event updates
+     * - /topic/event/{eventId}/rsvp - RSVP updates  
+     * - /topic/event/restaurant/{restaurantId} - Restaurant's events
+     * - /topic/event/user/{userId} - User's event notifications
+     * 
+     * Security: Requires authenticated user.
+     * For user-specific topics, validates userId matches.
+     * For restaurant topics, validates restaurant staff access.
+     * 
+     * @param destination The event topic destination
+     * @param userType The user's type
+     * @param userId The authenticated user's ID
+     * @return true if access is allowed
+     */
+    private boolean validateEventTopicAccess(String destination, String userType, Long userId) {
+        if (userType == null || userId == null) {
+            log.warn("❌ Unauthenticated access denied to event topic: {}", destination);
+            return false;
+        }
+        
+        String subPath = destination.substring(EVENT_TOPIC_PREFIX.length());
+        String[] parts = subPath.split("/");
+        
+        if (parts.length < 1) {
+            log.warn("❌ Invalid event topic format: {}", destination);
+            return false;
+        }
+        
+        String firstPart = parts[0];
+        
+        switch (firstPart.toLowerCase()) {
+            case "user":
+                // /topic/event/user/{userId} - must match authenticated user
+                if (parts.length >= 2) {
+                    try {
+                        Long destinationUserId = Long.parseLong(parts[1]);
+                        if (!destinationUserId.equals(userId)) {
+                            log.warn("❌ User {} denied access to event notifications for user {}", userId, destinationUserId);
+                            return false;
+                        }
+                        log.debug("✅ User {} allowed to access own event notifications: {}", userId, destination);
+                        return true;
+                    } catch (NumberFormatException e) {
+                        log.warn("❌ Invalid user ID in event topic: {}", parts[1]);
+                        return false;
+                    }
+                }
+                return false;
+                
+            case "restaurant":
+                // /topic/event/restaurant/{restaurantId} - restaurant staff only
+                // TODO: Validate user works for this restaurant
+                if (userType.startsWith("restaurant-user")) {
+                    log.debug("✅ Restaurant user {} allowed to access restaurant event topic: {}", userId, destination);
+                    return true;
+                }
+                log.warn("❌ Non-restaurant user {} denied access to restaurant event topic: {}", userId, destination);
+                return false;
+                
+            default:
+                // Assume it's an eventId - allow any authenticated user to subscribe
+                // /topic/event/{eventId}
+                // /topic/event/{eventId}/rsvp
+                log.debug("✅ Authenticated user {} allowed to access event topic: {}", userId, destination);
+                return true;
+        }
+    }
+    
+    // ==================== 🆕 SUPPORT TOPIC VALIDATION ====================
+    
+    /**
+     * Validates access to support topics (/topic/support/...)
+     * 
+     * SUPPORTED PATTERNS:
+     * - /topic/support/ticket/{ticketId} - Ticket updates
+     * - /topic/support/user/{userId} - User's support notifications
+     * - /topic/support/staff - Staff notifications (staff only)
+     * 
+     * Security: Requires authenticated user.
+     * For user-specific topics, validates userId matches.
+     * For staff topics, validates admin/staff access.
+     * 
+     * @param destination The support topic destination
+     * @param userType The user's type
+     * @param userId The authenticated user's ID
+     * @return true if access is allowed
+     */
+    private boolean validateSupportTopicAccess(String destination, String userType, Long userId) {
+        if (userType == null || userId == null) {
+            log.warn("❌ Unauthenticated access denied to support topic: {}", destination);
+            return false;
+        }
+        
+        String subPath = destination.substring(SUPPORT_TOPIC_PREFIX.length());
+        String[] parts = subPath.split("/");
+        
+        if (parts.length < 1) {
+            log.warn("❌ Invalid support topic format: {}", destination);
+            return false;
+        }
+        
+        String topicType = parts[0];
+        
+        switch (topicType.toLowerCase()) {
+            case "user":
+                // /topic/support/user/{userId} - must match authenticated user
+                if (parts.length >= 2) {
+                    try {
+                        Long destinationUserId = Long.parseLong(parts[1]);
+                        if (!destinationUserId.equals(userId)) {
+                            log.warn("❌ User {} denied access to support notifications for user {}", userId, destinationUserId);
+                            return false;
+                        }
+                        log.debug("✅ User {} allowed to access own support notifications: {}", userId, destination);
+                        return true;
+                    } catch (NumberFormatException e) {
+                        log.warn("❌ Invalid user ID in support topic: {}", parts[1]);
+                        return false;
+                    }
+                }
+                return false;
+                
+            case "staff":
+                // /topic/support/staff - only admin users
+                if ("admin".equals(userType)) {
+                    log.debug("✅ Admin user {} allowed to access staff support topic: {}", userId, destination);
+                    return true;
+                }
+                log.warn("❌ Non-admin user {} denied access to staff support topic: {}", userId, destination);
+                return false;
+                
+            case "ticket":
+                // /topic/support/ticket/{ticketId} - authenticated users
+                // TODO: Validate user owns ticket or is staff
+                log.debug("✅ Authenticated user {} allowed to access support ticket topic: {}", userId, destination);
+                return true;
+                
+            default:
+                log.debug("✅ Authenticated user {} allowed to access support topic: {}", userId, destination);
+                return true;
+        }
     }
 }

@@ -100,9 +100,6 @@ public class PhoneNumberValidator implements ConstraintValidator<ValidPhoneNumbe
      * Validates Italian phone numbers
      */
     private boolean validateItalianPhone(String phoneNumber, ConstraintValidatorContext context) {
-        // Remove spaces and common formatting
-        String normalized = phoneNumber.replaceAll("\\s", "").replaceAll("-", "");
-        
         // Check mobile numbers
         if (ITALIAN_MOBILE_PATTERN.matcher(phoneNumber).matches()) {
             return true;

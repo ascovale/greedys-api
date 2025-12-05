@@ -269,4 +269,14 @@ public interface AvailabilityExceptionDAO extends JpaRepository<AvailabilityExce
     """)
     int deleteAllByServiceVersion(@Param("serviceVersionId") Long serviceVersionId);
 
+    /**
+     * Find all exceptions for a service version (for audit before bulk delete).
+     */
+    @Query("""
+        SELECT ae FROM AvailabilityException ae
+        WHERE ae.serviceVersion.id = :serviceVersionId
+        ORDER BY ae.exceptionDate ASC
+    """)
+    Collection<AvailabilityException> findAllByServiceVersionId(@Param("serviceVersionId") Long serviceVersionId);
+
 }

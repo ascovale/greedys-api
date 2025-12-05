@@ -29,7 +29,7 @@ import lombok.extern.slf4j.Slf4j;
  * REST Controller for customer matching operations
  */
 @RestController
-@RequestMapping("/api/customer/match")
+@RequestMapping("/customer/match")
 @Tag(name = "Customer Matching", description = "Endpoints for intelligent customer matching and form configuration")
 @Slf4j
 public class CustomerMatchController {

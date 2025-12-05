@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.application.restaurant.persistence.model.Restaurant;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -75,5 +76,33 @@ public class Dish {
         inverseJoinColumns = @JoinColumn(name = "allergen_id")
     )
     private List<Allergen> allergens;
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // DIETARY TAGS
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    @Column(name = "is_vegetarian")
+    private Boolean isVegetarian;
+
+    @Column(name = "is_vegan")
+    private Boolean isVegan;
+
+    @Column(name = "is_gluten_free")
+    private Boolean isGlutenFree;
+
+    @Column(name = "is_lactose_free")
+    private Boolean isLactoseFree;
+
+    @Column(name = "is_halal")
+    private Boolean isHalal;
+
+    @Column(name = "is_kosher")
+    private Boolean isKosher;
+
+    @Column(name = "contains_alcohol")
+    private Boolean containsAlcohol;
+
+    @Column(name = "contains_pork")
+    private Boolean containsPork;
 
 }

@@ -8,10 +8,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.application.admin.web.dto.reservation.AdminNewReservationDTO;
+import com.application.common.domain.event.EventType;
 import com.application.common.persistence.mapper.ReservationMapper;
 import com.application.common.persistence.model.reservation.Reservation;
 import com.application.common.persistence.model.reservation.Reservation.Status;
 import com.application.common.persistence.model.notification.EventOutbox;
+import com.application.common.persistence.model.audit.ReservationAuditLog.UserType;
+import com.application.common.service.audit.AuditService;
 import com.application.common.service.reservation.ReservationService;
 import com.application.common.web.dto.reservations.ReservationDTO;
 import com.application.common.persistence.dao.EventOutboxDAO;
@@ -19,6 +22,7 @@ import com.application.customer.persistence.dao.CustomerDAO;
 import com.application.customer.persistence.dao.ReservationDAO;
 import com.application.customer.persistence.model.Customer;
 import com.application.restaurant.persistence.dao.RestaurantDAO;
+import com.application.restaurant.persistence.dao.ServiceDAO;
 import com.application.restaurant.persistence.dao.ServiceVersionDAO;
 import com.application.restaurant.persistence.model.Restaurant;
 import org.springframework.data.domain.PageRequest;
@@ -37,15 +41,21 @@ public class AdminReservationService {
     private final ReservationMapper reservationMapper;
     private final CustomerDAO customerDAO;
     private final RestaurantDAO restaurantDAO;
+    private final ServiceDAO serviceDAO;
     private final ServiceVersionDAO serviceVersionDAO;
     private final EventOutboxDAO eventOutboxDAO;
+    private final AuditService auditService;
 
-    public ReservationDTO createReservation(AdminNewReservationDTO reservationDto) {
+    public ReservationDTO createReservation(AdminNewReservationDTO reservationDto, Long adminId) {
         // Get restaurant
         Restaurant restaurant = restaurantDAO.findById(reservationDto.getRestaurantId())
                 .orElseThrow(() -> new IllegalArgumentException("Restaurant not found"));
         
-        // Find active service version for the reservation date
+        // Get service
+        com.application.common.persistence.model.reservation.Service service = serviceDAO.findById(reservationDto.getServiceId())
+                .orElseThrow(() -> new IllegalArgumentException("Service not found"));
+        
+        // Find active service version for scheduling validation and snapshot data
         com.application.common.persistence.model.reservation.ServiceVersion serviceVersion = serviceVersionDAO
             .findActiveVersionByServiceAndDate(
                 reservationDto.getServiceId(),
@@ -64,13 +74,17 @@ public class AdminReservationService {
         Status reservationStatus = reservationDto.getStatus() != null ? 
             reservationDto.getStatus() : Status.ACCEPTED;
         
+        // Build reservation with Service reference + snapshot fields
         Reservation reservation = Reservation.builder()
                 .pax(reservationDto.getPax())
                 .kids(reservationDto.getKids())
                 .notes(reservationDto.getNotes())
                 .date(reservationDto.getReservationDateTime().toLocalDate())
                 .reservationDateTime(reservationDto.getReservationDateTime())
-                .serviceVersion(serviceVersion)
+                .service(service) // Reference to Service (not ServiceVersion)
+                // SNAPSHOT FIELDS - Capture at booking time
+                .bookedServiceName(service.getName())
+                .bookedSlotDuration(serviceVersion.getDuration())
                 .customer(customer)
                 .restaurant(restaurant)
                 .userName(reservationDto.getUserName())
@@ -84,6 +98,15 @@ public class AdminReservationService {
         // 📌 CREATE CUSTOMER_RESERVATION_CREATED EVENT (notifies customer only)
         createCustomerReservationCreatedEvent(savedReservation);
         
+        // 📝 AUDIT: Log reservation creation by admin
+        auditService.auditReservationCreated(
+            savedReservation.getId(),
+            savedReservation.getRestaurant().getId(),
+            adminId,
+            UserType.ADMIN,
+            buildAuditReservationData(savedReservation)
+        );
+        
         return reservationMapper.toDTO(savedReservation);
     }
     
@@ -92,12 +115,12 @@ public class AdminReservationService {
      * Notifies: CUSTOMER ONLY (confirmation that their reservation was created)
      */
     private void createCustomerReservationCreatedEvent(Reservation reservation) {
-        String eventId = "CUSTOMER_RESERVATION_CREATED_" + reservation.getId() + "_" + System.currentTimeMillis();
+        String eventId = EventType.CUSTOMER_RESERVATION_CREATED.name() + "_" + reservation.getId() + "_" + System.currentTimeMillis();
         String payload = buildReservationPayload(reservation);
         
         EventOutbox eventOutbox = EventOutbox.builder()
             .eventId(eventId)
-            .eventType("CUSTOMER_RESERVATION_CREATED")
+            .eventType(EventType.CUSTOMER_RESERVATION_CREATED.name())
             .aggregateType("ADMIN")
             .aggregateId(reservation.getId())
             .payload(payload)
@@ -106,8 +129,8 @@ public class AdminReservationService {
         
         eventOutboxDAO.save(eventOutbox);
         
-        log.info("✅ Created EventOutbox CUSTOMER_RESERVATION_CREATED: eventId={}, reservationId={}, aggregateType=ADMIN, status=PENDING", 
-            eventId, reservation.getId());
+        log.info("✅ Created EventOutbox {}: eventId={}, reservationId={}, aggregateType=ADMIN, status=PENDING", 
+            EventType.CUSTOMER_RESERVATION_CREATED.name(), eventId, reservation.getId());
     }
     
     /**
@@ -160,28 +183,40 @@ public class AdminReservationService {
                 .collect(Collectors.toList());
     }
 
-    public void acceptReservation(Long reservationId) {
-        Status status = Status.ACCEPTED;
-        Reservation reservation = reservationDAO.findById(reservationId)
-                .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
-        reservation.setStatus(status);
-        reservationDAO.save(reservation);
-    }
-
-    public void markReservationNoShow(Long reservationId) {
+    public ReservationDTO markReservationNoShow(Long reservationId, Long adminId) {
         Status status = Status.NO_SHOW;
         Reservation reservation = reservationDAO.findById(reservationId)
                 .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
         reservation.setStatus(status);
-        reservationDAO.save(reservation);
+        Reservation saved = reservationDAO.save(reservation);
+        
+        // 📝 AUDIT: Log no-show by admin
+        auditService.auditNoShow(
+            reservationId,
+            reservation.getRestaurant().getId(),
+            adminId,
+            UserType.ADMIN
+        );
+        
+        return reservationMapper.toDTO(saved);
     }
 
-    public void markReservationSeated(Long reservationId) {
+    public ReservationDTO markReservationSeated(Long reservationId, Long adminId) {
         Status status = Status.SEATED;
         Reservation reservation = reservationDAO.findById(reservationId)
                 .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
         reservation.setStatus(status);
-        reservationDAO.save(reservation);
+        Reservation saved = reservationDAO.save(reservation);
+        
+        // 📝 AUDIT: Log seating by admin
+        auditService.auditCustomerSeated(
+            reservationId,
+            reservation.getRestaurant().getId(),
+            adminId,
+            UserType.ADMIN
+        );
+        
+        return reservationMapper.toDTO(saved);
     }
 
     public ReservationDTO findReservationById(Long reservationId) {
@@ -191,18 +226,48 @@ public class AdminReservationService {
     }
 
     public void updateReservationStatus(Long reservationId, Status status) {
+        updateReservationStatus(reservationId, status, null);
+    }
+
+    public ReservationDTO updateReservationStatus(Long reservationId, Status status, Long adminId) {
         Reservation reservation = reservationDAO.findById(reservationId)
                 .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
+        String oldStatus = reservation.getStatus().name();
         reservation.setStatus(status);
-        reservationDAO.save(reservation);
+        Reservation saved = reservationDAO.save(reservation);
+        
+        // 📝 AUDIT: Log status change by admin
+        auditService.auditReservationStatusChanged(
+            reservationId,
+            reservation.getRestaurant().getId(),
+            adminId,
+            UserType.ADMIN,
+            oldStatus,
+            status.name(),
+            "Status updated by admin"
+        );
+        
+        return reservationMapper.toDTO(saved);
     }
 
     public ReservationDTO modifyReservation(Long reservationId, AdminNewReservationDTO reservationDto) {
+        return modifyReservation(reservationId, reservationDto, null);
+    }
+
+    public ReservationDTO modifyReservation(Long reservationId, AdminNewReservationDTO reservationDto, Long adminId) {
         Reservation reservation = reservationDAO.findById(reservationId)
                 .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
 
-        // Update service if provided
+        // Capture old values for audit
+        String oldServiceName = reservation.getBookedServiceName();
+        java.time.LocalDateTime oldDateTime = reservation.getReservationDateTime();
+        Integer oldPax = reservation.getPax();
+        
+        // Update service if provided (also updates snapshot fields)
         if (reservationDto.getServiceId() != null) {
+            com.application.common.persistence.model.reservation.Service newService = serviceDAO.findById(reservationDto.getServiceId())
+                .orElseThrow(() -> new IllegalArgumentException("Service not found"));
+            
             com.application.common.persistence.model.reservation.ServiceVersion serviceVersion = serviceVersionDAO
                 .findActiveVersionByServiceAndDate(
                     reservationDto.getServiceId(),
@@ -211,7 +276,11 @@ public class AdminReservationService {
                         reservation.getDate()
                 )
                 .orElseThrow(() -> new IllegalArgumentException("No active service version found for the requested date"));
-            reservation.setServiceVersion(serviceVersion);
+            
+            reservation.setService(newService);
+            // Update snapshot fields when service changes
+            reservation.setBookedServiceName(newService.getName());
+            reservation.setBookedSlotDuration(serviceVersion.getDuration());
         }
 
         // Update reservation datetime if provided
@@ -252,14 +321,28 @@ public class AdminReservationService {
             reservation.setStatus(reservationDto.getStatus());
         }
 
-        // ✅ VALIDATE BEFORE SAVING (service/date may have changed) - use ServiceVersion instead of serviceId
+        // ✅ VALIDATE BEFORE SAVING (service/date may have changed) - use Service
         reservationService.validateReservationDateAvailability(
             reservation.getRestaurant(),
             reservation.getDate(),
-            reservation.getServiceVersion()
+            reservation.getService()
         );
 
         Reservation saved = reservationDAO.save(reservation);
+        
+        // 📝 AUDIT: Log modification by admin
+        String changes = buildChangesSummary(oldServiceName, oldDateTime, oldPax, saved);
+        auditService.auditReservationUpdated(
+            reservationId,
+            saved.getRestaurant().getId(),
+            adminId,
+            UserType.ADMIN,
+            "multiple_fields",
+            null,
+            changes,
+            "Modified by admin"
+        );
+        
         return reservationMapper.toDTO(saved);
     }
 
@@ -293,5 +376,45 @@ public class AdminReservationService {
         String message = "✅ Fixed " + count + " reservations with default userName";
         log.info(message);
         return message;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // AUDIT HELPER METHODS
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Build a map of reservation data for audit logging
+     */
+    private java.util.Map<String, Object> buildAuditReservationData(Reservation reservation) {
+        java.util.Map<String, Object> data = new java.util.HashMap<>();
+        data.put("reservationId", reservation.getId());
+        data.put("serviceId", reservation.getService() != null ? reservation.getService().getId() : null);
+        data.put("serviceName", reservation.getBookedServiceName());
+        data.put("date", reservation.getDate() != null ? reservation.getDate().toString() : null);
+        data.put("dateTime", reservation.getReservationDateTime() != null ? reservation.getReservationDateTime().toString() : null);
+        data.put("pax", reservation.getPax());
+        data.put("kids", reservation.getKids());
+        data.put("status", reservation.getStatus() != null ? reservation.getStatus().name() : null);
+        data.put("bookedSlotDuration", reservation.getBookedSlotDuration());
+        return data;
+    }
+
+    /**
+     * Build a summary of changes for audit logging
+     */
+    private String buildChangesSummary(String oldServiceName, java.time.LocalDateTime oldDateTime, Integer oldPax, Reservation newReservation) {
+        StringBuilder sb = new StringBuilder();
+        
+        if (!java.util.Objects.equals(oldServiceName, newReservation.getBookedServiceName())) {
+            sb.append("service:").append(oldServiceName).append("->").append(newReservation.getBookedServiceName()).append("; ");
+        }
+        if (!java.util.Objects.equals(oldDateTime, newReservation.getReservationDateTime())) {
+            sb.append("dateTime:").append(oldDateTime).append("->").append(newReservation.getReservationDateTime()).append("; ");
+        }
+        if (!java.util.Objects.equals(oldPax, newReservation.getPax())) {
+            sb.append("pax:").append(oldPax).append("->").append(newReservation.getPax()).append("; ");
+        }
+        
+        return sb.length() > 0 ? sb.toString() : "No significant changes";
     }
 }

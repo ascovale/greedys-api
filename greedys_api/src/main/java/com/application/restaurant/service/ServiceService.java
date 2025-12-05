@@ -19,6 +19,7 @@ import com.application.common.persistence.mapper.ServiceMapper;
 import com.application.common.persistence.model.reservation.Service;
 import com.application.common.persistence.model.reservation.ServiceType;
 import com.application.common.persistence.model.reservation.Slot;
+import com.application.common.service.audit.AuditService;
 import com.application.common.web.dto.restaurant.ServiceDTO;
 import com.application.common.web.dto.restaurant.ServiceSlotsDto;
 import com.application.common.web.dto.restaurant.ServiceTypeDto;
@@ -33,10 +34,12 @@ import com.application.restaurant.web.dto.services.NewServiceDTO;
 import com.application.restaurant.web.dto.services.RestaurantNewServiceDTO;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @org.springframework.stereotype.Service
 @Transactional
 @RequiredArgsConstructor
+@Slf4j
 public class ServiceService {
 
 	private final ServiceDAO serviceDAO;
@@ -46,6 +49,7 @@ public class ServiceService {
 	private final RUserDAO RUserDAO;
 	private final ServiceMapper serviceMapper;
 	private final ServiceDtoMapper serviceDtoMapper;
+	private final AuditService auditService;
 	
 
 	public List<ServiceDTO> getServices(Long idRestaurant, LocalDate selectedDate) {
@@ -113,7 +117,17 @@ public class ServiceService {
 		} else {
 			service.setServiceTypes(null);
 		}
-		serviceDAO.save(service);
+		Service savedService = serviceDAO.save(service);
+		
+		// Audit service creation
+		Long userId = getCurrentUserId();
+		auditService.auditServiceCreated(
+			savedService.getId(),
+			savedService.getRestaurant().getId(),
+			userId,
+			savedService,
+			"Service created via restaurant panel"
+		);
 	}
 
 	public List<ServiceTypeDto> getServiceTypes() {
@@ -170,8 +184,17 @@ public class ServiceService {
 		} else {
 			service.setServiceTypes(null);
 		}
-		serviceDAO.save(service);
-
+		Service savedService = serviceDAO.save(service);
+		
+		// Audit service creation
+		Long userId = getCurrentUserId();
+		auditService.auditServiceCreated(
+			savedService.getId(),
+			savedService.getRestaurant().getId(),
+			userId,
+			savedService,
+			"Service created via admin panel"
+		);
 	}
 
 	public void newService(Long idRestaurant, RestaurantNewServiceDTO newServiceDTO) {
@@ -196,7 +219,17 @@ public class ServiceService {
 		} else {
 			service.setServiceTypes(null);
 		}
-		serviceDAO.save(service);
+		Service savedService = serviceDAO.save(service);
+		
+		// Audit service creation
+		Long userId = getCurrentUserId();
+		auditService.auditServiceCreated(
+			savedService.getId(),
+			savedService.getRestaurant().getId(),
+			userId,
+			savedService,
+			"Service created for restaurant"
+		);
 	}
 
 	// TODO: considerare il fatto di annullare le prenotazioni per un servizio e
@@ -204,6 +237,11 @@ public class ServiceService {
 	public void deleteService(Long serviceId) {
 		Service service = serviceDAO.findById(serviceId)
 				.orElseThrow(() -> new IllegalArgumentException("Service not found"));
+		
+		// Capture old state for audit BEFORE modification
+		Long restaurantId = service.getRestaurant().getId();
+		String serviceName = service.getName();
+		
 		service.setDeleted(true);
 		serviceDAO.save(service);
 
@@ -218,6 +256,16 @@ public class ServiceService {
 			// 	reservationDAO.save(reservation);
 			// }
 		}
+		
+		// Audit service deletion
+		Long userId = getCurrentUserId();
+		auditService.auditServiceDeleted(
+			serviceId,
+			restaurantId,
+			userId,
+			service,
+			"Service deleted: " + serviceName
+		);
 	}
 
 	public Collection<ServiceTypeDto> getServiceTypesFromRUser() {
@@ -297,8 +345,40 @@ public class ServiceService {
 		service.setValidTo(servicesDto.getValidTo());
 		service.setActive(false);
 		service = serviceDAO.save(service);
+		
+		// Audit service creation
+		auditService.auditServiceCreated(
+			service.getId(),
+			service.getRestaurant().getId(),
+			RUser.getId(),
+			service,
+			"Service created by restaurant user"
+		);
 
 		return new ServiceDTO(service);
+	}
+	
+	// ─────────────────────────────────────────────────────────────────────────────
+	// UTILITY METHODS
+	// ─────────────────────────────────────────────────────────────────────────────
+	
+	/**
+	 * Get current user ID from security context.
+	 * Returns null if no authenticated user (for system operations).
+	 */
+	private Long getCurrentUserId() {
+		try {
+			Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+			if (principal instanceof RUser) {
+				return ((RUser) principal).getId();
+			}
+			// Handle other user types if needed
+			log.debug("Unknown principal type for audit: {}", principal.getClass().getName());
+			return null;
+		} catch (Exception e) {
+			log.warn("Could not determine current user for audit: {}", e.getMessage());
+			return null;
+		}
 	}
 
 }

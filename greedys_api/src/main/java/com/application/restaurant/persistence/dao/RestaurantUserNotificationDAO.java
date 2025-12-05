@@ -1,5 +1,6 @@
 package com.application.restaurant.persistence.dao;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -150,10 +151,11 @@ public interface RestaurantUserNotificationDAO extends JpaRepository<RestaurantU
      */
     @Modifying
     @Transactional
-    @Query("UPDATE RestaurantUserNotification r SET r.status = :status, r.updatedAt = CURRENT_TIMESTAMP WHERE r.id = :notificationId")
+    @Query("UPDATE RestaurantUserNotification r SET r.status = :status, r.updatedAt = :now WHERE r.id = :notificationId")
     int updateStatus(
         @Param("notificationId") Long notificationId,
-        @Param("status") DeliveryStatus status
+        @Param("status") DeliveryStatus status,
+        @Param("now") Instant now
     );
 
     /**

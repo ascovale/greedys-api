@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.application.common.domain.event.EventType;
 import com.application.common.persistence.mapper.ReservationMapper;
 import com.application.common.persistence.model.reservation.Reservation;
 import com.application.common.persistence.model.reservation.ReservationRequest;
@@ -77,7 +78,7 @@ public class ReservationService {
      * ⭐ Create new reservation WITH validation
      * 
      * Validates that:
-     * - ServiceVersion is valid for the reservation date
+     * - Service is valid (not deleted)
      * - Restaurant is enabled
      * - Reservation date is not in the past
      * 
@@ -88,11 +89,11 @@ public class ReservationService {
      * @throws IllegalArgumentException if validation fails
      */
     public Reservation createNewReservationWithValidation(Reservation reservation) {
-        // Validate that the ServiceVersion is valid for the reservation date and restaurant is enabled
+        // Validate that the Service is valid and restaurant is enabled
         validateReservationDateAvailability(
             reservation.getRestaurant(),
             reservation.getDate(),
-            reservation.getServiceVersion()
+            reservation.getService()
         );
         
         // If validation passed, create the reservation
@@ -196,7 +197,7 @@ public class ReservationService {
         validateReservationDateAvailability(
             reservation.getRestaurant(),
             modRequest.getRequestedDate(),
-            reservation.getServiceVersion()
+            reservation.getService()
         );
 
         // Track what changed for audit trail
@@ -434,11 +435,11 @@ public class ReservationService {
         reservation.setKids(reservationRequest.getKids());
         reservation.setNotes(reservationRequest.getNotes());
 
-        // ✅ VALIDATE BEFORE SAVING - use ServiceVersion instead of serviceId
+        // ✅ VALIDATE BEFORE SAVING - use Service instead of serviceVersion
         validateReservationDateAvailability(
             reservation.getRestaurant(),
             reservation.getDate(),
-            reservation.getServiceVersion()
+            reservation.getService()
         );
 
         // Save the updated reservation
@@ -461,11 +462,11 @@ public class ReservationService {
         reservation.setKids(reservationRequest.getKids());
         reservation.setNotes(reservationRequest.getNotes());
 
-        // ✅ VALIDATE BEFORE SAVING - use ServiceVersion instead of serviceId
+        // ✅ VALIDATE BEFORE SAVING - use Service instead of serviceVersion
         validateReservationDateAvailability(
             reservation.getRestaurant(),
             reservation.getDate(),
-            reservation.getServiceVersion()
+            reservation.getService()
         );
 
         // Save the updated reservation
@@ -494,7 +495,7 @@ public class ReservationService {
             throw new IllegalArgumentException("Service is deleted");
         }
         
-        // Find active service version for the reservation date
+        // Find active service version for scheduling validation and snapshot data
         com.application.common.persistence.model.reservation.ServiceVersion serviceVersion = serviceVersionDAO
             .findActiveVersionByServiceAndDate(
                 reservationDto.getServiceId(),
@@ -508,13 +509,18 @@ public class ReservationService {
                 reservationDto.getUserEmail(), 
                 reservationDto.getUserPhoneNumber());
 
+        // Build reservation with Service reference + snapshot fields
         Reservation reservation = Reservation.builder()
                 .userName(reservationDto.getUserName())
                 .pax(reservationDto.getPax())
                 .kids(reservationDto.getKids())
                 .notes(reservationDto.getNotes())
                 .reservationDateTime(reservationDto.getReservationDateTime())
-                .serviceVersion(serviceVersion)
+                .date(reservationDto.getReservationDateTime().toLocalDate())
+                .service(service) // Reference to Service (not ServiceVersion)
+                // SNAPSHOT FIELDS - Capture at booking time
+                .bookedServiceName(service.getName())
+                .bookedSlotDuration(serviceVersion.getDuration())
                 .restaurant(restaurant)
                 .customer(customer)
                 .createdBy(customer)
@@ -559,7 +565,7 @@ public class ReservationService {
             throw new IllegalArgumentException("Service is deleted");
         }
         
-        // Find active service version for the reservation date
+        // Find active service version for scheduling validation and snapshot data
         com.application.common.persistence.model.reservation.ServiceVersion serviceVersion = serviceVersionDAO
             .findActiveVersionByServiceAndDate(
                 reservationDto.getServiceId(),
@@ -571,13 +577,18 @@ public class ReservationService {
         Customer customer = customerDAO.findById(reservationDto.getCustomerId())
                 .orElseThrow(() -> new IllegalArgumentException("Customer not found: " + reservationDto.getCustomerId()));
 
+        // Build reservation with Service reference + snapshot fields
         Reservation reservation = Reservation.builder()
                 .userName(reservationDto.getUserName())
                 .pax(reservationDto.getPax())
                 .kids(reservationDto.getKids())
                 .notes(reservationDto.getNotes())
                 .reservationDateTime(reservationDto.getReservationDateTime())
-                .serviceVersion(serviceVersion)
+                .date(reservationDto.getReservationDateTime().toLocalDate())
+                .service(service) // Reference to Service (not ServiceVersion)
+                // SNAPSHOT FIELDS - Capture at booking time
+                .bookedServiceName(service.getName())
+                .bookedSlotDuration(serviceVersion.getDuration())
                 .restaurant(restaurant)
                 .customer(customer)
                 .createdBy(customer)
@@ -632,14 +643,14 @@ public class ReservationService {
      * 
      * @param restaurant The restaurant entity
      * @param reservationDate The requested reservation date (LocalDate)
-     * @param serviceVersion The ServiceVersion entity (not null)
+     * @param service The Service entity (not null)
      * @return true if reservation is allowed on this date, false if closed/unavailable
      * @throws IllegalArgumentException if validation fails
      */
     public boolean validateReservationDateAvailability(Restaurant restaurant, LocalDate reservationDate, 
-            com.application.common.persistence.model.reservation.ServiceVersion serviceVersion) {
-        log.debug("🔍 Validating reservation: restaurant={}, date={}, serviceVersion={}", 
-            restaurant.getId(), reservationDate, serviceVersion.getId());
+            com.application.common.persistence.model.reservation.Service service) {
+        log.debug("🔍 Validating reservation: restaurant={}, date={}, service={}", 
+            restaurant.getId(), reservationDate, service.getId());
         
         try {
             // ✅ ESSENTIAL: Check if restaurant is ENABLED (not deleted or closed)
@@ -658,24 +669,31 @@ public class ReservationService {
                 throw new IllegalArgumentException("Reservation date cannot be in the past");
             }
             
-            // ✅ ESSENTIAL: Check if ServiceVersion is valid for the reservation date
-            if (!serviceVersion.isValidForDate(reservationDate)) {
-                log.warn("❌ ServiceVersion {} is not valid for date: {}", serviceVersion.getId(), reservationDate);
-                throw new IllegalArgumentException(
-                    String.format("Service version is not available for the requested date (valid from %s to %s)",
-                        serviceVersion.getEffectiveFrom(),
-                        serviceVersion.getEffectiveTo() != null ? serviceVersion.getEffectiveTo() : "ongoing"));
+            // ✅ ESSENTIAL: Check if Service is valid (not deleted)
+            if (service.getDeleted()) {
+                log.warn("❌ Service {} is deleted", service.getId());
+                throw new IllegalArgumentException("Service is no longer available");
+            }
+            
+            // ✅ NEW: Find active ServiceVersion for scheduling validation (if needed)
+            // ServiceVersion is now only for temporal scheduling, not for booking reference
+            com.application.common.persistence.model.reservation.ServiceVersion activeVersion = 
+                serviceVersionDAO.findActiveVersionByServiceAndDate(service.getId(), reservationDate).orElse(null);
+            
+            if (activeVersion != null && !activeVersion.isValidForDate(reservationDate)) {
+                log.warn("❌ No active schedule for service {} on date: {}", service.getId(), reservationDate);
+                throw new IllegalArgumentException("Service is not available for the requested date");
             }
             
             // TODO: Check if ServiceVersionDay has opening hours for this day of week
-            // ServiceVersionDay day = getServiceVersionDayForDate(serviceVersion, reservationDate);
+            // ServiceVersionDay day = getServiceVersionDayForDate(activeVersion, reservationDate);
             // if (day.isClosed()) {
-            //     log.warn("❌ Service is closed on day: {} for service version {}", reservationDate.getDayOfWeek(), serviceVersion.getId());
+            //     log.warn("❌ Service is closed on day: {} for service version {}", reservationDate.getDayOfWeek(), activeVersion.getId());
             //     throw new IllegalArgumentException("Service is not available on the selected day");
             // }
             
             // TODO: Check if AvailabilityException has full closure for this date
-            // boolean isFullyClosed = checkIfFullyClosedByException(serviceVersion, reservationDate);
+            // boolean isFullyClosed = checkIfFullyClosedByException(activeVersion, reservationDate);
             // if (isFullyClosed) {
             //     log.warn("❌ Service is fully closed (exception) on date: {}", reservationDate);
             //     throw new IllegalArgumentException("Service is not available on the selected date");
@@ -848,12 +866,12 @@ public class ReservationService {
      * ⭐ INCLUDES initiated_by=RESTAURANT for intelligent routing to notification.customer queue (PERSONAL)
      */
     private void createRestaurantReservationCreatedEvent(Reservation reservation) {
-        String eventId = "RESERVATION_CREATED_" + reservation.getId() + "_" + System.currentTimeMillis();
+        String eventId = EventType.RESERVATION_CREATED.name() + "_" + reservation.getId() + "_" + System.currentTimeMillis();
         String payload = buildReservationPayload(reservation);
         
         EventOutbox eventOutbox = EventOutbox.builder()
             .eventId(eventId)
-            .eventType("RESERVATION_CREATED")
+            .eventType(EventType.RESERVATION_CREATED.name())
             .aggregateType("RESTAURANT")
             .aggregateId(reservation.getId())
             .payload(payload)
@@ -862,8 +880,8 @@ public class ReservationService {
         
         eventOutboxDAO.save(eventOutbox);
         
-        log.info("✅ Created EventOutbox RESERVATION_CREATED: eventId={}, reservationId={}, aggregateType=RESTAURANT, status=PENDING", 
-            eventId, reservation.getId());
+        log.info("✅ Created EventOutbox {}: eventId={}, reservationId={}, aggregateType=RESTAURANT, status=PENDING", 
+            EventType.RESERVATION_CREATED.name(), eventId, reservation.getId());
     }
 
     /**
@@ -904,12 +922,12 @@ public class ReservationService {
      */
     private void createReservationModificationApprovedEvent(Reservation reservation, ReservationModificationRequest modRequest, 
             com.application.common.persistence.model.user.AbstractUser approverUser) {
-        String eventId = "RESERVATION_MODIFICATION_APPROVED_" + modRequest.getId() + "_" + System.currentTimeMillis();
+        String eventId = EventType.RESERVATION_MODIFICATION_APPROVED.name() + "_" + modRequest.getId() + "_" + System.currentTimeMillis();
         String payload = buildReservationModificationApprovedPayload(reservation, modRequest, approverUser);
         
         EventOutbox eventOutbox = EventOutbox.builder()
             .eventId(eventId)
-            .eventType("RESERVATION_MODIFICATION_APPROVED")
+            .eventType(EventType.RESERVATION_MODIFICATION_APPROVED.name())
             .aggregateType("RESTAURANT")
             .aggregateId(modRequest.getId())
             .payload(payload)
@@ -918,8 +936,8 @@ public class ReservationService {
         
         eventOutboxDAO.save(eventOutbox);
         
-        log.info("✅ Created EventOutbox RESERVATION_MODIFICATION_APPROVED: eventId={}, modificationRequestId={}, reservationId={}", 
-            eventId, modRequest.getId(), reservation.getId());
+        log.info("✅ Created EventOutbox {}: eventId={}, modificationRequestId={}, reservationId={}", 
+            EventType.RESERVATION_MODIFICATION_APPROVED.name(), eventId, modRequest.getId(), reservation.getId());
     }
 
     /**
@@ -932,12 +950,12 @@ public class ReservationService {
      */
     private void createReservationModificationRejectedEvent(Reservation reservation, ReservationModificationRequest modRequest, 
             com.application.common.persistence.model.user.AbstractUser rejectorUser) {
-        String eventId = "RESERVATION_MODIFICATION_REJECTED_" + modRequest.getId() + "_" + System.currentTimeMillis();
+        String eventId = EventType.RESERVATION_MODIFICATION_REJECTED.name() + "_" + modRequest.getId() + "_" + System.currentTimeMillis();
         String payload = buildReservationModificationRejectedPayload(reservation, modRequest, rejectorUser);
         
         EventOutbox eventOutbox = EventOutbox.builder()
             .eventId(eventId)
-            .eventType("RESERVATION_MODIFICATION_REJECTED")
+            .eventType(EventType.RESERVATION_MODIFICATION_REJECTED.name())
             .aggregateType("RESTAURANT")
             .aggregateId(modRequest.getId())
             .payload(payload)
@@ -946,8 +964,8 @@ public class ReservationService {
         
         eventOutboxDAO.save(eventOutbox);
         
-        log.info("✅ Created EventOutbox RESERVATION_MODIFICATION_REJECTED: eventId={}, modificationRequestId={}, reservationId={}", 
-            eventId, modRequest.getId(), reservation.getId());
+        log.info("✅ Created EventOutbox {}: eventId={}, modificationRequestId={}, reservationId={}", 
+            EventType.RESERVATION_MODIFICATION_REJECTED.name(), eventId, modRequest.getId(), reservation.getId());
     }
 
     /**
@@ -960,12 +978,12 @@ public class ReservationService {
      */
     private void createReservationModifiedByRestaurantEvent(Reservation reservation, 
             com.application.common.persistence.model.user.AbstractUser modifierUser) {
-        String eventId = "RESERVATION_MODIFIED_BY_RESTAURANT_" + reservation.getId() + "_" + System.currentTimeMillis();
+        String eventId = EventType.RESERVATION_MODIFIED_BY_RESTAURANT.name() + "_" + reservation.getId() + "_" + System.currentTimeMillis();
         String payload = buildReservationModifiedByRestaurantPayload(reservation, modifierUser);
         
         EventOutbox eventOutbox = EventOutbox.builder()
             .eventId(eventId)
-            .eventType("RESERVATION_MODIFIED_BY_RESTAURANT")
+            .eventType(EventType.RESERVATION_MODIFIED_BY_RESTAURANT.name())
             .aggregateType("RESTAURANT")
             .aggregateId(reservation.getId())
             .payload(payload)
@@ -974,8 +992,8 @@ public class ReservationService {
         
         eventOutboxDAO.save(eventOutbox);
         
-        log.info("✅ Created EventOutbox RESERVATION_MODIFIED_BY_RESTAURANT: eventId={}, reservationId={}", 
-            eventId, reservation.getId());
+        log.info("✅ Created EventOutbox {}: eventId={}, reservationId={}", 
+            EventType.RESERVATION_MODIFIED_BY_RESTAURANT.name(), eventId, reservation.getId());
     }
 
     /**

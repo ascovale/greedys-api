@@ -6,6 +6,8 @@ import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
+import com.application.common.service.notification.preferences.NotificationBlockService;
+import com.application.common.service.notification.preferences.NotificationBlockService.NotificationContext;
 import com.application.restaurant.persistence.dao.RestaurantUserNotificationDAO;
 import com.application.restaurant.persistence.model.RestaurantUserNotification;
 import com.application.common.persistence.model.notification.DeliveryStatus;
@@ -62,6 +64,7 @@ import lombok.extern.slf4j.Slf4j;
 public class RestaurantUserOrchestrator extends NotificationOrchestrator<RestaurantUserNotification> {
 
     private final RestaurantUserNotificationDAO restaurantNotificationDAO;
+    private final NotificationBlockService notificationBlockService;
     // TODO: Iniettare RestaurantStaffService quando disponibile
     // private final RestaurantStaffService staffService;
     // private final RestaurantUserPreferencesService preferencesService;
@@ -81,9 +84,16 @@ public class RestaurantUserOrchestrator extends NotificationOrchestrator<Restaur
         // Extract from message
         String eventId = extractString(message, "event_id");
         String eventType = extractString(message, "event_type");
-        String aggregateType = extractString(message, "aggregate_type");
         Long restaurantId = extractLong(message, "restaurant_id");
-        Map<String, Object> payload = extractPayload(message);
+        // aggregateType e payload sono disponibili nel message ma non usati direttamente qui
+
+        // ═══════════════════════════════════════════════════════════════════
+        // LIVELLO 0: CHECK BLOCCO GLOBALE
+        // ═══════════════════════════════════════════════════════════════════
+        if (notificationBlockService.isGloballyBlocked(eventType)) {
+            log.info("🚫 EventType {} is globally blocked - skipping all notifications", eventType);
+            return disaggregated; // Empty list
+        }
 
         log.info("📊 Disaggregating: eventId={}, eventType={}, restaurantId={}", 
             eventId, eventType, restaurantId);
@@ -119,8 +129,25 @@ public class RestaurantUserOrchestrator extends NotificationOrchestrator<Restaur
 
             log.debug("📋 Staff {}: final channels = {}", staffId, finalChannels);
 
+            // ═══════════════════════════════════════════════════════════════════
+            // CONTEXT per controllo blocchi (Livello 2-4)
+            // ═══════════════════════════════════════════════════════════════════
+            Long hubId = extractLong(message, "hub_id"); // Può essere null
+            NotificationContext blockContext = hubId != null 
+                ? NotificationContext.forRestaurant(restaurantId, hubId)
+                : NotificationContext.forRestaurant(restaurantId);
+
             // Create notification record per channel
             for (String channel : finalChannels) {
+                // ═══════════════════════════════════════════════════════════════════
+                // CHECK BLOCCHI LIVELLO 1-4 PER CANALE
+                // ═══════════════════════════════════════════════════════════════════
+                if (!notificationBlockService.canSendNotification(eventType, channel, staffId, blockContext)) {
+                    log.debug("🚫 Notification blocked for staff {} on channel {} for eventType {}", 
+                        staffId, channel, eventType);
+                    continue; // Skip this channel
+                }
+
                 String disaggregatedEventId = generateDisaggregatedEventId(eventId, staffId, channel);
 
                 RestaurantUserNotification notification = createNotificationRecord(
@@ -196,6 +223,8 @@ public class RestaurantUserOrchestrator extends NotificationOrchestrator<Restaur
      */
     @Override
     protected Map<String, Object> loadGroupSettings(Map<String, Object> message) {
+        // restaurantId sarà usato quando NotificationGroupSettingsService sarà implementato
+        @SuppressWarnings("unused")
         Long restaurantId = extractLong(message, "restaurant_id");
         
         // TODO: Iniettare NotificationGroupSettingsService.getRestaurantSettings(restaurantId)
@@ -266,12 +295,19 @@ public class RestaurantUserOrchestrator extends NotificationOrchestrator<Restaur
         Long eventOutboxId = extractLong(message, "event_outbox_id");
         Map<String, Object> payload = extractPayload(message);
 
+        // Null-safe extraction of properties
         @SuppressWarnings("unchecked")
-        Map<String, String> props = (Map<String, String>) payload.getOrDefault("properties", new java.util.HashMap<>());
+        Map<String, String> props = (payload != null) 
+            ? (Map<String, String>) payload.getOrDefault("properties", new java.util.HashMap<>())
+            : new java.util.HashMap<>();
 
         // Determine read visibility
         boolean readByAll = determineReadByAll(eventType);
         NotificationPriority priority = determinePriority(eventType);
+        
+        // Null-safe extraction of title and body
+        String title = (payload != null) ? (String) payload.get("title") : null;
+        String body = (payload != null) ? (String) payload.get("body") : null;
 
         return RestaurantUserNotification.builder()
             .eventId(eventId)
@@ -282,8 +318,8 @@ public class RestaurantUserOrchestrator extends NotificationOrchestrator<Restaur
             .status(DeliveryStatus.PENDING)
             .readByAll(readByAll)
             .priority(priority)
-            .title((String) payload.get("title"))
-            .body((String) payload.get("body"))
+            .title(title)
+            .body(body)
             .eventType(eventType)
             .aggregateType(aggregateType)
             .properties(props)

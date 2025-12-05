@@ -149,6 +149,41 @@ public class RestaurantInfoController extends BaseController {
 		});
 	}
 
+	// ==================== DESCRIPTION MANAGEMENT ====================
+
+	@PostMapping(value = "/description")
+	@Operation(
+		summary = "Update restaurant description",
+		description = "Update the description of the authenticated restaurant (max 1000 characters)"
+	)
+	@ReadApiResponses
+	public ResponseEntity<String> updateDescription(
+			@RequestParam String description,
+			@AuthenticationPrincipal RUser rUser) {
+		return execute("update restaurant description", () -> {
+			Long restaurantId = rUser.getRestaurant().getId();
+			
+			if (description != null && description.length() > 1000) {
+				throw new IllegalArgumentException("La descrizione non può superare i 1000 caratteri");
+			}
+			
+			log.info("Updating description for restaurant ID: {}", restaurantId);
+			restaurantService.updateDescription(restaurantId, description);
+			return "Description updated successfully";
+		});
+	}
+
+	@GetMapping(value = "/description")
+	@Operation(summary = "Get restaurant description", description = "Retrieve the description of the authenticated restaurant")
+	@ReadApiResponses
+	public ResponseEntity<String> getDescription(@AuthenticationPrincipal RUser rUser) {
+		return execute("get restaurant description", () -> {
+			Long restaurantId = rUser.getRestaurant().getId();
+			log.info("Getting description for restaurant ID: {}", restaurantId);
+			return restaurantService.getDescription(restaurantId);
+		});
+	}
+
 	
 }
 

@@ -173,7 +173,7 @@ public class EventOutboxOrchestrator {
      * - If exceeds MAX_RETRY_ATTEMPTS (3), moves to FAILED status
      * - Logs error for manual investigation
      */
-    @Scheduled(fixedDelay = 1000, initialDelay = 2000)
+    @Scheduled(fixedDelayString = "${notification.outbox.orchestrator.delay-ms:5000}", initialDelay = 2000)
     @Transactional
     public void orchestrate() {
         log.debug("📬 EventOutboxOrchestrator: polling EventOutbox for PENDING events");
@@ -352,34 +352,92 @@ public class EventOutboxOrchestrator {
             throw new IllegalArgumentException("aggregateType cannot be null");
         }
 
-        // For RESERVATION events, route based on initiator
+        // ═══════════════════════════════════════════════════════════════════
+        // 1. RESERVATION EVENTS - Route based on initiator
+        // ═══════════════════════════════════════════════════════════════════
         if (isReservationEvent(eventType)) {
             String initiatedBy = extractInitiatedBy(event);
             
-            log.info("🎯🎯🎯 [QUEUE-ROUTING] eventType={}, initiatedBy={}, aggregateType={}", eventType, initiatedBy, aggregateType);
+            log.info("🎯 [QUEUE-ROUTING] RESERVATION: eventType={}, initiatedBy={}", eventType, initiatedBy);
             
             if ("CUSTOMER".equalsIgnoreCase(initiatedBy)) {
-                log.info("🎯🎯🎯 [QUEUE-DECISION] CUSTOMER initiated → returning: notification.restaurant.reservations");
                 return "notification.restaurant.reservations";
             } else if ("RESTAURANT".equalsIgnoreCase(initiatedBy)) {
-                log.info("🎯🎯🎯 [QUEUE-DECISION] RESTAURANT initiated → returning: notification.customer");
                 return "notification.customer";
             }
             // ADMIN or null → default to restaurant reservations (team scope)
-            log.info("🎯🎯🎯 [QUEUE-DECISION] ADMIN or NULL initiated → returning: notification.restaurant.reservations");
             return "notification.restaurant.reservations";
         }
 
-        // Default routing for non-reservation events
+        // ═══════════════════════════════════════════════════════════════════
+        // 2. SOCIAL EVENTS - Route to social queues
+        // ═══════════════════════════════════════════════════════════════════
+        if (isSocialEvent(eventType)) {
+            String queue = determineSocialQueue(eventType);
+            log.info("🎯 [QUEUE-ROUTING] SOCIAL: eventType={} → queue={}", eventType, queue);
+            return queue;
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // 3. CHAT EVENTS - Route to chat queues
+        // ═══════════════════════════════════════════════════════════════════
+        if (isChatEvent(eventType)) {
+            String queue = determineChatQueue(eventType);
+            log.info("🎯 [QUEUE-ROUTING] CHAT: eventType={} → queue={}", eventType, queue);
+            return queue;
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // 4. RESTAURANT EVENT EVENTS (serate, degustazioni, etc.)
+        // ═══════════════════════════════════════════════════════════════════
+        if (isRestaurantEventEvent(eventType)) {
+            String queue = determineRestaurantEventQueue(eventType);
+            log.info("🎯 [QUEUE-ROUTING] EVENT: eventType={} → queue={}", eventType, queue);
+            return queue;
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // 5. GAMIFICATION EVENTS (Challenge, Tournament, Match, Ranking)
+        // ═══════════════════════════════════════════════════════════════════
+        if (isGamificationEvent(eventType)) {
+            String queue = determineGamificationQueue(eventType);
+            log.info("🎯 [QUEUE-ROUTING] GAMIFICATION: eventType={} → queue={}", eventType, queue);
+            return queue;
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // 6. SUPPORT EVENTS - Route to admin queue
+        // ═══════════════════════════════════════════════════════════════════
+        if (isSupportEvent(eventType)) {
+            log.info("🎯 [QUEUE-ROUTING] SUPPORT: eventType={} → notification.admin", eventType);
+            return "notification.admin";
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // 7. DEFAULT ROUTING by aggregateType
+        // ═══════════════════════════════════════════════════════════════════
         String queue = switch (aggregateType.toUpperCase()) {
-            case "RESTAURANT" -> "notification.restaurant.user";  // Default: personal staff notifications
+            case "RESTAURANT" -> "notification.restaurant.user";
             case "CUSTOMER" -> "notification.customer";
             case "AGENCY" -> "notification.agency";
             case "ADMIN" -> "notification.admin";
-            case "BROADCAST" -> "notification.broadcast";  // Future: broadcast to all users
-            default -> throw new IllegalArgumentException("Unknown aggregateType: " + aggregateType);
+            case "BROADCAST" -> "notification.broadcast";
+            // Social aggregates - route by eventType (already handled above, fallback here)
+            case "SOCIALPOST", "SOCIALREACTION", "SOCIALCOMMENT", "SOCIALFOLLOW" -> "notification.social.events";
+            // Chat aggregates
+            case "CHAT", "CHATMESSAGE", "CHATCONVERSATION" -> "notification.chat.direct";
+            // Event aggregates
+            case "EVENT", "RESTAURANTEVENT" -> "notification.customer";
+            // Gamification aggregates
+            case "CHALLENGE", "TOURNAMENT", "MATCH", "RANKING" -> "notification.customer";
+            // Support aggregates
+            case "SUPPORT", "TICKET", "SUPPORTTICKET" -> "notification.admin";
+            default -> {
+                log.warn("⚠️ Unknown aggregateType: {} - defaulting to notification.admin", aggregateType);
+                yield "notification.admin";
+            }
         };
-        log.info("🎯🎯🎯 [QUEUE-ROUTING] Non-reservation event: aggregateType={} → queue={}", aggregateType, queue);
+        log.info("🎯 [QUEUE-ROUTING] DEFAULT: aggregateType={} → queue={}", aggregateType, queue);
         return queue;
     }
 
@@ -394,6 +452,134 @@ public class EventOutboxOrchestrator {
             return false;
         }
         return eventType.contains("RESERVATION");
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // SOCIAL EVENT ROUTING HELPERS
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /**
+     * Check if event is a social event (posts, likes, comments, followers, stories)
+     */
+    private boolean isSocialEvent(String eventType) {
+        if (eventType == null) return false;
+        return eventType.startsWith("SOCIAL_");
+    }
+
+    /**
+     * Determine which social queue to use:
+     * - notification.social.feed: Feed events (new posts, stories) that go to followers
+     * - notification.social.events: Personal events (likes, comments on YOUR posts)
+     */
+    private String determineSocialQueue(String eventType) {
+        return switch (eventType) {
+            // Feed events - notify all followers
+            case "SOCIAL_NEW_POST", "SOCIAL_NEW_STORY" -> "notification.social.feed";
+            // Personal events - notify specific user (post author, etc.)
+            case "SOCIAL_POST_LIKED", "SOCIAL_POST_COMMENTED", "SOCIAL_POST_SHARED",
+                 "SOCIAL_USER_MENTIONED", "SOCIAL_NEW_FOLLOWER", "SOCIAL_FOLLOW_REQUEST",
+                 "SOCIAL_FOLLOW_ACCEPTED", "SOCIAL_STORY_REPLY" -> "notification.social.events";
+            default -> "notification.social.events";
+        };
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // CHAT EVENT ROUTING HELPERS
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /**
+     * Check if event is a chat event
+     */
+    private boolean isChatEvent(String eventType) {
+        if (eventType == null) return false;
+        return eventType.startsWith("CHAT_");
+    }
+
+    /**
+     * Determine which chat queue to use based on chat type
+     */
+    private String determineChatQueue(String eventType) {
+        return switch (eventType) {
+            case "CHAT_MESSAGE_RECEIVED" -> "notification.chat.direct";
+            case "CHAT_GROUP_MESSAGE", "CHAT_USER_JOINED", "CHAT_USER_LEFT" -> "notification.chat.group";
+            case "CHAT_RESERVATION_MESSAGE" -> "notification.chat.reservation";
+            // Typing indicators and read receipts - still route but may be WebSocket-only
+            case "CHAT_TYPING_INDICATOR", "CHAT_MESSAGES_READ" -> "notification.chat.direct";
+            default -> "notification.chat.direct";
+        };
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // RESTAURANT EVENT ROUTING HELPERS (serate, degustazioni, etc.)
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /**
+     * Check if event is a restaurant event (not to be confused with domain events)
+     * These are actual events like wine tastings, special dinners, etc.
+     */
+    private boolean isRestaurantEventEvent(String eventType) {
+        if (eventType == null) return false;
+        return eventType.startsWith("EVENT_");
+    }
+
+    /**
+     * Determine queue for restaurant event notifications:
+     * - EVENT_NEW_RSVP goes to restaurant owner
+     * - Others go to customers (reminders, updates, cancellations)
+     */
+    private String determineRestaurantEventQueue(String eventType) {
+        return switch (eventType) {
+            // Restaurant receives RSVP notifications
+            case "EVENT_NEW_RSVP" -> "notification.restaurant";
+            // Customers receive reminders, updates, cancellations
+            case "EVENT_CREATED", "EVENT_REMINDER", "EVENT_UPDATED", 
+                 "EVENT_CANCELLED", "EVENT_RSVP_STATUS_CHANGED" -> "notification.customer";
+            default -> "notification.customer";
+        };
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // GAMIFICATION EVENT ROUTING HELPERS (Challenge, Tournament, Match, Ranking)
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /**
+     * Check if event is a gamification event
+     */
+    private boolean isGamificationEvent(String eventType) {
+        if (eventType == null) return false;
+        return eventType.startsWith("CHALLENGE_") || 
+               eventType.startsWith("TOURNAMENT_") || 
+               eventType.startsWith("MATCH_") || 
+               eventType.startsWith("RANKING_");
+    }
+
+    /**
+     * Determine queue for gamification events:
+     * - Restaurant-specific events go to restaurant queue
+     * - Customer/public events go to customer queue
+     */
+    private String determineGamificationQueue(String eventType) {
+        // Events specifically for restaurants
+        if (eventType.contains("_RESTAURANT_") || 
+            eventType.equals("CHALLENGE_REGISTRATION_OPENED") ||
+            eventType.equals("CHALLENGE_REGISTRATION_CLOSING") ||
+            eventType.equals("TOURNAMENT_REGISTRATION_OPENED")) {
+            return "notification.restaurant";
+        }
+        // All other gamification events go to customers
+        return "notification.customer";
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // SUPPORT EVENT ROUTING HELPERS
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /**
+     * Check if event is a support/ticket event
+     */
+    private boolean isSupportEvent(String eventType) {
+        if (eventType == null) return false;
+        return eventType.startsWith("SUPPORT_");
     }
 
     /**

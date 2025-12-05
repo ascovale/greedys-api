@@ -62,7 +62,7 @@ import lombok.experimental.SuperBuilder;
     uniqueConstraints = {
         @UniqueConstraint(
             name = "uk_admin_notification_idempotency",
-            columnNames = {"event_id", "user_id", "notification_type"}
+            columnNames = {"event_id", "user_id", "channel"}
         )
     }
 )

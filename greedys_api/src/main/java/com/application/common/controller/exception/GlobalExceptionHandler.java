@@ -31,6 +31,8 @@ import org.springframework.web.server.ServerErrorException;
 import org.springframework.web.server.UnsupportedMediaTypeStatusException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+import com.application.common.exception.ImageProcessingException;
+import com.application.common.exception.InvalidImageException;
 import com.application.common.web.ErrorDetails;
 import com.application.common.web.error.RestaurantNotFoundException;
 import com.application.common.web.error.UserNotFoundException;
@@ -63,6 +65,30 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(ErrorDetails.builder()
                         .code("USER_NOT_FOUND")
+                        .details(ex.getMessage())
+                        .build());
+    }
+
+    // === ECCEZIONI IMAGE UPLOAD ===
+
+    @ExceptionHandler(InvalidImageException.class)
+    public ResponseEntity<ErrorDetails> handleInvalidImageException(
+            InvalidImageException ex, WebRequest request) {
+        log.warn("Invalid image: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorDetails.builder()
+                        .code("INVALID_IMAGE")
+                        .details(ex.getMessage())
+                        .build());
+    }
+
+    @ExceptionHandler(ImageProcessingException.class)
+    public ResponseEntity<ErrorDetails> handleImageProcessingException(
+            ImageProcessingException ex, WebRequest request) {
+        log.error("Image processing error: {}", ex.getMessage(), ex);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ErrorDetails.builder()
+                        .code("IMAGE_PROCESSING_ERROR")
                         .details(ex.getMessage())
                         .build());
     }

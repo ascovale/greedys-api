@@ -11,6 +11,8 @@ import com.application.agency.persistence.model.AgencyUserNotification;
 import com.application.common.persistence.model.notification.DeliveryStatus;
 import com.application.common.persistence.model.notification.NotificationChannel;
 import com.application.common.persistence.model.notification.NotificationPriority;
+import com.application.common.service.notification.preferences.NotificationBlockService;
+import com.application.common.service.notification.preferences.NotificationBlockService.NotificationContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -59,6 +61,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AgencyUserOrchestrator extends NotificationOrchestrator<AgencyUserNotification> {
 
     private final AgencyUserNotificationDAO agencyNotificationDAO;
+    private final NotificationBlockService notificationBlockService;
     // TODO: Iniettare AgencyStaffService quando disponibile
     // private final AgencyStaffService staffService;
     // private final AgencyUserPreferencesService preferencesService;
@@ -78,9 +81,16 @@ public class AgencyUserOrchestrator extends NotificationOrchestrator<AgencyUserN
         // Extract from message
         String eventId = extractString(message, "event_id");
         String eventType = extractString(message, "event_type");
-        String aggregateType = extractString(message, "aggregate_type");
         Long agencyId = extractLong(message, "agency_id");
-        Map<String, Object> payload = extractPayload(message);
+        // aggregateType e payload sono disponibili nel message ma non usati direttamente qui
+
+        // ═══════════════════════════════════════════════════════════════════
+        // LIVELLO 0: CHECK BLOCCO GLOBALE
+        // ═══════════════════════════════════════════════════════════════════
+        if (notificationBlockService.isGloballyBlocked(eventType)) {
+            log.info("🚫 EventType {} is globally blocked - skipping all notifications", eventType);
+            return disaggregated; // Empty list
+        }
 
         log.info("📊 Disaggregating: eventId={}, eventType={}, agencyId={}", 
             eventId, eventType, agencyId);
@@ -116,8 +126,25 @@ public class AgencyUserOrchestrator extends NotificationOrchestrator<AgencyUserN
 
             log.debug("📋 Staff {}: final channels = {}", staffId, finalChannels);
 
+            // ═══════════════════════════════════════════════════════════════════
+            // CONTEXT per controllo blocchi (Livello 2-4)
+            // ═══════════════════════════════════════════════════════════════════
+            Long hubId = extractLong(message, "hub_id"); // Può essere null
+            NotificationContext blockContext = hubId != null 
+                ? NotificationContext.forAgency(agencyId, hubId)
+                : NotificationContext.forAgency(agencyId);
+
             // Create notification record per channel
             for (String channel : finalChannels) {
+                // ═══════════════════════════════════════════════════════════════════
+                // CHECK BLOCCHI LIVELLO 1-4 PER CANALE
+                // ═══════════════════════════════════════════════════════════════════
+                if (!notificationBlockService.canSendNotification(eventType, channel, staffId, blockContext)) {
+                    log.debug("🚫 Notification blocked for staff {} on channel {} for eventType {}", 
+                        staffId, channel, eventType);
+                    continue; // Skip this channel
+                }
+
                 String disaggregatedEventId = generateDisaggregatedEventId(eventId, staffId, channel);
 
                 AgencyUserNotification notification = createNotificationRecord(
@@ -186,6 +213,8 @@ public class AgencyUserOrchestrator extends NotificationOrchestrator<AgencyUserN
      */
     @Override
     protected Map<String, Object> loadGroupSettings(Map<String, Object> message) {
+        // agencyId sarà usato quando NotificationGroupSettingsService sarà implementato
+        @SuppressWarnings("unused")
         Long agencyId = extractLong(message, "agency_id");
         
         // TODO: Iniettare NotificationGroupSettingsService.getAgencySettings(agencyId)
@@ -256,11 +285,18 @@ public class AgencyUserOrchestrator extends NotificationOrchestrator<AgencyUserN
         Long eventOutboxId = extractLong(message, "event_outbox_id");
         Map<String, Object> payload = extractPayload(message);
 
+        // Null-safe extraction of properties
         @SuppressWarnings("unchecked")
-        Map<String, String> props = (Map<String, String>) payload.getOrDefault("properties", new java.util.HashMap<>());
+        Map<String, String> props = (payload != null) 
+            ? (Map<String, String>) payload.getOrDefault("properties", new java.util.HashMap<>())
+            : new java.util.HashMap<>();
 
         boolean readByAll = determineReadByAll(eventType);
         NotificationPriority priority = determinePriority(eventType);
+        
+        // Null-safe extraction of title and body
+        String title = (payload != null) ? (String) payload.get("title") : null;
+        String body = (payload != null) ? (String) payload.get("body") : null;
 
         return AgencyUserNotification.builder()
             .eventId(eventId)
@@ -271,8 +307,8 @@ public class AgencyUserOrchestrator extends NotificationOrchestrator<AgencyUserN
             .status(DeliveryStatus.PENDING)
             .readByAll(readByAll)
             .priority(priority)
-            .title((String) payload.get("title"))
-            .body((String) payload.get("body"))
+            .title(title)
+            .body(body)
             .eventType(eventType)
             .aggregateType(aggregateType)
             .properties(props)
@@ -296,6 +332,8 @@ public class AgencyUserOrchestrator extends NotificationOrchestrator<AgencyUserN
         AgencyUserNotification notification,
         Map<String, Object> message
     ) {
+        // eventType sarà usato quando si implementeranno regole specifiche per tipo evento
+        @SuppressWarnings("unused")
         String eventType = extractString(message, "event_type");
         NotificationPriority priority = notification.getPriority();
 

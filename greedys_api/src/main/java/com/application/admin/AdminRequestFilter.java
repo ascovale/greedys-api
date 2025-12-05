@@ -2,15 +2,16 @@ package com.application.admin;
 
 import java.io.IOException;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.application.admin.service.security.AdminUserDetailsService;
 import com.application.common.security.SecurityPatterns;
 import com.application.common.security.jwt.JwtUtil;
 
@@ -18,14 +19,19 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 
 @Service
-@RequiredArgsConstructor
 public class AdminRequestFilter extends OncePerRequestFilter {
     
-    private final AdminUserDetailsService userDetailsService;
+    private final UserDetailsService userDetailsService;
     private final JwtUtil jwtUtil;
+
+    public AdminRequestFilter(
+            @Qualifier("adminUserDetailsService") UserDetailsService userDetailsService,
+            JwtUtil jwtUtil) {
+        this.userDetailsService = userDetailsService;
+        this.jwtUtil = jwtUtil;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)

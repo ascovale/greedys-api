@@ -21,7 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @Tag(name = "Agency Authentication", description = "Controller for agency authentication")
-@RequestMapping("/api/v1/agency/auth")
+@RequestMapping("/agency/auth")
 @SecurityRequirement(name = "bearerAuth")
 @RequiredArgsConstructor
 @Slf4j
